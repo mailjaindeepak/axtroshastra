@@ -1,5 +1,5 @@
 """
-AstroShastra report renderer — 9-page mobile-first report from engine JSON.
+Axtroshastra report renderer — 9-page mobile-first report from engine JSON.
 Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
@@ -209,7 +209,7 @@ details zindagi bharti hai.</p>"""
     if meta["time_quality"] in ("T1", "T2", "T3"):
         rectify_hook = """<div class="upsell"><b>Birth time approximate tha?</b>
 <p>Rectification analysis aapke life events se exact time narrow karta hai —
-windows 6 months tak refine ho sakte hain. WhatsApp par 'RECTIFY' likhiye.</p></div>"""
+windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919650973345?text=RECTIFY' style='color:#C93B2E;font-weight:700'>WhatsApp par RECTIFY bhejiye →</a></p></div>"""
 
     facts = p["chart"]["planets"]
     sl = sig["seventh_lord"]
@@ -221,7 +221,7 @@ windows 6 months tak refine ho sakte hain. WhatsApp par 'RECTIFY' likhiye.</p></
 
     return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{name} — Marriage Timing Report | AstroShastra</title>
+<title>{name} — Marriage Timing Report | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
@@ -292,7 +292,7 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
 </style></head><body>
 
 <section class="pg cover">
-  <p class="brand">✦ ASTROSHASTRA</p>
+  <p class="brand">✦ AXTROSHASTRA</p>
   <h1>{name}</h1>
   <p class="bd">Marriage Timing Report · Generated {meta['generated']}</p>
   {north_chart_svg(p)}
@@ -355,15 +355,14 @@ Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate bett
 </div>
 {rectify_hook}
 <div class="upsell"><b>Ek aur sawaal, usi chart se: career kab lift hoga?</b>
-<p>Career Timing Report — same precision, ₹299 for report holders. WhatsApp par 'CAREER' likhiye.</p></div>
+<p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919650973345?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
 <div class="btnrow">
   <button class="btn p" onclick="window.print()">Download PDF</button>
-  <a class="btn s" href="https://wa.me/91XXXXXXXXXX?text=Hi">WhatsApp Support</a>
+  <a class="btn s" href="https://wa.me/919650973345?text=Hi%20Axtroshastra">WhatsApp Support</a>
 </div></section>
 
 <footer>Windows are probability estimates from classical dasha–transit principles,
-not guarantees. 100% refund within 7 days, no questions asked.<br>
-AstroShastra · Computational Vedic Astrology</footer>
+not guarantees. 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · axtroshastra@gmail.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
 </body></html>"""
 
 
@@ -385,7 +384,7 @@ def render_milan(p: dict) -> str:
     vcol = VERDICT_COLOR[p["verdict_key"]]
     return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{m['p1']} ✕ {m['p2']} — Kundli Milan | AstroShastra</title>
+<title>{m['p1']} ✕ {m['p2']} — Kundli Milan | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
@@ -411,7 +410,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .note{{background:#fff;border:1.5px solid var(--haldi)}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
 </style></head><body>
-<div class="hero"><p class="brand">✦ ASTROSHASTRA · KUNDLI MILAN</p>
+<div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
 <h1>{m['p1']} ✕ {m['p2']}</h1>
 <p class="score">{p['total']}<small>/36</small></p>
 <span class="verdict">{p['verdict'].upper()}</span></div>
@@ -420,7 +419,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 {('<h2>Important notes</h2>' + notes) if notes else ''}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
 Guna milan is one classical input to a marriage decision, not the whole decision.
-100% refund within 7 days — WhatsApp us.</p>
+100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 </body></html>"""
 
 
@@ -440,7 +439,7 @@ def render_blueprint(p: dict) -> str:
                if p["persona"]["note_chandra"] else "")
     return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{m['name']} — Life Blueprint | AstroShastra</title>
+<title>{m['name']} — Life Blueprint | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
@@ -462,7 +461,7 @@ ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
 .soft{{color:var(--muted);font-size:13px;margin-top:10px}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
 </style></head><body>
-<div class="hero"><p class="brand">✦ ASTROSHASTRA · LIFE BLUEPRINT</p>
+<div class="hero"><p class="brand">✦ AXTROSHASTRA · LIFE BLUEPRINT</p>
 <h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
 {p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
 
@@ -489,5 +488,5 @@ mein sabse achha kaam karte hain.</p></div>
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
-100% refund within 7 days — WhatsApp us.</p>
+100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 </body></html>"""

@@ -1,5 +1,5 @@
 """
-AstroShastra API — production wiring.
+Axtroshastra API — production wiring.
 
 POST /api/kundli      : compute FULL report server-side, store, return TEASER only
 POST /api/order       : create LIVE Razorpay order bound to report_id
@@ -28,7 +28,7 @@ from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint
 from products import compute_milan, compute_blueprint
 
-app = FastAPI(title="AstroShastra API", docs_url=None, redoc_url=None)
+app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")   # e.g. https://axtroshastra.com
@@ -56,7 +56,7 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
         else:                                        # sandbox / 24h session freeform
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
-                body=(f"Namaste {name}! 🙏 Aapki AstroShastra Marriage Timing "
+                body=(f"Namaste {name}! 🙏 Aapki Axtroshastra Marriage Timing "
                       f"Report ready hai:\n{link}\n\nPDF download button report "
                       f"ke andar hai. Koi bhi sawaal ho — reply kijiye. "
                       f"100% refund within 7 days."))
@@ -113,6 +113,7 @@ def mark_paid(rid, payment_id=None, phone=None):
                   (payment_id, phone, rid))
 
 # ----------------------------------------------------------------- geocode
+from cities_in import CITIES_IN
 CITY_CACHE = {
     "delhi": (28.61, 77.21, 5.5),      "new delhi": (28.61, 77.21, 5.5),
     "mumbai": (19.08, 72.88, 5.5),     "bangalore": (12.97, 77.59, 5.5),
@@ -146,6 +147,8 @@ def geocode(place: str):
     key = place.lower().split(",")[0].strip()
     if key in CITY_CACHE:
         return CITY_CACHE[key]
+    if key in CITIES_IN:
+        return CITIES_IN[key]
     # Fallback for unknown Indian towns: use Delhi coords, IST timezone.
     # Latitude affects only lagna (T0/T1); dasha timeline is latitude-free.
     # PROD upgrade: Google Geocoding API here, cache the result into the table.
@@ -184,7 +187,7 @@ def landing():
         path = os.path.join(PAGES_DIR, candidate)
         if os.path.exists(path):
             return FileResponse(path)
-    return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>AstroShastra</h3>")
+    return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>Axtroshastra</h3>")
 
 
 @app.post("/api/kundli")
@@ -302,6 +305,62 @@ def create_milan(inp: MilanIn):
     rid = secrets.token_urlsafe(12)
     save_report(rid, report)
     return {"report_id": rid, "teaser": report["teaser"]}
+
+
+from fastapi.responses import Response, PlainTextResponse
+
+@app.get("/static/{fname}", include_in_schema=False)
+def static_file(fname: str):
+    if not fname.replace("-", "").replace(".", "").replace("_", "").isalnum():
+        raise HTTPException(404, "not found")
+    path = os.path.join(BASE, "static", fname)
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(404, "not found")
+
+
+@app.get("/blog", include_in_schema=False)
+def blog_index():
+    return FileResponse(os.path.join(BASE, "pages", "blog", "index.html"))
+
+
+@app.get("/blog/{slug}", include_in_schema=False)
+def blog_post(slug: str):
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    path = os.path.join(BASE, "pages", "blog", f"{slug}.html")
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(404, "not found")
+
+
+BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
+              "kundli-milan-36-gun", "birth-time-nahi-pata-chandra-lagna",
+              "vimshottari-dasha-life-phases"]
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap():
+    base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
+    urls = ["/", "/shaadi", "/milan", "/jeevan", "/blog",
+            "/privacy", "/terms", "/refunds"] + [f"/blog/{s}" for s in BLOG_SLUGS]
+    body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
+    return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
+                    f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>',
+                    media_type="application/xml")
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots():
+    base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
+    return PlainTextResponse(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /report/\nSitemap: {base_url}/sitemap.xml")
+
+
+@app.get("/api/count")
+def public_count():
+    """Honest aggregate report count for the live counter. Hidden below 50."""
+    with db() as c:
+        n = c.execute("SELECT COUNT(*) FROM reports").fetchone()[0]
+    return {"count": (n // 10) * 10 if n >= 50 else 0}
 
 STATS_KEY = os.getenv("STATS_KEY", "")
 
