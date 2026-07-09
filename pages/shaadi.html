@@ -555,7 +555,7 @@ async function awaitReport(){
     if(d.paid){
       if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
       if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
-      location.href = '/report/' + REPORT_ID;
+      setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
