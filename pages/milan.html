@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="hi-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kundli Milan — 36 Guna Match | AstroShastra</title>
+<meta name="description" content="Dono kundliyon ka 36-guna Ashtakoota milan — score, doshas, aur unka honest matlab. ₹499, 2 minute mein.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#23253B;
+  --midnight:#151C39;
+  --midnight-2:#1D2547;
+  --paper:#FAF6ED;
+  --card:#FFFFFF;
+  --sindoor:#C93B2E;
+  --sindoor-dark:#A82F24;
+  --haldi:#E4B04A;
+  --haldi-soft:#F6E7C6;
+  --muted:#6B6D82;
+  --line:#E7E0D2;
+  --ok:#2E7D53;
+  --radius:14px;
+  --display:'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --body:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.55;font-size:16px;-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+a{color:var(--sindoor)}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--haldi)}
+.eyebrow.dark{color:var(--sindoor)}
+h1,h2,h3{font-family:var(--display);line-height:1.12}
+.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;padding:16px 20px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 0 var(--sindoor-dark);transition:transform .08s ease}
+.btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sindoor-dark)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
+.btn-note{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
+section{padding:52px 0}
+
+/* ---------- HERO ---------- */
+.hero{background:radial-gradient(1200px 600px at 50% -10%, var(--midnight-2), var(--midnight) 60%);color:#F3EFE4;padding:36px 0 56px;position:relative;overflow:hidden}
+.hero .wrap{position:relative;z-index:2}
+.kundli-bg{position:absolute;right:-90px;top:-40px;width:380px;opacity:.5;z-index:1;pointer-events:none}
+.brand{display:flex;align-items:center;gap:9px;margin-bottom:34px}
+.brand svg{width:26px;height:26px}
+.brand span{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.02em;color:#F3EFE4}
+.hero h1{font-size:clamp(38px,9vw,56px);font-weight:800;color:#fff}
+.hero h1 em{font-style:normal;color:var(--haldi)}
+.hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(18px,4.6vw,22px);color:#D9D4C3;margin-top:12px}
+.hero .sub2{margin-top:12px;font-size:15px;color:#A9ABC0;max-width:44ch}
+
+/* form card */
+.form-card{background:var(--card);color:var(--ink);border-radius:var(--radius);padding:22px 20px 20px;margin-top:28px;box-shadow:0 18px 50px rgba(8,10,30,.45)}
+.form-card .fc-title{font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body)}
+.tob-toggle{display:flex;align-items:flex-start;gap:10px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin:4px 0 16px;font-size:13.5px}
+.tob-toggle input{width:18px;height:18px;margin-top:2px;accent-color:var(--sindoor);flex:none}
+.tob-toggle b{font-weight:700}
+.tob-toggle .spec{color:var(--sindoor);font-weight:600}
+
+/* ---------- TRUST STRIP ---------- */
+.trust{background:var(--midnight);padding:0 0 26px}
+.trust ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center}
+.trust li{font-size:12.5px;color:#B9BBD0;display:flex;align-items:center;gap:6px}
+.trust li b{color:#E8E4D6;font-weight:600}
+.trust .dot{width:5px;height:5px;border-radius:50%;background:var(--haldi);flex:none}
+
+/* ---------- TEASER / PAYWALL ---------- */
+.teaser{background:linear-gradient(var(--paper), #F3ECDD);display:none}
+.teaser.show{display:block}
+.teaser-head{text-align:center;margin-bottom:22px}
+.teaser-head h2{font-size:clamp(24px,6vw,30px);font-weight:800}
+.chart-facts{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.chart-facts .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+.chart-facts .row:last-child{border-bottom:0}
+.chart-facts .k{color:var(--muted)}
+.chart-facts .v{font-weight:700;text-align:right}
+.dasha-note{font-size:13.5px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin-top:12px}
+.windows-found{font-family:var(--display);font-weight:800;font-size:19px;text-align:center;margin:22px 0 14px}
+.windows-found b{color:var(--sindoor)}
+
+/* locked timeline */
+.timeline{background:var(--midnight);border-radius:var(--radius);padding:20px 16px 16px;color:#CFCBBB}
+.timeline .tl-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8F92AB;margin-bottom:14px;text-align:center}
+.tl-track{position:relative;height:54px;background:var(--midnight-2);border-radius:8px;overflow:hidden}
+.tl-window{position:absolute;top:0;bottom:0;background:linear-gradient(90deg, rgba(228,176,74,.85), rgba(228,176,74,.55));display:flex;align-items:center;justify-content:center}
+.tl-window .lockchip{background:rgba(21,28,57,.85);color:var(--haldi);border-radius:8px;font-size:12px;font-weight:700;padding:5px 9px;display:flex;gap:5px;align-items:center;filter:none}
+.tl-window .yrs{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:var(--midnight);filter:blur(7px);user-select:none}
+.tl-years{display:flex;justify-content:space-between;font-size:10.5px;color:#7C7F99;margin-top:8px;padding:0 2px}
+.tl-cap{font-size:12.5px;color:#A9ABC0;text-align:center;margin-top:12px}
+
+/* paywall card */
+.paywall{background:var(--card);border-radius:var(--radius);border:2px solid var(--haldi);padding:24px 20px;margin-top:22px;box-shadow:0 14px 40px rgba(35,37,59,.12)}
+.paywall h3{font-size:22px;font-weight:800}
+.price{display:flex;align-items:baseline;gap:10px;margin:6px 0 16px}
+.price .now{font-family:var(--display);font-weight:800;font-size:32px;color:var(--sindoor)}
+.price .was{color:var(--muted);text-decoration:line-through;font-size:17px}
+.price .tag{font-size:11px;font-weight:700;background:var(--haldi-soft);color:#8a6a1f;border-radius:20px;padding:4px 10px;letter-spacing:.04em}
+.paywall ul{list-style:none;margin-bottom:18px}
+.paywall li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}
+.paywall li svg{flex:none;margin-top:3px}
+
+/* ---------- WHY DIFFERENT ---------- */
+.why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
+.why .block h3{font-size:18px;margin-bottom:8px}
+.why .block p{font-size:14.5px;color:#4A4C63}
+.why .block.gold{border-left-color:var(--haldi)}
+.cred{margin-top:16px;background:var(--midnight);color:#E8E4D6;border-radius:var(--radius);padding:20px}
+.cred h3{color:#fff;font-size:18px;margin-bottom:8px}
+.cred p{font-size:14.5px;color:#B9BBD0}
+.cred .badge{display:inline-flex;align-items:center;gap:7px;background:var(--midnight-2);border:1px solid #333B63;color:var(--haldi);font-size:12px;font-weight:700;border-radius:20px;padding:6px 12px;margin-bottom:12px;letter-spacing:.05em}
+
+/* ---------- INSIDE ---------- */
+.inside ol{list-style:none;counter-reset:inside;margin-top:20px}
+.inside li{counter-increment:inside;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 16px 16px 58px;position:relative;margin-bottom:10px;font-size:14.5px}
+.inside li::before{content:counter(inside,decimal-leading-zero);position:absolute;left:16px;top:16px;font-family:var(--display);font-weight:800;font-size:17px;color:var(--haldi)}
+.inside li b{display:block;font-family:var(--display);font-weight:700;font-size:15.5px;margin-bottom:3px}
+.inside li span{color:#4A4C63}
+
+/* ---------- RECTIFY ---------- */
+.rectify{background:var(--midnight);color:#E8E4D6}
+.rectify h2{color:#fff;font-size:clamp(22px,5.6vw,28px);margin-bottom:12px}
+.rectify h2 em{font-style:normal;color:var(--haldi)}
+.rectify p{font-size:14.5px;color:#B9BBD0;max-width:52ch}
+.rectify .stat{font-family:var(--display);font-weight:800;font-size:38px;color:var(--haldi);margin:16px 0 4px}
+.rectify .stat-cap{font-size:13px;color:#8F92AB;margin-bottom:14px}
+
+/* ---------- PROOF ---------- */
+.proof{text-align:center}
+.proof .count{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,46px);color:var(--sindoor)}
+.proof .cap{color:var(--muted);font-size:14px;margin-top:4px}
+.review{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:20px;text-align:left;font-size:14.5px}
+.review .stars{color:var(--haldi);letter-spacing:2px;font-size:15px;margin-bottom:6px}
+.review .who{color:var(--muted);font-size:13px;margin-top:8px}
+
+/* ---------- FAQ ---------- */
+.faq details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.faq summary{list-style:none;cursor:pointer;padding:16px;font-family:var(--display);font-weight:700;font-size:15.5px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:20px;color:var(--sindoor);flex:none;font-weight:800}
+.faq details[open] summary::after{content:"–"}
+.faq .a{padding:0 16px 16px;font-size:14.5px;color:#4A4C63}
+
+/* ---------- FINAL CTA ---------- */
+.final{background:linear-gradient(#F3ECDD, var(--paper));text-align:center;padding-bottom:120px}
+.final h2{font-size:clamp(26px,6.6vw,34px);font-weight:800;max-width:20ch;margin:0 auto 20px}
+.final h2 em{font-style:normal;color:var(--sindoor)}
+.final .btn{max-width:360px;margin:0 auto}
+
+/* ---------- STICKY BAR ---------- */
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
+.sticky .sp{flex:1;min-width:0}
+.sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sticky .sp .l2{font-size:11.5px;color:var(--muted)}
+.sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+
+.sec-head{max-width:560px}
+.sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
+footer{background:var(--midnight);color:#8F92AB;font-size:12px;text-align:center;padding:26px 20px 120px}
+footer b{color:#B9BBD0}
+@media(min-width:720px){
+  .kundli-bg{width:520px;right:-60px;opacity:.6}
+  .hero{padding:48px 0 72px}
+}
+</style>
+<!-- ============ ANALYTICS — replace the two IDs below ============ -->
+<!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NKRQM1HJ97"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NKRQM1HJ97');
+</script>
+<!-- Meta Pixel: replace 718516041517482 with your Pixel ID -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '718516041517482');
+fbq('track', 'PageView');
+</script>
+<!-- ============ /ANALYTICS ============ -->
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <svg class="kundli-bg" viewBox="0 0 400 400" fill="none" aria-hidden="true">
+    <rect x="20" y="20" width="360" height="360" stroke="#E4B04A" stroke-width="1.4" opacity=".9"/>
+    <path d="M20 20 L380 380 M380 20 L20 380" stroke="#E4B04A" stroke-width="1.2" opacity=".8"/>
+    <path d="M200 20 L380 200 L200 380 L20 200 Z" stroke="#E4B04A" stroke-width="1.4" opacity=".9"/>
+    <circle cx="200" cy="110" r="3" fill="#E4B04A"/><circle cx="290" cy="200" r="3" fill="#E4B04A"/>
+    <circle cx="110" cy="200" r="3" fill="#E4B04A"/><circle cx="200" cy="290" r="3" fill="#E4B04A"/>
+  </svg>
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#E4B04A"/></svg>
+      <span>AstroShastra</span>
+    </div>
+
+    <p class="eyebrow">Kundli Milan · 36 Guna</p>
+    <h1>Kya yeh rishta<br><em>match</em> karta hai?</h1>
+    <p class="sub">Dono kundliyon ka guna milan.<br>Score, doshas, aur unka sach.</p>
+    <p class="sub2">Full Ashtakoota matching — aatho kootas ka breakdown, manglik check, aur doshas ki honest cancellation-analysis.</p>
+
+    <form class="form-card" id="milanForm" autocomplete="on">
+      <p class="fc-title">Dono ki birth details daaliye 👇</p>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1 (ladka)</p>
+      <div class="field"><label for="p1-name">Naam</label><input id="p1-name" type="text" required></div>
+      <div class="field"><label for="p1-dob">Date of birth</label><input id="p1-dob" type="date" required></div>
+      <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><input id="p1-tob" type="time"></div>
+      <div class="field"><label for="p1-place">Place of birth</label><input id="p1-place" type="text" placeholder="City, State" required></div>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2 (ladki)</p>
+      <div class="field"><label for="p2-name">Naam</label><input id="p2-name" type="text" required></div>
+      <div class="field"><label for="p2-dob">Date of birth</label><input id="p2-dob" type="date" required></div>
+      <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(optional)</span></label><input id="p2-tob" type="time"></div>
+      <div class="field"><label for="p2-place">Place of birth</label><input id="p2-place" type="text" placeholder="City, State" required></div>
+      <button class="btn" type="submit">Guna milan karo — FREE preview</button>
+      <p class="btn-note">Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.</p>
+    </form>
+  </div>
+</header>
+
+<!-- ============ TRUST STRIP ============ -->
+<div class="trust">
+  <div class="wrap">
+    <ul>
+      <li><span class="dot"></span><b>Swiss Ephemeris</b> precision</li>
+      <li><span class="dot"></span><b>No account</b> needed</li>
+      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
+      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
+      <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ TEASER + PAYWALL (revealed after form) ============ -->
+<section class="teaser" id="teaser">
+  <div class="wrap">
+    <div class="teaser-head">
+      <p class="eyebrow dark">Free snapshot</p>
+      <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
+    </div>
+
+    <div class="chart-facts">
+      <div class="row"><span class="k" id="m1-name">Partner 1</span><span class="v" id="m1-moon">—</span></div>
+      <div class="row"><span class="k" id="m2-name">Partner 2</span><span class="v" id="m2-moon">—</span></div>
+      <div class="row"><span class="k">Gana match</span><span class="v" id="m-gana">—</span></div>
+      <div class="dasha-note">⭐ Aapka <b>36-guna score calculate ho chuka hai</b> — aatho kootas, manglik check, aur dosha analysis ke saath.</div>
+    </div>
+
+    <p class="windows-found">Compatibility score: <b style="filter:blur(8px)">28.5</b>/36 🔒</p>
+    </div>
+
+    <div class="paywall">
+      <h3>Full Kundli Milan Report</h3>
+      <div class="price">
+        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
+      </div>
+      <ul>
+        <li>✅ <b>Total score /36</b> — aur verdict, honest bands ke saath</li>
+        <li>✅ <b>Aatho kootas ka breakdown</b> — Varna se Nadi tak, har ek ka matlab</li>
+        <li>✅ <b>Nadi &amp; Bhakoot dosha check</b> — aur cancellation rules</li>
+        <li>✅ <b>Manglik matching</b> — dono charts ka</li>
+        <li>✅ <b>Kya improve ho sakta hai</b> — score ka practical matlab</li>
+      </ul>
+      <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — ₹499</button>
+      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery &nbsp;|&nbsp; 100% refund, no questions</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY DIFFERENT ============ -->
+<section class="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow dark">Kyun alag hai</p>
+      <h2>Yeh milan alag kyun hai</h2>
+    </div>
+    <div class="block">
+      <h3>Panditji ne 32 bola, website ne 24 — kaun sahi hai?</h3>
+      <p>Alag-alag jagah alag score isliye aata hai kyunki assumptions alag hote hain. Hum Swiss Ephemeris data se dono moons ki exact position lete hain aur classical Ashtakoota rules ko as-is compute karte hain — Lahiri ayanamsa, standard tables. Same inputs, same score, har baar. Aur har koota ka reason report mein likha hota hai, taaki aap khud verify kar sakein.</p>
+    </div>
+    <div class="block gold">
+      <h3>Hum score inflate nahi karte.</h3>
+      <p>Kam score aaya toh kam hi dikhayenge — lekin uske saath yeh bhi ki kaunsa dosha cancellation rules se cancel hota hai aur kaunsa factor improve ho sakta hai. Guna milan ek input hai, poora faisla nahi. Jo website har jodi ko 30+ deti hai, woh aapko khush kar rahi hai, madad nahi.</p>
+    </div>
+    <div class="cred">
+      <span class="badge">⚙️ IIT–IIM ALUMNI BUILT</span>
+      <h3>Banaya IIT–IIM engineers ne.</h3>
+      <p>We encoded the classical Ashtakoota tables — Varna to Nadi — into software, so the matching comes from your charts, not from someone's mood or business incentive that day.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT'S INSIDE ============ -->
+<section class="inside">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow dark">Report ke andar</p>
+      <h2>Report mein kya milega</h2>
+    </div>
+    <ol>
+      <li><b>Total score /36 + verdict</b><span>Honest bands — excellent, very good, acceptable, ya careful consideration.</span></li>
+      <li><b>Aatho kootas ka breakdown</b><span>Varna se Nadi tak — har koota ka score, aur plain words mein uska matlab.</span></li>
+      <li><b>Nadi &amp; Bhakoot dosha check</b><span>Dosha mila toh cancellation rules bhi — aksar dosha cancel hota hai.</span></li>
+      <li><b>Manglik matching</b><span>Dono charts ka check — aur manglik-manglik neutral rule.</span></li>
+      <li><b>Score ka practical matlab</b><span>Kya structural hai, kya improve ho sakta hai — sirf number nahi.</span></li>
+      <li><b>Share-ready report</b><span>PDF download — dono families ke saath share karne layak.</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ RECTIFICATION ============ -->
+<section class="rectify">
+  <div class="wrap">
+    <p class="eyebrow">Birth time problem?</p>
+    <h2>Birth time nahi pata?<br><em>Milan phir bhi hota hai.</em></h2>
+    <p class="stat">36 guna</p>
+    <p class="stat-cap">matching Moon-based hoti hai — time se zyada date matter karti hai</p>
+    <p>Ashtakoota ke saare kootas Moon ki rashi aur nakshatra se nikalte hain, jo din bhar mein aam taur par stable rehti hai. Isliye humara form time optional rakhta hai — doosri websites ki tarah 12:00 assume karke chhupate nahi. Exact time ho toh pada-level refinement aur lagna-based manglik check aur sharp ho jaata hai.</p>
+  </div>
+</section>
+
+<!-- ============ SOCIAL PROOF ============ -->
+<section class="proof">
+  <div class="wrap">
+    <p class="count" id="reportCount">1,200+</p>
+    <p class="cap">reports generated this month</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow dark">Sawaal-jawaab</p>
+      <h2>Aksar poochhe gaye sawaal</h2>
+    </div>
+    <div style="height:18px"></div>
+    <details><summary>Kitna score hona chahiye?</summary>
+      <div class="a">Traditional threshold 18/36 hai. 18–24 acceptable, 25–32 very good, 33+ excellent. Lekin number se zyada important hai ki kaunse kootas mein kami hai — Nadi ki kami aur Varna ki kami ek jaisi nahi hoti. Report yeh fark clearly batati hai.</div>
+    </details>
+    <details><summary>Nadi dosha aa gaya — kya rishta nahi ho sakta?</summary>
+      <div class="a">Zaroori nahi. Nadi dosha ke classical cancellation rules hain — rashi alag ho, pada alag ho, ya kuch aur conditions. Report mein dosha ke saath uska cancellation-check bhi milta hai. Sirf "Nadi dosha hai" sunke rukna aadha sach hai.</div>
+    </details>
+    <details><summary>Panditji ka score alag kyun aa sakta hai?</summary>
+      <div class="a">Ayanamsa, pada assumptions, ya manual calculation ke difference se. Hum Lahiri ayanamsa aur standard classical tables use karte hain, aur har koota ka detail report mein dikhate hain — aap kisi bhi astrologer se line-by-line verify karwa sakte hain.</div>
+    </details>
+    <details><summary>Birth time nahi pata. Chalega?</summary>
+      <div class="a">Haan — 36-guna matching Moon-based hai, jo poore din stable rehti hai (rare boundary cases chhodke). Exact time se pada-level checks aur lagna-based manglik aur refine hote hain, par core score ke liye date aur place kaafi hain.</div>
+    </details>
+    <details><summary>Report kab milegi?</summary>
+      <div class="a">Payment ke turant baad, screen par. PDF download bhi milta hai — families ke saath share karne ke liye.</div>
+    </details>
+    <details><summary>Refund policy?</summary>
+      <div class="a">100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.</div>
+    </details>
+    <details><summary>Dono ki details safe hain?</summary>
+      <div class="a">Birth details sirf report ke liye use hoti hain. No spam calls — hum number kisi astrologer ya matrimony site ko nahi bechte.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final">
+  <div class="wrap">
+    <h2>Rishta pakka karne se pehle,<br><em>kundli mila lo.</em></h2>
+    <a class="btn" href="#milanForm">Guna milan karo — FREE preview</a>
+  </div>
+</section>
+
+<footer>
+  <b>AstroShastra</b> · Computational Vedic Astrology<br>
+  Timing windows are probability estimates based on classical Jyotish principles, not guarantees.<br>
+  Support: WhatsApp +91-XXXXX-XXXXX · refunds within 7 days, no questions asked.
+</footer>
+
+<!-- ============ STICKY CTA ============ -->
+<div class="sticky" id="stickyBar" hidden>
+  <div class="sp">
+    <p class="l1">Kundli Milan Report</p>
+    <p class="l2">₹499 · instant delivery · 100% refund</p>
+  </div>
+  <a class="btn" href="#milanForm" id="stickyBtn">Match FREE</a>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<script>
+var REPORT_ID = null;
+
+// funnel event: fires once when user starts filling the form
+var _formStarted = false;
+document.getElementById('milanForm').addEventListener('focusin', function(){
+  if(_formStarted) return; _formStarted = true;
+  if(window.gtag) gtag('event', 'form_start');
+});
+
+
+// map form state -> time_quality tier
+function timeQuality(){
+  if(!unknown.checked) return {tq:'T0', tob: document.getElementById('f-tob').value};
+  var band = document.getElementById('f-approx').value;
+  if(band.indexOf('nahi pata') !== -1) return {tq:'T3', band:null};
+  var key = band.indexOf('Subah')===0 ? 'subah' : band.indexOf('Din')===0 ? 'din'
+          : band.indexOf('Shaam')===0 ? 'shaam' : 'raat';
+  return {tq:'T2', band:key};
+}
+
+// form submit -> POST /api/milan -> render preview
+document.getElementById('milanForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var btn = this.querySelector('.btn');
+  btn.textContent = 'Milan ho raha hai…'; btn.disabled = true;
+  try{
+    var res = await fetch('/api/milan', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        p1_name: document.getElementById('p1-name').value.trim(),
+        p1_dob: document.getElementById('p1-dob').value,
+        p1_tob: document.getElementById('p1-tob').value || null,
+        p1_place: document.getElementById('p1-place').value.trim(),
+        p2_name: document.getElementById('p2-name').value.trim(),
+        p2_dob: document.getElementById('p2-dob').value,
+        p2_tob: document.getElementById('p2-tob').value || null,
+        p2_place: document.getElementById('p2-place').value.trim(),
+        variant: location.pathname
+      })});
+    if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
+    var data = await res.json();
+    REPORT_ID = data.report_id;
+    var t = data.teaser;
+    document.getElementById('t-name').textContent = 'Match';
+    document.getElementById('m1-name').textContent = document.getElementById('p1-name').value.trim();
+    document.getElementById('m2-name').textContent = document.getElementById('p2-name').value.trim();
+    document.getElementById('m1-moon').textContent = t.p1_moon + ' · ' + t.p1_nak;
+    document.getElementById('m2-moon').textContent = t.p2_moon + ' · ' + t.p2_nak;
+    document.getElementById('m-gana').textContent = t.gana_preview.replace('Gana: ','');
+    var el = document.getElementById('teaser');
+    el.classList.add('show'); el.scrollIntoView({behavior:'smooth'});
+    var sb = document.getElementById('stickyBtn');
+    sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
+    if(window.fbq) fbq('track','Lead');
+    if(window.gtag) gtag('event','generate_lead',{method:'milan_preview'});
+  }catch(err){
+    alert(err.message + ' — dobara try kijiye.');
+  }finally{
+    btn.textContent = 'Guna milan karo — FREE preview'; btn.disabled = false;
+  }
+});
+
+// Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
+async function startPayment(){
+  if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
+  var res = await fetch('/api/order', {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({report_id: REPORT_ID})});
+  if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
+  var order = await res.json();
+  if(window.fbq) fbq('track','InitiateCheckout');
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
+  var rzp = new Razorpay({
+    key: order.key_id, order_id: order.razorpay_order_id,
+    amount: order.amount, currency: order.currency,
+    name: 'AstroShastra', description: 'Marriage Timing Report',
+    theme: {color: '#C93B2E'},
+    handler: function(){ awaitReport(); }          // webhook is truth; this just starts polling
+  });
+  rzp.open();
+}
+
+async function awaitReport(){
+  var btn = document.getElementById('unlockBtn');
+  btn.textContent = 'Report ban rahi hai…'; btn.disabled = true;
+  for(var i=0;i<30;i++){                            // poll up to ~60s
+    var r = await fetch('/api/report/' + REPORT_ID);
+    var d = await r.json();
+    if(d.paid){
+      if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+      if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
+      return;
+    }
+    await new Promise(function(res){ setTimeout(res, 2000); });
+  }
+  btn.textContent = 'Unlock my report — ₹499'; btn.disabled = false;
+  alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
+}
+
+// sticky bar appears after scrolling past hero
+var hero = document.querySelector('.hero');
+var sticky = document.getElementById('stickyBar');
+window.addEventListener('scroll', function(){
+  sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
+}, {passive:true});
+</script>
+</body>
+</html>
