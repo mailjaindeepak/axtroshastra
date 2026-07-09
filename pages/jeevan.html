@@ -495,23 +495,24 @@ function renderTeaser(t){
   document.getElementById('t-dasha').textContent = t.current_dasha;
   document.getElementById('t-till').textContent = t.dasha_till;
   document.getElementById('t-count').textContent = (t.chapters||6) + ' life chapters';
-  document.querySelector('.timeline').style.display = t.timeline_hints ? '' : 'none';
-  if(t.timeline_hints) document.getElementById('tlTitle').textContent =
-    'Your marriage timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
-  // year axis
-  var yrs = document.getElementById('tlYears'); yrs.innerHTML='';
-  for(var y=t.horizon[0]; y<=t.horizon[1]; y+=2){
-    var s=document.createElement('span'); s.textContent=y; yrs.appendChild(s);
-  }
-  // locked window chips at real positions
-  var track = document.getElementById('tlTrack'); track.innerHTML='';
-  (t.timeline_hints||[]).forEach(function(h,i){
-    var w=document.createElement('div'); w.className='tl-window';
-    w.style.left=h.left_pct+'%'; w.style.width=h.width_pct+'%';
-    if(i>0) w.style.opacity=.75;
-    w.innerHTML='<span class="yrs">20XX–XX</span><span class="lockchip">🔒 Window '+(i+1)+'</span>';
-    track.appendChild(w);
-  });
+  var tl = document.querySelector('.timeline');
+  if(t.timeline_hints && t.horizon){
+    tl.style.display = '';
+    document.getElementById('tlTitle').textContent =
+      'Your timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
+    var yrs = document.getElementById('tlYears'); yrs.innerHTML='';
+    for(var y=t.horizon[0]; y<=t.horizon[1]; y+=2){
+      var s=document.createElement('span'); s.textContent=y; yrs.appendChild(s);
+    }
+    var track = document.getElementById('tlTrack'); track.innerHTML='';
+    t.timeline_hints.forEach(function(h,i){
+      var w=document.createElement('div'); w.className='tl-window';
+      w.style.left=h.left_pct+'%'; w.style.width=h.width_pct+'%';
+      if(i>0) w.style.opacity=.75;
+      w.innerHTML='<span class="yrs">20XX–XX</span><span class="lockchip">🔒 Window '+(i+1)+'</span>';
+      track.appendChild(w);
+    });
+  } else if(tl){ tl.style.display = 'none'; }
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
