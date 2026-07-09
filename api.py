@@ -159,6 +159,7 @@ class KundliIn(BaseModel):
     time_band: str | None = None
     place: str
     gender: str | None = None
+    variant: str | None = None
 
     @field_validator("time_quality")
     @classmethod
@@ -169,9 +170,19 @@ class KundliIn(BaseModel):
 BAND_MID = {"subah": "07:00", "din": "13:00", "shaam": "19:00", "raat": "01:00"}
 
 # ----------------------------------------------------------------- routes
+PAGES_DIR = os.path.join(BASE, "pages")
+
+PAGES_DIR = os.path.join(BASE, "pages")
+
+
 @app.get("/", include_in_schema=False)
 def landing():
-    return FileResponse(os.path.join(BASE, "index.html"))
+    """Homepage serves the main funnel page (pages/home.html overrides if present)."""
+    for candidate in ("home.html", "shaadi.html"):
+        path = os.path.join(PAGES_DIR, candidate)
+        if os.path.exists(path):
+            return FileResponse(path)
+    return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>AstroShastra</h3>")
 
 
 @app.post("/api/kundli")
@@ -188,6 +199,7 @@ def create_kundli(inp: KundliIn):
                             tz_offset_hours=tz, lat=lat, lon_geo=lon,
                             female=(inp.gender == "female"),
                             time_quality=inp.time_quality)
+    report["meta"]["variant"] = (inp.variant or "direct")[:64]
     rid = secrets.token_urlsafe(12)
     save_report(rid, report)
     return {"report_id": rid, "teaser": report["teaser"]}
@@ -257,3 +269,31 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
         if not get_report(rid): raise HTTPException(404, "report not found")
         mark_paid(rid, payment_id="demo")
         return {"ok": True}
+
+
+STATS_KEY = os.getenv("STATS_KEY", "")
+
+@app.get("/api/stats")
+def stats(key: str = ""):
+    """Per-variant funnel counts. Protect with STATS_KEY env var."""
+    if not STATS_KEY or key != STATS_KEY:
+        raise HTTPException(403, "forbidden")
+    with db() as c:
+        rows = c.execute(
+            """SELECT COALESCE(json_extract(payload,'$.meta.variant'),'direct') v,
+                      COUNT(*), SUM(paid) FROM reports GROUP BY v"""
+        ).fetchall()
+    return {"variants": [{"page": r[0], "kundlis_created": r[1],
+                          "paid_reports": r[2] or 0,
+                          "revenue_inr": (r[2] or 0) * 499} for r in rows]}
+
+
+@app.get("/{slug}", include_in_schema=False)
+def serve_page(slug: str):
+    """Serve pages/<slug>.html — every file in pages/ becomes a landing page."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    path = os.path.join(PAGES_DIR, f"{slug}.html")
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(404, "not found")
