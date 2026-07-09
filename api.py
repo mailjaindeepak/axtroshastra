@@ -1,5 +1,5 @@
 """
-Axtroshastra API — production wiring.
+Axtroshastra API — production wiring..
 
 POST /api/kundli      : compute FULL report server-side, store, return TEASER only
 POST /api/order       : create LIVE Razorpay order bound to report_id
