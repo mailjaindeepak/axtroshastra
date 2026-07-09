@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kundli Milan — 36 Guna Match | AstroShastra</title>
+<title>Kundli Milan — 36 Guna Match | Axtroshastra</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
+<link rel="canonical" href="https://www.axtroshastra.com/milan">
+<meta property="og:title" content="Kundli Milan — 36 Guna Match ₹499">
+<meta property="og:description" content="Dono kundliyon ka Ashtakoota milan — score, doshas, honest cancellation analysis.">
+<meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
+<meta property="og:url" content="https://www.axtroshastra.com/milan">
+<meta property="og:type" content="website">
+
 <meta name="description" content="Dono kundliyon ka 36-guna Ashtakoota milan — score, doshas, aur unka honest matlab. ₹499, 2 minute mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -205,7 +213,7 @@ fbq('track', 'PageView');
   <div class="wrap">
     <div class="brand">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#E4B04A"/></svg>
-      <span>AstroShastra</span>
+      <span>Axtroshastra</span>
     </div>
 
     <p class="eyebrow">Kundli Milan · 36 Guna</p>
@@ -249,7 +257,7 @@ fbq('track', 'PageView');
   <div class="wrap">
     <div class="teaser-head">
       <p class="eyebrow dark">Free snapshot</p>
-      <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
+      <h2>Guna milan <span id="t-name" style="display:none"></span>ready hai ✅</h2>
     </div>
 
     <div class="chart-facts">
@@ -335,8 +343,8 @@ fbq('track', 'PageView');
 <!-- ============ SOCIAL PROOF ============ -->
 <section class="proof">
   <div class="wrap">
-    <p class="count" id="reportCount">1,200+</p>
-    <p class="cap">reports generated this month</p>
+    <p class="count" id="reportCount"></p>
+    <p class="cap">reports generated</p>
   </div>
 </section>
 
@@ -381,9 +389,11 @@ fbq('track', 'PageView');
 </section>
 
 <footer>
-  <b>AstroShastra</b> · Computational Vedic Astrology<br>
-  Timing windows are probability estimates based on classical Jyotish principles, not guarantees.<br>
-  Support: WhatsApp +91-XXXXX-XXXXX · refunds within 7 days, no questions asked.
+  <b>Axtroshastra</b> · Computational Vedic Astrology · by Cultnuts<br>
+  <a href="https://wa.me/919650973345" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 96509 73345</a> · <a href="mailto:axtroshastra@gmail.com" style="color:#E4B04A;text-decoration:none">axtroshastra@gmail.com</a><br>
+  <a href="/privacy" style="color:#B9BBD0">Privacy</a> · <a href="/terms" style="color:#B9BBD0">Terms</a> · <a href="/refunds" style="color:#B9BBD0">Refund Policy</a> · <a href="/blog" style="color:#B9BBD0">Blog</a><br>
+  Reports are probability estimates from classical Jyotish principles, not guarantees.<br>
+  100% refund within 7 days, no questions asked.
 </footer>
 
 <!-- ============ STICKY CTA ============ -->
@@ -467,12 +477,14 @@ async function startPayment(){
     body: JSON.stringify({report_id: REPORT_ID})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
+  if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
+  try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
   if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
-    name: 'AstroShastra', description: 'Marriage Timing Report',
+    name: 'Axtroshastra', description: 'Marriage Timing Report',
     theme: {color: '#C93B2E'},
     handler: function(){ awaitReport(); }          // webhook is truth; this just starts polling
   });
@@ -496,6 +508,34 @@ async function awaitReport(){
   btn.textContent = 'Unlock my report — ₹499'; btn.disabled = false;
   alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
+
+
+// honest live counter (hidden until real volume crosses threshold)
+(function(){
+  var el = document.getElementById('reportCount');
+  if(!el) return;
+  var sec = el.closest('.proof') || el.parentElement;
+  fetch('/api/count').then(function(r){return r.json()}).then(function(d){
+    if(d.count >= 50){ el.textContent = d.count.toLocaleString('en-IN') + '+'; }
+    else if(sec){ sec.style.display = 'none'; }
+  }).catch(function(){ if(sec) sec.style.display='none'; });
+})();
+// paid-report recovery: if a past purchase exists, offer the link
+(function(){
+  try{
+    var pr = localStorage.getItem('axtro_rid');
+    if(!pr) return;
+    fetch('/api/report/' + pr).then(function(r){return r.json()}).then(function(d){
+      if(d && d.paid){
+        var b = document.createElement('div');
+        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 16px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
+        b.innerHTML='✅ Aapki paid report ready hai — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">yahan dekhiye →</a>';
+        document.body.appendChild(b);
+        localStorage.removeItem('axtro_rid');
+      } else if(d && d.paid === false) { /* unpaid teaser — keep quietly */ }
+    }).catch(function(){});
+  }catch(e){}
+})();
 
 // sticky bar appears after scrolling past hero
 var hero = document.querySelector('.hero');
