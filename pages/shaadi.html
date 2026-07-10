@@ -212,6 +212,13 @@ fbq('init', '718516041517482');
 fbq('track', 'PageView');
 </script>
 <!-- ============ /ANALYTICS ============ -->
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "xkbm56cwzh");
+</script>
 </head>
 <body>
 
@@ -470,7 +477,7 @@ var REPORT_ID = null;
   for(var i=1;i<=31;i++){ var o=document.createElement('option'); o.value=('0'+i).slice(-2); o.textContent=i; dd.appendChild(o); }
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
-  for(var y=2010;y>=1940;y--){ var o=document.createElement('option'); o.value=y; o.textContent=y; yy.appendChild(o); }
+  for(var y=2008;y>=1940;y--){ var o=document.createElement('option'); o.value=y; o.textContent=y; yy.appendChild(o); }
 })();
 function buildDob(){
   var d=document.getElementById('f-dd').value, m=document.getElementById('f-mm').value, y=document.getElementById('f-yy').value;
@@ -577,18 +584,27 @@ function renderTeaser(t){
   }
   // locked window chips at real positions
   var track = document.getElementById('tlTrack'); track.innerHTML='';
-  (t.timeline_hints||[]).forEach(function(h,i){
+  var hints = t.timeline_hints||[];
+  var compact = hints.length > 1;
+  hints.forEach(function(h,i){
     var w=document.createElement('div'); w.className='tl-window';
     w.style.left=h.left_pct+'%'; w.style.width=h.width_pct+'%';
     if(i>0) w.style.opacity=.75;
-    w.innerHTML='<span class="yrs">20XX–XX</span><span class="lockchip">🔒 Window '+(i+1)+'</span>';
+    var label = compact ? ('🔒 W'+(i+1)) : ('🔒 Window '+(i+1));
+    var chip = '<span class="lockchip" style="' +
+      (compact ? 'font-size:10px;padding:3px 6px;' : '') +
+      (compact && i%2===1 ? 'transform:translateY(14px);' : '') +
+      '">'+label+'</span>';
+    w.innerHTML='<span class="yrs">20XX–XX</span>' + chip;
     track.appendChild(w);
   });
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; sb.setAttribute('href', '#teaser');
+  sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
+  sb.setAttribute('href', 'javascript:void(0)');
+  sb.onclick = function(ev){ ev.preventDefault(); startPayment(); };
 }
 
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
