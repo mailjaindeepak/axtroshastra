@@ -245,7 +245,7 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>Swiss Ephemeris</b> precision</li>
+      <li><span class="dot"></span><b>NASA-grade ephemeris</b> precision</li>
       <li><span class="dot"></span><b>No account</b> needed</li>
       <li><span class="dot"></span>Report in <b>2 minutes</b></li>
       <li><span class="dot"></span><b>100% refund</b>, no questions</li>
@@ -299,7 +299,7 @@ fbq('track', 'PageView');
     </div>
     <div class="block">
       <h3>Jab family kundli milayegi, kya niklega?</h3>
-      <p>Love couples ke liye guna milan aksar ek dar hota hai — woh cheez jo family-stage par sab bigaad sakti hai. Isliye pehle khud check karo: wahi classical Ashtakoota, wahi standard tables jo panditji use karenge — Swiss Ephemeris precision ke saath. Score achha nikla toh confidence; dosha nikla toh uske cancellation rules bhi saath milenge — jo aksar panditji bhoolke nahi batate.</p>
+      <p>Love couples ke liye guna milan aksar ek dar hota hai — woh cheez jo family-stage par sab bigaad sakti hai. Isliye pehle khud check karo: wahi classical Ashtakoota, wahi standard tables jo panditji use karenge — NASA-grade precision ke saath. Score achha nikla toh confidence; dosha nikla toh uske cancellation rules bhi saath milenge — jo aksar panditji bhoolke nahi batate.</p>
     </div>
     <div class="block gold">
       <h3>Hum score inflate nahi karte.</h3>
@@ -410,6 +410,7 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
 // funnel event: fires once when user starts filling the form
 var _formStarted = false;
@@ -474,10 +475,12 @@ async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({report_id: REPORT_ID})});
+    body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
+  if(order.free){ window.FREE_UNLOCK = true; awaitReport(); return; }
+  if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
   if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
@@ -498,8 +501,10 @@ async function awaitReport(){
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
     if(d.paid){
-      if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
-      if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      if(!window.FREE_UNLOCK){
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }

@@ -243,7 +243,7 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>Swiss Ephemeris</b> precision</li>
+      <li><span class="dot"></span><b>NASA-grade ephemeris</b> precision</li>
       <li><span class="dot"></span><b>No account</b> needed</li>
       <li><span class="dot"></span>Report in <b>2 minutes</b></li>
       <li><span class="dot"></span><b>100% refund</b>, no questions</li>
@@ -297,7 +297,7 @@ fbq('track', 'PageView');
     </div>
     <div class="block">
       <h3>Panditji ne 32 bola, website ne 24 — kaun sahi hai?</h3>
-      <p>Alag-alag jagah alag score isliye aata hai kyunki assumptions alag hote hain. Hum Swiss Ephemeris data se dono moons ki exact position lete hain aur classical Ashtakoota rules ko as-is compute karte hain — Lahiri ayanamsa, standard tables. Same inputs, same score, har baar. Aur har koota ka reason report mein likha hota hai, taaki aap khud verify kar sakein.</p>
+      <p>Alag-alag jagah alag score isliye aata hai kyunki assumptions alag hote hain. Hum NASA-grade planetary data se dono moons ki exact position lete hain aur classical Ashtakoota rules ko as-is compute karte hain — Lahiri ayanamsa, standard tables. Same inputs, same score, har baar. Aur har koota ka reason report mein likha hota hai, taaki aap khud verify kar sakein.</p>
     </div>
     <div class="block gold">
       <h3>Hum score inflate nahi karte.</h3>
@@ -408,6 +408,7 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
 // funnel event: fires once when user starts filling the form
 var _formStarted = false;
@@ -474,10 +475,12 @@ async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({report_id: REPORT_ID})});
+    body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
+  if(order.free){ window.FREE_UNLOCK = true; awaitReport(); return; }
+  if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
   if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
@@ -498,8 +501,10 @@ async function awaitReport(){
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
     if(d.paid){
-      if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
-      if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      if(!window.FREE_UNLOCK){
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }

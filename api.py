@@ -89,6 +89,8 @@ def db():
     conn.execute("""CREATE TABLE IF NOT EXISTS reports(
         id TEXT PRIMARY KEY, payload TEXT NOT NULL, paid INTEGER DEFAULT 0,
         order_id TEXT, payment_id TEXT, phone TEXT, created_at TEXT)""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS passes(
+        token TEXT PRIMARY KEY, used INTEGER DEFAULT 0, created_at TEXT)""")
     return conn
 
 def save_report(rid, payload):
@@ -221,6 +223,16 @@ def create_order(body: dict):
     if not rec: raise HTTPException(404, "report not found")
     if rec["paid"]:                              # already paid -> skip checkout
         return {"already_paid": True}
+    tok = (body.get("pass") or "").strip()
+    if tok:
+        with _lock, db() as conn:
+            row = conn.execute("SELECT used FROM passes WHERE token=?", (tok,)).fetchone()
+            if row and row[0] == 0:
+                conn.execute("UPDATE passes SET used=1 WHERE token=?", (tok,))
+                conn.execute("UPDATE reports SET paid=1, payment_id=? WHERE id=?",
+                             ("free_pass:" + tok, rid))
+                return {"free": True}
+        return {"error": "invalid_pass"}
     order = rzp_client().order.create({
         "amount": PRICE_PAISE, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
@@ -361,6 +373,28 @@ def public_count():
     with db() as c:
         n = c.execute("SELECT COUNT(*) FROM reports").fetchone()[0]
     return {"count": (n // 10) * 10 if n >= 50 else 0}
+
+
+@app.get("/api/make_pass")
+def make_pass(key: str = "", n: int = 5):
+    """Generate one-time free-unlock tokens for the soft launch."""
+    if not STATS_KEY or key != STATS_KEY:
+        raise HTTPException(403, "forbidden")
+    n = max(1, min(n, 30))
+    toks = []
+    with _lock, db() as conn:
+        for _ in range(n):
+            t = secrets.token_urlsafe(8)
+            conn.execute("INSERT INTO passes(token, created_at) VALUES(?,?)",
+                         (t, datetime.utcnow().isoformat()))
+            toks.append(t)
+    base = PUBLIC_BASE_URL or ""
+    return {"passes": toks,
+            "example_links": [f"{base}/shaadi?pass={toks[0]}",
+                              f"{base}/milan?pass={toks[0]}",
+                              f"{base}/match?pass={toks[0]}",
+                              f"{base}/jeevan?pass={toks[0]}"],
+            "note": "Each token unlocks exactly ONE report, on any product page."}
 
 STATS_KEY = os.getenv("STATS_KEY", "")
 

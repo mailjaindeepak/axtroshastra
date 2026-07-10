@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://www.axtroshastra.com/jeevan">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Personality, career direction, strengths, aur aane wale life phases — sab aapki kundli se. Swiss Ephemeris precision. Report ₹499, 2 minute mein.">
+<meta name="description" content="Personality, career direction, strengths, aur aane wale life phases — sab aapki kundli se. NASA-grade precision. Report ₹499, 2 minute mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -263,7 +263,7 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>Swiss Ephemeris</b> precision</li>
+      <li><span class="dot"></span><b>NASA-grade ephemeris</b> precision</li>
       <li><span class="dot"></span><b>No account</b> needed</li>
       <li><span class="dot"></span>Report in <b>2 minutes</b></li>
       <li><span class="dot"></span><b>100% refund</b>, no questions</li>
@@ -324,7 +324,7 @@ fbq('track', 'PageView');
     </div>
     <div class="block">
       <h3>Generic horoscope nahi. Aapka chart, decoded.</h3>
-      <p>Newspaper wala rashifal 12 logon ke liye ek hota hai. Yeh report aapke exact birth chart se banti hai — Swiss Ephemeris data, Lahiri ayanamsa. Aapka lagna, aapka moon nakshatra, aapke dasha phases — sab aapke hain, kisi aur ke nahi. Same chart, same answer, every time.</p>
+      <p>Newspaper wala rashifal 12 logon ke liye ek hota hai. Yeh report aapke exact birth chart se banti hai — NASA-grade ephemeris data, Lahiri ayanamsa. Aapka lagna, aapka moon nakshatra, aapke dasha phases — sab aapke hain, kisi aur ke nahi. Same chart, same answer, every time.</p>
     </div>
     <div class="block gold">
       <h3>Hum sirf achhi-achhi baatein nahi batate.</h3>
@@ -432,6 +432,7 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
 // funnel event: fires once when user starts filling the form
 var _formStarted = false;
@@ -525,10 +526,12 @@ async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({report_id: REPORT_ID})});
+    body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
+  if(order.free){ window.FREE_UNLOCK = true; awaitReport(); return; }
+  if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
   if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
@@ -549,8 +552,10 @@ async function awaitReport(){
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
     if(d.paid){
-      if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
-      if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      if(!window.FREE_UNLOCK){
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+      }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }

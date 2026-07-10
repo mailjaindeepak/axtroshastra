@@ -405,7 +405,7 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
   <h1>{name}</h1>
   <p class="bd">Marriage Timing Report · Generated {meta['generated']}</p>
   {north_chart_svg(p)}
-  <p class="method">Swiss Ephemeris · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
+  <p class="method">NASA JPL data (Swiss Ephemeris) · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
 </section>
 
 <section class="pg"><p class="plabel">Chart snapshot</p>
