@@ -413,7 +413,11 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
     active_ad = next((a for a in active_md["ads"] if a["start"] <= today <= a["end"]),
                      None) if active_md else None
 
+    extras = marriage_extras(chart, sig, tree, out_windows, ref_sign,
+                             ref_signs_for_transit, today)
+
     return {
+        "extras": extras,
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
                  "time_quality": time_quality, "system": "chandra_lagna" if use_chandra else "lagna",
                  "window_padding_days": pad_days, "two_timelines_detected": two_timelines,
@@ -455,3 +459,122 @@ if __name__ == "__main__":
     r = compute_report("Test User", "1995-08-15", "10:30", 5.5, 28.61, 77.21,
                        female=False, time_quality="T0")
     print(json.dumps(r, indent=2, default=str))
+
+
+# ================================================== REPORT EXTRAS (deterministic)
+from jyotish_maps import (NAK_PROFILE, VENUS_STYLE, REMEDY_7L, SIGN_ELEMENT)
+
+def _sade_sati(moon_sign: int, today: datetime) -> dict:
+    """Saturn transit vs natal moon: 12th/1st/2nd house = rising/peak/setting."""
+    sat_lon, _ = sidereal_lon(swe.SATURN, jd(today))
+    rel = (sign_of(sat_lon) - moon_sign) % 12
+    phase = {11: "rising (pehla charan)", 0: "peak (dusra charan)", 1: "setting (aakhri charan)"}.get(rel)
+    if phase:
+        t, end = today, None
+        for _ in range(120):                       # sample monthly up to 10y
+            t += timedelta(days=30)
+            r2 = (sign_of(sidereal_lon(swe.SATURN, jd(t))[0]) - moon_sign) % 12
+            if r2 not in (11, 0, 1):
+                end = t; break
+        return {"active": True, "phase": phase,
+                "ends": end.strftime("%b %Y") if end else "beyond 10 years"}
+    t, start = today, None
+    for _ in range(360):
+        t += timedelta(days=30)
+        if (sign_of(sidereal_lon(swe.SATURN, jd(t))[0]) - moon_sign) % 12 == 11:
+            start = t; break
+    return {"active": False, "phase": None,
+            "next_starts": start.strftime("%b %Y") if start else "beyond 30 years"}
+
+
+def _past_analysis(chart, sig, tree, ref_sign, ref_signs_tr, today, years_back=3):
+    """Backward dasha scoring: label each past AD active/quiet with reasons."""
+    frm = today - timedelta(days=int(years_back * 365.25))
+    out = []
+    for md in tree:
+        for ad in md["ads"]:
+            s, e = max(ad["start"], frm), min(ad["end"], today)
+            if s >= e: continue
+            score, fired = score_ad(chart, sig, md["lord"], ad["lord"], ref_sign)
+            if score >= 3:
+                tf, _ = transit_gate(chart, sig, ref_signs_tr, s, e)
+                score += sum(RULE_PTS[f] for f in tf); fired += tf
+            label = "active" if score >= 5 else ("mild" if score >= 3 else "quiet")
+            why = [RULE_DESC[f] for f in fired if RULE_PTS[f] > 0][:2] or \
+                  ["No dasha connection to the 7th house in this period"]
+            out.append({"from": s.strftime("%b %Y"), "to": e.strftime("%b %Y"),
+                        "dasha": f"{md['lord']} MD — {ad['lord']} AD",
+                        "label": label, "why": why})
+    return out[-5:]
+
+
+def _year_outlook(out_windows, tree, chart, ref_sign, today, n_years=3):
+    """Per-calendar-year outlook with favourable months from window peaks."""
+    years = []
+    for k in range(n_years):
+        y = today.year + k
+        y0, y1 = datetime(y, 1, 1), datetime(y, 12, 31)
+        # window overlap
+        best = None
+        for w in out_windows:
+            ws = datetime.strptime(w["core_start"], "%Y-%m")
+            we = datetime.strptime(w["core_end"], "%Y-%m")
+            if ws <= y1 and we >= y0:
+                if best is None or w["score"] > best["score"]: best = w
+        # active dashas in the year
+        ads = []
+        for md in tree:
+            for ad in md["ads"]:
+                if ad["start"] <= y1 and ad["end"] >= y0:
+                    ads.append(f"{md['lord']}–{ad['lord']}")
+        # jupiter house mid-year (from moon)
+        jl, _ = sidereal_lon(swe.JUPITER, jd(datetime(y, 7, 1)))
+        jup_h = houses_from(chart["grahas"]["Moon"].sign, sign_of(jl))
+        fav = [m for m in (best["peak_months"] if best else []) if str(y) in m]
+        years.append({"year": y, "grade": best["grade"] if best else None,
+                      "dashas": ads[:3], "jupiter_house_from_moon": jup_h,
+                      "jupiter_supportive": jup_h in (1, 2, 5, 7, 9, 11),
+                      "fav_months": fav[:3]})
+    return years
+
+
+def _three_checks(chart, sig, ref_sign):
+    g = chart["grahas"]
+    sat, seventh = g["Saturn"], sig["seventh_sign"] if isinstance(sig["seventh_sign"], int) else None
+    seventh_sign = (ref_sign + 6) % 12
+    late = (houses_from(ref_sign, sat.sign) == 7 or
+            aspects_house(chart, "Saturn", ref_sign, 7) or
+            SIGN_LORD[seventh_sign] == "Saturn" or
+            g[SIGN_LORD[seventh_sign]].sign == sat.sign)
+    fifth_lord = SIGN_LORD[(ref_sign + 4) % 12]
+    seventh_lord = SIGN_LORD[seventh_sign]
+    love = (g[fifth_lord].sign == g[seventh_lord].sign or
+            houses_from(ref_sign, g["Venus"].sign) in (5, 7) or
+            g[fifth_lord].sign == seventh_sign or g[seventh_lord].sign == (ref_sign + 4) % 12)
+    foreign = (g["Rahu"].sign == seventh_sign or
+               houses_from(ref_sign, g[seventh_lord].sign) == 12 or
+               g[seventh_lord].sign == g["Rahu"].sign)
+    return {"late_marriage_influence": late, "love_leaning": love, "foreign_or_intercommunity": foreign}
+
+
+def marriage_extras(chart, sig, tree, out_windows, ref_sign, ref_signs_tr, today):
+    g = chart["grahas"]; moon = g["Moon"]; venus = g["Venus"]
+    seventh_lord = SIGN_LORD[(ref_sign + 6) % 12]
+    fast, mantra, gem = REMEDY_7L[seventh_lord if seventh_lord in REMEDY_7L else "Venus"]
+    gem_ok = g[seventh_lord].dignity not in ("debilitated",) and not g[seventh_lord].combust
+    nakp = NAK_PROFILE[moon.nak]
+    return {
+        "past": _past_analysis(chart, sig, tree, ref_sign, ref_signs_tr, today),
+        "year_outlook": _year_outlook(out_windows, tree, chart, ref_sign, today),
+        "nak_profile": {"nakshatra": NAKSHATRAS[moon.nak], "symbol": nakp[0],
+                        "nature": nakp[1], "relationship": nakp[2]},
+        "venus_style": VENUS_STYLE[venus.sign] +
+                       (" — Venus combust hai, isliye expression mein hesitation aa sakti hai; feelings genuine, awaaz dheemi." if venus.combust else
+                        (" — Venus apne hi sign mein strong hai; pyaar mein aapki instinct par bharosa kiya ja sakta hai." if venus.dignity in ("own","exalted") else "")),
+        "checks": _three_checks(chart, sig, ref_sign),
+        "sade_sati": _sade_sati(moon.sign, today),
+        "remedies": {"lord": seventh_lord, "fast_day": fast, "mantra": mantra,
+                     "gem": gem if gem_ok else None,
+                     "gem_note": None if gem_ok else
+                     f"{seventh_lord} ki current condition mein gemstone recommend nahi karte — mantra aur fast kaafi hain."},
+    }

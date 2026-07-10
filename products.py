@@ -4,7 +4,9 @@ Deterministic classical tables only. Reuses chart computation from engine.py.
 """
 from datetime import datetime, timedelta
 from engine import (compute_chart, nak_of, vimshottari_tree, SIGNS, SIGNS_EN,
-                    NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS)
+                    NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS, _sade_sati)
+from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
+                          KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI)
 
 # ============================================================ ASHTAKOOTA TABLES
 # Varna by moon sign (0=Shudra..3=Brahmin for hierarchy compare)
@@ -82,7 +84,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         ch = compute_chart(dt, p["lat"], p["lon"])
         charts.append(ch)
         m = ch["grahas"]["Moon"]
-        moons.append({"sign": m.sign, "nak": m.nak})
+        moons.append({"sign": m.sign, "nak": m.nak, "pada": m.pada})
 
     g, b = moons[0], moons[1]
     kootas = []
@@ -123,6 +125,15 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     rev = (g["sign"] - b["sign"]) % 12 + 1
     bhakoot_bad = {dist, rev} & {(2, 12) and 2, 12, 5, 9, 6, 8} and \
                   ({dist, rev} in [{2, 12}, {5, 9}, {6, 8}])
+    # Bhakoot cancellation: same sign-lord, or lords in mutual friendship
+    from jyotish_maps import MD_LORD_HI as _unused  # keep import graph simple
+    bl1, bl2 = SIGN_LORD[g["sign"]], SIGN_LORD[b["sign"]]
+    bhakoot_cancel = None
+    if bhakoot_bad:
+        if bl1 == bl2:
+            bhakoot_cancel = f"Dono rashiyon ka lord ek hi hai ({bl1}) — Bhakoot dosha cancelled."
+        elif _relation(bl1, bl2) == "F" and _relation(bl2, bl1) == "F":
+            bhakoot_cancel = f"Rashi lords ({bl1}–{bl2}) mutual friends hain — Bhakoot dosha cancelled."
     s = 0 if bhakoot_bad else 7
     kootas.append({"name": "Bhakoot", "max": 7, "score": s,
                    "detail": f"{SIGNS[g['sign']]} – {SIGNS[b['sign']]} ({min(dist,rev)}/{max(dist,rev)})",
@@ -130,6 +141,14 @@ def compute_milan(p1: dict, p2: dict) -> dict:
 
     n1, n2 = NADI[g["nak"]], NADI[b["nak"]]
     nadi_dosha = n1 == n2
+    # classical Nadi cancellation: same nadi cancelled if rashis differ,
+    # or same nakshatra with different padas
+    nadi_cancel = None
+    if nadi_dosha:
+        if g["nak"] == b["nak"] and g["pada"] != b["pada"]:
+            nadi_cancel = "Same nakshatra, alag pada — classical rule mein Nadi dosha cancelled."
+        elif g["sign"] != b["sign"]:
+            nadi_cancel = "Moon rashi alag hai — widely-followed classical rule mein Nadi dosha cancelled."
     kootas.append({"name": "Nadi", "max": 8, "score": 0 if nadi_dosha else 8,
                    "detail": f"{NADI_NAME[n1]} – {NADI_NAME[n2]}",
                    "meaning": "health of progeny, vitality"})
@@ -159,6 +178,41 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         notes.append("Low score is spread across kootas rather than one dosha — "
                      "often improvable factors (understanding, timing) rather than structural.")
 
+    # ---- per-koota couple-voiced interpretation (high/mid/low bands) ----
+    for k in kootas:
+        pct = k["score"] / k["max"]
+        hi, mid, lo = KOOTA_TEXT[k["name"]]
+        k["text"] = hi if pct >= 0.75 else (lo if pct < 0.4 or not mid else mid)
+        if not k["text"]: k["text"] = lo if pct < 0.75 else hi
+
+    # ---- cancellations -> effective score ----
+    cancellations = []
+    effective = total
+    if nadi_dosha and nadi_cancel:
+        cancellations.append({"koota": "Nadi", "rule": nadi_cancel, "restored": 8})
+        effective += 8
+    if bhakoot_bad and bhakoot_cancel:
+        cancellations.append({"koota": "Bhakoot", "rule": bhakoot_cancel, "restored": 7})
+        effective += 7
+    effective = round(min(effective, 36.0), 1)
+    eff_verdict = ("Excellent match" if effective >= 32 else
+                   "Very good match" if effective >= 25 else
+                   "Acceptable match" if effective >= 18 else
+                   "Below threshold — needs careful consideration")
+
+    # ---- strengths & watch-outs ----
+    ranked = sorted(kootas, key=lambda k: k["score"] / k["max"], reverse=True)
+    strengths = [k for k in ranked if k["score"] / k["max"] >= 0.75][:3]
+    watchouts = [k for k in ranked[::-1] if k["score"] / k["max"] < 0.5][:2]
+
+    # ---- element dynamic ----
+    e1, e2 = SIGN_ELEMENT[g["sign"]], SIGN_ELEMENT[b["sign"]]
+    element = {"p1": ELEMENT_HI[e1], "p2": ELEMENT_HI[e2],
+               "text": ELEMENT_PAIR[frozenset([e1, e2])]}
+
+    # ---- nakshatra one-liners for each ----
+    nak_lines = {"p1": NAK_PROFILE[g["nak"]][2], "p2": NAK_PROFILE[b["nak"]][2]}
+
     return {
         "product": "milan",
         "meta": {"p1": p1["name"], "p2": p2["name"],
@@ -174,6 +228,12 @@ def compute_milan(p1: dict, p2: dict) -> dict:
             "score_locked": True},
         "kootas": kootas, "total": total, "max_total": 36,
         "verdict": verdict, "verdict_key": vkey,
+        "cancellations": cancellations, "effective": effective,
+        "effective_verdict": eff_verdict,
+        "strengths": [k["name"] for k in strengths],
+        "watchouts": [k["name"] for k in watchouts],
+        "element": element, "nak_lines": nak_lines,
+        "padas": {"p1": g["pada"], "p2": b["pada"]},
         "manglik": {"p1": m1, "p2": m2, "note": manglik_note},
         "notes": notes,
     }
@@ -266,6 +326,42 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     active_ad = next((a for a in active_md["ads"] if a["start"] <= today <= a["end"]),
                      None) if active_md else None
 
+    # ---- new depth: sade sati, nakshatra profile, elements, wealth, health, relationship ----
+    sade = _sade_sati(moon.sign, today)
+    nakp = NAK_PROFILE[moon.nak]
+    from collections import Counter
+    elem_count = Counter(SIGN_ELEMENT[p.sign] for p in g.values())
+    dominant = elem_count.most_common(1)[0]
+    missing = [e for e in ("fire", "earth", "air", "water") if elem_count.get(e, 0) == 0]
+    second_lord = SIGN_LORD[(ref + 1) % 12]
+    eleventh_lord = SIGN_LORD[(ref + 10) % 12]
+    wealth = {"second": WEALTH_2L[((g[second_lord].sign - ref) % 12)],
+              "gains": GAINS_11L[((g[eleventh_lord].sign - ref) % 12)]}
+    health = HEALTH_6[(ref + 5) % 12]
+    from report_view import SIGN_PARTNER
+    seventh_sign_b = (ref + 6) % 12
+    relationship = {"seventh": SIGNS[seventh_sign_b], "line": SIGN_PARTNER[SIGNS[seventh_sign_b]]}
+    # year ahead: current AD + next AD + Jupiter/Saturn from moon
+    import swisseph as swe_
+    from engine import sidereal_lon, jd, sign_of, houses_from
+    jl, _ = sidereal_lon(swe_.JUPITER, jd(today))
+    sl, _ = sidereal_lon(swe_.SATURN, jd(today))
+    jup_h = houses_from(moon.sign, sign_of(jl))
+    sat_h = houses_from(moon.sign, sign_of(sl))
+    next_ad = None
+    if active_md:
+        ads = active_md["ads"]
+        for i, a in enumerate(ads):
+            if a is active_ad and i + 1 < len(ads):
+                next_ad = ads[i + 1]; break
+        if next_ad is None:
+            nmd = next((m for m in tree if m["start"] > today), None)
+            if nmd and nmd["ads"]: next_ad = nmd["ads"][0]
+    year_ahead = {"jup_house": jup_h, "jup_good": jup_h in (1, 2, 5, 7, 9, 11),
+                  "sat_house": sat_h,
+                  "next_ad": {"lord": next_ad["lord"],
+                              "from": next_ad["start"].strftime("%b %Y")} if next_ad else None}
+
     return {
         "product": "blueprint",
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
@@ -291,4 +387,11 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
         "lessons": lessons or ["No major debilitations — your challenges are "
                                "situational, not structural"],
         "roadmap": roadmap,
+        "sade_sati": sade,
+        "nak_profile": {"nakshatra": NAKSHATRAS[moon.nak], "symbol": nakp[0],
+                        "nature": nakp[1], "relationship": nakp[2]},
+        "elements": {"dominant": ELEMENT_HI[dominant[0]], "dominant_n": dominant[1],
+                     "missing": [ELEMENT_HI[m] for m in missing]},
+        "wealth": wealth, "health": health, "relationship": relationship,
+        "year_ahead": year_ahead,
     }

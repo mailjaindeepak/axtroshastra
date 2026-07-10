@@ -341,7 +341,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/shaadi", "/milan", "/jeevan", "/blog",
+    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/blog",
             "/privacy", "/terms", "/refunds"] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'

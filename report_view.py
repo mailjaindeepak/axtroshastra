@@ -164,7 +164,7 @@ def render_report(p: dict) -> str:
                        f"matches may come but tend not to convert. Delays here are "
                        f"pattern, not personal failure.</p></div>" for a, b in weak)
         weak_html = f"""
-<section class="pg"><p class="plabel">Page 6</p>
+<section class="pg"><p class="plabel">Quiet periods</p>
 <h2>Quiet periods — aur unka matlab</h2>
 <p>Jitna important yeh jaanna hai ki kab yog strong hai, utna hi yeh ki kab नहीं hai.
 In periods mein rishtey aa sakte hain, par convert hone ka pattern weak rehta hai:</p>
@@ -198,6 +198,100 @@ details zindagi bharti hai.</p>"""
                     f"{pretty(w['end'])}): {head}</b><p>{body}</p></div>")
 
     # ---- page 9: summary ----
+
+    # ---------- NEW: past analysis ----------
+    ex = p.get("extras", {})
+    past_html = ""
+    if ex.get("past"):
+        rows_p = ""
+        lbl = {"active": ("#2E7D53", "ACTIVE"), "mild": ("#E4B04A", "MILD"),
+               "quiet": ("#8F92AB", "QUIET")}
+        for pp in ex["past"]:
+            c, t = lbl[pp["label"]]
+            rows_p += (f"<div class='past'><span class='pl' style='background:{c}'>{t}</span>"
+                       f"<b>{pp['from']} – {pp['to']}</b>"
+                       f"<p class='pd'>{pp['dasha']}</p>"
+                       f"<p class='pw'>{' · '.join(pp['why'])}</p></div>")
+        past_html = f"""<section class="pg"><p class="plabel">Pichhle saal</p>
+<h2>Ab tak kya hua — aur kyun</h2>
+<p>Aapke pichhle periods ka chart-analysis. Agar rishtey aaye par bane nahi,
+ya bilkul shaant raha — yahan uski wajah dikhegi:</p>{rows_p}
+<p class="soft">Yeh section isliye hai taaki aap dekh sakein: timing ek pattern hai,
+aapki kami nahi. Jo beet gaya usmein bhi chart ka logic tha.</p></section>"""
+
+    # ---------- NEW: year-by-year outlook ----------
+    yo_html = ""
+    if ex.get("year_outlook"):
+        cards_y = ""
+        for y in ex["year_outlook"]:
+            gr = (f"<span class='ygrade' style='background:{GRADE_COLOR[y['grade']]}'>{y['grade'].upper()} WINDOW</span>"
+                  if y["grade"] else "<span class='ygrade' style='background:#8F92AB'>NO MAJOR WINDOW</span>")
+            jup = ("Jupiter ka transit is saal supportive houses mein hai — conversations ko aage badhaane ka saath milega."
+                   if y["jupiter_supportive"] else
+                   "Jupiter ka transit is saal neutral zone mein hai — effort par zyada, luck par kam depend kijiye.")
+            fav = (f"<p class='yfav'>⭐ Favourable months: {', '.join(y['fav_months'])}</p>"
+                   if y["fav_months"] else "")
+            cards_y += (f"<div class='ycard'><div class='ytop'><b>{y['year']}</b>{gr}</div>"
+                        f"<p class='yd'>{' / '.join(y['dashas'])}</p><p>{jup}</p>{fav}</div>")
+        yo_html = f"""<section class="pg"><p class="plabel">Saal-dar-saal</p>
+<h2>Agle 3 saal — ek nazar mein</h2>{cards_y}
+<p class="soft">Yeh page save kar lijiye — har saal ke shuru mein dobara padhne layak hai.</p></section>"""
+
+    # ---------- NEW: love pattern (nakshatra + venus) ----------
+    lp_html = ""
+    if ex.get("nak_profile"):
+        np_ = ex["nak_profile"]
+        lp_html = f"""<section class="pg"><p class="plabel">Aapka pattern</p>
+<h2>Aap pyaar kaise karte hain — chart ke hisaab se</h2>
+<div class="card2"><b>Aapka nakshatra: {np_['nakshatra']} ({np_['symbol']})</b>
+<p>{np_['nature']}.</p><p style="margin-top:8px">{np_['relationship']}.</p></div>
+<div class="card2" style="margin-top:12px"><b>Aapka Venus</b>
+<p>Your love-style is {ex['venus_style']}.</p></div></section>"""
+
+    # ---------- NEW: three checks + sade sati ----------
+    ck_html = ""
+    if ex.get("checks"):
+        ck = ex["checks"]; ss = ex.get("sade_sati", {})
+        def yn(v, yes, no):
+            return (f"<div class='chk'><span class='cy'>HAAN</span><p>{yes}</p></div>" if v
+                    else f"<div class='chk'><span class='cn'>NAHI</span><p>{no}</p></div>")
+        ss_html = ""
+        if ss.get("active"):
+            ss_html = (f"<div class='ss'><b>Sade Sati check: chal rahi hai</b> — {ss['phase']}, "
+                       f"till <b>{ss['ends']}</b>. Iska matlab delay ka pressure, denial nahi — "
+                       f"Shani ke period mein bani shaadiyan sabse tikau maani jaati hain. "
+                       f"Windows upar isi ko account karke grade hue hain.</div>")
+        else:
+            ss_html = (f"<div class='ss'><b>Sade Sati check: abhi nahi chal rahi.</b> "
+                       f"Next phase {ss.get('next_starts','—')} se. Filhaal Shani ka is angle se koi delay-pressure nahi.</div>")
+        ck_html = f"""<section class="pg"><p class="plabel">3 aur sach</p>
+<h2>Jo aapne nahi poocha, par jaanna chahenge</h2>
+{yn(ck['late_marriage_influence'],
+"Saturn ka influence aapke 7th house par hai — timing mein maturity-factor hai. Matlab: shaadi thodi der se, par zyada soch-samajh ke. Late ≠ never.",
+"Saturn ka koi direct influence aapke 7th house par nahi — classical 'late marriage' indicator aapke chart mein absent hai.")}
+{yn(ck['love_leaning'],
+"Aapke chart mein 5th–7th connection hai — love-marriage ya self-driven rishtey ka yog. Arranged setup mein bhi pasand aapki hi chalegi.",
+"Chart ka jhukaav traditional/arranged path ki taraf hai — introductions aur family networks se hi strong yog banta hai.")}
+{yn(ck['foreign_or_intercommunity'],
+"Rahu/12th ka 7th se connection hai — partner doori se, alag community se, ya unexpected background se aane ka yog hai. Surprise ke liye taiyaar rahiye.",
+"Partner ka yog aapke apne circle aur community ke aas-paas ka hai — door ka yog chart mein prominent nahi.")}
+{ss_html}</section>"""
+
+    # ---------- NEW: remedies (agency-first) ----------
+    rem_html = ""
+    if ex.get("remedies"):
+        rm = ex["remedies"]
+        gem_line = (f"<li><b>Gemstone:</b> {rm['gem']} — kisi qualified jeweller/astrologer se " 
+                    f"trial ke baad hi.</li>" if rm["gem"] else
+                    f"<li><b>Gemstone:</b> {rm['gem_note']}</li>")
+        rem_html = f"""<section class="pg"><p class="plabel">Weak periods mein</p>
+<h2>Traditional support — bina dar ke</h2>
+<p>Aapke 7th lord <b>{rm['lord']}</b> ke hisaab se, weak windows mein classical support:</p>
+<ul class="rem"><li><b>Vrat/fast:</b> {rm['fast_day']}</li>
+<li><b>Mantra:</b> {rm['mantra']} — 108 baar, {rm['fast_day']} ko</li>{gem_line}</ul>
+<p class="soft">Order yaad rakhiye: pehla remedy hamesha action hai — strong window mein
+actively dhoondhna. Yeh support hai, substitute nahi.</p></section>"""
+
     w1 = p["windows"][0] if p["windows"] else None
     pretty = lambda ym: datetime.strptime(ym, "%Y-%m").strftime("%b %Y")
     summary = (f"<p class='sline'><b>Top window:</b> {pretty(w1['start'])} – "
@@ -280,6 +374,21 @@ padding:14px 16px;margin-bottom:10px;font-size:14.5px}}
 .sumcard .nm{{font-family:var(--display);font-weight:800;font-size:20px;color:#fff}}
 .sline{{margin-top:10px;font-size:15px}}
 .sumcard .sline b{{color:var(--haldi)}}
+.past{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
+.pl{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.08em;border-radius:16px;padding:3px 10px;margin-right:10px}}
+.pd{{font-size:12.5px;color:var(--muted);margin-top:5px}}.pw{{font-size:13.5px;margin-top:4px}}
+.ycard{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px}}
+.ytop{{display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-size:19px;margin-bottom:6px}}
+.ygrade{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.06em;border-radius:16px;padding:4px 10px}}
+.yd{{font-size:12.5px;color:var(--muted);margin-bottom:5px}}.ycard p{{font-size:14px}}
+.yfav{{color:#2E7D53;font-weight:600;font-size:13.5px;margin-top:5px}}
+.card2{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px}}
+.card2 b{{font-family:var(--display);display:block;margin-bottom:6px}}.card2 p{{font-size:14.5px}}
+.chk{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}}
+.cy,.cn{{flex:none;color:#fff;font-family:var(--display);font-weight:800;font-size:11px;border-radius:16px;padding:4px 11px;margin-top:2px}}
+.cy{{background:#2E7D53}}.cn{{background:#8F92AB}}.chk p{{font-size:14px}}
+.ss{{background:var(--haldi-soft);border-radius:12px;padding:15px;font-size:14px;margin-top:14px}}
+.rem{{margin:12px 0 0 20px}}.rem li{{margin-bottom:8px;font-size:14.5px}}
 .upsell{{background:#fff;border:2px solid var(--haldi);border-radius:14px;
 padding:16px;margin-top:16px;font-size:14px}}
 .btnrow{{display:flex;gap:10px;margin-top:20px}}
@@ -299,7 +408,7 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
   <p class="method">Swiss Ephemeris · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
 </section>
 
-<section class="pg"><p class="plabel">Page 2</p>
+<section class="pg"><p class="plabel">Chart snapshot</p>
 <h2>Aapka chart — marriage lens se</h2>
 <div class="facts">
   <div class="row"><span class="k">Lagna</span><span class="v">{p['chart']['lagna']}</span></div>
@@ -313,13 +422,13 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
 <p class="soft">Yeh 6-7 factors milkar aapki marriage timing decide karte hain.
 Agle page par inhi se nikale gaye aapke windows hain.</p></section>
 
-<section class="pg"><p class="plabel">Page 3 · The Answer</p>
+<section class="pg"><p class="plabel">The Answer</p>
 <h2>Aapke marriage windows</h2>
 <div class="tl"><div class="tltrack">{tl_windows}</div>
 <div class="tlyrs">{years_axis}</div></div>
 {window_cards}</section>
 
-<section class="pg"><p class="plabel">Page 4</p>
+<section class="pg"><p class="plabel">Method</p>
 <h2>Yeh windows kaise nikle</h2>
 <p>Har window ke card mein uske reasons diye hain — kaunsi dasha, kaunsa connection.
 Broad logic: <b>marriage typically triggers jab dasha/antardasha lord aapke 7th house
@@ -328,25 +437,31 @@ ya uske lord se connect hota hai, aur Jupiter ka transit usko confirm karta hai.
 ±15 minute ka birth time difference bhi boundaries ko months tak shift kar sakta hai.
 Isliye hum honest ranges dete hain, fake precision nahi.</p></section>
 
-<section class="pg"><p class="plabel">Page 5</p>
+<section class="pg"><p class="plabel">Manglik</p>
 <h2>Manglik check</h2>
 <div class="mgcard"><b class="h">{mg_head}</b><p>{mg_body}</p></div>
 <p class="soft">Technical: Mars from lagna — {'manglik houses mein' if mg['from_lagna'] else 'clear'};
 from Moon — {'manglik houses mein' if mg['from_moon'] else 'clear'}.</p></section>
 
 {weak_html}
+{past_html}
+{yo_html}
 
-<section class="pg"><p class="plabel">Page 7</p>
+<section class="pg"><p class="plabel">Partner</p>
 <h2>Partner indications</h2>
 {partner_html}</section>
 
-<section class="pg"><p class="plabel">Page 8</p>
+<section class="pg"><p class="plabel">Action plan</p>
 <h2>Ab karna kya hai</h2>
 {actions}
 <p class="soft">Kundli timing batati hai; effort aur choice aapke haath mein hai.
 Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate better hota hai.</p></section>
 
-<section class="pg"><p class="plabel">Page 9 · Summary</p>
+{lp_html}
+{ck_html}
+{rem_html}
+
+<section class="pg"><p class="plabel">Summary</p>
 <div class="sumcard">
   <p class="nm">{name}</p>
   {summary}
@@ -379,7 +494,61 @@ def render_milan(p: dict) -> str:
         rows += f"""<div class='koota'>
 <div class='ktop'><b>{k['name']}</b><span class='ks'>{k['score']}/{k['max']}</span></div>
 <div class='kbar'><div style='width:{pct:.0f}%;background:{bar_color}'></div></div>
-<p class='kd'>{k['detail']} · <i>{k['meaning']}</i></p></div>"""
+<p class='kd'>{k['detail']} · <i>{k['meaning']}</i></p>
+<p class='kt'>{k.get('text','')}</p></div>"""
+
+    # ---------- cancellations & effective score ----------
+    canc_html = ""
+    if p.get("cancellations"):
+        cards = "".join(
+            f"<div class='canc'>✅ <b>{c['koota']} dosha cancelled</b> (+{c['restored']} restored)"
+            f"<p>{c['rule']}</p></div>" for c in p["cancellations"])
+        canc_html = (f"<h2>Dosha cancellation check</h2>{cards}"
+                     f"<div class='effbox'>Cancellations ke baad effective score: "
+                     f"<b>{p['effective']}/36</b> — {p['effective_verdict']}</div>")
+    elif any(k['name'] in ('Nadi','Bhakoot') and k['score']==0 for k in p['kootas']):
+        canc_html = ("<h2>Dosha cancellation check</h2>"
+                     "<div class='canc' style='border-color:#C93B2E'>Is jodi mein dosha ke standard "
+                     "cancellation rules apply nahi hote — dosha effective hai. Iska matlab section "
+                     "'Score ka matlab' mein neeche padhiye; dar se nahi, samajh se decide kijiye.</div>")
+
+    # ---------- strengths & watchouts ----------
+    sw_html = ""
+    if p.get("strengths") or p.get("watchouts"):
+        st = "".join(f"<li><b>{s}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
+                     for s in p.get("strengths", []))
+        wo = "".join(f"<li><b>{s}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
+                     for s in p.get("watchouts", []))
+        sw_html = "<h2>Is jodi ki taakat — aur dhyaan ki jagah</h2>"
+        if st: sw_html += f"<p class='swh' style='color:#2E7D53'>💪 Strengths</p><ul class='swl'>{st}</ul>"
+        if wo: sw_html += f"<p class='swh' style='color:#C93B2E'>⚠️ Watch-outs</p><ul class='swl'>{wo}</ul>"
+
+    # ---------- element dynamic + nakshatra lines ----------
+    el_html = ""
+    if p.get("element"):
+        el = p["element"]; nl = p.get("nak_lines", {})
+        el_html = (f"<h2>Aap dono ki energy</h2>"
+                   f"<div class='elbox'><b>{m['p1']}: {el['p1']} · {m['p2']}: {el['p2']}</b>"
+                   f"<p>{el['text']}</p></div>"
+                   f"<div class='nlbox'><p><b>{m['p1']}:</b> {nl.get('p1','')}</p>"
+                   f"<p style='margin-top:8px'><b>{m['p2']}:</b> {nl.get('p2','')}</p></div>")
+
+    # ---------- low score guidance ----------
+    low_html = ""
+    if p.get("effective", p["total"]) < 24:
+        low_html = ("<h2>Score kam hai — iska matlab kya hai?</h2>"
+            "<div class='lowbox'>"
+            "<p><b>Pehli baat:</b> guna milan ek classical input hai, poora faisla nahi. "
+            "Yeh Moon-positions ki compatibility napta hai — values, maturity aur commitment nahi, "
+            "jo kisi bhi rishtey ke asli pillars hain.</p>"
+            "<p><b>Dusri baat:</b> upar dekhiye kaunse kootas mein kami hai. Gana ya Graha Maitri "
+            "ki kami <i>improvable</i> hai — yeh communication-patterns ki baat hai jo couples seekh "
+            "lete hain. Nadi/Bhakoot dosha (agar cancelled nahi) traditional weight zyada rakhta hai — "
+            "wahan family-elders aur apne vivek dono se salaah kijiye.</p>"
+            "<p><b>Teesri baat:</b> lakhs of successful marriages kam score ke saath hui hain. "
+            "Score ko information ki tarah use kijiye — kis cheez par kaam karna hoga yeh jaanne ke "
+            "liye — verdict ki tarah nahi.</p></div>")
+
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
     vcol = VERDICT_COLOR[p["verdict_key"]]
     return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
@@ -409,14 +578,29 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .mg,.note{{background:#F6E7C6;border-radius:12px;padding:15px;font-size:14px;margin:10px 0}}
 .note{{background:#fff;border:1.5px solid var(--haldi)}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
+.kt{{font-size:14px;margin-top:8px;color:#33355000;color:#3A3C55}}
+.canc{{background:#fff;border:2px solid #2E7D53;border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px}}
+.canc p{{margin-top:5px}}
+.effbox{{background:var(--midnight);color:#F3EFE4;border-radius:12px;padding:16px;font-size:15px;text-align:center}}
+.effbox b{{color:var(--haldi);font-family:var(--display);font-size:20px}}
+.swh{{font-family:var(--display);font-weight:800;font-size:14px;margin:14px 0 6px}}
+.swl{{margin-left:20px}}.swl li{{font-size:14px;margin-bottom:8px}}
+.elbox,.nlbox,.lowbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px;font-size:14px}}
+.elbox b{{font-family:var(--display)}}.elbox p{{margin-top:6px}}
+.lowbox p{{margin-bottom:10px}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
 <h1>{m['p1']} ✕ {m['p2']}</h1>
 <p class="score">{p['total']}<small>/36</small></p>
-<span class="verdict">{p['verdict'].upper()}</span></div>
+<span class="verdict">{p['verdict'].upper()}</span>
+{("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>Dosha cancellation ke baad: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
 <h2>Ashtakoota — aatho kootas ka breakdown</h2>{rows}
+{canc_html}
+{sw_html}
+{el_html}
 <h2>Manglik check</h2><div class="mg">{p['manglik']['note']}</div>
 {('<h2>Important notes</h2>' + notes) if notes else ''}
+{low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
 Guna milan is one classical input to a marriage decision, not the whole decision.
 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
@@ -432,6 +616,64 @@ def render_blueprint(p: dict) -> str:
         road += (f"<div class='ph'><b>{r['lord']} phase</b> "
                  f"<span class='yrs'>{r['from']} → {r['to']}</span>{cur}"
                  f"<p>{r['theme']}</p></div>")
+
+    # ---------- new blueprint sections ----------
+    ss = p.get("sade_sati", {})
+    if ss.get("active"):
+        ss_html = (f"<h2>Sade Sati check — bina poochhe jawab</h2><div class='ssb'>"
+                   f"<b>Chal rahi hai:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
+                   f"Iska classical matlab: Shani discipline aur restructuring karwata hai — "
+                   f"delay lagta hai, par jo is period mein banta hai, tikau banta hai. "
+                   f"Dar ka nahi, dhairya ka period hai.</div>")
+    else:
+        ss_html = (f"<h2>Sade Sati check — bina poochhe jawab</h2><div class='ssb'>"
+                   f"<b>Abhi nahi chal rahi.</b> Next phase approx {ss.get('next_starts','—')} se shuru hoga. "
+                   f"Filhaal Shani ka is angle se koi pressure nahi.</div>")
+
+    np_ = p.get("nak_profile", {})
+    nak_html = (f"<div class='card' style='margin-top:12px'><p><b>Aapka nakshatra: "
+                f"{np_.get('nakshatra','')} ({np_.get('symbol','')}):</b> {np_.get('nature','')}.</p>"
+                f"<p style='margin-top:8px'>{np_.get('relationship','')}.</p></div>") if np_ else ""
+
+    el = p.get("elements", {})
+    el_html = ""
+    if el:
+        miss = (f" Aapke chart mein {', '.join(el['missing'])} element ke planets nahi hain — "
+                f"us quality ko conscious effort se laana hoga." if el.get("missing") else
+                " Chaaron elements present hain — versatile temperament.")
+        el_html = (f"<h2>Element balance</h2><div class='card'><p>Aapke chart ka dominant element: "
+                   f"<b>{el['dominant']}</b> ({el['dominant_n']} planets).{miss}</p></div>")
+
+    w = p.get("wealth", {})
+    wealth_html = (f"<h2>Dhan — earning aur gains ka pattern</h2><div class='card'>"
+                   f"<p><b>Earning pattern:</b> {w.get('second','')}.</p>"
+                   f"<p style='margin-top:8px'><b>Gains pattern:</b> {w.get('gains','')}.</p></div>") if w else ""
+
+    health_html = (f"<h2>Sharir — chart ki tendencies</h2><div class='card'>"
+                   f"<p>{p.get('health','')}.</p>"
+                   f"<p class='soft'>Yeh classical indications hain, medical advice nahi — "
+                   f"sehat ke faisle hamesha doctor ke saath.</p></div>") if p.get("health") else ""
+
+    rel = p.get("relationship", {})
+    rel_html = (f"<h2>Rishtey — ek jhalak</h2><div class='card'>"
+                f"<p>Aapka 7th house <b>{rel.get('seventh','')}</b> hai — partner indication: "
+                f"{rel.get('line','')}.</p>"
+                f"<p class='soft'>Shaadi ki exact timing windows ke liye Marriage Timing Report "
+                f"dekhiye — usi chart se, minute-level depth ke saath.</p></div>") if rel else ""
+
+    ya = p.get("year_ahead", {})
+    ya_html = ""
+    if ya:
+        jup_t = ("Jupiter abhi aapke Moon se supportive house mein transit kar raha hai — growth "
+                 "aur openings ka saath hai." if ya.get("jup_good") else
+                 "Jupiter ka current transit neutral zone mein hai — is saal effort ka weight zyada rahega.")
+        nx = ya.get("next_ad")
+        nx_t = (f" Aapka agla sub-period <b>{nx['lord']}</b> ka hai, {nx['from']} se — "
+                f"us theme ki taiyari abhi se ho sakti hai." if nx else "")
+        ya_html = (f"<h2>Aane wala saal</h2><div class='card'><p>{jup_t}</p>"
+                   f"<p style='margin-top:8px'>Saturn abhi aapke Moon se house {ya.get('sat_house','—')} "
+                   f"mein hai.{nx_t}</p></div>")
+
     st = "".join(f"<li>{s}</li>" for s in p["strengths"])
     ls = "".join(f"<li>{s}</li>" for s in p["lessons"])
     chandra = ("<p class='soft'>Note: approximate birth time — personality read uses "
@@ -460,28 +702,37 @@ border-left:5px solid var(--haldi);border-radius:12px;padding:14px 16px;margin-b
 ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
 .soft{{color:var(--muted);font-size:13px;margin-top:10px}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
+.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:14.5px}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · LIFE BLUEPRINT</p>
 <h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
 {p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
 
-<h2>1 · Aap kaun hain — chart ke hisaab se</h2>
+<h2>Aap kaun hain — chart ke hisaab se</h2>
 <div class="card"><p><b>Outer self (Lagna {p['chart']['lagna']}):</b> {p['persona']['lagna_line']}.</p>
 <p style="margin-top:8px"><b>Inner self (Moon {p['teaser']['moon_sign']}):</b> {p['persona']['moon_line']}.</p>{chandra}</div>
+{nak_html}
 
-<h2>2 · Career direction</h2>
+<h2>Career direction</h2>
 <div class="card"><p>Aapka 10th house <b>{p['career']['tenth_sign']}</b> hai aur uska lord
 <b>{p['career']['tenth_lord']}</b> jis jagah baitha hai, wahan se indication milta hai:
 <b>{p['career']['direction']}</b>.</p></div>
 
-<h2>3 · Built-in strengths</h2><div class="card"><ul>{st}</ul></div>
-<h2>4 · Growth lessons</h2><div class="card"><ul>{ls}</ul></div>
+<h2>Built-in strengths</h2><div class="card"><ul>{st}</ul></div>
+<h2>Growth lessons</h2><div class="card"><ul>{ls}</ul></div>
 
-<h2>5 · Aapka life roadmap — agle 3 phases</h2>{road}
+<h2>Aapka life roadmap — agle 3 phases</h2>{road}
 <p class="soft">Har phase ke andar chhote periods (antardashas) hote hain jo timing ko
 refine karte hain — specific sawaal ke liye Marriage Timing ya Career report dekhiye.</p>
 
-<h2>6 · Current period</h2>
+{ss_html}
+{el_html}
+{wealth_html}
+{health_html}
+{rel_html}
+{ya_html}
+
+<h2>Current period</h2>
 <div class="card"><p><b>{p['teaser']['current_dasha']}</b> — till {p['teaser']['dasha_till']}.
 Is period ka rang upar roadmap ke pehle phase se aata hai; abhi ke decisions usi theme
 mein sabse achha kaam karte hain.</p></div>
