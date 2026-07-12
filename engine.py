@@ -181,6 +181,23 @@ def vimshottari_tree(moon_lon: float, birth: datetime, horizon_end: datetime) ->
     return tree
 
 
+def current_period(moon_lon: float, birth_dt_utc: datetime, as_of: datetime = None) -> dict:
+    """Active Mahadasha / Antardasha (and the AD end date) as of `as_of`.
+
+    This is intentionally recomputed on demand: the current MD/AD is a moving
+    target, so serving a value frozen at report-creation time goes stale. Callers
+    should refresh the displayed "current period" from stored birth data each time
+    a report is shown rather than trusting a stored snapshot.
+    """
+    today = as_of or datetime.utcnow()
+    tree = vimshottari_tree(moon_lon, birth_dt_utc, today + timedelta(days=int(60 * 365.25)))
+    md = next((m for m in tree if m["start"] <= today <= m["end"]), None)
+    ad = next((a for a in md["ads"] if a["start"] <= today <= a["end"]), None) if md else None
+    return {"md": md["lord"] if md else None,
+            "ad": ad["lord"] if ad else None,
+            "ad_end": ad["end"] if ad else None}
+
+
 # ---------------------------------------------------------------- significators
 def marriage_significators(chart: dict, ref_sign: int, female: bool) -> dict:
     """ref_sign = lagna sign (T0/T1) or Moon sign (Chandra lagna, T2/T3)."""

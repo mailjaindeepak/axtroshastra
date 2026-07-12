@@ -19,7 +19,7 @@ Razorpay dashboard prerequisites:
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
 import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
 from pydantic import BaseModel, field_validator
@@ -294,13 +294,38 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 
+def _refresh_current_period(payload: dict) -> dict:
+    """Recompute the time-dependent \"current period\" (current MD/AD + end date)
+    from stored birth data so it is accurate as of *now*, not frozen at the time
+    the report was created. No-op if birth data is missing (e.g. milan)."""
+    birth = (payload.get("meta") or {}).get("_birth")
+    if not birth:
+        return payload
+    try:
+        from engine import compute_chart, current_period
+        local = datetime.fromisoformat(f"{birth['dob']}T{birth['tob']}:00")
+        dt_utc = local - timedelta(hours=birth["tz"])
+        ch = compute_chart(dt_utc, birth["lat"], birth["lon"])
+        cp = current_period(ch["grahas"]["Moon"].lon, dt_utc)
+        if cp["md"] and cp["ad"]:
+            payload.setdefault("teaser", {})["current_dasha"] = (
+                f"{cp['md']} Mahadasha \u2014 {cp['ad']} Antardasha")
+            payload["teaser"]["dasha_till"] = cp["ad_end"].strftime("%b %Y")
+            payload["current_period"] = {"md": cp["md"], "ad": cp["ad"],
+                                         "ad_end": cp["ad_end"].strftime("%Y-%m-%d")}
+    except Exception as e:
+        logger.error("current-period refresh failed: %s", e)
+    return payload
+
+
 @app.get("/api/report/{rid}")
 def get_report_api(rid: str):
     rec = get_report(rid)
     if not rec: raise HTTPException(404, "report not found")
+    payload = _refresh_current_period(rec["payload"])
     if not rec["paid"]:
-        return {"paid": False, "teaser": rec["payload"]["teaser"]}
-    return {"paid": True, "report": rec["payload"]}
+        return {"paid": False, "teaser": payload["teaser"]}
+    return {"paid": True, "report": payload}
 
 
 @app.get("/report/{rid}", include_in_schema=False)
@@ -310,7 +335,7 @@ def report_page(rid: str):
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
-    payload = rec["payload"]
+    payload = _refresh_current_period(rec["payload"])
     product = payload.get("product", "marriage")
     if product == "milan":
         return HTMLResponse(render_milan(payload))
