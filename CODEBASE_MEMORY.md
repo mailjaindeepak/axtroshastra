@@ -47,3 +47,56 @@ Three products, all built on one deterministic astronomy engine:
 - `pip install -r requirements.txt`, then `uvicorn api:app --reload`. Set `DEMO_MODE=1` to bypass real payment via `/api/_demo_pay/{rid}`.
 - Engine smoke test: `python engine.py` (T0 chart for 1995-08-15, Delhi).
 - Backtest: `python backtest.py charts.csv` (template columns in `backtest_template.csv`).
+
+---
+
+## 2026-07-12 — Production hardening + world-class feature pass
+
+**Commit 1 (f9404e2) — production readiness (no behaviour changes):**
+- Added `.gitignore`, `.gitattributes` (normalize CRLF→LF; the working tree had been
+  CRLF-ified on upload while HEAD was LF), `README.md`, `.env.example`, `requirements-dev.txt`.
+- `api.py`: added `GET /healthz` DB probe; moved `STATS_KEY` into the config block with a
+  constant-time `_valid_admin_key()`; consolidated imports; removed the duplicate `PAGES_DIR`;
+  `logging` instead of `print`.
+- `report_view.py`: **HTML-escaped** user-supplied `name`/`p1`/`p2` (fixed a stored-XSS hole;
+  `from html import escape`).
+- Added a pytest suite (`tests/`): engine determinism, teaser gating, webhook signature,
+  admin gating, XSS escaping.
+
+**Commit 2 — 7 approved enhancements (all new modules, minimal api.py wiring):**
+- **#1 geocoding.py** — `resolve(place)`: CITY_CACHE → CITIES_IN → SQLite `geocache` →
+  external (Nominatim default / Google via key) → Delhi fallback. IST for India; optional
+  `timezonefinder` elsewhere. api.py now does `from geocoding import resolve as geocode`.
+- **#8 divisional.py** — D9 Navamsa, D10 Dasamsa, classical yogas (Gajakesari, Budha-Aditya,
+  Chandra-Mangala, Pancha Mahapurusha, Neecha Bhanga, Dharma-Karmadhipati), and
+  **ashtakavarga** (bhinna per planet + sarva). Invariant enforced in tests: SAV total = 337.
+  Exposed at `GET /api/deep/{rid}` (paid-gated); needs birth data, so create_kundli now stores
+  `meta._birth = {dob,tob,tz,lat,lon}`.
+- **#4 ratelimit.py** — per-IP token-bucket `RateLimitMiddleware` (path policies; payment/compute
+  routes stricter, webhook lenient) + `captcha_ok()` (hCaptcha/reCAPTCHA, env-gated, off by
+  default). Wired: `app.add_middleware`, captcha checked in create_kundli/create_milan.
+- **#6 payments.py** — webhook idempotency via `webhook_events` table (dedupe by payment id),
+  `reconcile()` (recovers missed webhooks vs Razorpay), `refund()`. Admin routes
+  `POST /api/reconcile`, `POST /api/refund` (STATS_KEY-gated). Webhook now dedupes + records.
+- **#7 delivery.py** — `html_to_pdf()` (WeasyPrint→xhtml2pdf fallback) + SMTP `send_email()`.
+  `GET /report/{rid}/pdf` (paid-gated); optional `email` field on kundli/milan triggers
+  email+PDF on payment. `xhtml2pdf` added to requirements.
+- **#9 i18n.py** — dict catalogs (hi_en/hi/en authored; mr/ta/te/bn/gu/kn inherit Hinglish),
+  `t(key,lang)`, `normalize_lang`, `coverage`. `GET /api/i18n?lang=` returns catalog + langs.
+- **#3 regression** — `tests/test_regression.py` golden snapshots (`tests/golden/`,
+  regen via `tests/regen_golden.py`) pinned with `as_of=2025-01-01`; `.github/workflows/ci.yml`
+  runs pytest on push/PR.
+- New endpoints live in **extensions.py** (`install(app, ctx)`) to keep api.py churn small.
+- Full suite: **29 tests passing**.
+
+**Remaining approved-but-not-yet-built roadmap items:** #2 Postgres migration,
+#5 observability (Sentry/metrics), #10 admin dashboard + Docker/CI image. (User chose
+"no preference" on the scale/ops group this session.)
+
+**Env added** (see `.env.example`): GEOCODER, GOOGLE_GEOCODING_KEY, GEOCODER_USER_AGENT,
+RATE_LIMIT_ENABLED, CAPTCHA_PROVIDER, CAPTCHA_SECRET, SMTP_* , LOG_LEVEL.
+
+**Infra note (Cowork mount):** the connected Windows folder blocks `unlink`, so git index/lock
+writes corrupt; commits here were made with `GIT_INDEX_FILE=/tmp/...`. Large existing files are
+size-capped by the Write tool — edit them via shell `truncate`+append. Pushing must be done by
+the user (no GitHub creds in the sandbox).

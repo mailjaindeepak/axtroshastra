@@ -1,0 +1,166 @@
+{
+ "bhinnashtakavarga": {
+  "Jupiter": [
+   6,
+   4,
+   6,
+   4,
+   5,
+   4,
+   5,
+   4,
+   5,
+   6,
+   3,
+   4
+  ],
+  "Mars": [
+   4,
+   4,
+   2,
+   4,
+   5,
+   2,
+   3,
+   4,
+   2,
+   5,
+   3,
+   1
+  ],
+  "Mercury": [
+   5,
+   5,
+   0,
+   6,
+   5,
+   5,
+   3,
+   7,
+   1,
+   8,
+   6,
+   3
+  ],
+  "Moon": [
+   2,
+   7,
+   6,
+   2,
+   1,
+   7,
+   5,
+   3,
+   4,
+   4,
+   3,
+   5
+  ],
+  "Saturn": [
+   3,
+   4,
+   5,
+   1,
+   1,
+   2,
+   5,
+   5,
+   4,
+   3,
+   3,
+   3
+  ],
+  "Sun": [
+   4,
+   2,
+   3,
+   5,
+   3,
+   5,
+   5,
+   5,
+   3,
+   5,
+   6,
+   2
+  ],
+  "Venus": [
+   5,
+   5,
+   2,
+   3,
+   5,
+   3,
+   5,
+   6,
+   3,
+   5,
+   5,
+   5
+  ]
+ },
+ "divisional": {
+  "D10": {
+   "Jupiter": "Simha",
+   "Ketu": "Kanya",
+   "Mars": "Makara",
+   "Mercury": "Makara",
+   "Moon": "Karka",
+   "Rahu": "Meena",
+   "Saturn": "Kanya",
+   "Sun": "Makara",
+   "Venus": "Meena",
+   "lagna": "Simha"
+  },
+  "D9": {
+   "Jupiter": "Dhanu",
+   "Ketu": "Makara",
+   "Mars": "Mesha",
+   "Mercury": "Kanya",
+   "Moon": "Vrishchika",
+   "Rahu": "Karka",
+   "Saturn": "Makara",
+   "Sun": "Simha",
+   "Venus": "Karka",
+   "lagna": "Karka"
+  }
+ },
+ "lagna_sav_bindus": 29,
+ "sarvashtakavarga": {
+  "Dhanu": 22,
+  "Kanya": 28,
+  "Karka": 25,
+  "Kumbha": 29,
+  "Makara": 36,
+  "Meena": 23,
+  "Mesha": 29,
+  "Mithuna": 24,
+  "Simha": 25,
+  "Tula": 31,
+  "Vrishabha": 31,
+  "Vrishchika": 34
+ },
+ "sav_total": 337,
+ "yogas": [
+  {
+   "detail": "Jupiter in a kendra from the Moon",
+   "effect": "Wisdom, reputation, steady rise.",
+   "name": "Gajakesari Yoga"
+  },
+  {
+   "detail": "Sun and Mercury conjunct",
+   "effect": "Sharp intellect, communication, analytical work.",
+   "name": "Budha-Aditya Yoga"
+  },
+  {
+   "detail": "Mars strong (exalted) in a kendra",
+   "effect": "A defining strength of personality and success.",
+   "name": "Ruchaka Yoga (Pancha Mahapurusha)"
+  },
+  {
+   "detail": "Saturn strong (own) in a kendra",
+   "effect": "A defining strength of personality and success.",
+   "name": "Sasa Yoga (Pancha Mahapurusha)"
+  }
+ ]
+}

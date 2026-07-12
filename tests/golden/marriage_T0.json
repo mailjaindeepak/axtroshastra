@@ -1,0 +1,206 @@
+{
+ "chart": {
+  "lagna": "Mesha",
+  "planets": {
+   "Jupiter": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Ardra",
+    "retro": false,
+    "sign": "Mithuna"
+   },
+   "Ketu": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Ashlesha",
+    "retro": true,
+    "sign": "Karka"
+   },
+   "Mars": {
+    "combust": false,
+    "dignity": "exalted",
+    "nakshatra": "Shravana",
+    "retro": false,
+    "sign": "Makara"
+   },
+   "Mercury": {
+    "combust": true,
+    "dignity": "debilitated",
+    "nakshatra": "Uttara Bhadrapada",
+    "retro": false,
+    "sign": "Meena"
+   },
+   "Moon": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Purva Ashadha",
+    "retro": false,
+    "sign": "Dhanu"
+   },
+   "Rahu": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Shravana",
+    "retro": true,
+    "sign": "Makara"
+   },
+   "Saturn": {
+    "combust": false,
+    "dignity": "own",
+    "nakshatra": "Uttara Ashadha",
+    "retro": false,
+    "sign": "Makara"
+   },
+   "Sun": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Uttara Bhadrapada",
+    "retro": false,
+    "sign": "Meena"
+   },
+   "Venus": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Shravana",
+    "retro": false,
+    "sign": "Makara"
+   }
+  }
+ },
+ "current_period": {
+  "ad": "Saturn",
+  "ad_end": "2025-09-11",
+  "md": "Rahu"
+ },
+ "manglik": {
+  "cancellations": [
+   "Mars in own/exalted sign"
+  ],
+  "from_lagna": false,
+  "from_moon": true,
+  "status": "manglik_cancelled"
+ },
+ "meta": {
+  "ayanamsa": "Lahiri",
+  "generated": "2025-01-01",
+  "houses": "whole_sign",
+  "name": "Golden",
+  "system": "lagna",
+  "time_quality": "T0",
+  "two_timelines_detected": false,
+  "window_padding_days": 74
+ },
+ "significators": {
+  "darakaraka": "Saturn",
+  "karakas": [
+   "Venus",
+   "Jupiter"
+  ],
+  "node_on_7th_axis": false,
+  "ref_sign": "Mesha",
+  "seventh_lord": "Venus",
+  "seventh_lord_combust": false,
+  "seventh_lord_dignity": "neutral",
+  "seventh_lord_house": 10,
+  "seventh_occupants": [],
+  "seventh_sign": "Tula"
+ },
+ "teaser_moon": "Dhanu",
+ "windows": [
+  {
+   "core_end": "2025-09",
+   "core_start": "2022-11",
+   "dasha": "Rahu MD \u2014 Saturn AD",
+   "end": "2025-11",
+   "grade": "Strong",
+   "peak_months": [
+    "Jan 2025",
+    "Mar 2025",
+    "Apr 2025"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_IN_7TH",
+     "why": "AD lord occupies or aspects the 7th house"
+    },
+    {
+     "id": "AD_WITH_7L",
+     "why": "AD lord conjunct the 7th lord"
+    },
+    {
+     "id": "AD_IS_DK",
+     "why": "AD lord is the darakaraka"
+    },
+    {
+     "id": "MD_7CONNECT",
+     "why": "MD lord has a 7th-house connection"
+    },
+    {
+     "id": "TR_JUP_TRIG",
+     "why": "Jupiter transits 7/1/2/11 from lagna or Moon in window"
+    }
+   ],
+   "score": 8.5,
+   "start": "2022-08"
+  },
+  {
+   "core_end": "2032-04",
+   "core_start": "2029-04",
+   "dasha": "Rahu MD \u2014 Venus AD",
+   "end": "2032-07",
+   "grade": "Strong",
+   "peak_months": [
+    "Sep 2029",
+    "Oct 2029"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_IS_7L",
+     "why": "Antardasha lord is the 7th lord"
+    },
+    {
+     "id": "AD_IS_KARAKA",
+     "why": "Antardasha lord is Venus/Jupiter (marriage karaka)"
+    },
+    {
+     "id": "MD_7CONNECT",
+     "why": "MD lord has a 7th-house connection"
+    },
+    {
+     "id": "TR_JUP_TRIG",
+     "why": "Jupiter transits 7/1/2/11 from lagna or Moon in window"
+    }
+   ],
+   "score": 8.0,
+   "start": "2029-02"
+  },
+  {
+   "core_end": "2035-09",
+   "core_start": "2034-09",
+   "dasha": "Rahu MD \u2014 Mars AD",
+   "end": "2035-12",
+   "grade": "Moderate",
+   "peak_months": [
+    "Apr 2035",
+    "May 2035",
+    "Jun 2035"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_WITH_7L",
+     "why": "AD lord conjunct the 7th lord"
+    },
+    {
+     "id": "MD_7CONNECT",
+     "why": "MD lord has a 7th-house connection"
+    },
+    {
+     "id": "TR_JUP_TRIG",
+     "why": "Jupiter transits 7/1/2/11 from lagna or Moon in window"
+    }
+   ],
+   "score": 5.0,
+   "start": "2034-06"
+  }
+ ]
+}

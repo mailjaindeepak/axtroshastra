@@ -27,12 +27,16 @@ from pydantic import BaseModel, field_validator
 from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint
 from products import compute_milan, compute_blueprint
+from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
+import payments, delivery, extensions             # (#6) payments, (#7) delivery, endpoints
+from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
+app.add_middleware(RateLimitMiddleware)   # (#4)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")   # e.g. https://axtroshastra.com
@@ -66,6 +70,25 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
                       f"100% refund within 7 days."))
     except Exception as e:                            # delivery must never break the webhook
         logger.error("[twilio] send failed for %s: %s", rid, e)
+
+def _render_for(product, payload):
+    if product == "milan":
+        return render_milan(payload)
+    if product == "blueprint":
+        return render_blueprint(payload)
+    return render_report(payload)
+
+
+def email_report(to_addr, rid, payload):        # (#7) fire-and-forget; never raises
+    try:
+        html = _render_for(payload.get("product", "marriage"), payload)
+        pdf = delivery.html_to_pdf(html)
+        link = f"{PUBLIC_BASE_URL}/report/{rid}" if PUBLIC_BASE_URL else ""
+        body = f"Namaste! Aapki Axtroshastra report ready hai: {link}"
+        delivery.send_email(to_addr, "Your Axtroshastra Report", body, pdf)
+    except Exception as e:
+        logger.error("email_report failed for %s: %s", rid, e)
+
 
 RZP_KEY = os.getenv("RAZORPAY_KEY_ID", "")
 RZP_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
@@ -125,46 +148,8 @@ def mark_paid(rid, payment_id=None, phone=None):
                   (payment_id, phone, rid))
 
 # ----------------------------------------------------------------- geocode
-from cities_in import CITIES_IN
-CITY_CACHE = {
-    "delhi": (28.61, 77.21, 5.5),      "new delhi": (28.61, 77.21, 5.5),
-    "mumbai": (19.08, 72.88, 5.5),     "bangalore": (12.97, 77.59, 5.5),
-    "bengaluru": (12.97, 77.59, 5.5),  "hyderabad": (17.38, 78.49, 5.5),
-    "chennai": (13.08, 80.27, 5.5),    "kolkata": (22.57, 88.36, 5.5),
-    "pune": (18.52, 73.86, 5.5),       "jaipur": (26.91, 75.79, 5.5),
-    "lucknow": (26.85, 80.95, 5.5),    "faridabad": (28.41, 77.31, 5.5),
-    "gurgaon": (28.46, 77.03, 5.5),    "noida": (28.54, 77.39, 5.5),
-    "ahmedabad": (23.02, 72.57, 5.5),  "surat": (21.17, 72.83, 5.5),
-    "kanpur": (26.45, 80.33, 5.5),     "patna": (25.59, 85.14, 5.5),
-    "indore": (22.72, 75.86, 5.5),     "bhopal": (23.26, 77.41, 5.5),
-    "nagpur": (21.15, 79.09, 5.5),     "varanasi": (25.32, 82.99, 5.5),
-    "agra": (27.18, 78.01, 5.5),       "meerut": (28.98, 77.71, 5.5),
-    "ludhiana": (30.90, 75.86, 5.5),   "chandigarh": (30.73, 76.78, 5.5),
-    "amritsar": (31.63, 74.87, 5.5),   "dehradun": (30.32, 78.03, 5.5),
-    "ranchi": (23.34, 85.31, 5.5),     "raipur": (21.25, 81.63, 5.5),
-    "guwahati": (26.14, 91.74, 5.5),   "kochi": (9.93, 76.27, 5.5),
-    "coimbatore": (11.02, 76.96, 5.5), "visakhapatnam": (17.69, 83.22, 5.5),
-    "vijayawada": (16.51, 80.65, 5.5), "thiruvananthapuram": (8.52, 76.94, 5.5),
-    "mysore": (12.30, 76.64, 5.5),     "jodhpur": (26.24, 73.02, 5.5),
-    "udaipur": (24.58, 73.71, 5.5),    "gwalior": (26.22, 78.18, 5.5),
-    "allahabad": (25.44, 81.85, 5.5),  "prayagraj": (25.44, 81.85, 5.5),
-    "ghaziabad": (28.67, 77.42, 5.5),  "nashik": (19.99, 73.79, 5.5),
-    "aurangabad": (19.88, 75.34, 5.5), "rajkot": (22.30, 70.80, 5.5),
-    "vadodara": (22.31, 73.19, 5.5),   "srinagar": (34.08, 74.80, 5.5),
-    "jammu": (32.73, 74.87, 5.5),      "shimla": (31.10, 77.17, 5.5),
-    # extend to ~500 from census CSV
-}
-
-def geocode(place: str):
-    key = place.lower().split(",")[0].strip()
-    if key in CITY_CACHE:
-        return CITY_CACHE[key]
-    if key in CITIES_IN:
-        return CITIES_IN[key]
-    # Fallback for unknown Indian towns: use Delhi coords, IST timezone.
-    # Latitude affects only lagna (T0/T1); dasha timeline is latitude-free.
-    # PROD upgrade: Google Geocoding API here, cache the result into the table.
-    return (28.61, 77.21, 5.5)
+# geocoding lives in geocoding.py: cache -> CITIES_IN -> external -> Delhi fallback (#1)
+payments.ensure_tables(db)   # (#6) webhook_events + refunds tables
 
 # ----------------------------------------------------------------- models
 class KundliIn(BaseModel):
@@ -176,6 +161,8 @@ class KundliIn(BaseModel):
     place: str
     gender: str | None = None
     variant: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
     product: str = "marriage"          # marriage | blueprint
 
     @field_validator("time_quality")
@@ -214,6 +201,8 @@ def landing():
 
 @app.post("/api/kundli")
 def create_kundli(inp: KundliIn):
+    if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
+        raise HTTPException(400, "captcha_failed")
     lat, lon, tz = geocode(inp.place)
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
@@ -231,6 +220,10 @@ def create_kundli(inp: KundliIn):
                                 female=(inp.gender == "female"),
                                 time_quality=inp.time_quality)
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    report["meta"]["_birth"] = {"dob": inp.dob, "tob": tob, "tz": tz,
+                                "lat": lat, "lon": lon}   # (#8) for /api/deep
+    if inp.email:
+        report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
     save_report(rid, report)
     return {"report_id": rid, "teaser": report["teaser"]}
@@ -271,6 +264,10 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     if not hmac.compare_digest(expected, sig):
         raise HTTPException(400, "bad signature")
     event = json.loads(body)
+    eid = payments.event_id_of(event)
+    if payments.already_processed(db, eid):     # (#6) idempotency
+        return {"ok": True, "duplicate": True}
+    rid = None
     if event.get("event") == "payment.captured":
         ent = event["payload"]["payment"]["entity"]
         rid = (ent.get("notes") or {}).get("report_id")
@@ -282,6 +279,10 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 background_tasks.add_task(
                     send_whatsapp_report, phone, rid,
                     rec["payload"]["meta"]["name"])
+                email = rec["payload"]["meta"].get("_email")
+                if email:                        # (#7) email + PDF delivery
+                    background_tasks.add_task(email_report, email, rid, rec["payload"])
+    payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
 
@@ -323,9 +324,13 @@ class MilanIn(BaseModel):
     p1_name: str; p1_dob: str; p1_tob: str | None = None; p1_place: str
     p2_name: str; p2_dob: str; p2_tob: str | None = None; p2_place: str
     variant: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
 
 @app.post("/api/milan")
 def create_milan(inp: MilanIn):
+    if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
+        raise HTTPException(400, "captcha_failed")
     lat1, lon1, tz1 = geocode(inp.p1_place)
     lat2, lon2, tz2 = geocode(inp.p2_place)
     report = compute_milan(
@@ -334,6 +339,8 @@ def create_milan(inp: MilanIn):
         {"name": inp.p2_name, "dob": inp.p2_dob, "tob": inp.p2_tob,
          "tz": tz2, "lat": lat2, "lon": lon2})
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.email:
+        report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
     save_report(rid, report)
     return {"report_id": rid, "teaser": report["teaser"]}
@@ -428,6 +435,12 @@ def stats(key: str = ""):
     return {"variants": [{"page": r[0], "kundlis_created": r[1],
                           "paid_reports": r[2] or 0,
                           "revenue_inr": (r[2] or 0) * 499} for r in rows]}
+
+
+extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoints
+    "db": db, "get_report": get_report,
+    "render": _render_for, "valid_admin_key": _valid_admin_key,
+})
 
 
 @app.get("/{slug}", include_in_schema=False)
