@@ -18,15 +18,19 @@ Razorpay dashboard prerequisites:
   1. Settings > Payment capture -> AUTO capture (else payment.captured never fires)
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
-import hashlib, hmac, json, os, secrets, sqlite3, threading
+import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint
 from products import compute_milan, compute_blueprint
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
+                    format="%(asctime)s %(levelname)s %(name)s %(message)s")
+logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -61,13 +65,19 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
                       f"ke andar hai. Koi bhi sawaal ho — reply kijiye. "
                       f"100% refund within 7 days."))
     except Exception as e:                            # delivery must never break the webhook
-        print(f"[twilio] send failed for {rid}: {e}")
+        logger.error("[twilio] send failed for %s: %s", rid, e)
 
 RZP_KEY = os.getenv("RAZORPAY_KEY_ID", "")
 RZP_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 DEMO_MODE = os.getenv("DEMO_MODE") == "1"
+STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
+
+
+def _valid_admin_key(key: str) -> bool:
+    """Constant-time check for the admin key; always False when unset."""
+    return bool(STATS_KEY) and hmac.compare_digest(key or "", STATS_KEY)
 
 _rzp = None
 def rzp_client():
@@ -179,7 +189,17 @@ BAND_MID = {"subah": "07:00", "din": "13:00", "shaam": "19:00", "raat": "01:00"}
 # ----------------------------------------------------------------- routes
 PAGES_DIR = os.path.join(BASE, "pages")
 
-PAGES_DIR = os.path.join(BASE, "pages")
+
+@app.get("/healthz", include_in_schema=False)
+def healthz():
+    """Liveness/readiness probe: 200 only if the database is reachable."""
+    try:
+        with db() as c:
+            c.execute("SELECT 1")
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error("healthz db check failed: %s", e)
+        raise HTTPException(503, "db unavailable")
 
 
 @app.get("/", include_in_schema=False)
@@ -319,8 +339,6 @@ def create_milan(inp: MilanIn):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
-from fastapi.responses import Response, PlainTextResponse
-
 @app.get("/static/{fname}", include_in_schema=False)
 def static_file(fname: str):
     if not fname.replace("-", "").replace(".", "").replace("_", "").isalnum():
@@ -378,7 +396,7 @@ def public_count():
 @app.get("/api/make_pass")
 def make_pass(key: str = "", n: int = 5):
     """Generate one-time free-unlock tokens for the soft launch."""
-    if not STATS_KEY or key != STATS_KEY:
+    if not _valid_admin_key(key):
         raise HTTPException(403, "forbidden")
     n = max(1, min(n, 30))
     toks = []
@@ -396,12 +414,11 @@ def make_pass(key: str = "", n: int = 5):
                               f"{base}/jeevan?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
 
-STATS_KEY = os.getenv("STATS_KEY", "")
 
 @app.get("/api/stats")
 def stats(key: str = ""):
     """Per-variant funnel counts. Protect with STATS_KEY env var."""
-    if not STATS_KEY or key != STATS_KEY:
+    if not _valid_admin_key(key):
         raise HTTPException(403, "forbidden")
     with db() as c:
         rows = c.execute(

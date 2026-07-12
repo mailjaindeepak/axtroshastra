@@ -4,6 +4,7 @@ Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
 from datetime import datetime
+from html import escape  # escape user-supplied fields (name/place) before HTML interpolation
 
 SIGNS = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
          "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena"]
@@ -102,7 +103,7 @@ def _weak_periods(payload: dict) -> list:
 
 def render_report(p: dict) -> str:
     meta, sig, mg = p["meta"], p["significators"], p["manglik"]
-    name = meta["name"]
+    name = escape(meta["name"])  # user-supplied: escape to prevent stored XSS
     system_note = ("Chandra Lagna system (Moon-as-ascendant) — the classical Parashari "
                    "method used when birth time is approximate. Fully traditional; "
                    "windows are shown with honest wider ranges."
@@ -487,6 +488,7 @@ VERDICT_COLOR = {"excellent": "#2E7D53", "verygood": "#2E7D53",
 
 def render_milan(p: dict) -> str:
     m = p["meta"]
+    m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
     rows = ""
     for k in p["kootas"]:
         pct = k["score"] / k["max"] * 100
@@ -610,6 +612,7 @@ Guna milan is one classical input to a marriage decision, not the whole decision
 # ============================================================ BLUEPRINT RENDERER
 def render_blueprint(p: dict) -> str:
     m = p["meta"]
+    m = {**m, "name": escape(m["name"])}  # user-supplied name: escape to prevent stored XSS
     road = ""
     for r in p["roadmap"]:
         cur = " · <b style='color:#C93B2E'>ABHI CHAL RAHA HAI</b>" if r["current"] else ""
