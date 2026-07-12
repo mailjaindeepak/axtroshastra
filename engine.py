@@ -611,3 +611,5 @@ def marriage_extras(chart, sig, tree, out_windows, ref_sign, ref_signs_tr, today
                      "gem_note": None if gem_ok else
                      f"{seventh_lord} ki current condition mein gemstone recommend nahi karte — mantra aur fast kaafi hain."},
     }
+
+# build-cache-bust force Railway rebuild so live matches main correct Vimshottari antardasha 2026-07-12
