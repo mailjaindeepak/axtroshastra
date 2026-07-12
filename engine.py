@@ -76,6 +76,7 @@ def jd(dt_utc: datetime) -> float:
 
 def sidereal_lon(planet_id: int, j: float) -> tuple:
     """Returns (longitude 0-360, speed deg/day) in sidereal zodiac."""
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # sid_mode is thread-local in pyswisseph; re-assert on worker threads
     pos, _ = swe.calc_ut(j, planet_id, swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED)
     return pos[0] % 360.0, pos[3]
 
@@ -136,6 +137,7 @@ def compute_chart(dt_utc: datetime, lat: float, lon_geo: float) -> dict:
             g.combust = d <= COMBUST_ORB[g.name]
 
     # lagna (sidereal ascendant)
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # thread-local; re-assert Lahiri for houses on worker threads
     _, ascmc = swe.houses_ex(j, lat, lon_geo, b'W', swe.FLG_SIDEREAL)
     asc = ascmc[0] % 360.0
     return {"jd": j, "grahas": grahas, "lagna_lon": asc, "lagna_sign": sign_of(asc)}
@@ -611,5 +613,3 @@ def marriage_extras(chart, sig, tree, out_windows, ref_sign, ref_signs_tr, today
                      "gem_note": None if gem_ok else
                      f"{seventh_lord} ki current condition mein gemstone recommend nahi karte — mantra aur fast kaafi hain."},
     }
-
-# build-cache-bust force Railway rebuild so live matches main correct Vimshottari antardasha 2026-07-12
