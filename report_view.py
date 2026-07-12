@@ -4,7 +4,8 @@ Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
 from datetime import datetime
-from html import escape  # escape user-supplied fields (name/place) before HTML interpolation
+from html import escape
+import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
 
 SIGNS = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
          "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena"]
@@ -422,6 +423,7 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
 </div>
 <p class="soft">Yeh 6-7 factors milkar aapki marriage timing decide karte hain.
 Agle page par inhi se nikale gaye aapke windows hain.</p></section>
+{report_addons.planet_table_html(p)}
 
 <section class="pg"><p class="plabel">The Answer</p>
 <h2>Aapke marriage windows</h2>
@@ -437,12 +439,14 @@ ya uske lord se connect hota hai, aur Jupiter ka transit usko confirm karta hai.
 <p style="margin-top:10px">Timing windows probability bands hain, appointments nahi —
 ±15 minute ka birth time difference bhi boundaries ko months tak shift kar sakta hai.
 Isliye hum honest ranges dete hain, fake precision nahi.</p></section>
+{report_addons.scoring_box_html(p)}
 
 <section class="pg"><p class="plabel">Manglik</p>
 <h2>Manglik check</h2>
 <div class="mgcard"><b class="h">{mg_head}</b><p>{mg_body}</p></div>
 <p class="soft">Technical: Mars from lagna — {'manglik houses mein' if mg['from_lagna'] else 'clear'};
 from Moon — {'manglik houses mein' if mg['from_moon'] else 'clear'}.</p></section>
+{report_addons.d9_section_html(p)}
 
 {weak_html}
 {past_html}
@@ -450,7 +454,8 @@ from Moon — {'manglik houses mein' if mg['from_moon'] else 'clear'}.</p></sect
 
 <section class="pg"><p class="plabel">Partner</p>
 <h2>Partner indications</h2>
-{partner_html}</section>
+{partner_html}
+{report_addons.occupants_html(p)}</section>
 
 <section class="pg"><p class="plabel">Action plan</p>
 <h2>Ab karna kya hai</h2>
@@ -473,7 +478,7 @@ Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate bett
 <div class="upsell"><b>Ek aur sawaal, usi chart se: career kab lift hoga?</b>
 <p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919650973345?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
 <div class="btnrow">
-  <button class="btn p" onclick="window.print()">Download PDF</button>
+  <a class="btn p" href="/report/{meta.get('report_id','')}/pdf">Download PDF</a>
   <a class="btn s" href="https://wa.me/919650973345?text=Hi%20Axtroshastra">WhatsApp Support</a>
 </div></section>
 
