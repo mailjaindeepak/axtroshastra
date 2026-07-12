@@ -39,9 +39,15 @@ DASHA_YRS = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
              "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}
 TOTAL_YRS = 120.0
 
+# Rahu/Ketu node model. "mean" = smoothed node (classical default, used here);
+# swe.TRUE_NODE = osculating node (common on Lahiri panchangs). They differ by up
+# to ~2 deg, which flips Rahu's sign ~3% and its nakshatra ~7% of the time. This is
+# a deliberate, documented convention -- set NODE_MODE = swe.TRUE_NODE to switch.
+NODE_MODE = swe.MEAN_NODE
+
 PLANETS = {"Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS,
            "Mercury": swe.MERCURY, "Jupiter": swe.JUPITER, "Venus": swe.VENUS,
-           "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE}  # Ketu = Rahu + 180
+           "Saturn": swe.SATURN, "Rahu": NODE_MODE}  # Ketu = Rahu + 180
 
 OWN = {"Sun": [4], "Moon": [3], "Mars": [0, 7], "Mercury": [2, 5],
        "Jupiter": [8, 11], "Venus": [1, 6], "Saturn": [9, 10]}
@@ -49,7 +55,10 @@ EXALT = {"Sun": 0, "Moon": 1, "Mars": 9, "Mercury": 5, "Jupiter": 3, "Venus": 11
 DEBIL = {p: (s + 6) % 12 for p, s in EXALT.items()}
 SIGN_LORD = ["Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
              "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter"]
-COMBUST_ORB = {"Moon": 12, "Mars": 17, "Mercury": 13, "Jupiter": 11, "Venus": 9, "Saturn": 15}
+# Combustion orbs (degrees from the Sun). The Moon is intentionally excluded: a
+# "combust Moon" (near new moon) is not used as a weakness/dignity signal here and
+# only produced confusing output. Retro-specific orbs are not modelled (minor).
+COMBUST_ORB = {"Mars": 17, "Mercury": 13, "Jupiter": 11, "Venus": 9, "Saturn": 15}
 
 # Full special aspects (graha drishti), by house-count from planet
 ASPECTS = {"Mars": [4, 7, 8], "Jupiter": [5, 7, 9], "Saturn": [3, 7, 10],
@@ -284,10 +293,17 @@ def manglik(chart) -> dict:
     mars = g["Mars"]
     from_lagna = houses_from(chart["lagna_sign"], mars.sign) in MANGLIK_HOUSES
     from_moon = houses_from(g["Moon"].sign, mars.sign) in MANGLIK_HOUSES
+    # Classical cancellations of Mangal dosha. (The earlier "Mars in Cancer/Leo"
+    # rule was dropped -- it is not a standard cancellation, and Cancer is in fact
+    # Mars's sign of debilitation.)
+    jup = g["Jupiter"]
     cancels = []
-    if mars.dignity in ("own", "exalted"): cancels.append("Mars in own/exalted sign")
-    if mars.sign in (3, 4):                cancels.append("Mars in Cancer/Leo placement rule")
-    if g["Jupiter"].sign == mars.sign:     cancels.append("Jupiter conjunct Mars")
+    if mars.dignity in ("own", "exalted"):
+        cancels.append("Mars in own or exalted sign")
+    if jup.sign == mars.sign:
+        cancels.append("Jupiter conjunct Mars")
+    elif ((mars.sign - jup.sign) % 12) + 1 in (5, 7, 9):   # Jupiter's 5/7/9 drishti on Mars
+        cancels.append("Jupiter aspects Mars")
     status = "manglik" if (from_lagna or from_moon) else "non_manglik"
     if status == "manglik" and cancels: status = "manglik_cancelled"
     return {"from_lagna": from_lagna, "from_moon": from_moon,

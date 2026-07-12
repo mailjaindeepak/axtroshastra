@@ -74,7 +74,7 @@
  },
  "manglik": {
   "cancellations": [
-   "Mars in own/exalted sign"
+   "Mars in own or exalted sign"
   ],
   "from_lagna": false,
   "from_moon": true,

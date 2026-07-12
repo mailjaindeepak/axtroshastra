@@ -28,12 +28,49 @@ YONI = ["Horse","Elephant","Sheep","Serpent","Serpent","Dog","Cat","Sheep","Cat"
 YONI_ENEMY = {frozenset(p) for p in [("Cow","Tiger"),("Elephant","Lion"),
               ("Horse","Buffalo"),("Dog","Deer"),("Serpent","Mongoose"),
               ("Monkey","Sheep"),("Cat","Rat")]}
+# Full classical 5-tier Yoni scoring (same 4 / friendly 3 / neutral 2 / unfriendly 1
+# / mortal-enemy 0), replacing the earlier flat same/enemy/else-neutral scheme.
+# Friendly + unfriendly sets derived from the classical animal-relationship tables
+# (mutually-agreed pairs; conflicting/asymmetric entries default to neutral).
+YONI_FRIEND = {frozenset(p) for p in [
+    ("Horse","Serpent"),("Horse","Monkey"),("Elephant","Sheep"),
+    ("Elephant","Serpent"),("Elephant","Buffalo"),("Elephant","Monkey"),
+    ("Sheep","Cow"),("Sheep","Buffalo"),("Sheep","Mongoose"),
+    ("Cat","Deer"),("Cat","Monkey"),("Cow","Buffalo"),("Cow","Deer"),
+    ("Monkey","Mongoose")]}
+YONI_UNFRIEND = {frozenset(p) for p in [
+    ("Horse","Cow"),("Horse","Tiger"),("Horse","Lion"),("Elephant","Tiger"),
+    ("Sheep","Dog"),("Sheep","Rat"),("Sheep","Tiger"),("Sheep","Lion"),
+    ("Serpent","Cat"),("Serpent","Rat"),("Serpent","Cow"),("Serpent","Buffalo"),
+    ("Dog","Rat"),("Dog","Tiger"),("Dog","Mongoose"),("Dog","Lion"),
+    ("Cat","Tiger"),("Cat","Mongoose"),("Cat","Lion"),("Rat","Mongoose"),
+    ("Cow","Lion"),("Buffalo","Tiger"),("Buffalo","Lion"),("Tiger","Deer"),
+    ("Tiger","Monkey"),("Tiger","Lion"),("Deer","Lion")]}
+
+
+def _yoni_score(y1: str, y2: str) -> float:
+    if y1 == y2:
+        return 4
+    pair = frozenset((y1, y2))
+    if pair in YONI_ENEMY:
+        return 0
+    if pair in YONI_FRIEND:
+        return 3
+    if pair in YONI_UNFRIEND:
+        return 1
+    return 2
 
 # Gana by nakshatra: D deva, M manushya, R rakshasa
 GANA = "DMRMDMDDRRMMDRDRDRRMMDRRMMD"
 GANA_NAME = {"D":"Deva","M":"Manushya","R":"Rakshasa"}
-GANA_SCORE = {("D","D"):6,("M","M"):6,("R","R"):6,("D","M"):5,("M","D"):5,
-              ("D","R"):1,("R","D"):1,("M","R"):0,("R","M"):0}
+# Direction-dependent (groom, bride) classical Gana table. Key order is
+# (groom_gana, bride_gana): a Manushya groom with a Deva bride scores 6, but a
+# Deva groom with a Manushya bride scores 5; a Rakshasa groom with a Deva/Manushya
+# bride scores 0. (Earlier table was symmetric and over-scored these cases.)
+GANA_SCORE = {("D","D"):6,("M","M"):6,("R","R"):6,
+              ("D","M"):5,("M","D"):6,
+              ("D","R"):1,("R","D"):0,
+              ("M","R"):0,("R","M"):0}
 
 # Nadi by nakshatra: A adi, M madhya, N antya (cycle A M N N M A A M N ...)
 NADI = "AMNNMAAMNNMAAMNNMAAMNNMAAMN"
@@ -107,7 +144,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
                    "meaning": "health and wellbeing of the bond"})
 
     y1, y2 = YONI[g["nak"]], YONI[b["nak"]]
-    s = 4 if y1 == y2 else (0 if frozenset((y1, y2)) in YONI_ENEMY else 2)
+    s = _yoni_score(y1, y2)
     kootas.append({"name": "Yoni", "max": 4, "score": s,
                    "detail": f"{y1} – {y2}", "meaning": "physical and instinctive harmony"})
 

@@ -28,6 +28,7 @@ from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint
 from products import compute_milan, compute_blueprint
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
+from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -203,7 +204,8 @@ def landing():
 def create_kundli(inp: KundliIn):
     if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
         raise HTTPException(400, "captcha_failed")
-    lat, lon, tz = geocode(inp.place)
+    geo = resolve_detailed(inp.place)
+    lat, lon, tz = geo["lat"], geo["lon"], geo["tz"]
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
         tob = inp.tob
@@ -220,6 +222,12 @@ def create_kundli(inp: KundliIn):
                                 female=(inp.gender == "female"),
                                 time_quality=inp.time_quality)
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    report["meta"]["geo_source"] = geo["source"]         # (#1) provenance
+    if not geo["resolved"]:                               # (#1) honest accuracy warning
+        report["meta"]["geo_warning"] = (
+            "Birthplace could not be located, so a default city (Delhi) was used. "
+            "The ascendant/lagna and house-based results may be inaccurate -- "
+            "please re-enter the exact birth city.")
     report["meta"]["_birth"] = {"dob": inp.dob, "tob": tob, "tz": tz,
                                 "lat": lat, "lon": lon}   # (#8) for /api/deep
     if inp.email:

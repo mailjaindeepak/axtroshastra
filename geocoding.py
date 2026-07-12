@@ -114,25 +114,49 @@ def _geocode_external(place):
     return None
 
 
-def resolve(place: str):
-    """Return (lat, lon, tz_offset_hours). Never raises; falls back to Delhi."""
+def resolve_detailed(place: str) -> dict:
+    """Resolve a place to coordinates with provenance.
+
+    Returns {"lat","lon","tz","source","resolved"}.
+      resolved=True  -> we found the actual place (cache/list/geocoder).
+      resolved=False -> nothing matched; caller is using the Delhi fallback and the
+                        ascendant/lagna (and everything derived from it) may be
+                        wrong. Longitude, not just latitude, shifts the lagna, so a
+                        wrong city can flip the lagna sign for ~1 in 6 births.
+    Never raises.
+    """
     key = (place or "").lower().split(",")[0].strip()
     if not key:
-        return DELHI
+        return {"lat": DELHI[0], "lon": DELHI[1], "tz": DELHI[2],
+                "source": "default_delhi", "resolved": False}
     if key in CITY_CACHE:
-        return CITY_CACHE[key]
+        la, lo, tz = CITY_CACHE[key]
+        return {"lat": la, "lon": lo, "tz": tz, "source": "city_cache", "resolved": True}
     if key in CITIES_IN:
-        return CITIES_IN[key]
+        la, lo, tz = CITIES_IN[key]
+        return {"lat": la, "lon": lo, "tz": tz, "source": "cities_in", "resolved": True}
     cached = _cache_get(key)
     if cached:
-        return cached
+        la, lo, tz = cached
+        return {"lat": la, "lon": lo, "tz": tz, "source": "geocache", "resolved": True}
     ext = _geocode_external(place)
     if ext:
         lat, lon, source = ext
         tz = _tz_for(lat, lon)
         _cache_put(key, lat, lon, tz, source)
-        return (lat, lon, tz)
-    return DELHI
+        return {"lat": lat, "lon": lon, "tz": tz, "source": source, "resolved": True}
+    return {"lat": DELHI[0], "lon": DELHI[1], "tz": DELHI[2],
+            "source": "default_delhi", "resolved": False}
+
+
+def resolve(place: str):
+    """Return (lat, lon, tz_offset_hours). Never raises; falls back to Delhi.
+
+    Thin back-compat wrapper over resolve_detailed(); use resolve_detailed() when
+    you need to know whether the place actually resolved (see accuracy note there).
+    """
+    d = resolve_detailed(place)
+    return (d["lat"], d["lon"], d["tz"])
 
 
 # Back-compat alias so api.py can `from geocoding import geocode`
