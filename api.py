@@ -336,12 +336,32 @@ def report_page(rid: str):
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
+    payload.setdefault("meta", {})["report_id"] = rid
     product = payload.get("product", "marriage")
     if product == "milan":
         return HTMLResponse(render_milan(payload))
     if product == "blueprint":
         return HTMLResponse(render_blueprint(payload))
     return HTMLResponse(render_report(payload))
+
+
+@app.get("/report/{rid}/pdf", include_in_schema=False)
+def report_pdf(rid: str):
+    rec = get_report(rid)
+    if not rec or not rec["paid"]:
+        raise HTTPException(404, "report not found")
+    payload = _refresh_current_period(rec["payload"])
+    payload.setdefault("meta", {})["report_id"] = rid
+    html = _render_for(payload.get("product", "marriage"), payload)
+    pdf = delivery.html_to_pdf(html)
+    if not pdf:
+        return HTMLResponse(
+            f"<p style='font-family:sans-serif;padding:40px'>PDF banane ke liye report "
+            f"kholiye aur 'Download PDF' (print) dabaiye. <a href='/report/{rid}'>Report</a></p>")
+    name = (payload.get("meta", {}).get("name") or "report").replace(" ", "_")[:40]
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition":
+                             f'attachment; filename="Axtroshastra_{name}.pdf"'})
 
 
 if DEMO_MODE:                                    # never set DEMO_MODE=1 in production
