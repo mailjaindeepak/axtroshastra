@@ -276,7 +276,7 @@ fbq('track', 'PageView');
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" required>
+        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
       <button class="btn" type="submit">Meri kundli check karo — FREE</button>
       <p class="btn-note">Free chart snapshot pehle. Full report <s style="color:#8F92AB">₹999</s> <b style="color:var(--sindoor)">₹499</b> launch price — pay only if you want the answer.</p>
@@ -696,5 +696,65 @@ window.addEventListener('scroll', function(){
 <div class="bar"><div id="ovBar"></div></div>
 <p class="sub">Aapki kundli abhi compute ho rahi hai — templates nahi.</p>
 </div></div>
+<style>
+.field{position:relative}
+.city-suggest{position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid #E7E0D2;border-top:0;border-radius:0 0 10px 10px;max-height:250px;overflow:auto;display:none;box-shadow:0 10px 24px rgba(0,0,0,.10)}
+.city-suggest.open{display:block}
+.city-suggest .ci{padding:10px 13px;cursor:pointer;font-size:14.5px;border-bottom:1px solid #F1EADB;text-align:left}
+.city-suggest .ci:last-child{border-bottom:0}
+.city-suggest .ci.active,.city-suggest .ci:hover{background:#F6E7C6}
+.city-suggest .ci small{color:#8F92AB;margin-left:4px}
+.field-hint{font-size:12.5px;color:#C93B2E;margin-top:5px;min-height:1px;text-align:left}
+</style>
+<script>
+(function(){
+  var inp=document.getElementById('f-place'); if(!inp) return;
+  var list=document.getElementById('f-place-list');
+  var hint=document.getElementById('f-place-hint');
+  var selected=null,timer=null,items=[],active=-1;
+  function render(){
+    if(!items.length){list.classList.remove('open');list.innerHTML='';return;}
+    list.innerHTML=items.map(function(c,i){
+      return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+c.country+'</small></div>';
+    }).join('');
+    list.classList.add('open');
+  }
+  function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  inp.addEventListener('input',function(){
+    selected=null;hint.textContent='';var q=inp.value.trim();
+    clearTimeout(timer);
+    if(q.length<2){items=[];render();return;}
+    timer=setTimeout(function(){
+      fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
+        items=(d&&d.results)||[];active=-1;render();
+        if(!items.length){hint.textContent='City nahi mili — nazdeeki bada sheher/zila chuniye.';}
+      }).catch(function(){items=[];render();});
+    },180);
+  });
+  inp.addEventListener('keydown',function(e){
+    if(!list.classList.contains('open'))return;
+    if(e.key==='ArrowDown'){active=Math.min(active+1,items.length-1);render();e.preventDefault();}
+    else if(e.key==='ArrowUp'){active=Math.max(active-1,0);render();e.preventDefault();}
+    else if(e.key==='Enter'){if(active>=0&&items[active]){pick(items[active]);e.preventDefault();}}
+    else if(e.key==='Escape'){items=[];render();}
+  });
+  list.addEventListener('mousedown',function(e){var d=e.target.closest('.ci');if(d){pick(items[+d.getAttribute('data-i')]);e.preventDefault();}});
+  document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
+  var form=inp.closest('form');
+  if(form)form.addEventListener('submit',function(e){
+    if(!selected){e.preventDefault();e.stopImmediatePropagation();hint.textContent='Please pick your birth city from the list.';inp.focus();}
+  },true);
+  var of=window.fetch;
+  window.fetch=function(url,opts){
+    try{
+      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected){
+        var b=JSON.parse(opts.body);b.lat=selected.lat;b.lon=selected.lon;b.tz=selected.tz;b.place=selected.label;opts.body=JSON.stringify(b);
+      }
+    }catch(_){}
+    return of.apply(this,arguments);
+  };
+})();
+</script>
+
 </body>
 </html>
