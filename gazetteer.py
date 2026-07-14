@@ -37,6 +37,8 @@ def _load():
     for c in gc.get_cities().values():
         name = c["name"]
         cc = c.get("countrycode", "")
+        if cc != "IN":            # India-only for now: hide foreign cities (avoids confusion)
+            continue
         # keep only ascii/latin alternate names (user types Roman script)
         alts = set()
         for a in c.get("alternatenames", []) or []:
