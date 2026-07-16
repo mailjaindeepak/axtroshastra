@@ -304,6 +304,9 @@ fbq('track', 'PageView');
       <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
     </div>
 
+    <style>#t-chart{max-width:320px;margin:14px auto 2px;background:#151C39;border-radius:12px;padding:10px}#t-chart svg{width:100%;height:auto;display:block}</style>
+    <div id="t-chart" aria-label="Aapki kundli (free)"></div>
+
     <div class="chart-facts">
       <div class="row"><span class="k">Moon sign (Rashi)</span><span class="v" id="t-rashi">—</span></div>
       <div class="row"><span class="k">Nakshatra</span><span class="v" id="t-nak">—</span></div>
@@ -464,7 +467,7 @@ fbq('track', 'PageView');
     <p class="l1">Marriage Timing Report</p>
     <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · Instant Delivery · No-Questions Refund</p>
   </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn" onclick="var f=document.getElementById('kundliForm');if(f&&f.requestSubmit){event.preventDefault();f.requestSubmit();}">Check FREE</a>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
@@ -570,7 +573,7 @@ function renderTeaser(t){
   document.getElementById('t-rashi').textContent = t.moon_sign + ' (' + t.moon_sign_en + ')';
   document.getElementById('t-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
   document.getElementById('t-dasha').textContent = t.current_dasha;
-  document.getElementById('t-till').textContent = t.dasha_till;
+  document.getElementById('t-till').textContent = t.dasha_till; var _ce=document.getElementById('t-chart'); if(_ce){_ce.innerHTML=t.chart_svg||''; _ce.style.display=t.chart_svg?'':'none';};
   var wf = document.getElementById('wfLine');
   wf.innerHTML = t.windows_count === 1
     ? 'Humne aapke chart mein <b style="color:var(--sindoor)">1 marriage window</b> identify kiya hai.'

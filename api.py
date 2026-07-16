@@ -25,7 +25,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Res
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
-from report_view import render_report, render_milan, render_blueprint
+from report_view import render_report, render_milan, render_blueprint, north_chart_svg
 from products import compute_milan, compute_blueprint
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
@@ -250,7 +250,12 @@ def create_kundli(inp: KundliIn):
                                 female=(inp.gender == "female"),
                                 time_quality=inp.time_quality)
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
-    report["meta"]["geo_source"] = geo_source         # (#1) provenance
+    report["meta"]["geo_source"] = geo_source
+    try:
+        if report.get("chart"):
+            report["teaser"]["chart_svg"] = north_chart_svg(report)
+    except Exception:
+        pass         # (#1) provenance
 
     report["meta"]["_birth"] = {"dob": inp.dob, "tob": tob, "tz": tz,
                                 "lat": lat, "lon": lon}   # (#8) for /api/deep
