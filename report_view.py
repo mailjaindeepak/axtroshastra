@@ -147,8 +147,8 @@ REPORT_I18N = r"""<script>
     ["apni acchi dignity mein hai","is in good dignity"],
     ["D9 mein strong hai","is strong in D9"],
     ["mein strong hai","is strong in"],
-    ["promise ki baat hai, timing ki nahi — timing upar ke windows batate","this speaks to the promise, not the timing — the windows above give the timing"],
-    ["Dono milkar poori tasveer dete","Together they give the full picture"],
+    ["promise ki baat hai, timing ki nahi — timing upar ke windows batate hain.","this speaks to the promise, not the timing — the windows above give the timing."],
+    ["Dono milkar poori tasveer dete hain.","Together they give the full picture."],
     ["Quiet periods — aur unka matlab","Quiet periods — and what they mean"],
     ["Jitna important yeh jaanna hai ki kab yog strong hai, utna hi yeh ki kab नहीं hai.","It is as important to know when the yoga is strong as when it is not."],
     ["Jitna important yeh jaanna hai ki kab yog strong hai, utna hi yeh ki kab","It is as important to know when the yoga is strong as when it is not"],
@@ -161,7 +161,8 @@ REPORT_I18N = r"""<script>
     ["Yeh section isliye hai taaki aap dekh","This section is here so that you can see"],
     ["timing ek pattern hai, aapki kami nahi. Jo beet gaya usmein bhi chart ka logic tha.","timing is a pattern, not your shortcoming. Even what has passed had the chart's logic in it."],
     ["Saal-dar-saal","Year by year"],
-    ["Agle saal — ek nazar mein","The year ahead — at a glance"],
+    ["saal — ek nazar mein","years — at a glance"],
+    ["Agle ","The next "],
     ["Jupiter ka transit is saal supportive houses mein hai — conversations ko aage badhaane ka saath milega.","Jupiter's transit this year is in supportive houses — it will help move conversations forward."],
     ["Jupiter ka transit is saal neutral zone mein hai — effort par zyada, luck par kam depend kijiye.","Jupiter's transit this year is in a neutral zone — rely more on effort, less on luck."],
     ["Yeh page save kar lijiye — har saal ke shuru mein dobara padhne layak hai.","Save this page — it is worth re-reading at the start of each year."],
@@ -180,9 +181,9 @@ REPORT_I18N = r"""<script>
     ["combust hai, isliye expression mein hesitation aa sakti hai; feelings genuine, awaaz dheemi","is combust, so there can be hesitation in expression; the feelings are genuine, the voice soft"],
     ["Jo aapne nahi poocha, par jaanna chahenge","What you did not ask, but would want to know"],
     ["Saturn ka influence aapke","Saturn's influence is on your"],
-    ["house par hai — timing mein maturity-factor hai. shaadi thodi der se, par zyada soch-samajh ke. Late ≠ never.","house — there is a maturity-factor in the timing. Marriage a little later, but with more thought. Late ≠ never."],
-    ["Sade Sati abhi nahi chal rahi.","Sade Sati is not running right now."],
-    ["Filhaal Shani ka is angle se koi delay-pressure nahi.","For now, no delay-pressure from Saturn on this angle."],
+    ["house par hai — timing mein maturity-factor hai. Matlab: shaadi thodi der se, par zyada soch-samajh ke. Late ≠ never.","house — there is a maturity-factor in the timing. Meaning: marriage a little later, but with more thought. Late ≠ never."],
+    ["abhi nahi chal rahi.","is not running right now."],
+    ["se. Filhaal Shani ka is angle se koi delay-pressure nahi.","onwards. For now, no delay-pressure from Saturn on this angle."],
     ["Next phase","Next phase from"],
     ["Weak periods mein","In weak periods"],
     ["Traditional support — bina dar ke","Traditional support — without fear"],
@@ -195,7 +196,7 @@ REPORT_I18N = r"""<script>
     ["career kab lift hoga?","when will your career take off?"],
     ["par CAREER bhejiye","send CAREER on"]
   ];
-  var EXACT = {"HAAN":"YES","NAHI":"NO","नहीं":"NO","HAN":"YES","Pichhle saal":"Past years","kab":"when","aur":"and","Graha":"Planet","Bhaav":"House"};
+  var EXACT = {"HAAN":"YES","NAHI":"NO","नहीं":"NO","HAN":"YES","Pichhle saal":"Past years","kab":"when","aur":"and","Graha":"Planet","Bhaav":"House","hai.":"."};
   var TITLE = { en: "Marriage Timing Report | Axtroshastra" };
   function norm(s){ return s.replace(/\u00a0/g," ").replace(/ [‐‑‒–—-] /g," — ").replace(/[‐‑‒–—]/g,"—").replace(/\s+/g," "); }
   var SORTED = FRAG.map(function(p){ return [norm(p[0]), p[1]]; }).sort(function(a,b){ return b[0].length - a[0].length; });
