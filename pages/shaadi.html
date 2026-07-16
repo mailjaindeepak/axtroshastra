@@ -759,5 +759,130 @@ window.addEventListener('scroll', function(){
 })();
 </script>
 
+<script>
+/* Language toggle: Hinglish (default) <-> English. Page copy only. Self-contained. */
+(function(){
+  var EN = {
+    "Shaadi":"When will you","kab":"marry?","hogi?":"",
+    "Aapki kundli mein jawab already hai.":"The answer is already in your birth chart.",
+    "Hum sirf calculate karte hain.":"We just calculate it.",
+    "Exact marriage timing windows from your birth chart — years and months, not \"jaldi hi ho jayegi.\"":"Exact marriage timing windows from your birth chart — years and months, not \"it'll happen soon.\"",
+    "Apni birth details daaliye 👇":"Enter your birth details 👇",
+    "Naam":"Name",
+    "Approximate time":"Approximate time",
+    "Subah (4 AM – 10 AM)":"Morning (4 AM – 10 AM)",
+    "Din (10 AM – 4 PM)":"Day (10 AM – 4 PM)",
+    "Shaam (4 PM – 10 PM)":"Evening (4 PM – 10 PM)",
+    "Raat (10 PM – 4 AM)":"Night (10 PM – 4 AM)",
+    "Bilkul nahi pata":"No idea at all",
+    "Birth time exactly nahi pata?":"Don't know your exact birth time?",
+    "Koi baat nahi — most people don't. Hum approximate time ke saath kaam karte hain.":"No problem — most people don't. We work with an approximate time.",
+    "Hamari specialty hai.":"It's our specialty.",
+    "Meri kundli check karo — FREE":"Check my kundli — FREE",
+    "Free chart snapshot pehle. Full report":"Free chart snapshot first. Full report",
+    "Kyun alag hai":"Why it's different",
+    "Yeh report alag kyun hai":"Why this report is different",
+    "Koi astrologer opinion nahi. Sirf calculation.":"No astrologer's opinion. Just calculation.",
+    "Traditional astrologers apne experience se batate hain — har astrologer alag jawab deta hai. Hum aapki kundli ko NASA-grade planetary data se compute karte hain — wahi calculations jo professional observatories use karti hain (NASA JPL ephemeris). Same chart, same answer, every time.":"Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart with NASA-grade planetary data — the same calculations professional observatories use (NASA JPL ephemeris). Same chart, same answer, every time.",
+    "Hum guarantee nahi karte. Hum probability batate hain.":"We don't guarantee. We give probabilities.",
+    "Jo bhi aapko \"pakka shaadi ho jayegi\" bole, woh jhooth bol raha hai. Kundli timing windows batati hai — kab yog strong hai, kab weak. Decision aapka hai; hum sirf timing clear karte hain.":"Anyone who tells you \"marriage is guaranteed\" is lying. Your chart shows timing windows — when the yoga is strong, when it's weak. The decision is yours; we just make the timing clear.",
+    "Banaya IIT–IIM engineers ne.":"Built by IIT–IIM engineers.",
+    "Isliye calculation par bharosa hai, kismat-connection par nahi. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.":"That's why we trust calculation, not a fortune-teller's connection. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.",
+    "Report ke andar":"Inside the report",
+    "Report mein kya milega":"What you get in the report",
+    "Aapke marriage windows":"Your marriage windows",
+    "Timeline 2026–2036, har window ka strength grade — Strong / Moderate / Building.":"Timeline 2026–2036, each window's strength grade — Strong / Moderate / Building.",
+    "Har window ka reason":"The reason for each window",
+    "Kaunsi dasha, kaunsa transit. Blind belief nahi, logic.":"Which dasha, which transit. Not blind belief — logic.",
+    "Status + cancellation rules. (Spoiler: \"manglik\" sunke darne ki zaroorat aksar nahi hoti.)":"Status + cancellation rules. (Spoiler: hearing \"manglik\" is usually nothing to fear.)",
+    "7th house kya kehta hai — nature, arranged ya self-driven yog.":"What the 7th house says — nature, arranged or self-driven yoga.",
+    "2024–25 mein rishte kyun nahi bane? Chart mein jawab hai.":"Why didn't matches work out in 2024–25? The answer's in your chart.",
+    "Kis window mein actively dhoondhna hai, kab prepare karna hai.":"Which window to actively search in, and when to prepare.",
+    "Birth time problem?":"Birth time problem?",
+    "Birth time exact nahi pata?":"Don't know your exact birth time?",
+    "Yahi hamari specialty hai.":"This is exactly our specialty.",
+    "logon ko apna exact birth time nahi pata":"of people don't know their exact birth time",
+    "±15 minute ka difference windows ko months tak shift kar sakta hai. Doosri websites 12:00 baje assume karke galat report de deti hain. Hum aapke approximate time ke saath kaam karte hain — aur agar aap chahein toh life events se aapka time":"A ±15-minute difference can shift the windows by months. Other sites just assume 12:00 noon and give you a wrong report. We work with your approximate time — and if you like, from your life events we can",
+    "bhi kar sakte hain.":"your time too.",
+    "Sawaal-jawaab":"Q&A",
+    "Aksar poochhe gaye sawaal":"Frequently asked questions",
+    "Kya yeh accurate hai?":"Is this accurate?",
+    "Planetary positions 100% accurate hain — NASA-grade ephemeris data. Timing windows probability hain, appointment nahi. Hum honestly batate hain kaunsa window strong hai aur kaunsa weak — jo koi bhi \"guarantee\" de, usse door rahiye.":"Planetary positions are 100% accurate — NASA-grade ephemeris data. Timing windows are probabilities, not appointments. We honestly tell you which window is strong and which is weak — stay away from anyone offering a \"guarantee\".",
+    "Mujhe birth time nahi pata. Report ban sakti hai?":"I don't know my birth time. Can I still get a report?",
+    "Haan. Approximate time ke saath hum windows nikaal sakte hain (thodi wider range ke saath), aur rectification option se time narrow bhi ho sakta hai.":"Yes. With an approximate time we can still find the windows (with a slightly wider range), and the rectification option can narrow the time down.",
+    "Report kab milegi?":"When will I get the report?",
+    "Payment ke turant baad, screen par. PDF download aur WhatsApp copy bhi milti hai.":"Right after payment, on screen. You also get a PDF download and a WhatsApp copy.",
+    "Kya yeh computer-generated hai?":"Is this computer-generated?",
+    "Calculations computer karta hai — isliye unbiased hai. Rules wahi classical Vedic principles hain (dasha + transit) jo ek achha astrologer use karta hai. Difference: humara system thakta nahi, bhoolta nahi, aur mood se jawab nahi badalta.":"The computer does the calculations — so it's unbiased. The rules are the same classical Vedic principles (dasha + transit) a good astrologer uses. The difference: our system never tires, never forgets, and never changes its answer with its mood.",
+    "Yeh kaun log hain?":"Who are you?",
+    "IIT–IIM alumni engineers jinhone classical Vedic rules ko software mein encode kiya. Hum astrologer nahi hain — isliye hamara system opinion nahi deta, sirf calculation.":"IIT–IIM alumni engineers who encoded classical Vedic rules into software. We're not astrologers — so our system doesn't give opinions, just calculation.",
+    "100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.":"100% refund, no questions asked, 7 days. Message us on WhatsApp, done.",
+    "Meri details safe hain?":"Are my details safe?",
+    "Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi astrologer ko nahi bechte. (Yeh common industry practice hai; hum nahi karte.)":"Your birth details are used only for your report. No spam calls — we don't sell your number to any astrologer. (It's common industry practice; we don't do it.)",
+    "Rishtey dhoondhne se pehle,":"Before you start looking for a match,",
+    "apna time jaan lo.":"know your timing.",
+    "Aapki":"Your",
+    "kundli ready hai ✅":"kundli is ready ✅",
+    "⭐ Aapka current dasha period directly relevant hai aapke marriage timing se.":"⭐ Your current dasha period is directly relevant to your marriage timing.",
+    "Windows calculate ho rahe hain…":"Calculating your windows…",
+    "Windows calculated. Exact years, months aur strength grade report mein.":"Windows calculated. Exact years, months and strength grade in the report.",
+    "Aapke":"Your",
+    "— साल aur months, with strength grade":"— years and months, with strength grade",
+    "— aur cancellation check (most charts mein cancellation hota hai)":"— and a cancellation check (most charts have one)",
+    "Kaise":"How",
+    "partner ka yog":"your partner-yoga",
+    "hai — nature, meeting context":"works — nature, meeting context",
+    "— kab rishtey aayenge par banenge nahi, aur kyun":"— when matches will come but won't work out, and why",
+    "— har window mein kya karna chahiye":"— what to do in each window",
+    "Aapki kundli abhi compute ho rahi hai — templates nahi.":"Your kundli is being computed right now — not templates."
+  };
+  var PH = { "f-name": "Your name" };
+  var TITLE = { hi: document.title, en: "When Will I Marry? — Marriage Timing Report | Axtroshastra" };
+
+  function walk(node, fn){
+    for(var i=0;i<node.childNodes.length;i++){
+      var n=node.childNodes[i];
+      if(n.nodeType===3){ fn(n); }
+      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE'
+              && n.id!=='axlang' && !(n.classList && n.classList.contains('city-suggest'))){
+        walk(n, fn);
+      }
+    }
+  }
+  function apply(lang){
+    walk(document.body, function(tn){
+      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
+      var raw = tn.nodeValue;
+      var key = raw.replace(/\s+/g,' ').trim();
+      if(!key) return;
+      if(tn.__hi==null) tn.__hi = raw;
+      if(Object.prototype.hasOwnProperty.call(EN, key)){
+        var lead=(raw.match(/^\s*/)||[''])[0], trail=(raw.match(/\s*$/)||[''])[0];
+        tn.nodeValue = lead + EN[key] + trail;
+      }
+    });
+    for(var id in PH){ var el=document.getElementById(id); if(el){ if(el.__phhi==null) el.__phhi=el.getAttribute('placeholder')||''; el.setAttribute('placeholder', lang==='en'? PH[id] : el.__phhi); } }
+    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
+    if(TITLE[lang]) document.title = TITLE[lang];
+    try{ localStorage.setItem('axlang', lang); }catch(e){}
+    var box=document.getElementById('axlang');
+    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en');
+             box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
+    window.__axlang=lang;
+  }
+
+  var css=document.createElement('style');
+  css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}';
+  document.head.appendChild(css);
+  var box=document.createElement('div'); box.id='axlang';
+  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
+  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  document.body.appendChild(box);
+
+  var saved='hi'; try{ saved=localStorage.getItem('axlang')||'hi'; }catch(e){}
+  apply(saved);
+})();
+</script>
+
 </body>
 </html>
