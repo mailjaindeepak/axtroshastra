@@ -2,6 +2,16 @@
 <html lang="hi-IN">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var l = localStorage.getItem('axlang') || 'en';
+    if(l === 'en') document.documentElement.classList.add('ax-pre');
+  }catch(e){}
+  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
+})();
+</script>
+<style>html.ax-pre body{visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shaadi Kab Hogi? — Marriage Timing Report | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
@@ -546,7 +556,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
     var data = await res.json();
     REPORT_ID = data.report_id;
-    renderTeaser(data.teaser);
+    window.__teaserData = data.teaser; window.__renderTeaser = renderTeaser; renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
@@ -560,15 +570,16 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
 
 function renderTeaser(t){
   var name = document.getElementById('f-name').value.trim();
-  if(name) document.getElementById('t-name').textContent = name + ' ki';
+  if(name) document.getElementById('t-name').textContent = name + (window.__axlang==='en' ? "'s" : ' ki');
   document.getElementById('t-rashi').textContent = t.moon_sign + ' (' + t.moon_sign_en + ')';
   document.getElementById('t-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
   document.getElementById('t-dasha').textContent = t.current_dasha;
   document.getElementById('t-till').textContent = t.dasha_till; var _ce=document.getElementById('t-chart'); if(_ce){_ce.innerHTML=t.chart_svg||''; _ce.style.display=t.chart_svg?'':'none';};
   var wf = document.getElementById('wfLine');
-  wf.innerHTML = t.windows_count === 1
-    ? 'Humne aapke chart mein <b style="color:var(--sindoor)">1 marriage window</b> identify kiya hai.'
-    : 'Humne aapke chart mein <b style="color:var(--sindoor)">' + t.windows_count + ' marriage windows</b> identify kiye hain.';
+  var __wc = '<b style="color:var(--sindoor)">' + (t.windows_count === 1 ? '1 marriage window' : t.windows_count + ' marriage windows') + '</b>';
+      wf.innerHTML = (window.__axlang === 'en')
+        ? 'We found ' + __wc + ' in your chart.'
+        : 'Humne aapke chart mein ' + __wc + (t.windows_count === 1 ? ' identify kiya hai.' : ' identify kiye hain.');
   document.getElementById('tlTitle').textContent =
     'Your marriage timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
   // year axis
@@ -861,6 +872,8 @@ window.addEventListener('scroll', function(){
     if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en');
              box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
     window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
+    try{ if(window.__teaserData && window.__renderTeaser) window.__renderTeaser(window.__teaserData); }catch(e){}
   }
 
   var css=document.createElement('style');
@@ -871,7 +884,7 @@ window.addEventListener('scroll', function(){
   box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
   document.body.appendChild(box);
 
-  var saved='hi'; try{ saved=localStorage.getItem('axlang')||'hi'; }catch(e){}
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
   apply(saved);
 })();
 </script>
