@@ -239,11 +239,9 @@ fbq('track', 'PageView');
 
     <p class="eyebrow">Marriage Timing Report</p>
     <h1>Shaadi <em>kab</em> hogi?</h1>
-    <p class="sub">Aapki kundli mein jawab already hai.<br>Hum sirf calculate karte hain.</p>
-    <p class="sub2">Exact marriage timing windows from your birth chart — years and months, not "jaldi hi ho jayegi."</p>
+    <p class="sub">Apni details bhariye — jawab 2 minute mein.</p>
 
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Apni birth details daaliye 👇</p>
       <div class="field">
         <label for="f-name">Naam</label>
         <input id="f-name" type="text" placeholder="Aapka naam" required>
@@ -279,7 +277,7 @@ fbq('track', 'PageView');
         <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
       <button class="btn" type="submit">Meri kundli check karo — FREE</button>
-      <p class="btn-note">Free chart snapshot pehle. Full report <s style="color:#8F92AB">₹999</s> <b style="color:var(--sindoor)">₹499</b> launch price — pay only if you want the answer.</p>
+      <p class="btn-note">Free Chart Snapshot</p>
     </form>
   </div>
 </header>
@@ -289,9 +287,9 @@ fbq('track', 'PageView');
   <div class="wrap">
     <ul>
       <li><span class="dot"></span><b>NASA-grade</b> planetary data</li>
-      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
-      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
       <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
+      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
     </ul>
   </div>
 </div>
@@ -397,13 +395,6 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-<!-- ============ SOCIAL PROOF ============ -->
-<section class="proof">
-  <div class="wrap">
-    <p class="count" id="reportCount"></p>
-    <p class="cap">reports generated</p>
-    </div>
-</section>
 
 <!-- ============ FAQ ============ -->
 <section class="faq">
@@ -526,10 +517,10 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   var q = timeQuality();
 
   // staged computation display (real pipeline, paced for reading)
-  var steps = ['🪐 Planetary positions calculate ho rahe hain… (NASA JPL data)',
-               '📿 Aapki Vimshottari dasha timeline ban rahi hai…',
-               '🔍 2026–2036 ke marriage windows scan ho rahe hain…',
-               '✨ Aapka snapshot taiyaar ho raha hai…'];
+  var __axEN = (window.__axlang === 'en');
+      var steps = __axEN
+        ? ['🪐 Calculating planetary positions… (NASA JPL data)', '📿 Building your Vimshottari dasha timeline…', '🔍 Scanning 2026–2036 for marriage windows…', '✨ Preparing your snapshot…']
+        : ['🪐 Planetary positions calculate ho rahe hain… (NASA JPL data)', '📿 Aapki Vimshottari dasha timeline ban rahi hai…', '🔍 2026–2036 ke marriage windows scan ho rahe hain…', '✨ Aapka snapshot taiyaar ho raha hai…'];
   var box = document.getElementById('calcOv'), msg = document.getElementById('ovMsg'),
       bar = document.getElementById('ovBar');
   box.classList.add('show'); var si = 0;
@@ -537,8 +528,8 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   var stepTimer = setInterval(function(){
     si++;
     if(si < steps.length){ msg.textContent = steps[si]; bar.style.width = (25*(si+1))+'%'; }
-  }, 1100);
-  var minWait = new Promise(function(res){ setTimeout(res, 4200); });
+  }, 2200);
+  var minWait = new Promise(function(res){ setTimeout(res, 9000); });
 
   try{
     var fetchP = fetch('/api/kundli', {
@@ -763,7 +754,8 @@ window.addEventListener('scroll', function(){
 /* Language toggle: Hinglish (default) <-> English. Page copy only. Self-contained. */
 (function(){
   var EN = {
-    "Shaadi":"When will you","kab":"marry?","hogi?":"",
+    "Shaadi":"When will I","kab":"get married?","hogi?":"",
+    "Apni details bhariye — jawab 2 minute mein.":"Enter your details below and get the answer in 2 minutes.",
     "Aapki kundli mein jawab already hai.":"The answer is already in your birth chart.",
     "Hum sirf calculate karte hain.":"We just calculate it.",
     "Exact marriage timing windows from your birth chart — years and months, not \"jaldi hi ho jayegi.\"":"Exact marriage timing windows from your birth chart — years and months, not \"it'll happen soon.\"",
@@ -785,7 +777,7 @@ window.addEventListener('scroll', function(){
     "Koi astrologer opinion nahi. Sirf calculation.":"No astrologer's opinion. Just calculation.",
     "Traditional astrologers apne experience se batate hain — har astrologer alag jawab deta hai. Hum aapki kundli ko NASA-grade planetary data se compute karte hain — wahi calculations jo professional observatories use karti hain (NASA JPL ephemeris). Same chart, same answer, every time.":"Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart with NASA-grade planetary data — the same calculations professional observatories use (NASA JPL ephemeris). Same chart, same answer, every time.",
     "Hum guarantee nahi karte. Hum probability batate hain.":"We don't guarantee. We give probabilities.",
-    "Jo bhi aapko \"pakka shaadi ho jayegi\" bole, woh jhooth bol raha hai. Kundli timing windows batati hai — kab yog strong hai, kab weak. Decision aapka hai; hum sirf timing clear karte hain.":"Anyone who tells you \"marriage is guaranteed\" is lying. Your chart shows timing windows — when the yoga is strong, when it's weak. The decision is yours; we just make the timing clear.",
+    "Jo bhi aapko \"pakka shaadi ho jayegi\" bole, woh jhooth bol raha hai. Kundli timing windows batati hai — kab yog strong hai, kab weak. Decision aapka hai; hum sirf timing clear karte hain.":"Anyone who tells you \"marriage is guaranteed\" is lying. Your chart shows timing windows — when the chance is strong, when it's weak. The decision is yours; we just make the timing clear.",
     "Banaya IIT–IIM engineers ne.":"Built by IIT–IIM engineers.",
     "Isliye calculation par bharosa hai, kismat-connection par nahi. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.":"That's why we trust calculation, not a fortune-teller's connection. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.",
     "Report ke andar":"Inside the report",
@@ -795,7 +787,7 @@ window.addEventListener('scroll', function(){
     "Har window ka reason":"The reason for each window",
     "Kaunsi dasha, kaunsa transit. Blind belief nahi, logic.":"Which dasha, which transit. Not blind belief — logic.",
     "Status + cancellation rules. (Spoiler: \"manglik\" sunke darne ki zaroorat aksar nahi hoti.)":"Status + cancellation rules. (Spoiler: hearing \"manglik\" is usually nothing to fear.)",
-    "7th house kya kehta hai — nature, arranged ya self-driven yog.":"What the 7th house says — nature, arranged or self-driven yoga.",
+    "7th house kya kehta hai — nature, arranged ya self-driven yog.":"What the 7th house says — nature, arranged or self-driven.",
     "2024–25 mein rishte kyun nahi bane? Chart mein jawab hai.":"Why didn't matches work out in 2024–25? The answer's in your chart.",
     "Kis window mein actively dhoondhna hai, kab prepare karna hai.":"Which window to actively search in, and when to prepare.",
     "Birth time problem?":"Birth time problem?",
@@ -830,14 +822,14 @@ window.addEventListener('scroll', function(){
     "— साल aur months, with strength grade":"— years and months, with strength grade",
     "— aur cancellation check (most charts mein cancellation hota hai)":"— and a cancellation check (most charts have one)",
     "Kaise":"How",
-    "partner ka yog":"your partner-yoga",
+    "partner ka yog":"the partner pattern",
     "hai — nature, meeting context":"works — nature, meeting context",
     "— kab rishtey aayenge par banenge nahi, aur kyun":"— when matches will come but won't work out, and why",
     "— har window mein kya karna chahiye":"— what to do in each window",
     "Aapki kundli abhi compute ho rahi hai — templates nahi.":"Your kundli is being computed right now — not templates."
   };
   var PH = { "f-name": "Your name" };
-  var TITLE = { hi: document.title, en: "When Will I Marry? — Marriage Timing Report | Axtroshastra" };
+  var TITLE = { hi: document.title, en: "When Will I Get Married? — Marriage Timing Report | Axtroshastra" };
 
   function walk(node, fn){
     for(var i=0;i<node.childNodes.length;i++){
