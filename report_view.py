@@ -102,6 +102,18 @@ def _weak_periods(payload: dict) -> list:
     return gaps[:2]
 
 
+AX_PRE = r"""<script>
+(function(){
+  try{
+    var l = localStorage.getItem('axlang') || 'en';
+    if(l === 'en') document.documentElement.classList.add('ax-pre');
+  }catch(e){}
+  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
+})();
+</script>
+<style>html.ax-pre body{visibility:hidden}</style>"""
+
+
 REPORT_I18N = r"""<script>
 (function(){
   var FRAG = [
@@ -227,6 +239,7 @@ REPORT_I18N = r"""<script>
     var box=document.getElementById('axlang');
     if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en'); box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
     window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
   }
   var css=document.createElement('style');
   css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.92);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}';
@@ -235,7 +248,7 @@ REPORT_I18N = r"""<script>
   box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
   box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
   document.body.appendChild(box);
-  var saved='hi'; try{ saved=localStorage.getItem('axlang')||'hi'; }catch(e){}
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
   apply(saved);
 })();
 </script>
@@ -455,7 +468,7 @@ windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919650973345?t
                    "debilitated": "debilitated — timing par extra dhyaan",
                    "neutral": "neutral dignity"}[sl_d]
 
-    return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
+    return f"""<!DOCTYPE html><html lang="hi-IN"><head>{AX_PRE}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{name} — Marriage Timing Report | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
