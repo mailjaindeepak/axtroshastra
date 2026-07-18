@@ -266,7 +266,7 @@ fbq('track', 'PageView');
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">Time of birth</label>
-        <input id="f-tob" type="time">
+        <div class="dob-row"><select id="f-hh" aria-label="Hour"></select><select id="f-mm2" aria-label="Minute"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
@@ -889,5 +889,17 @@ window.addEventListener('scroll', function(){
 })();
 </script>
 
+<script>
+(function(){
+  var hh=document.getElementById("f-hh"),mm=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
+  if(!hh||!tob) return;
+  function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
+  opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
+  opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+  opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+  function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
+  hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
+})();
+</script>
 </body>
 </html>
