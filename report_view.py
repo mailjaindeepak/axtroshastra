@@ -111,7 +111,7 @@ AX_PRE = r"""<script>
   setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
 })();
 </script>
-<style>html.ax-pre body{visibility:hidden}</style>"""
+<style>html.ax-pre body{visibility:hidden}@media print{#axlang{display:none!important}#ax-pdf{display:none!important}.pg{page-break-after:always;break-after:page}.pg:last-of-type{page-break-after:auto}body{background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>"""
 
 
 REPORT_I18N = r"""<script>
@@ -631,7 +631,7 @@ Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate bett
 <div class="upsell"><b>Ek aur sawaal, usi chart se: career kab lift hoga?</b>
 <p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919650973345?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
 <div class="btnrow">
-  <a class="btn p" href="/report/{meta.get('report_id','')}/pdf">Download PDF</a>
+  <a class="btn p" id="ax-pdf" href="#" onclick="window.print();return false;">Download PDF</a>
   <a class="btn s" href="https://wa.me/919650973345?text=Hi%20Axtroshastra">WhatsApp Support</a>
 </div></section>
 
