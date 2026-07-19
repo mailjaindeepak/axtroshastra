@@ -284,7 +284,7 @@ fbq('track', 'PageView');
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
+        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div>
       </div>
       <button class="btn" type="submit">Meri kundli check karo — FREE</button>
       <p class="btn-note">Free Chart Snapshot</p>
@@ -720,19 +720,19 @@ window.addEventListener('scroll', function(){
   function render(){
     if(!items.length){list.classList.remove('open');list.innerHTML='';return;}
     list.innerHTML=items.map(function(c,i){
-      return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+c.country+'</small></div>';
+      return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+(c.region||c.country)+'</small></div>';
     }).join('');
     list.classList.add('open');
   }
   function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
   inp.addEventListener('input',function(){
-    selected=null;hint.textContent='';var q=inp.value.trim();
+    hint.textContent='';var q=inp.value.trim();
     clearTimeout(timer);
     if(q.length<2){items=[];render();return;}
     timer=setTimeout(function(){
       fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
         items=(d&&d.results)||[];active=-1;render();
-        if(!items.length){hint.textContent='City nahi mili — nazdeeki bada sheher/zila chuniye.';}
+        if(!items.length){hint.textContent=(window.__axlang==='en'?'City not found — pick your nearest bigger city/district.':'City nahi mili — nazdeeki bada sheher/zila chuniye.');}
       }).catch(function(){items=[];render();});
     },180);
   });
@@ -747,12 +747,12 @@ window.addEventListener('scroll', function(){
   document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
   var form=inp.closest('form');
   if(form)form.addEventListener('submit',function(e){
-    if(!selected){e.preventDefault();e.stopImmediatePropagation();hint.textContent='Please pick your birth city from the list.';inp.focus();}
+    if(!selected||inp.value.trim()!==selected.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
   },true);
   var of=window.fetch;
   window.fetch=function(url,opts){
     try{
-      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected){
+      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected&&inp.value.trim()===selected.label){
         var b=JSON.parse(opts.body);b.lat=selected.lat;b.lon=selected.lon;b.tz=selected.tz;b.place=selected.label;opts.body=JSON.stringify(b);
       }
     }catch(_){}
@@ -765,6 +765,7 @@ window.addEventListener('scroll', function(){
 /* Language toggle: Hinglish (default) <-> English. Page copy only. Self-contained. */
 (function(){
   var EN = {
+    "Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.":"Just your city or district is enough — a locality (like Punjabi Bagh) won't appear in search.",
     "Shaadi":"When will I","kab":"get married?","hogi?":"",
     "Apni details bhariye — jawab 2 minute mein.":"Enter your details below and get the answer in 2 minutes.",
     "Aapki kundli mein jawab already hai.":"The answer is already in your birth chart.",
