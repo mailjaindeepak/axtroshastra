@@ -28,5 +28,5 @@ jobs:
           DEMO_MODE: "1"
           DB_PATH: /tmp/ci_reports.db
           RAZORPAY_WEBHOOK_SECRET: ci-secret
-          STATS_KEY: ci-stats-key
+          STATS_KEY: test-stats-key   # must match the key the admin-gate tests use (tests/conftest.py)
         run: pytest -q
