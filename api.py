@@ -19,6 +19,7 @@ Razorpay dashboard prerequisites:
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
 import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
+import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
@@ -119,7 +120,7 @@ os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 _lock = threading.Lock()
 
 def db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = dbcompat.connect()
     conn.execute("""CREATE TABLE IF NOT EXISTS reports(
         id TEXT PRIMARY KEY, payload TEXT NOT NULL, paid INTEGER DEFAULT 0,
         order_id TEXT, payment_id TEXT, phone TEXT, created_at TEXT)""")

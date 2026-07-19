@@ -22,6 +22,7 @@ Env:
 import json
 import os
 import sqlite3
+import dbcompat
 import threading
 import urllib.parse
 import urllib.request
@@ -46,7 +47,7 @@ _lock = threading.Lock()
 
 
 def _db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = dbcompat.connect()
     conn.execute("""CREATE TABLE IF NOT EXISTS geocache(
         place TEXT PRIMARY KEY, lat REAL, lon REAL, tz REAL,
         source TEXT, created_at TEXT)""")

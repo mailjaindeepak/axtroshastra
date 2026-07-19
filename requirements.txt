@@ -3,6 +3,7 @@ uvicorn[standard]==0.30.*
 pyswisseph==2.10.*
 pydantic==2.*
 razorpay==1.4.*
+PyMySQL==1.1.*          # MySQL driver for AWS RDS (dbcompat backend)
 twilio
 xhtml2pdf>=0.2.16          # (#7) server-side PDF rendering (HTML -> PDF)
 # Optional: only needed for non-Indian birthplaces (#1 timezone resolution)
