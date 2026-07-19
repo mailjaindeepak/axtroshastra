@@ -16,6 +16,8 @@ Each city dict: {id, name, label, country, cc, lat, lon, tz, pop}
 from datetime import datetime
 import unicodedata
 
+_STATE = {"01": "Andaman & Nicobar", "02": "Andhra Pradesh", "03": "Assam", "05": "Chandigarh", "07": "Delhi", "09": "Gujarat", "10": "Haryana", "11": "Himachal Pradesh", "12": "Jammu & Kashmir", "13": "Kerala", "16": "Maharashtra", "17": "Manipur", "18": "Meghalaya", "19": "Karnataka", "20": "Nagaland", "21": "Odisha", "22": "Puducherry", "23": "Punjab", "24": "Rajasthan", "25": "Tamil Nadu", "26": "Tripura", "28": "West Bengal", "29": "Sikkim", "30": "Arunachal Pradesh", "31": "Mizoram", "33": "Goa", "34": "Bihar", "35": "Madhya Pradesh", "36": "Uttar Pradesh", "37": "Chhattisgarh", "38": "Jharkhand", "39": "Uttarakhand", "40": "Telangana", "41": "Ladakh", "52": "Dadra & Nagar Haveli and Daman & Diu"}
+
 _CITIES = None          # loaded once
 _BY_ID = None
 _COUNTRY = None
@@ -50,6 +52,7 @@ def _load():
             "alts": alts, "cc": cc, "country": _COUNTRY.get(cc, cc),
             "lat": round(float(c["latitude"]), 4), "lon": round(float(c["longitude"]), 4),
             "tz": c.get("timezone", ""), "pop": int(c.get("population", 0) or 0),
+            "admin1": c.get("admin1code", ""),
         })
     rows.sort(key=lambda r: -r["pop"])          # population-ranked for suggest priority
     _CITIES = rows
@@ -57,7 +60,10 @@ def _load():
 
 
 def _public(r: dict) -> dict:
-    return {"id": r["id"], "name": r["name"], "label": f"{r['name']}, {r['country']}",
+    st = _STATE.get(r.get("admin1", ""), "")
+    region = st if (st and st != r["name"]) else "India"
+    return {"id": r["id"], "name": r["name"], "label": f"{r['name']}, {region}",
+            "region": region,
             "country": r["country"], "cc": r["cc"], "lat": r["lat"], "lon": r["lon"],
             "tz": r["tz"], "pop": r["pop"]}
 
