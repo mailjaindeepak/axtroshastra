@@ -929,5 +929,21 @@ window.addEventListener('scroll', function(){
   }, true);
 })();
 </script>
+<script>
+(function(){
+  var brand=document.querySelector(".brand");
+  if(brand){ brand.style.cursor="pointer"; brand.setAttribute("role","link"); brand.setAttribute("tabindex","0"); brand.setAttribute("aria-label","Axtroshastra home");
+    brand.addEventListener("click", function(){ location.href="/"; });
+    brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
+  var ov=document.getElementById("calcOv");
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return setTimeout(wireCap,200); }
+    cap.style.transition="opacity .25s ease"; var t;
+    window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
+    function full(){ cap.style.opacity=""; clearTimeout(t); }
+    cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
+  wireCap();
+})();
+</script>
 </body>
 </html>
