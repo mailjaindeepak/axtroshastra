@@ -1,5 +1,5 @@
 fastapi==0.115.*
-uvicorn[standard]==0.30.*
+uvicorn==0.30.*            # plain uvicorn (no uvloop/httptools/watchfiles source builds on Py3.14)
 pyswisseph==2.10.*
 pydantic==2.*
 razorpay==1.4.*
