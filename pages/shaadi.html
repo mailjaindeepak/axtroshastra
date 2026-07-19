@@ -902,5 +902,32 @@ window.addEventListener('scroll', function(){
   hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
 })();
 </script>
+<script>
+(function(){
+  var form=document.getElementById("kundliForm"); if(!form) return;
+  var dd=document.getElementById("f-dd"),mm=document.getElementById("f-mm"),yy=document.getElementById("f-yy");
+  function L(en,hi){ return (window.__axlang==="en")?en:hi; }
+  function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
+  var nameHint=mkHint(document.getElementById("f-name"));
+  var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
+  var tobHint=mkHint(document.getElementById("tobField"));
+  function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
+  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
+  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  form.addEventListener("submit", function(e){
+    function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
+    var nm=document.getElementById("f-name");
+    var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
+    nm.value=clean;
+    if(!clean){ nameHint.textContent=L("Please enter your name.","Apna naam likhiye."); stop(); return; } nameHint.textContent="";
+    if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","Apna birth time chuniye, ya neeche wala box tick kijiye agar nahi pata."); stop(); return; } tobHint.textContent="";
+    var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
+    var teaser=document.getElementById("teaser");
+    if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }
+    window.__lastHash=h;
+  }, true);
+})();
+</script>
 </body>
 </html>
