@@ -205,6 +205,7 @@ fbq('track', 'PageView');
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window, document, "clarity", "script", "xkbm56cwzh");
 </script>
+<style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
 </head>
 <body>
 
@@ -233,12 +234,12 @@ fbq('track', 'PageView');
       <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1 (ladka)</p>
       <div class="field"><label for="p1-name">Naam</label><input id="p1-name" type="text" required></div>
       <div class="field"><label for="p1-dob">Date of birth</label><input id="p1-dob" type="date" required></div>
-      <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><input id="p1-tob" type="time"></div>
+      <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">Place of birth</label><input id="p1-place" type="text" placeholder="City, State" required></div>
       <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2 (ladki)</p>
       <div class="field"><label for="p2-name">Naam</label><input id="p2-name" type="text" required></div>
       <div class="field"><label for="p2-dob">Date of birth</label><input id="p2-dob" type="date" required></div>
-      <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(optional)</span></label><input id="p2-tob" type="time"></div>
+      <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(optional)</span></label><div class="tob3"><select id="p2-hh" aria-label="Hour"></select><select id="p2-mm2" aria-label="Minute"></select><select id="p2-ap" aria-label="AM/PM"></select></div><input id="p2-tob" type="hidden"></div>
       <div class="field"><label for="p2-place">Place of birth</label><input id="p2-place" type="text" placeholder="City, State" required></div>
       <button class="btn" type="submit">Guna milan karo — FREE preview</button>
       <p class="btn-note">Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.</p>
@@ -555,6 +556,21 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
+</script>
+<script>
+(function(){
+  function wire(pre){
+    var hh=document.getElementById(pre+"-hh"),mm=document.getElementById(pre+"-mm2"),ap=document.getElementById(pre+"-ap"),tob=document.getElementById(pre+"-tob");
+    if(!hh||!tob) return;
+    function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
+    opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
+    opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+    opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+    function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
+    hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
+  }
+  wire("p1"); wire("p2");
+})();
 </script>
 </body>
 </html>

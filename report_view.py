@@ -4,7 +4,8 @@ Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
 from datetime import datetime
-from html import escape  # escape user-supplied fields (name/place) before HTML interpolation
+from html import escape
+import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
 
 SIGNS = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
          "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena"]
@@ -99,6 +100,196 @@ def _weak_periods(payload: dict) -> list:
             gaps.append((prev_end.strftime("%b %Y"), s.strftime("%b %Y")))
         prev_end = max(prev_end, e)
     return gaps[:2]
+
+
+AX_PRE = r"""<script>
+(function(){
+  try{
+    var l = localStorage.getItem('axlang') || 'en';
+    if(l === 'en') document.documentElement.classList.add('ax-pre');
+  }catch(e){}
+  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
+})();
+</script>
+<style>html.ax-pre body{visibility:hidden}@media print{#axlang{display:none!important}#ax-pdf{display:none!important}.pg{page-break-after:always;break-after:page}.pg:last-of-type{page-break-after:auto}body{background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.ax-wm{display:flex!important}.ax-share{display:none!important}}.ax-wm{display:none;position:fixed;inset:0;z-index:9998;pointer-events:none;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-28deg);opacity:.08;color:#151C39;font-family:Georgia,serif}.ax-wm b{font-size:66px;letter-spacing:.12em;line-height:1}.ax-wm span{font-size:18px;letter-spacing:.35em;margin-top:6px}.ax-share{display:inline-block;background:#25D366;color:#fff;border:0;border-radius:10px;padding:12px 18px;font:600 15px/1 sans-serif;cursor:pointer;text-decoration:none}.ax-disc{max-width:640px;margin:28px auto 8px;padding:14px 16px;border:1px solid #E7E0D2;border-radius:10px;background:#fbf7ef;font-size:12.5px;line-height:1.5;color:#6b6f80}.ax-endcard{max-width:640px;margin:12px auto 28px;text-align:center;padding:18px;border-top:2px solid #E4B04A}.ax-endcard b{font-size:18px;color:#151C39}.ax-endcard a{color:#C93B2E;text-decoration:none;font-weight:600}.ans{max-width:640px;margin:8px auto 4px;padding:20px 22px;border:1px solid #E4B04A;border-radius:14px;background:#FFF9EC}.ans .plabel{color:#B8860B;margin:0 0 2px}.ans h2{margin:.15em 0 .55em}.ans-win{font-size:17px;margin:.3em 0}.ans-win .g{color:#2E7D53;font-weight:700}.ans-win2{color:#4a4d5e;margin:.15em 0}.ans-mg{margin:.55em 0 .2em;font-weight:600}.ans-note{font-size:12.5px;color:#6b6f80;margin-top:.6em;line-height:1.5}.facts .why{font-size:12px;color:#8a7a5c;margin:3px 0 11px;line-height:1.45}</style>"""
+
+
+REPORT_I18N = r"""<script>
+(function(){
+  var FRAG = [
+    ["Aapka jawab — ek nazar mein","Your answer — at a glance"],
+    ["Shaadi kab hogi? — seedha jawab","When will you get married? — the direct answer"],
+    ["Sabse strong window:","Strongest window:"],
+    ["Uske baad:","After that:"],
+    ["Manglik: Nahi — is taraf koi rukaawat nahi.","Manglik: No — no obstacle on this front."],
+    ["Manglik: technically haan, par cancel ho gaya — practically Nahi.","Manglik: technically yes, but cancelled — practically No."],
+    ["Manglik: Haan — page 5 par detail aur cancellation check dekhiye.","Manglik: Yes — see the detail and cancellation check on page 5."],
+    ["Yeh jawab aapke poore chart se nikla hai. Neeche har window ki wajah, aapka Navamsa, aur beete periods — taaki aap khud milaa sakein.","This answer comes from your full chart. Below: the reason for each window, your Navamsa, and past periods — so you can check it yourself."],
+    ["Aapki personality aur poore chart ka base — har bhaav isi se gina jaata hai.","The base of your personality and whole chart — every house is counted from here."],
+    ["Aapka mann aur emotional nature. Aapki dasha timeline isi Moon-nakshatra se chalti hai — yahi timing ka engine hai.","Your mind and emotional nature. Your dasha timeline runs from this Moon-nakshatra — this is the engine of timing."],
+    ["Shaadi, partner aur commitment ka ghar — marriage ka main area.","The house of marriage, partner and commitment — the main area for marriage."],
+    ["Shaadi ka main switch. Iski dignity (upar) timing ki quality batati hai — strong matlab saaf timing, tender matlab zyada soch-samajh.","The main switch for marriage. Its dignity (above) shows the quality of the timing — strong means clear timing, tender means more thought is needed."],
+    ["Rishton ka natural indicator (Venus/Jupiter) — yeh shaadi ka promise dikhata hai.","The natural indicator of relationships (Venus/Jupiter) — it shows the marriage promise."],
+    ["Jaimini system ka spouse-significator — partner ki ek jhalak.","The spouse-significator in the Jaimini system — a glimpse of the partner."],
+    ["Abhi kaunsi dasha chal rahi hai. Windows isi timeline par bante hain — isliye yeh sabse relevant.","Which dasha is running now. The windows form on this timeline — which is why this is the most relevant."],
+    ["Yeh report classical Vedic Jyotish (dasha-transit) principles par computed hai — guidance ke liye, guarantee nahi. Timing windows probability hain, fixed dates nahi. Yeh legal, medical ya financial advice nahi hai. Apne life decisions aap apni samajh se lijiye; Axtroshastra kisi outcome ki zimmedari nahi leta.","This report is computed from classical Vedic Jyotish (dasha-transit) principles — for guidance, not a guarantee. Timing windows are probabilities, not fixed dates. This is not legal, medical or financial advice. Make your own life decisions using your own judgement; Axtroshastra takes no responsibility for any outcome."],
+    ["Yeh report Axtroshastra ne banayi — apna report paayein:","Made with Axtroshastra — get your own report at:"],
+    ["self-respecting, strong-willed partner — individuality rishtey mein central; ek dusre ke ego ko space dena seekhna faydemand","self-respecting, strong-willed partner — individuality is central to the relationship; learning to give each other's ego space pays off"],
+    ["emotionally attuned, caring partner — ghar-parivar ka warmth bond ka kendra; mood-tuning dono ki saanjhi zimmedari","emotionally attuned, caring partner — the warmth of home and family is the heart of the bond; mood-tuning is a shared responsibility"],
+    ["energetic, passionate bond — kabhi tez-mizaji bhi (Manglik check upar dekhiye); jhagdon ko jaldi suljhana rishtey ko majboot karta hai","energetic, passionate bond — sometimes hot-tempered too (see the Manglik check above); resolving quarrels quickly makes the relationship stronger"],
+    ["youthful, communicative partner — baat-cheet aapka asli gum hai; aksar partner young-natured ya age-gap kam","youthful, communicative partner — conversation is your real glue; often the partner is young-natured or the age gap is small"],
+    ["wise, principled, often traditional-values partner — 7th house mein Guru ko classical texts shubh maante hain; family-approved yog","wise, principled, often traditional-values partner — classical texts consider Jupiter in the 7th house auspicious; a family-approved match"],
+    ["affectionate, harmony-loving partner — romance aur comfort sahaj; marriage karaka apni hi jagah, isliye achha placement","affectionate, harmony-loving partner — romance and comfort come naturally; the marriage karaka is in its own place, so a good placement"],
+    ["mature, committed, possibly older ya seriously-minded partner — bond dheere banta hai par tikau; shuruaati sabr baad mein rang laata hai","mature, committed, possibly older or seriously-minded partner — the bond builds slowly but lasts; early patience pays off later"],
+    ["unconventional attraction — partner alag background/community/desh se ho sakta hai; shuruaat sudden ya intense","unconventional attraction — the partner may come from a different background/community/country; the start can be sudden or intense"],
+    ["gehra par thoda detached bond — partner spiritually-inclined ho sakta hai; over-analysis se bachna, dil se judna","a deep but slightly detached bond — the partner may be spiritually-inclined; avoid over-analysis, connect from the heart"],
+    ["Is chart mein koi graha vargottama nahi — normal hai, zyaadatar charts mein 0–2 hote hain.","No planet is vargottama in this chart — that's normal; most charts have only 0–2."],
+    ["aapka 7th lord","your 7th lord"],
+    ["vargottama hai (D1 aur D9 mein ek hi rashi) — marriage promise strong","is vargottama (same sign in D1 and D9) — a strong marriage promise"],
+    ["vargottama hai — sneh aur nibhaav ki strength","is vargottama — strength of affection and commitment"],
+    ["debilitated hai — timing par thoda extra dhyaan","is debilitated — a little extra care on timing"],
+    ["D9 mein debilitated hai — expression mein narmi ki zaroorat","is debilitated in D9 — expression needs some gentleness"],
+    ["(upar windows dekhiye).","(see the windows above)."],
+    ["Navamsa thoda tender hai — iska matlab shaadi nahi hoti aisa nahi, balki partner-choice aur timing mein soch-samajh zyada zaroori hai. Yeh warning nahi, awareness hai.","The Navamsa is a bit tender — this doesn't mean marriage won't happen; rather, partner-choice and timing need more thought. This is not a warning, it's awareness."],
+    ["Navamsa marriage promise ko steadily support karta hai — koi badi rukaawat nahi, D1 windows hi driver hain.","The Navamsa steadily supports the marriage promise — no major obstacle; the D1 windows are the driver."],
+    ["D9 mein koi strong plus ya minus signal nahi — neutral promise, timing D1 se aati hai.","No strong plus or minus signal in D9 — a neutral promise; the timing comes from D1."],
+    ["Aapka chart — marriage lens se","Your chart — through a marriage lens"],
+    ["Yeh 6-7 factors milkar aapki marriage timing decide karte hain. Agle page par inhi se nikale gaye aapke windows hain.","These 6–7 factors together decide your marriage timing. The next page has your windows, derived from them."],
+    ["Yeh 6–7 factors milkar aapki marriage timing decide karte hain. Agle page par inhi se nikale gaye aapke windows hain.","These 6–7 factors together decide your marriage timing. The next page has your windows, derived from them."],
+    ["timing par extra dhyaan","pay extra attention to timing"],
+    ["apne hi sign mein — strong placement","in its own sign — strong placement"],
+    ["theek-thaak","steady"],
+    ["Aapka poora chart — verify kijiye","Your full chart — verify it"],
+    ["Hum kuch chhupate nahi. Neeche aapke saare 9 grahon ki exact position hai — koi bhi astrologer ise apni panchang se milaa sakta hai. Yahi hamari transparency hai.","We hide nothing. Below are the exact positions of all 9 of your planets — any astrologer can check them against their panchang. That is our transparency."],
+    ["Bhaav (house) lagna se gina gaya hai","Houses are counted from the lagna"],
+    ["Yeh windows kaise nikle","How these windows were derived"],
+    ["Har window ke card mein uske reasons diye hain — kaunsi dasha, kaunsa connection. Broad logic:","Each window's card gives its reasons — which dasha, which connection. Broad logic:"],
+    ["marriage typically triggers jab dasha/antardasha lord aapke 7th house ya uske lord se connect hota hai, aur Jupiter ka transit usko confirm karta hai.","marriage typically triggers when the dasha/antardasha lord connects to your 7th house or its lord, and Jupiter's transit confirms it."],
+    ["Timing windows probability bands hain, appointments nahi — ±15 minute ka birth time difference bhi boundaries ko months tak shift kar sakta hai. Isliye hum honest ranges dete hain, fake precision nahi.","Timing windows are probability bands, not appointments — even a ±15-minute birth-time difference can shift the boundaries by months. So we give honest ranges, not fake precision."],
+    ["Aapke top window ka scorecard","Your top window's scorecard"],
+    ["Yeh window","This window"],
+    ["ko humne","was scored"],
+    ["diye, isliye grade","points, hence grade"],
+    ["Har point ke peeche ek classical rule hai","Behind each point is a classical rule"],
+    ["neeche exact","the exact breakdown below,"],
+    ["mila.","points."],
+    ["Koi astrologer chaahe toh in rules ko apne haath se verify kar sakta hai — kyunki yeh judgement nahi, calculation hai.","Any astrologer can verify these rules by hand — because this is not judgement, it is calculation."],
+    ["Aap manglik nahi hain","You are not manglik"],
+    ["Aap manglik hain","You are manglik"],
+    ["Mars aapke chart mein manglik houses","Mars is not in the manglik houses"],
+    ["mein nahi hai — lagna se bhi, Moon se bhi.","in your chart — from the lagna, and from the Moon too."],
+    ["Rishtey ki baat-cheet mein yeh sawaal aaye toh confidently 'nahi' kah sakte hain.","If this comes up in match discussions, you can confidently say 'no'."],
+    ["Rishtey ki baat-cheet mein yeh sawaal aaye toh confidently","If this comes up in match discussions, you can confidently"],
+    ["'nahi' kah sakte hain.","say 'no'."],
+    ["kah sakte hain.","say so."],
+    ["shaadi ka asli sheesha","the true mirror of marriage"],
+    ["batata hai; Navamsa","tells; Navamsa"],
+    ["nibhega — isiliye classical Jyotish mein shaadi ke liye","will last — which is why, in classical Jyotish, for marriage"],
+    ["sabse zaroori divisional chart hai. Aapka","is the most important divisional chart. Your"],
+    ["houses ke andar","within the houses"],
+    ["Vargottama aur","Vargottama and"],
+    ["mein ek hi rashi — extra","in the same sign — an extra"],
+    ["Navamsa marriage promise ko strongly support karta hai — yog pakka hai, sirf timing ki baat hai","The Navamsa strongly supports the marriage promise — the promise is solid, it is only a matter of timing"],
+    ["(upar windows","(windows above"],
+    ["D9 mein 7th lord","In D9, the 7th lord"],
+    ["apni acchi dignity mein hai","is in good dignity"],
+    ["D9 mein strong hai","is strong in D9"],
+    ["mein strong hai","is strong in"],
+    ["promise ki baat hai, timing ki nahi — timing upar ke windows batate hain.","this speaks to the promise, not the timing — the windows above give the timing."],
+    ["Dono milkar poori tasveer dete hain.","Together they give the full picture."],
+    ["Quiet periods — aur unka matlab","Quiet periods — and what they mean"],
+    ["Jitna important yeh jaanna hai ki kab yog strong hai, utna hi yeh ki kab नहीं hai.","It is as important to know when the chance is strong as when it is not."],
+    ["Jitna important yeh jaanna hai ki kab yog strong hai, utna hi yeh ki kab","It is as important to know when the chance is strong as when it is not"],
+    ["In periods mein rishtey aa sakte hain, par convert hone ka pattern weak rehta hai:","In these periods matches may come, but the pattern of converting stays weak:"],
+    ["In periods mein rishtey aa sakte hain, par convert hone ka pattern weak rehta","In these periods matches may come, but the pattern of converting stays weak"],
+    ["Agar pichhle saalon mein baat banti-banti reh gayi ho — chart mein aksar uski wajah dikh jaati hai. Yeh aapki kami nahi thi; timing thi.","If matches kept almost-happening in past years — the chart often shows why. This was not your shortcoming; it was timing."],
+    ["Pichhle saal","Past years"],
+    ["Ab tak kya hua — aur kyun","What has happened so far — and why"],
+    ["Aapke pichhle periods ka chart-analysis. Agar rishtey aaye par bane nahi, ya bilkul shaant raha — yahan uski wajah","A chart-analysis of your past periods. If matches came but did not work out, or it stayed completely quiet — here is why"],
+    ["Yeh section isliye hai taaki aap dekh","This section is here so that you can see"],
+    ["timing ek pattern hai, aapki kami nahi. Jo beet gaya usmein bhi chart ka logic tha.","timing is a pattern, not your shortcoming. Even what has passed had the chart's logic in it."],
+    ["Saal-dar-saal","Year by year"],
+    ["saal — ek nazar mein","years — at a glance"],
+    ["Agle ","The next "],
+    ["Jupiter ka transit is saal supportive houses mein hai — conversations ko aage badhaane ka saath milega.","Jupiter's transit this year is in supportive houses — it will help move conversations forward."],
+    ["Jupiter ka transit is saal neutral zone mein hai — effort par zyada, luck par kam depend kijiye.","Jupiter's transit this year is in a neutral zone — rely more on effort, less on luck."],
+    ["Yeh page save kar lijiye — har saal ke shuru mein dobara padhne layak hai.","Save this page — it is worth re-reading at the start of each year."],
+    ["Yeh indications hain, portrait nahi — chart directions batata hai, details zindagi bharti hai.","These are indications, not a portrait — the chart gives directions, life fills in the details."],
+    ["house khaali hai","house is empty"],
+    ["koi graha 7th mein nahi. Yeh normal aur aksar shubh maana jaata hai: partner ka pattern 7th ke","no planet sits in the 7th. This is normal and often considered auspicious: the partner pattern is read from the 7th's"],
+    ["koi graha ismein nahi. Yeh normal aur aksar shubh maana jaata hai","no planet sits in it. This is normal and often considered auspicious"],
+    ["partner ka pattern","the partner pattern"],
+    ["aur karaka se padha jaata hai (upar diya hai), naa ki kisi baithe graha se.","and karaka (given above), not from any planet sitting there."],
+    ["Chart ka jhukaav","The chart leans toward"],
+    ["ki taraf hai — introductions aur family networks se hi strong yog banta hai.","— the strongest chance forms through introductions and family networks."],
+    ["se connection hai — partner doori se, alag community se, ya unexpected background se aane ka yog hai. Surprise ke liye taiyaar rahiye.","connection — the partner may come from a distance, a different community, or an unexpected background. Be ready for a surprise."],
+    ["Ab karna kya hai","What to do now"],
+    ["Kundli timing batati hai; effort aur choice aapke haath mein hai. Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate better hota hai.","The chart tells you the timing; effort and choice are in your hands. Even in a strong window you still have to look for matches — the conversion rate is simply better."],
+    ["Aap pyaar kaise karte hain — chart ke hisaab se","How you love — according to the chart"],
+    ["combust hai, isliye expression mein hesitation aa sakti hai; feelings genuine, awaaz dheemi","is combust, so there can be hesitation in expression; the feelings are genuine, the voice soft"],
+    ["Jo aapne nahi poocha, par jaanna chahenge","What you did not ask, but would want to know"],
+    ["Saturn ka influence aapke","Saturn's influence is on your"],
+    ["house par hai — timing mein maturity-factor hai. Matlab: shaadi thodi der se, par zyada soch-samajh ke. Late ≠ never.","house — there is a maturity-factor in the timing. Meaning: marriage a little later, but with more thought. Late ≠ never."],
+    ["abhi nahi chal rahi.","is not running right now."],
+    ["se. Filhaal Shani ka is angle se koi delay-pressure nahi.","onwards. For now, no delay-pressure from Saturn on this angle."],
+    ["Next phase","Next phase from"],
+    ["Weak periods mein","In weak periods"],
+    ["Traditional support — bina dar ke","Traditional support — without fear"],
+    ["ke hisaab se, weak windows mein classical","accordingly, in weak windows classical"],
+    ["baar, Ravivar (Sunday) ko","times, on Ravivar (Sunday)"],
+    ["ki current condition mein gemstone recommend nahi karte — mantra aur fast kaafi hain.","in its current condition — we do not recommend a gemstone; mantra and fasting are enough."],
+    ["Order yaad","Remember the order"],
+    ["pehla remedy hamesha action hai — strong window mein actively dhoondhna. Yeh support hai, substitute nahi.","the first remedy is always action — actively searching in a strong window. This is a support, not a substitute."],
+    ["Ek aur sawaal, usi chart","One more question, from the same chart"],
+    ["career kab lift hoga?","when will your career take off?"],
+    ["par CAREER bhejiye","send CAREER on"]
+  ];
+  var EXACT = {"HAAN":"YES","NAHI":"NO","नहीं":"NO","HAN":"YES","Pichhle saal":"Past years","kab":"when","aur":"and","Graha":"Planet","Bhaav":"House","hai.":"."};
+  var TITLE = { en: "Marriage Timing Report | Axtroshastra" };
+  function norm(s){ return s.replace(/\u00a0/g," ").replace(/ [‐‑‒–—-] /g," — ").replace(/[‐‑‒–—]/g,"—").replace(/\s+/g," "); }
+  var SORTED = FRAG.map(function(p){ return [norm(p[0]), p[1]]; }).sort(function(a,b){ return b[0].length - a[0].length; });
+  function walk(node, fn){
+    for(var i=0;i<node.childNodes.length;i++){
+      var n=node.childNodes[i];
+      if(n.nodeType===3){ fn(n); }
+      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE' && n.id!=='axlang'){ walk(n, fn); }
+    }
+  }
+  function translate(hi){
+    var t=norm(hi), trimmed=t.trim();
+    if(Object.prototype.hasOwnProperty.call(EXACT, trimmed)){ return t.replace(trimmed, EXACT[trimmed]); }
+    for(var i=0;i<SORTED.length;i++){ if(t.indexOf(SORTED[i][0])>=0){ t = t.split(SORTED[i][0]).join(SORTED[i][1]); } }
+    return t;
+  }
+  function apply(lang){
+    walk(document.body, function(tn){
+      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
+      if(tn.__hi==null) tn.__hi = tn.nodeValue;
+      if(!tn.__hi.trim()) return;
+      tn.nodeValue = translate(tn.__hi);
+    });
+    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
+    if(lang==='en' && TITLE.en){ if(!window.__titlehi) window.__titlehi=document.title; document.title=TITLE.en; }
+    else if(window.__titlehi){ document.title=window.__titlehi; }
+    try{ localStorage.setItem('axlang', lang); }catch(e){}
+    var box=document.getElementById('axlang');
+    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en'); box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
+    window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
+  }
+  var css=document.createElement('style');
+  css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.92);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}';
+  document.head.appendChild(css);
+  var box=document.createElement('div'); box.id='axlang';
+  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
+  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  document.body.appendChild(box);
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
+  apply(saved);
+  window.axShare=function(){var url=location.href;var t=(window.__axlang==='en'?'Check out my marriage timing report from Axtroshastra':'Meri marriage timing report Axtroshastra se');if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
+})();
+</script>
+"""
 
 
 def render_report(p: dict) -> str:
@@ -299,6 +490,22 @@ actively dhoondhna. Yeh support hai, substitute nahi.</p></section>"""
                f"{pretty(w1['end'])} ({w1['grade']})</p>" if w1 else "")
     mg_short = {"non_manglik": "No", "manglik_cancelled": "Cancelled (effectively no)",
                 "manglik": "Yes — see page 5"}[mg["status"]]
+    w2 = p["windows"][1] if p["windows"] and len(p["windows"]) > 1 else None
+    _mg_line = {"non_manglik": "Manglik: Nahi — is taraf koi rukaawat nahi.",
+                "manglik_cancelled": "Manglik: technically haan, par cancel ho gaya — practically Nahi.",
+                "manglik": "Manglik: Haan — page 5 par detail aur cancellation check dekhiye."}[mg["status"]]
+    top_summary = ""
+    if w1:
+        top_summary = (
+            "<section class='pg'><div class='ans'>"
+            + "<p class='plabel'>Aapka jawab — ek nazar mein</p>"
+            + "<h2>Shaadi kab hogi? — seedha jawab</h2>"
+            + f"<p class='ans-win'><b>Sabse strong window:</b> {pretty(w1['start'])} – {pretty(w1['end'])} <span class='g'>({w1['grade']})</span></p>"
+            + (f"<p class='ans-win2'>Uske baad: {pretty(w2['start'])} – {pretty(w2['end'])} ({w2['grade']})</p>" if w2 else "")
+            + f"<p class='ans-mg'>{_mg_line}</p>"
+            + "<p class='ans-note'>Yeh jawab aapke poore chart se nikla hai. Neeche har window ki wajah, aapka Navamsa, aur beete periods — taaki aap khud milaa sakein.</p>"
+            + "</div></section>"
+        )
 
     rectify_hook = ""
     if meta["time_quality"] in ("T1", "T2", "T3"):
@@ -314,7 +521,7 @@ windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919650973345?t
                    "debilitated": "debilitated — timing par extra dhyaan",
                    "neutral": "neutral dignity"}[sl_d]
 
-    return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
+    return f"""<!DOCTYPE html><html lang="hi-IN"><head>{AX_PRE}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{name} — Marriage Timing Report | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -409,19 +616,28 @@ body{{background:#fff}}.cover{{background:var(--midnight)!important;-webkit-prin
   <p class="method">NASA JPL data (Swiss Ephemeris) · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
 </section>
 
+{top_summary}
 <section class="pg"><p class="plabel">Chart snapshot</p>
 <h2>Aapka chart — marriage lens se</h2>
 <div class="facts">
   <div class="row"><span class="k">Lagna</span><span class="v">{p['chart']['lagna']}</span></div>
+  <p class="why">Aapki personality aur poore chart ka base — har bhaav isi se gina jaata hai.</p>
   <div class="row"><span class="k">Moon · Nakshatra</span><span class="v">{p['teaser']['moon_sign']} · {p['teaser']['nakshatra']}</span></div>
+  <p class="why">Aapka mann aur emotional nature. Aapki dasha timeline isi Moon-nakshatra se chalti hai — yahi timing ka engine hai.</p>
   <div class="row"><span class="k">7th house</span><span class="v">{seventh_sign}</span></div>
+  <p class="why">Shaadi, partner aur commitment ka ghar — marriage ka main area.</p>
   <div class="row"><span class="k">7th lord</span><span class="v">{sl} — {dignity_txt}</span></div>
+  <p class="why">Shaadi ka main switch. Iski dignity (upar) timing ki quality batati hai — strong matlab saaf timing, tender matlab zyada soch-samajh.</p>
   <div class="row"><span class="k">Marriage karaka</span><span class="v">{' + '.join(sig['karakas'])}</span></div>
+  <p class="why">Rishton ka natural indicator (Venus/Jupiter) — yeh shaadi ka promise dikhata hai.</p>
   <div class="row"><span class="k">Darakaraka</span><span class="v">{sig['darakaraka']}</span></div>
+  <p class="why">Jaimini system ka spouse-significator — partner ki ek jhalak.</p>
   <div class="row"><span class="k">Current period</span><span class="v">{p['teaser']['current_dasha']}<br>till {p['teaser']['dasha_till']}</span></div>
+  <p class="why">Abhi kaunsi dasha chal rahi hai. Windows isi timeline par bante hain — isliye yeh sabse relevant.</p>
 </div>
 <p class="soft">Yeh 6-7 factors milkar aapki marriage timing decide karte hain.
 Agle page par inhi se nikale gaye aapke windows hain.</p></section>
+{report_addons.planet_table_html(p)}
 
 <section class="pg"><p class="plabel">The Answer</p>
 <h2>Aapke marriage windows</h2>
@@ -437,12 +653,14 @@ ya uske lord se connect hota hai, aur Jupiter ka transit usko confirm karta hai.
 <p style="margin-top:10px">Timing windows probability bands hain, appointments nahi —
 ±15 minute ka birth time difference bhi boundaries ko months tak shift kar sakta hai.
 Isliye hum honest ranges dete hain, fake precision nahi.</p></section>
+{report_addons.scoring_box_html(p)}
 
 <section class="pg"><p class="plabel">Manglik</p>
 <h2>Manglik check</h2>
 <div class="mgcard"><b class="h">{mg_head}</b><p>{mg_body}</p></div>
 <p class="soft">Technical: Mars from lagna — {'manglik houses mein' if mg['from_lagna'] else 'clear'};
 from Moon — {'manglik houses mein' if mg['from_moon'] else 'clear'}.</p></section>
+{report_addons.d9_section_html(p)}
 
 {weak_html}
 {past_html}
@@ -450,7 +668,8 @@ from Moon — {'manglik houses mein' if mg['from_moon'] else 'clear'}.</p></sect
 
 <section class="pg"><p class="plabel">Partner</p>
 <h2>Partner indications</h2>
-{partner_html}</section>
+{partner_html}
+{report_addons.occupants_html(p)}</section>
 
 <section class="pg"><p class="plabel">Action plan</p>
 <h2>Ab karna kya hai</h2>
@@ -473,12 +692,15 @@ Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate bett
 <div class="upsell"><b>Ek aur sawaal, usi chart se: career kab lift hoga?</b>
 <p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919650973345?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
 <div class="btnrow">
-  <button class="btn p" onclick="window.print()">Download PDF</button>
+  <a class="btn p" id="ax-pdf" href="#" onclick="window.print();return false;">Download PDF</a> <button class="ax-share" onclick="axShare()">Share on WhatsApp</button>
   <a class="btn s" href="https://wa.me/919650973345?text=Hi%20Axtroshastra">WhatsApp Support</a>
 </div></section>
 
 <footer>Windows are probability estimates from classical dasha–transit principles,
 not guarantees. 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · axtroshastra@gmail.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
+        <div class="ax-wm" aria-hidden="true"><b>AXTROSHASTRA</b><span>axtroshastra.com</span></div>
+<section class="pg"><div class="ax-disc"><b>Disclaimer:</b> Yeh report classical Vedic Jyotish (dasha-transit) principles par computed hai — guidance ke liye, guarantee nahi. Timing windows probability hain, fixed dates nahi. Yeh legal, medical ya financial advice nahi hai. Apne life decisions aap apni samajh se lijiye; Axtroshastra kisi outcome ki zimmedari nahi leta.</div><div class="ax-endcard"><b>Axtroshastra</b><br>Yeh report Axtroshastra ne banayi — apna report paayein: <a href="https://www.axtroshastra.com/shaadi">axtroshastra.com</a></div></section>
+{REPORT_I18N}
 </body></html>"""
 
 

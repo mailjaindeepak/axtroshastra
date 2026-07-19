@@ -26,11 +26,12 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Res
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
-from report_view import render_report, render_milan, render_blueprint
+from report_view import render_report, render_milan, render_blueprint, north_chart_svg
 from products import compute_milan, compute_blueprint
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
-import payments, delivery, extensions             # (#6) payments, (#7) delivery, endpoints
+import payments, delivery, extensions
+import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
@@ -40,6 +41,14 @@ logger = logging.getLogger("axtroshastra")
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
 BASE = os.path.dirname(os.path.abspath(__file__))
+
+@app.on_event("startup")
+def _warm_gazetteer():
+    try:
+        gazetteer.suggest("mumbai", 1)
+    except Exception:
+        pass
+
 
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")   # e.g. https://axtroshastra.com
 
@@ -161,6 +170,9 @@ class KundliIn(BaseModel):
     time_quality: str = "T0"
     time_band: str | None = None
     place: str
+    lat: float | None = None
+    lon: float | None = None
+    tz: str | None = None
     gender: str | None = None
     variant: str | None = None
     email: str | None = None
@@ -201,12 +213,15 @@ def landing():
     return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>Axtroshastra</h3>")
 
 
+@app.get("/api/city-suggest", include_in_schema=False)
+def city_suggest(q: str = ""):
+    return {"results": gazetteer.suggest(q, 8)}
+
+
 @app.post("/api/kundli")
 def create_kundli(inp: KundliIn):
     if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
         raise HTTPException(400, "captcha_failed")
-    geo = resolve_detailed(inp.place)
-    lat, lon, tz = geo["lat"], geo["lon"], geo["tz"]
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
         tob = inp.tob
@@ -214,6 +229,19 @@ def create_kundli(inp: KundliIn):
         tob = BAND_MID.get(inp.time_band or "", "13:00")
     else:
         tob = "12:00"
+    local_dt = datetime.fromisoformat(f"{inp.dob}T{tob}:00")
+    geo_source = "gazetteer"
+    if inp.lat is not None and inp.lon is not None and inp.tz:
+        lat, lon = inp.lat, inp.lon
+        _off = gazetteer.tz_offset_hours(inp.tz, local_dt); tz = _off if _off is not None else 5.5
+    else:
+        _hit = gazetteer.suggest(inp.place or "", 1)
+        if _hit and _hit[0]["name"].lower() == (inp.place or "").strip().lower():
+            lat, lon = _hit[0]["lat"], _hit[0]["lon"]
+            _off = gazetteer.tz_offset_hours(_hit[0]["tz"], local_dt); tz = _off if _off is not None else 5.5
+            geo_source = "gazetteer-text"
+        else:
+            raise HTTPException(422, "city_not_selected")
     if inp.product == "blueprint":
         report = compute_blueprint(inp.name, inp.dob, tob, tz, lat, lon,
                                    time_quality=inp.time_quality)
@@ -223,12 +251,13 @@ def create_kundli(inp: KundliIn):
                                 female=(inp.gender == "female"),
                                 time_quality=inp.time_quality)
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
-    report["meta"]["geo_source"] = geo["source"]         # (#1) provenance
-    if not geo["resolved"]:                               # (#1) honest accuracy warning
-        report["meta"]["geo_warning"] = (
-            "Birthplace could not be located, so a default city (Delhi) was used. "
-            "The ascendant/lagna and house-based results may be inaccurate -- "
-            "please re-enter the exact birth city.")
+    report["meta"]["geo_source"] = geo_source
+    try:
+        if report.get("chart"):
+            report["teaser"]["chart_svg"] = north_chart_svg(report)
+    except Exception:
+        pass         # (#1) provenance
+
     report["meta"]["_birth"] = {"dob": inp.dob, "tob": tob, "tz": tz,
                                 "lat": lat, "lon": lon}   # (#8) for /api/deep
     if inp.email:
@@ -337,12 +366,32 @@ def report_page(rid: str):
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
+    payload.setdefault("meta", {})["report_id"] = rid
     product = payload.get("product", "marriage")
     if product == "milan":
         return HTMLResponse(render_milan(payload))
     if product == "blueprint":
         return HTMLResponse(render_blueprint(payload))
     return HTMLResponse(render_report(payload))
+
+
+@app.get("/report/{rid}/pdf", include_in_schema=False)
+def report_pdf(rid: str):
+    rec = get_report(rid)
+    if not rec or not rec["paid"]:
+        raise HTTPException(404, "report not found")
+    payload = _refresh_current_period(rec["payload"])
+    payload.setdefault("meta", {})["report_id"] = rid
+    html = _render_for(payload.get("product", "marriage"), payload)
+    pdf = delivery.html_to_pdf(html)
+    if not pdf:
+        return HTMLResponse(
+            f"<p style='font-family:sans-serif;padding:40px'>PDF banane ke liye report "
+            f"kholiye aur 'Download PDF' (print) dabaiye. <a href='/report/{rid}'>Report</a></p>")
+    name = (payload.get("meta", {}).get("name") or "report").replace(" ", "_")[:40]
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition":
+                             f'attachment; filename="Axtroshastra_{name}.pdf"'})
 
 
 if DEMO_MODE:                                    # never set DEMO_MODE=1 in production

@@ -10,4 +10,8 @@ pydantic==2.*
 razorpay==1.4.*
 PyMySQL==1.1.*
 twilio
-xhtml2pdf>=0.2.16
+xhtml2pdf>=0.2.16          # (#7) server-side PDF rendering (HTML -> PDF)
+# Optional: only needed for non-Indian birthplaces (#1 timezone resolution)
+# timezonefinder>=6.5
+geonamescache        # (#city) offline city gazetteer: autosuggest + coords + IANA tz
+tzdata               # (#city) zoneinfo tz database for historical/DST birth offsets

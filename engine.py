@@ -18,6 +18,7 @@ import swisseph as swe
 from datetime import datetime, date, timedelta
 from dataclasses import dataclass, field
 import json
+from navamsa import navamsa_analysis
 
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
@@ -452,7 +453,7 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
                              ref_signs_for_transit, today)
 
     return {
-        "extras": extras,
+        "extras": extras, "navamsa": navamsa_analysis(chart, ref_sign, female),
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
                  "time_quality": time_quality, "system": "chandra_lagna" if use_chandra else "lagna",
                  "window_padding_days": pad_days, "two_timelines_detected": two_timelines,

@@ -2,6 +2,16 @@
 <html lang="hi-IN">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var l = localStorage.getItem('axlang') || 'en';
+    if(l === 'en') document.documentElement.classList.add('ax-pre');
+  }catch(e){}
+  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
+})();
+</script>
+<style>html.ax-pre body{visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shaadi Kab Hogi? — Marriage Timing Report | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
@@ -239,11 +249,9 @@ fbq('track', 'PageView');
 
     <p class="eyebrow">Marriage Timing Report</p>
     <h1>Shaadi <em>kab</em> hogi?</h1>
-    <p class="sub">Aapki kundli mein jawab already hai.<br>Hum sirf calculate karte hain.</p>
-    <p class="sub2">Exact marriage timing windows from your birth chart — years and months, not "jaldi hi ho jayegi."</p>
+    <p class="sub">Apni details bhariye — jawab 2 minute mein.</p>
 
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Apni birth details daaliye 👇</p>
       <div class="field">
         <label for="f-name">Naam</label>
         <input id="f-name" type="text" placeholder="Aapka naam" required>
@@ -258,7 +266,7 @@ fbq('track', 'PageView');
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">Time of birth</label>
-        <input id="f-tob" type="time">
+        <div class="dob-row"><select id="f-hh" aria-label="Hour"></select><select id="f-mm2" aria-label="Minute"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
@@ -276,10 +284,10 @@ fbq('track', 'PageView');
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" required>
+        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div>
       </div>
       <button class="btn" type="submit">Meri kundli check karo — FREE</button>
-      <p class="btn-note">Free chart snapshot pehle. Full report <s style="color:#8F92AB">₹999</s> <b style="color:var(--sindoor)">₹499</b> launch price — pay only if you want the answer.</p>
+      <p class="btn-note">Free Chart Snapshot</p>
     </form>
   </div>
 </header>
@@ -289,9 +297,9 @@ fbq('track', 'PageView');
   <div class="wrap">
     <ul>
       <li><span class="dot"></span><b>NASA-grade</b> planetary data</li>
-      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
-      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
       <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
+      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
     </ul>
   </div>
 </div>
@@ -303,6 +311,9 @@ fbq('track', 'PageView');
       <p class="eyebrow dark">Free snapshot</p>
       <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
     </div>
+
+    <style>#t-chart{max-width:320px;margin:14px auto 2px;background:#151C39;border-radius:12px;padding:10px}#t-chart svg{width:100%;height:auto;display:block}</style>
+    <div id="t-chart" aria-label="Aapki kundli (free)"></div>
 
     <div class="chart-facts">
       <div class="row"><span class="k">Moon sign (Rashi)</span><span class="v" id="t-rashi">—</span></div>
@@ -394,13 +405,6 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-<!-- ============ SOCIAL PROOF ============ -->
-<section class="proof">
-  <div class="wrap">
-    <p class="count" id="reportCount"></p>
-    <p class="cap">reports generated</p>
-    </div>
-</section>
 
 <!-- ============ FAQ ============ -->
 <section class="faq">
@@ -464,7 +468,7 @@ fbq('track', 'PageView');
     <p class="l1">Marriage Timing Report</p>
     <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · Instant Delivery · No-Questions Refund</p>
   </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn" onclick="var f=document.getElementById('kundliForm');if(f&&f.requestSubmit){event.preventDefault();f.requestSubmit();}">Check FREE</a>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
@@ -523,10 +527,10 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   var q = timeQuality();
 
   // staged computation display (real pipeline, paced for reading)
-  var steps = ['🪐 Planetary positions calculate ho rahe hain… (NASA JPL data)',
-               '📿 Aapki Vimshottari dasha timeline ban rahi hai…',
-               '🔍 2026–2036 ke marriage windows scan ho rahe hain…',
-               '✨ Aapka snapshot taiyaar ho raha hai…'];
+  var __axEN = (window.__axlang === 'en');
+      var steps = __axEN
+        ? ['🪐 Calculating planetary positions… (NASA JPL data)', '📿 Building your Vimshottari dasha timeline…', '🔍 Scanning 2026–2036 for marriage windows…', '✨ Preparing your snapshot…']
+        : ['🪐 Planetary positions calculate ho rahe hain… (NASA JPL data)', '📿 Aapki Vimshottari dasha timeline ban rahi hai…', '🔍 2026–2036 ke marriage windows scan ho rahe hain…', '✨ Aapka snapshot taiyaar ho raha hai…'];
   var box = document.getElementById('calcOv'), msg = document.getElementById('ovMsg'),
       bar = document.getElementById('ovBar');
   box.classList.add('show'); var si = 0;
@@ -534,8 +538,8 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   var stepTimer = setInterval(function(){
     si++;
     if(si < steps.length){ msg.textContent = steps[si]; bar.style.width = (25*(si+1))+'%'; }
-  }, 1100);
-  var minWait = new Promise(function(res){ setTimeout(res, 4200); });
+  }, 2200);
+  var minWait = new Promise(function(res){ setTimeout(res, 9000); });
 
   try{
     var fetchP = fetch('/api/kundli', {
@@ -552,7 +556,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
     var data = await res.json();
     REPORT_ID = data.report_id;
-    renderTeaser(data.teaser);
+    window.__teaserData = data.teaser; window.__renderTeaser = renderTeaser; renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
@@ -566,15 +570,16 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
 
 function renderTeaser(t){
   var name = document.getElementById('f-name').value.trim();
-  if(name) document.getElementById('t-name').textContent = name + ' ki';
+  if(name) document.getElementById('t-name').textContent = name + (window.__axlang==='en' ? "'s" : ' ki');
   document.getElementById('t-rashi').textContent = t.moon_sign + ' (' + t.moon_sign_en + ')';
   document.getElementById('t-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
   document.getElementById('t-dasha').textContent = t.current_dasha;
-  document.getElementById('t-till').textContent = t.dasha_till;
+  document.getElementById('t-till').textContent = t.dasha_till; var _ce=document.getElementById('t-chart'); if(_ce){_ce.innerHTML=t.chart_svg||''; _ce.style.display=t.chart_svg?'':'none';};
   var wf = document.getElementById('wfLine');
-  wf.innerHTML = t.windows_count === 1
-    ? 'Humne aapke chart mein <b style="color:var(--sindoor)">1 marriage window</b> identify kiya hai.'
-    : 'Humne aapke chart mein <b style="color:var(--sindoor)">' + t.windows_count + ' marriage windows</b> identify kiye hain.';
+  var __wc = '<b style="color:var(--sindoor)">' + (t.windows_count === 1 ? '1 marriage window' : t.windows_count + ' marriage windows') + '</b>';
+      wf.innerHTML = (window.__axlang === 'en')
+        ? 'We found ' + __wc + ' in your chart.'
+        : 'Humne aapke chart mein ' + __wc + (t.windows_count === 1 ? ' identify kiya hai.' : ' identify kiye hain.');
   document.getElementById('tlTitle').textContent =
     'Your marriage timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
   // year axis
@@ -696,5 +701,249 @@ window.addEventListener('scroll', function(){
 <div class="bar"><div id="ovBar"></div></div>
 <p class="sub">Aapki kundli abhi compute ho rahi hai — templates nahi.</p>
 </div></div>
+<style>
+.field{position:relative}
+.city-suggest{position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid #E7E0D2;border-top:0;border-radius:0 0 10px 10px;max-height:250px;overflow:auto;display:none;box-shadow:0 10px 24px rgba(0,0,0,.10)}
+.city-suggest.open{display:block}
+.city-suggest .ci{padding:10px 13px;cursor:pointer;font-size:14.5px;border-bottom:1px solid #F1EADB;text-align:left}
+.city-suggest .ci:last-child{border-bottom:0}
+.city-suggest .ci.active,.city-suggest .ci:hover{background:#F6E7C6}
+.city-suggest .ci small{color:#8F92AB;margin-left:4px}
+.field-hint{font-size:12.5px;color:#C93B2E;margin-top:5px;min-height:1px;text-align:left}
+</style>
+<script>
+(function(){
+  var inp=document.getElementById('f-place'); if(!inp) return;
+  var list=document.getElementById('f-place-list');
+  var hint=document.getElementById('f-place-hint');
+  var selected=null,timer=null,items=[],active=-1;
+  function render(){
+    if(!items.length){list.classList.remove('open');list.innerHTML='';return;}
+    list.innerHTML=items.map(function(c,i){
+      return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+(c.region||c.country)+'</small></div>';
+    }).join('');
+    list.classList.add('open');
+  }
+  function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  inp.addEventListener('input',function(){
+    hint.textContent='';var q=inp.value.trim();if(selected&&q===selected.label){items=[];render();clearTimeout(timer);return;}
+    clearTimeout(timer);
+    if(q.length<2){items=[];render();return;}
+    timer=setTimeout(function(){
+      fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
+        items=(d&&d.results)||[];active=-1;render();
+        if(!items.length){hint.textContent=(window.__axlang==='en'?'City not found — pick your nearest bigger city/district.':'City nahi mili — nazdeeki bada sheher/zila chuniye.');}
+      }).catch(function(){items=[];render();});
+    },180);
+  });
+  inp.addEventListener('keydown',function(e){
+    if(!list.classList.contains('open'))return;
+    if(e.key==='ArrowDown'){active=Math.min(active+1,items.length-1);render();e.preventDefault();}
+    else if(e.key==='ArrowUp'){active=Math.max(active-1,0);render();e.preventDefault();}
+    else if(e.key==='Enter'){if(active>=0&&items[active]){pick(items[active]);e.preventDefault();}}
+    else if(e.key==='Escape'){items=[];render();}
+  });
+  list.addEventListener('mousedown',function(e){var d=e.target.closest('.ci');if(d){pick(items[+d.getAttribute('data-i')]);e.preventDefault();}});
+  document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
+  var form=inp.closest('form');
+  if(form)form.addEventListener('submit',function(e){
+    if(!selected||inp.value.trim()!==selected.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
+  },true);
+  var of=window.fetch;
+  window.fetch=function(url,opts){
+    try{
+      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected&&inp.value.trim()===selected.label){
+        var b=JSON.parse(opts.body);b.lat=selected.lat;b.lon=selected.lon;b.tz=selected.tz;b.place=selected.label;opts.body=JSON.stringify(b);
+      }
+    }catch(_){}
+    return of.apply(this,arguments);
+  };
+})();
+</script>
+
+<script>
+/* Language toggle: Hinglish (default) <-> English. Page copy only. Self-contained. */
+(function(){
+  var EN = {
+    "Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.":"Just your city or district is enough — a locality (like Punjabi Bagh) won't appear in search.",
+    "Shaadi":"When will I","kab":"get married?","hogi?":"",
+    "Apni details bhariye — jawab 2 minute mein.":"Enter your details below and get the answer in 2 minutes.",
+    "Aapki kundli mein jawab already hai.":"The answer is already in your birth chart.",
+    "Hum sirf calculate karte hain.":"We just calculate it.",
+    "Exact marriage timing windows from your birth chart — years and months, not \"jaldi hi ho jayegi.\"":"Exact marriage timing windows from your birth chart — years and months, not \"it'll happen soon.\"",
+    "Apni birth details daaliye 👇":"Enter your birth details 👇",
+    "Naam":"Name",
+    "Approximate time":"Approximate time",
+    "Subah (4 AM – 10 AM)":"Morning (4 AM – 10 AM)",
+    "Din (10 AM – 4 PM)":"Day (10 AM – 4 PM)",
+    "Shaam (4 PM – 10 PM)":"Evening (4 PM – 10 PM)",
+    "Raat (10 PM – 4 AM)":"Night (10 PM – 4 AM)",
+    "Bilkul nahi pata":"No idea at all",
+    "Birth time exactly nahi pata?":"Don't know your exact birth time?",
+    "Koi baat nahi — most people don't. Hum approximate time ke saath kaam karte hain.":"No problem — most people don't. We work with an approximate time.",
+    "Hamari specialty hai.":"It's our specialty.",
+    "Meri kundli check karo — FREE":"Check my kundli — FREE",
+    "Free chart snapshot pehle. Full report":"Free chart snapshot first. Full report",
+    "Kyun alag hai":"Why it's different",
+    "Yeh report alag kyun hai":"Why this report is different",
+    "Koi astrologer opinion nahi. Sirf calculation.":"No astrologer's opinion. Just calculation.",
+    "Traditional astrologers apne experience se batate hain — har astrologer alag jawab deta hai. Hum aapki kundli ko NASA-grade planetary data se compute karte hain — wahi calculations jo professional observatories use karti hain (NASA JPL ephemeris). Same chart, same answer, every time.":"Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart with NASA-grade planetary data — the same calculations professional observatories use (NASA JPL ephemeris). Same chart, same answer, every time.",
+    "Hum guarantee nahi karte. Hum probability batate hain.":"We don't guarantee. We give probabilities.",
+    "Jo bhi aapko \"pakka shaadi ho jayegi\" bole, woh jhooth bol raha hai. Kundli timing windows batati hai — kab yog strong hai, kab weak. Decision aapka hai; hum sirf timing clear karte hain.":"Anyone who tells you \"marriage is guaranteed\" is lying. Your chart shows timing windows — when the chance is strong, when it's weak. The decision is yours; we just make the timing clear.",
+    "Banaya IIT–IIM engineers ne.":"Built by IIT–IIM engineers.",
+    "Isliye calculation par bharosa hai, kismat-connection par nahi. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.":"That's why we trust calculation, not a fortune-teller's connection. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.",
+    "Report ke andar":"Inside the report",
+    "Report mein kya milega":"What you get in the report",
+    "Aapke marriage windows":"Your marriage windows",
+    "Timeline 2026–2036, har window ka strength grade — Strong / Moderate / Building.":"Timeline 2026–2036, each window's strength grade — Strong / Moderate / Building.",
+    "Har window ka reason":"The reason for each window",
+    "Kaunsi dasha, kaunsa transit. Blind belief nahi, logic.":"Which dasha, which transit. Not blind belief — logic.",
+    "Status + cancellation rules. (Spoiler: \"manglik\" sunke darne ki zaroorat aksar nahi hoti.)":"Status + cancellation rules. (Spoiler: hearing \"manglik\" is usually nothing to fear.)",
+    "7th house kya kehta hai — nature, arranged ya self-driven yog.":"What the 7th house says — nature, arranged or self-driven.",
+    "2024–25 mein rishte kyun nahi bane? Chart mein jawab hai.":"Why didn't matches work out in 2024–25? The answer's in your chart.",
+    "Kis window mein actively dhoondhna hai, kab prepare karna hai.":"Which window to actively search in, and when to prepare.",
+    "Birth time problem?":"Birth time problem?",
+    "Birth time exact nahi pata?":"Don't know your exact birth time?",
+    "Yahi hamari specialty hai.":"This is exactly our specialty.",
+    "logon ko apna exact birth time nahi pata":"of people don't know their exact birth time",
+    "±15 minute ka difference windows ko months tak shift kar sakta hai. Doosri websites 12:00 baje assume karke galat report de deti hain. Hum aapke approximate time ke saath kaam karte hain — aur agar aap chahein toh life events se aapka time":"A ±15-minute difference can shift the windows by months. Other sites just assume 12:00 noon and give you a wrong report. We work with your approximate time — and if you like, from your life events we can",
+    "bhi kar sakte hain.":"your time too.",
+    "Sawaal-jawaab":"Q&A",
+    "Aksar poochhe gaye sawaal":"Frequently asked questions",
+    "Kya yeh accurate hai?":"Is this accurate?",
+    "Planetary positions 100% accurate hain — NASA-grade ephemeris data. Timing windows probability hain, appointment nahi. Hum honestly batate hain kaunsa window strong hai aur kaunsa weak — jo koi bhi \"guarantee\" de, usse door rahiye.":"Planetary positions are 100% accurate — NASA-grade ephemeris data. Timing windows are probabilities, not appointments. We honestly tell you which window is strong and which is weak — stay away from anyone offering a \"guarantee\".",
+    "Mujhe birth time nahi pata. Report ban sakti hai?":"I don't know my birth time. Can I still get a report?",
+    "Haan. Approximate time ke saath hum windows nikaal sakte hain (thodi wider range ke saath), aur rectification option se time narrow bhi ho sakta hai.":"Yes. With an approximate time we can still find the windows (with a slightly wider range), and the rectification option can narrow the time down.",
+    "Report kab milegi?":"When will I get the report?",
+    "Payment ke turant baad, screen par. PDF download aur WhatsApp copy bhi milti hai.":"Right after payment, on screen. You also get a PDF download and a WhatsApp copy.",
+    "Kya yeh computer-generated hai?":"Is this computer-generated?",
+    "Calculations computer karta hai — isliye unbiased hai. Rules wahi classical Vedic principles hain (dasha + transit) jo ek achha astrologer use karta hai. Difference: humara system thakta nahi, bhoolta nahi, aur mood se jawab nahi badalta.":"The computer does the calculations — so it's unbiased. The rules are the same classical Vedic principles (dasha + transit) a good astrologer uses. The difference: our system never tires, never forgets, and never changes its answer with its mood.",
+    "Yeh kaun log hain?":"Who are you?",
+    "IIT–IIM alumni engineers jinhone classical Vedic rules ko software mein encode kiya. Hum astrologer nahi hain — isliye hamara system opinion nahi deta, sirf calculation.":"IIT–IIM alumni engineers who encoded classical Vedic rules into software. We're not astrologers — so our system doesn't give opinions, just calculation.",
+    "100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.":"100% refund, no questions asked, 7 days. Message us on WhatsApp, done.",
+    "Meri details safe hain?":"Are my details safe?",
+    "Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi astrologer ko nahi bechte. (Yeh common industry practice hai; hum nahi karte.)":"Your birth details are used only for your report. No spam calls — we don't sell your number to any astrologer. (It's common industry practice; we don't do it.)",
+    "Rishtey dhoondhne se pehle,":"Before you start looking for a match,",
+    "apna time jaan lo.":"know your timing.",
+    "Aapki":"Your",
+    "kundli ready hai ✅":"kundli is ready ✅",
+    "⭐ Aapka current dasha period directly relevant hai aapke marriage timing se.":"⭐ Your current dasha period is directly relevant to your marriage timing.",
+    "Windows calculate ho rahe hain…":"Calculating your windows…",
+    "Windows calculated. Exact years, months aur strength grade report mein.":"Windows calculated. Exact years, months and strength grade in the report.",
+    "Aapke":"Your",
+    "— साल aur months, with strength grade":"— years and months, with strength grade",
+    "— aur cancellation check (most charts mein cancellation hota hai)":"— and a cancellation check (most charts have one)",
+    "Kaise":"How",
+    "partner ka yog":"the partner pattern",
+    "hai — nature, meeting context":"works — nature, meeting context",
+    "— kab rishtey aayenge par banenge nahi, aur kyun":"— when matches will come but won't work out, and why",
+    "— har window mein kya karna chahiye":"— what to do in each window",
+    "Aapki kundli abhi compute ho rahi hai — templates nahi.":"Your kundli is being computed right now — not templates."
+  };
+  var PH = { "f-name": "Your name" };
+  var TITLE = { hi: document.title, en: "When Will I Get Married? — Marriage Timing Report | Axtroshastra" };
+
+  function walk(node, fn){
+    for(var i=0;i<node.childNodes.length;i++){
+      var n=node.childNodes[i];
+      if(n.nodeType===3){ fn(n); }
+      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE'
+              && n.id!=='axlang' && !(n.classList && n.classList.contains('city-suggest'))){
+        walk(n, fn);
+      }
+    }
+  }
+  function apply(lang){
+    walk(document.body, function(tn){
+      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
+      var raw = tn.nodeValue;
+      var key = raw.replace(/\s+/g,' ').trim();
+      if(!key) return;
+      if(tn.__hi==null) tn.__hi = raw;
+      if(Object.prototype.hasOwnProperty.call(EN, key)){
+        var lead=(raw.match(/^\s*/)||[''])[0], trail=(raw.match(/\s*$/)||[''])[0];
+        tn.nodeValue = lead + EN[key] + trail;
+      }
+    });
+    for(var id in PH){ var el=document.getElementById(id); if(el){ if(el.__phhi==null) el.__phhi=el.getAttribute('placeholder')||''; el.setAttribute('placeholder', lang==='en'? PH[id] : el.__phhi); } }
+    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
+    if(TITLE[lang]) document.title = TITLE[lang];
+    try{ localStorage.setItem('axlang', lang); }catch(e){}
+    var box=document.getElementById('axlang');
+    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en');
+             box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
+    window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
+    try{ if(window.__teaserData && window.__renderTeaser) window.__renderTeaser(window.__teaserData); }catch(e){}
+  }
+
+  var css=document.createElement('style');
+  css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}';
+  document.head.appendChild(css);
+  var box=document.createElement('div'); box.id='axlang';
+  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
+  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  document.body.appendChild(box);
+
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
+  apply(saved);
+})();
+</script>
+
+<script>
+(function(){
+  var hh=document.getElementById("f-hh"),mm=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
+  if(!hh||!tob) return;
+  function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
+  opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
+  opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+  opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+  function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
+  hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
+})();
+</script>
+<script>
+(function(){
+  var form=document.getElementById("kundliForm"); if(!form) return;
+  var dd=document.getElementById("f-dd"),mm=document.getElementById("f-mm"),yy=document.getElementById("f-yy");
+  function L(en,hi){ return (window.__axlang==="en")?en:hi; }
+  function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
+  var nameHint=mkHint(document.getElementById("f-name"));
+  var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
+  var tobHint=mkHint(document.getElementById("tobField"));
+  function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
+  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
+  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  form.addEventListener("submit", function(e){
+    function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
+    var nm=document.getElementById("f-name");
+    var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
+    nm.value=clean;
+    if(!clean){ nameHint.textContent=L("Please enter your name.","Apna naam likhiye."); stop(); return; } nameHint.textContent="";
+    if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","Apna birth time chuniye, ya neeche wala box tick kijiye agar nahi pata."); stop(); return; } tobHint.textContent="";
+    var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
+    var teaser=document.getElementById("teaser");
+    if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }
+    window.__lastHash=h;
+  }, true);
+})();
+</script>
+<script>
+(function(){
+  var brand=document.querySelector(".brand");
+  if(brand){ brand.style.cursor="pointer"; brand.setAttribute("role","link"); brand.setAttribute("tabindex","0"); brand.setAttribute("aria-label","Axtroshastra home");
+    brand.addEventListener("click", function(){ location.href="/"; });
+    brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
+  var ov=document.getElementById("calcOv");
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return setTimeout(wireCap,200); }
+    cap.style.transition="opacity .25s ease"; var t;
+    window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
+    function full(){ cap.style.opacity=""; clearTimeout(t); }
+    cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
+  wireCap();
+})();
+</script>
 </body>
 </html>
