@@ -22,6 +22,14 @@ _CITIES = None          # loaded once
 _BY_ID = None
 _COUNTRY = None
 
+# Suggest at city/district level, not sub-locality. MIN_POP drops tiny places;
+# _LOCALITY_RE drops cantonment/sub-locality entries that survive on population
+# alone (e.g. "Delhi Cantonment" ~1.1 lakh). Tune MIN_POP to trade clutter vs
+# coverage of smaller birth-towns.
+import re
+MIN_POP = 50000
+_LOCALITY_RE = re.compile(r"\b(cantonment|cantt)\b", re.I)
+
 
 def _ascii(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", s)
@@ -40,6 +48,11 @@ def _load():
         name = c["name"]
         cc = c.get("countrycode", "")
         if cc != "IN":            # India-only for now: hide foreign cities (avoids confusion)
+            continue
+        pop = int(c.get("population", 0) or 0)
+        if pop < MIN_POP:         # keep city/district level — drop tiny localities
+            continue
+        if _LOCALITY_RE.search(name):   # drop cantonment / sub-locality entries
             continue
         # keep only ascii/latin alternate names (user types Roman script)
         alts = set()

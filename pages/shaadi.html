@@ -259,9 +259,9 @@ fbq('track', 'PageView');
       <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
-          <select id="f-dd" required aria-label="Date"><option value="">Date</option></select>
-          <select id="f-mm" required aria-label="Month"><option value="">Month</option></select>
-          <select id="f-yy" required aria-label="Year"><option value="">Year</option></select>
+          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
+          <select id="f-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select>
+          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off">
         </div>
       </div>
       <div class="field" id="tobField">
@@ -475,19 +475,21 @@ fbq('track', 'PageView');
 <script>
 var REPORT_ID = null;
 
-// populate DOB dropdowns (Date / Month / Year, year descending 2010->1940)
+// populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
-  var dd = document.getElementById('f-dd'), mm = document.getElementById('f-mm'), yy = document.getElementById('f-yy');
-  for(var i=1;i<=31;i++){ var o=document.createElement('option'); o.value=('0'+i).slice(-2); o.textContent=i; dd.appendChild(o); }
+  var mm = document.getElementById('f-mm');
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
-  for(var y=2008;y>=1940;y--){ var o=document.createElement('option'); o.value=y; o.textContent=y; yy.appendChild(o); }
 })();
 function buildDob(){
-  var d=document.getElementById('f-dd').value, m=document.getElementById('f-mm').value, y=document.getElementById('f-yy').value;
+  var d=(document.getElementById('f-dd').value||'').trim(), m=document.getElementById('f-mm').value, y=(document.getElementById('f-yy').value||'').trim();
   if(!d||!m||!y) return null;
+  if(!/^\d{1,2}$/.test(d) || !/^\d{4}$/.test(y)) return 'invalid';
+  d=('0'+d).slice(-2);
+  var yr=parseInt(y,10), curr=new Date().getFullYear();
+  if(yr<1900 || yr>curr) return 'invalid';
   var dt=new Date(y+'-'+m+'-'+d+'T00:00:00');
-  if(isNaN(dt.getTime()) || dt.getMonth()+1 !== parseInt(m,10)) return 'invalid';
+  if(isNaN(dt.getTime()) || dt.getMonth()+1 !== parseInt(m,10) || dt.getDate() !== parseInt(d,10)) return 'invalid';
   return y+'-'+m+'-'+d;
 }
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
@@ -894,10 +896,10 @@ window.addEventListener('scroll', function(){
 (function(){
   var hh=document.getElementById("f-hh"),mm=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
   if(!hh||!tob) return;
-  function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
-  opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
-  opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
-  opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+  function opt(sel,v,t,ph){var o=document.createElement("option");o.value=v;o.textContent=t;if(ph){o.disabled=true;o.hidden=true;o.selected=true;}sel.appendChild(o);}
+  opt(hh,"","Hour",1); for(var h=1;h<=12;h++) opt(hh,h,h);
+  opt(mm,"","Min",1); for(var m=0;m<60;m+=5){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+  opt(ap,"","AM/PM",1); opt(ap,"AM","AM"); opt(ap,"PM","PM");
   function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
   hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
 })();
