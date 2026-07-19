@@ -1,10 +1,13 @@
+# Installed OFFLINE from the prebuilt wheelhouse in packages/ (Linux aarch64 / cp312).
+# The EB instance does NOT reach PyPI and does NOT compile anything.
+# To change deps: edit requirements.build.txt, then rebuild packages/ with build-wheels.bat.
+--no-index
+--find-links packages/
 fastapi==0.115.*
-uvicorn==0.30.*            # plain uvicorn (no uvloop/httptools/watchfiles source builds on Py3.14)
+uvicorn==0.30.*
 pyswisseph==2.10.*
 pydantic==2.*
 razorpay==1.4.*
-PyMySQL==1.1.*          # MySQL driver for AWS RDS (dbcompat backend)
+PyMySQL==1.1.*
 twilio
-xhtml2pdf>=0.2.16          # (#7) server-side PDF rendering (HTML -> PDF)
-# Optional: only needed for non-Indian birthplaces (#1 timezone resolution)
-# timezonefinder>=6.5
+xhtml2pdf>=0.2.16

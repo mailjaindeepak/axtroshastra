@@ -1,0 +1,10 @@
+# Source dependency list used ONLY to build the offline wheelhouse (packages/).
+# The app itself installs from packages/ via requirements.txt (--no-index).
+fastapi==0.115.*
+uvicorn==0.30.*
+pyswisseph==2.10.*
+pydantic==2.*
+razorpay==1.4.*
+PyMySQL==1.1.*
+twilio
+xhtml2pdf>=0.2.16
