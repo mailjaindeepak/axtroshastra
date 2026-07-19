@@ -83,6 +83,11 @@ section{padding:52px 0}
 .dob-row select:nth-child(1){flex:0 0 26%}
 .dob-row select:nth-child(2){flex:1}
 .dob-row select:nth-child(3){flex:0 0 32%}
+/* DOB row: Day + Year are typed inputs — keep them narrow so Month (dropdown) gets the room + keeps its label */
+.dob-row input{padding:13px 8px;text-align:center}
+#f-dd{flex:0 0 3.4em}
+#f-mm{flex:1 1 auto;min-width:0}
+#f-yy{flex:0 0 5.2em}
 .ov{position:fixed;inset:0;background:rgba(18,24,50,.97);z-index:200;display:none;align-items:center;justify-content:center;padding:32px}
 .ov.show{display:flex}
 .ov .inner{max-width:360px;width:100%;text-align:center}
@@ -284,7 +289,7 @@ fbq('track', 'PageView');
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div>
+        <div class="place-wrap"><input id="f-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div></div><div id="f-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div>
       </div>
       <button class="btn" type="submit">Meri kundli check karo — FREE</button>
       <p class="btn-note">Free Chart Snapshot</p>
@@ -705,6 +710,8 @@ window.addEventListener('scroll', function(){
 </div></div>
 <style>
 .field{position:relative}
+/* anchor the city dropdown to the input itself (not the whole field) so it opens right under what you type, over the helper text */
+.place-wrap{position:relative}
 .city-suggest{position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid #E7E0D2;border-top:0;border-radius:0 0 10px 10px;max-height:250px;overflow:auto;display:none;box-shadow:0 10px 24px rgba(0,0,0,.10)}
 .city-suggest.open{display:block}
 .city-suggest .ci{padding:10px 13px;cursor:pointer;font-size:14.5px;border-bottom:1px solid #F1EADB;text-align:left}
