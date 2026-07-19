@@ -726,7 +726,7 @@ window.addEventListener('scroll', function(){
   }
   function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
   inp.addEventListener('input',function(){
-    hint.textContent='';var q=inp.value.trim();
+    hint.textContent='';var q=inp.value.trim();if(selected&&q===selected.label){items=[];render();clearTimeout(timer);return;}
     clearTimeout(timer);
     if(q.length<2){items=[];render();return;}
     timer=setTimeout(function(){
