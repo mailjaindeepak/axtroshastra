@@ -2,6 +2,16 @@
 <html lang="hi-IN">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var l = localStorage.getItem('axlang') || 'en';
+    if(l === 'en') document.documentElement.classList.add('ax-pre');
+  }catch(e){}
+  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
+})();
+</script>
+<style>html.ax-pre body{visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kundli Milan — 36 Guna Match | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
@@ -205,7 +215,22 @@ fbq('track', 'PageView');
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window, document, "clarity", "script", "xkbm56cwzh");
 </script>
-<style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
+<style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}
+.dob-row{display:flex;gap:8px}
+.dob-row select{padding:13px 8px}
+.dob-row input{padding:13px 8px;text-align:center}
+#p1-dd,#p2-dd{flex:0 0 3.4em}
+#p1-mm,#p2-mm{flex:1 1 auto;min-width:0}
+#p1-yy,#p2-yy{flex:0 0 5.2em}
+.field{position:relative}
+.place-wrap{position:relative}
+.city-suggest{position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid #E7E0D2;border-top:0;border-radius:0 0 10px 10px;max-height:250px;overflow:auto;display:none;box-shadow:0 10px 24px rgba(0,0,0,.10)}
+.city-suggest.open{display:block}
+.city-suggest .ci{padding:10px 13px;cursor:pointer;font-size:14.5px;border-bottom:1px solid #F1EADB;text-align:left}
+.city-suggest .ci:last-child{border-bottom:0}
+.city-suggest .ci.active,.city-suggest .ci:hover{background:#F6E7C6}
+.city-suggest .ci small{color:#8F92AB;margin-left:4px}
+.field-hint{font-size:12.5px;color:#C93B2E;margin-top:5px;min-height:1px;text-align:left}</style>
 </head>
 <body>
 
@@ -233,14 +258,14 @@ fbq('track', 'PageView');
       <p class="fc-title">Dono ki birth details daaliye 👇</p>
       <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1 (ladka)</p>
       <div class="field"><label for="p1-name">Naam</label><input id="p1-name" type="text" required></div>
-      <div class="field"><label for="p1-dob">Date of birth</label><input id="p1-dob" type="date" required></div>
+      <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p1-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
-      <div class="field"><label for="p1-place">Place of birth</label><input id="p1-place" type="text" placeholder="City, State" required></div>
+      <div class="field"><label for="p1-place">Place of birth</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
       <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2 (ladki)</p>
       <div class="field"><label for="p2-name">Naam</label><input id="p2-name" type="text" required></div>
-      <div class="field"><label for="p2-dob">Date of birth</label><input id="p2-dob" type="date" required></div>
+      <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p2-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p2-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p2-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(optional)</span></label><div class="tob3"><select id="p2-hh" aria-label="Hour"></select><select id="p2-mm2" aria-label="Minute"></select><select id="p2-ap" aria-label="AM/PM"></select></div><input id="p2-tob" type="hidden"></div>
-      <div class="field"><label for="p2-place">Place of birth</label><input id="p2-place" type="text" placeholder="City, State" required></div>
+      <div class="field"><label for="p2-place">Place of birth</label><div class="place-wrap"><input id="p2-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p2-place-list" class="city-suggest"></div></div><div id="p2-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
       <button class="btn" type="submit">Guna milan karo — FREE preview</button>
       <p class="btn-note">Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.</p>
     </form>
@@ -418,6 +443,27 @@ fbq('track', 'PageView');
 var REPORT_ID = null;
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
+// populate both Month dropdowns (Day + Year are typed inputs — no long scroll, no calendar year-paging)
+(function(){
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  ['p1','p2'].forEach(function(pre){
+    var mm=document.getElementById(pre+'-mm'); if(!mm) return;
+    months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
+  });
+})();
+// build 'YYYY-MM-DD' from a partner's typed DD + Month + YYYY, or null / 'invalid'
+function buildDob(pre){
+  var d=(document.getElementById(pre+'-dd').value||'').trim(), m=document.getElementById(pre+'-mm').value, y=(document.getElementById(pre+'-yy').value||'').trim();
+  if(!d||!m||!y) return null;
+  if(!/^\d{1,2}$/.test(d) || !/^\d{4}$/.test(y)) return 'invalid';
+  d=('0'+d).slice(-2);
+  var yr=parseInt(y,10), curr=new Date().getFullYear();
+  if(yr<1900 || yr>curr) return 'invalid';
+  var dt=new Date(y+'-'+m+'-'+d+'T00:00:00');
+  if(isNaN(dt.getTime()) || dt.getMonth()+1 !== parseInt(m,10) || dt.getDate() !== parseInt(d,10)) return 'invalid';
+  return y+'-'+m+'-'+d;
+}
+
 // funnel event: fires once when user starts filling the form
 var _formStarted = false;
 document.getElementById('milanForm').addEventListener('focusin', function(){
@@ -426,36 +472,30 @@ document.getElementById('milanForm').addEventListener('focusin', function(){
 });
 
 
-// map form state -> time_quality tier
-function timeQuality(){
-  if(!unknown.checked) return {tq:'T0', tob: document.getElementById('f-tob').value};
-  var band = document.getElementById('f-approx').value;
-  if(band.indexOf('nahi pata') !== -1) return {tq:'T3', band:null};
-  var key = band.indexOf('Subah')===0 ? 'subah' : band.indexOf('Din')===0 ? 'din'
-          : band.indexOf('Shaam')===0 ? 'shaam' : 'raat';
-  return {tq:'T2', band:key};
-}
-
 // form submit -> POST /api/milan -> render preview
 document.getElementById('milanForm').addEventListener('submit', async function(e){
   e.preventDefault();
+  var __en = (window.__axlang === 'en');
+  var p1dob = buildDob('p1'), p2dob = buildDob('p2');
+  if(!p1dob || !p2dob){ alert(__en ? 'Please select the full date of birth for both partners.' : 'Dono partners ki poori date of birth select kijiye.'); return; }
+  if(p1dob === 'invalid' || p2dob === 'invalid'){ alert(__en ? 'One of the dates does not exist — please re-check.' : 'Ek date exist nahi karti — dobara check kijiye.'); return; }
   var btn = this.querySelector('.btn');
-  btn.textContent = 'Milan ho raha hai…'; btn.disabled = true;
+  btn.textContent = __en ? 'Matching…' : 'Milan ho raha hai…'; btn.disabled = true;
   try{
     var res = await fetch('/api/milan', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         p1_name: document.getElementById('p1-name').value.trim(),
-        p1_dob: document.getElementById('p1-dob').value,
+        p1_dob: p1dob,
         p1_tob: document.getElementById('p1-tob').value || null,
         p1_place: document.getElementById('p1-place').value.trim(),
         p2_name: document.getElementById('p2-name').value.trim(),
-        p2_dob: document.getElementById('p2-dob').value,
+        p2_dob: p2dob,
         p2_tob: document.getElementById('p2-tob').value || null,
         p2_place: document.getElementById('p2-place').value.trim(),
         variant: location.pathname
       })});
-    if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
+    if(!res.ok){ throw new Error((await res.json()).detail || (__en ? 'Something went wrong' : 'Kuch galat ho gaya')); }
     var data = await res.json();
     REPORT_ID = data.report_id;
     var t = data.teaser;
@@ -472,15 +512,15 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'milan_preview'});
   }catch(err){
-    alert(err.message + ' — dobara try kijiye.');
+    alert(err.message + (__en ? ' — please try again.' : ' — dobara try kijiye.'));
   }finally{
-    btn.textContent = 'Guna milan karo — FREE preview'; btn.disabled = false;
+    btn.textContent = (window.__axlang === 'en') ? 'Match the gunas — FREE preview' : 'Guna milan karo — FREE preview'; btn.disabled = false;
   }
 });
 
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
-  if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
+  if(!REPORT_ID){ document.getElementById('milanForm').scrollIntoView(); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null})});
@@ -562,14 +602,253 @@ window.addEventListener('scroll', function(){
   function wire(pre){
     var hh=document.getElementById(pre+"-hh"),mm=document.getElementById(pre+"-mm2"),ap=document.getElementById(pre+"-ap"),tob=document.getElementById(pre+"-tob");
     if(!hh||!tob) return;
-    function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
-    opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
-    opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
-    opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+    function opt(sel,v,t,ph){var o=document.createElement("option");o.value=v;o.textContent=t;if(ph){o.disabled=true;o.hidden=true;o.selected=true;}sel.appendChild(o);}
+    opt(hh,"","Hour",1); for(var h=1;h<=12;h++) opt(hh,h,h);
+    opt(mm,"","Min",1); for(var m=0;m<60;m+=5){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+    opt(ap,"","AM/PM",1); opt(ap,"AM","AM"); opt(ap,"PM","PM");
     function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
     hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
   }
   wire("p1"); wire("p2");
+})();
+</script>
+
+<!-- CITY AUTOSUGGEST — both partners, with lat/lon/tz injection into /api/milan -->
+<script>
+(function(){
+  var picked={p1:null,p2:null};
+  function wireCity(pre){
+    var inp=document.getElementById(pre+'-place'); if(!inp) return;
+    var list=document.getElementById(pre+'-place-list');
+    var hint=document.getElementById(pre+'-place-hint');
+    var timer=null,items=[],active=-1;
+    function render(){
+      if(!items.length){list.classList.remove('open');list.innerHTML='';return;}
+      list.innerHTML=items.map(function(c,i){
+        return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+(c.region||c.country)+'</small></div>';
+      }).join('');
+      list.classList.add('open');
+    }
+    function pick(c){picked[pre]=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+    inp.addEventListener('input',function(){
+      hint.textContent='';var q=inp.value.trim();var sel=picked[pre];
+      if(sel&&q===sel.label){items=[];render();clearTimeout(timer);return;}
+      picked[pre]=null;
+      clearTimeout(timer);
+      if(q.length<2){items=[];render();return;}
+      timer=setTimeout(function(){
+        fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
+          items=(d&&d.results)||[];active=-1;render();
+          if(!items.length){hint.textContent=(window.__axlang==='en'?'City not found — pick your nearest bigger city/district.':'City nahi mili — nazdeeki bada sheher/zila chuniye.');}
+        }).catch(function(){items=[];render();});
+      },180);
+    });
+    inp.addEventListener('keydown',function(e){
+      if(!list.classList.contains('open'))return;
+      if(e.key==='ArrowDown'){active=Math.min(active+1,items.length-1);render();e.preventDefault();}
+      else if(e.key==='ArrowUp'){active=Math.max(active-1,0);render();e.preventDefault();}
+      else if(e.key==='Enter'){if(active>=0&&items[active]){pick(items[active]);e.preventDefault();}}
+      else if(e.key==='Escape'){items=[];render();}
+    });
+    list.addEventListener('mousedown',function(e){var d=e.target.closest('.ci');if(d){pick(items[+d.getAttribute('data-i')]);e.preventDefault();}});
+    var form=inp.closest('form');
+    if(form)form.addEventListener('submit',function(e){
+      var sel=picked[pre];
+      if(!sel||inp.value.trim()!==sel.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick the birth city from the list.':'Birth city list se chuniye.');inp.focus();}
+    },true);
+  }
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.field')){
+      var ls=document.querySelectorAll('.city-suggest');
+      for(var i=0;i<ls.length;i++){ ls[i].classList.remove('open'); ls[i].innerHTML=''; }
+    }
+  });
+  wireCity('p1'); wireCity('p2');
+  // single fetch monkey-patch: inject lat/lon/tz for whichever partners have a picked city
+  var of=window.fetch;
+  window.fetch=function(url,opts){
+    try{
+      if(typeof url==='string'&&url.indexOf('/api/milan')>=0&&opts&&opts.body){
+        var b=JSON.parse(opts.body);
+        ['p1','p2'].forEach(function(pre){
+          var sel=picked[pre],inp=document.getElementById(pre+'-place');
+          if(sel&&inp&&inp.value.trim()===sel.label){ b[pre+'_lat']=sel.lat; b[pre+'_lon']=sel.lon; b[pre+'_tz']=sel.tz; b[pre+'_place']=sel.label; }
+        });
+        opts.body=JSON.stringify(b);
+      }
+    }catch(_){}
+    return of.apply(this,arguments);
+  };
+})();
+</script>
+
+<!-- FORM VALIDATION — per-partner date check, name sanitisation, re-submit reuse -->
+<script>
+(function(){
+  var form=document.getElementById("milanForm"); if(!form) return;
+  function L(en,hi){ return (window.__axlang==="en")?en:hi; }
+  function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
+  var P={};
+  ["p1","p2"].forEach(function(pre){
+    var dd=document.getElementById(pre+"-dd"),mm=document.getElementById(pre+"-mm"),yy=document.getElementById(pre+"-yy");
+    var nm=document.getElementById(pre+"-name");
+    var o={dd:dd,mm:mm,yy:yy,nm:nm};
+    o.nameHint=mkHint(nm);
+    o.dobHint=mkHint(dd?dd.closest(".dob-row"):null);
+    o.dateValid=function(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; };
+    o.checkDate=function(){ o.dobHint.textContent = o.dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); };
+    if(dd){ dd.addEventListener("change",o.checkDate); mm.addEventListener("change",o.checkDate); yy.addEventListener("change",o.checkDate); }
+    P[pre]=o;
+  });
+  form.addEventListener("submit", function(e){
+    function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
+    var parts=["p1","p2"];
+    for(var i=0;i<parts.length;i++){
+      var o=P[parts[i]];
+      var clean=(o.nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
+      o.nm.value=clean;
+      if(!clean){ o.nameHint.textContent=L("Please enter the name.","Naam likhiye."); stop(); o.nm.focus(); return; } o.nameHint.textContent="";
+      if(!o.dateValid()){ o.checkDate(); stop(); return; } o.dobHint.textContent="";
+    }
+    var h=parts.map(function(pre){var o=P[pre];return [o.nm.value,o.dd.value,o.mm.value,o.yy.value,document.getElementById(pre+"-tob").value,(document.getElementById(pre+"-place").value||"")].join("~");}).join("|");
+    var teaser=document.getElementById("teaser");
+    if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }
+    window.__lastHash=h;
+  }, true);
+})();
+</script>
+
+<!-- TIER-3 POLISH — clickable brand logo + language-capsule scroll fade -->
+<script>
+(function(){
+  var brand=document.querySelector(".brand");
+  if(brand){ brand.style.cursor="pointer"; brand.setAttribute("role","link"); brand.setAttribute("tabindex","0"); brand.setAttribute("aria-label","Axtroshastra home");
+    brand.addEventListener("click", function(){ location.href="/"; });
+    brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
+  function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return setTimeout(wireCap,200); }
+    cap.style.transition="opacity .25s ease"; var t;
+    window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
+    function full(){ cap.style.opacity=""; clearTimeout(t); }
+    cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
+  wireCap();
+})();
+</script>
+
+<!-- LANGUAGE TOGGLE — Hinglish (source) <-> English (runtime). Page copy only. -->
+<script>
+(function(){
+  var EN = {
+    "Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.":"Just your city or district is enough — a locality (like Punjabi Bagh) won't appear in search.",
+    "Kundli Milan · 36 Guna":"Kundli Milan · 36 Guna",
+    "Kya yeh rishta":"Does this","match":"match","karta hai?":"work?",
+    "Dono kundliyon ka guna milan.":"Both charts, matched guna by guna.",
+    "Score, doshas, aur unka sach.":"Score, doshas, and the truth about them.",
+    "Full Ashtakoota matching — aatho kootas ka breakdown, manglik check, aur doshas ki honest cancellation-analysis.":"Full Ashtakoota matching — a breakdown of all eight kootas, a manglik check, and an honest cancellation analysis of the doshas.",
+    "Dono ki birth details daaliye 👇":"Enter both people's birth details 👇",
+    "PARTNER 1 (ladka)":"PARTNER 1 (groom)",
+    "PARTNER 2 (ladki)":"PARTNER 2 (bride)",
+    "Naam":"Name",
+    "(nahi pata? khaali chhodiye)":"(don't know? leave it blank)",
+    "Guna milan karo — FREE preview":"Match the gunas — FREE preview",
+    "Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.":"Free match preview first. Full 36-guna report ₹499 — pay only if you want the score.",
+    "Guna milan":"Guna match",
+    "ready hai ✅":"is ready ✅",
+    "⭐ Aapka":"⭐ Your",
+    "36-guna score calculate ho chuka hai":"36-guna score has been calculated",
+    "— aatho kootas, manglik check, aur dosha analysis ke saath.":"— with all eight kootas, a manglik check, and dosha analysis.",
+    "— aur verdict, honest bands ke saath":"— and a verdict, with honest bands",
+    "Aatho kootas ka breakdown":"Breakdown of all eight kootas",
+    "— Varna se Nadi tak, har ek ka matlab":"— from Varna to Nadi, what each one means",
+    "— aur cancellation rules":"— and cancellation rules",
+    "— dono charts ka":"— for both charts",
+    "Kya improve ho sakta hai":"What can be improved",
+    "— score ka practical matlab":"— the practical meaning of the score",
+    "Kyun alag hai":"Why it's different",
+    "Yeh milan alag kyun hai":"Why this match report is different",
+    "Panditji ne 32 bola, website ne 24 — kaun sahi hai?":"Panditji said 32, a website said 24 — who's right?",
+    "Alag-alag jagah alag score isliye aata hai kyunki assumptions alag hote hain. Hum NASA-grade planetary data se dono moons ki exact position lete hain aur classical Ashtakoota rules ko as-is compute karte hain — Lahiri ayanamsa, standard tables. Same inputs, same score, har baar. Aur har koota ka reason report mein likha hota hai, taaki aap khud verify kar sakein.":"Different places give different scores because their assumptions differ. We take both moons' exact positions from NASA-grade planetary data and compute the classical Ashtakoota rules as-is — Lahiri ayanamsa, standard tables. Same inputs, same score, every time. And the reason for each koota is written in the report, so you can verify it yourself.",
+    "Hum score inflate nahi karte.":"We don't inflate the score.",
+    "Kam score aaya toh kam hi dikhayenge — lekin uske saath yeh bhi ki kaunsa dosha cancellation rules se cancel hota hai aur kaunsa factor improve ho sakta hai. Guna milan ek input hai, poora faisla nahi. Jo website har jodi ko 30+ deti hai, woh aapko khush kar rahi hai, madad nahi.":"If the score is low, we'll show it as low — but along with which dosha gets cancelled by the cancellation rules and which factor can improve. Guna milan is one input, not the whole decision. A website that gives every couple 30+ is flattering you, not helping you.",
+    "Banaya IIT–IIM engineers ne.":"Built by IIT–IIM engineers.",
+    "Report ke andar":"Inside the report",
+    "Report mein kya milega":"What you get in the report",
+    "Honest bands — excellent, very good, acceptable, ya careful consideration.":"Honest bands — excellent, very good, acceptable, or careful consideration.",
+    "Varna se Nadi tak — har koota ka score, aur plain words mein uska matlab.":"From Varna to Nadi — each koota's score, and what it means in plain words.",
+    "Dosha mila toh cancellation rules bhi — aksar dosha cancel hota hai.":"If there's a dosha, the cancellation rules too — a dosha is often cancelled.",
+    "Dono charts ka check — aur manglik-manglik neutral rule.":"A check on both charts — and the manglik-manglik neutral rule.",
+    "Score ka practical matlab":"What the score means in practice",
+    "Kya structural hai, kya improve ho sakta hai — sirf number nahi.":"What's structural, what can improve — not just a number.",
+    "PDF download — dono families ke saath share karne layak.":"PDF download — ready to share with both families.",
+    "Birth time problem?":"Birth time problem?",
+    "Birth time nahi pata?":"Don't know the birth time?",
+    "Milan phir bhi hota hai.":"The match still works.",
+    "matching Moon-based hoti hai — time se zyada date matter karti hai":"matching is Moon-based — the date matters more than the time",
+    "Ashtakoota ke saare kootas Moon ki rashi aur nakshatra se nikalte hain, jo din bhar mein aam taur par stable rehti hai. Isliye humara form time optional rakhta hai — doosri websites ki tarah 12:00 assume karke chhupate nahi. Exact time ho toh pada-level refinement aur lagna-based manglik check aur sharp ho jaata hai.":"All the Ashtakoota kootas come from the Moon's rashi and nakshatra, which usually stay stable through the day. That's why our form keeps time optional — we don't hide it by assuming 12:00 like other websites. With an exact time, the pada-level refinement and lagna-based manglik check get even sharper.",
+    "Sawaal-jawaab":"Q&A",
+    "Aksar poochhe gaye sawaal":"Frequently asked questions",
+    "Kitna score hona chahiye?":"What score should you aim for?",
+    "Traditional threshold 18/36 hai. 18–24 acceptable, 25–32 very good, 33+ excellent. Lekin number se zyada important hai ki kaunse kootas mein kami hai — Nadi ki kami aur Varna ki kami ek jaisi nahi hoti. Report yeh fark clearly batati hai.":"The traditional threshold is 18/36. 18–24 is acceptable, 25–32 very good, 33+ excellent. But more important than the number is which kootas are lacking — a shortfall in Nadi and a shortfall in Varna are not the same. The report explains this difference clearly.",
+    "Nadi dosha aa gaya — kya rishta nahi ho sakta?":"There's a Nadi dosha — does that rule out the match?",
+    "Zaroori nahi. Nadi dosha ke classical cancellation rules hain — rashi alag ho, pada alag ho, ya kuch aur conditions. Report mein dosha ke saath uska cancellation-check bhi milta hai. Sirf \"Nadi dosha hai\" sunke rukna aadha sach hai.":"Not necessarily. Nadi dosha has classical cancellation rules — different rashi, different pada, or a few other conditions. The report gives the dosha along with its cancellation check. Stopping just because you heard \"there's a Nadi dosha\" is only half the truth.",
+    "Panditji ka score alag kyun aa sakta hai?":"Why might Panditji's score differ?",
+    "Ayanamsa, pada assumptions, ya manual calculation ke difference se. Hum Lahiri ayanamsa aur standard classical tables use karte hain, aur har koota ka detail report mein dikhate hain — aap kisi bhi astrologer se line-by-line verify karwa sakte hain.":"Because of differences in ayanamsa, pada assumptions, or manual calculation. We use Lahiri ayanamsa and standard classical tables, and show each koota's detail in the report — you can get it verified line by line by any astrologer.",
+    "Birth time nahi pata. Chalega?":"Don't know the birth time. Will it work?",
+    "Haan — 36-guna matching Moon-based hai, jo poore din stable rehti hai (rare boundary cases chhodke). Exact time se pada-level checks aur lagna-based manglik aur refine hote hain, par core score ke liye date aur place kaafi hain.":"Yes — 36-guna matching is Moon-based, which stays stable through the day (barring rare boundary cases). An exact time refines the pada-level checks and lagna-based manglik further, but for the core score the date and place are enough.",
+    "Report kab milegi?":"When will I get the report?",
+    "Payment ke turant baad, screen par. PDF download bhi milta hai — families ke saath share karne ke liye.":"Right after payment, on screen. You also get a PDF download — to share with the families.",
+    "100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.":"100% refund, no questions asked, 7 days. Message us on WhatsApp, done.",
+    "Dono ki details safe hain?":"Are both people's details safe?",
+    "Birth details sirf report ke liye use hoti hain. No spam calls — hum number kisi astrologer ya matrimony site ko nahi bechte.":"Birth details are used only for the report. No spam calls — we don't sell your number to any astrologer or matrimony site.",
+    "Rishta pakka karne se pehle,":"Before you finalise the match,",
+    "kundli mila lo.":"match the kundlis."
+  };
+  var PH = {};
+  var TITLE = { hi: document.title, en: "Kundli Milan — 36 Guna Match | Axtroshastra" };
+
+  function walk(node, fn){
+    for(var i=0;i<node.childNodes.length;i++){
+      var n=node.childNodes[i];
+      if(n.nodeType===3){ fn(n); }
+      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE'
+              && n.id!=='axlang' && !(n.classList && n.classList.contains('city-suggest'))){
+        walk(n, fn);
+      }
+    }
+  }
+  function apply(lang){
+    walk(document.body, function(tn){
+      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
+      var raw = tn.nodeValue;
+      var key = raw.replace(/\s+/g,' ').trim();
+      if(!key) return;
+      if(tn.__hi==null) tn.__hi = raw;
+      if(Object.prototype.hasOwnProperty.call(EN, key)){
+        var lead=(raw.match(/^\s*/)||[''])[0], trail=(raw.match(/\s*$/)||[''])[0];
+        tn.nodeValue = lead + EN[key] + trail;
+      }
+    });
+    for(var id in PH){ var el=document.getElementById(id); if(el){ if(el.__phhi==null) el.__phhi=el.getAttribute('placeholder')||''; el.setAttribute('placeholder', lang==='en'? PH[id] : el.__phhi); } }
+    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
+    if(TITLE[lang]) document.title = TITLE[lang];
+    try{ localStorage.setItem('axlang', lang); }catch(e){}
+    var box=document.getElementById('axlang');
+    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en');
+             box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
+    window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
+    try{ if(window.__teaserData && window.__renderTeaser) window.__renderTeaser(window.__teaserData); }catch(e){}
+  }
+
+  var css=document.createElement('style');
+  css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}';
+  document.head.appendChild(css);
+  var box=document.createElement('div'); box.id='axlang';
+  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
+  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  document.body.appendChild(box);
+
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
+  apply(saved);
 })();
 </script>
 </body>

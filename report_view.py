@@ -318,6 +318,129 @@ REPORT_I18N = r"""<script>
 """
 
 
+MILAN_I18N = r"""<script>
+(function(){
+  var FRAG = [
+    // ---- static strings in render_milan ----
+    ["✦ AXTROSHASTRA · KUNDLI MILAN","✦ AXTROSHASTRA · HOROSCOPE MATCHING"],
+    ["Ashtakoota — aatho kootas ka breakdown","Ashtakoota — a breakdown of all eight kootas"],
+    ["Dosha cancellation ke baad:","After the flaw cancellation:"],
+    ["Dosha cancellation check","Flaw cancellation check"],
+    ["Cancellations ke baad effective score:","Effective score after cancellations:"],
+    ["Is jodi mein dosha ke standard cancellation rules apply nahi hote — dosha effective hai. Iska matlab section 'Score ka matlab' mein neeche padhiye; dar se nahi, samajh se decide kijiye.","For this couple the standard cancellation rules for the flaw do not apply — the flaw is effective. Read what this means in the 'What the score means' section below; decide not from fear but from understanding."],
+    ["Is jodi ki taakat — aur dhyaan ki jagah","This couple's strengths — and where to pay attention"],
+    ["Aap dono ki energy","Your combined energy"],
+    ["Score kam hai — iska matlab kya hai?","The score is low — what does it mean?"],
+    ["Pehli baat:","First:"],
+    ["guna milan ek classical input hai, poora faisla nahi. Yeh Moon-positions ki compatibility napta hai — values, maturity aur commitment nahi, jo kisi bhi rishtey ke asli pillars hain.","guna milan is one classical input, not the whole verdict. It measures the compatibility of Moon-positions — not values, maturity and commitment, which are the real pillars of any relationship."],
+    ["Dusri baat:","Second:"],
+    ["upar dekhiye kaunse kootas mein kami hai. Gana ya Graha Maitri ki kami","look above to see which kootas fall short. A shortfall in Gana or Graha Maitri is"],
+    ["hai — yeh communication-patterns ki baat hai jo couples seekh lete hain. Nadi/Bhakoot dosha (agar cancelled nahi) traditional weight zyada rakhta hai — wahan family-elders aur apne vivek dono se salaah kijiye.","— this is about communication-patterns that couples learn. The Nadi/Bhakoot flaw (if not cancelled) carries more traditional weight — there, seek counsel from both family-elders and your own judgement."],
+    ["Teesri baat:","Third:"],
+    ["lakhs of successful marriages kam score ke saath hui hain. Score ko information ki tarah use kijiye — kis cheez par kaam karna hoga yeh jaanne ke liye — verdict ki tarah nahi.","lakhs of successful marriages have happened with a low score. Use the score as information — to learn what you will need to work on — not as a verdict."],
+    // ---- manglik_note (products.py) ----
+    ["Dono charts mein manglik placement hai — classical rule mein manglik-manglik pairing neutral ho jaati hai. Not an obstacle.","Both charts have a manglik placement — in the classical rule a manglik-manglik pairing becomes neutral. Not an obstacle."],
+    ["Ek chart mein manglik placement hai (Moon-based check). Cancellation rules aksar apply hote hain — full lagna-based check ke liye exact birth times chahiye.","One chart has a manglik placement (Moon-based check). Cancellation rules often apply — for a full lagna-based check, exact birth times are needed."],
+    ["Kisi bhi chart mein manglik dosha nahi hai (Moon-based check). ✅","Neither chart has a manglik flaw (Moon-based check). ✅"],
+    // ---- nadi / bhakoot cancellation rules (products.py) — split around interpolated lord names ----
+    ["Same nakshatra, alag pada — classical rule mein Nadi dosha cancelled.","Same nakshatra, different pada — in the classical rule the Nadi flaw is cancelled."],
+    ["Moon rashi alag hai — widely-followed classical rule mein Nadi dosha cancelled.","The Moon rashi is different — in a widely-followed classical rule the Nadi flaw is cancelled."],
+    ["Dono rashiyon ka lord ek hi hai (","Both signs share the same lord ("],
+    [") — Bhakoot dosha cancelled.",") — the Bhakoot flaw is cancelled."],
+    ["Rashi lords (","The sign lords ("],
+    [") mutual friends hain — Bhakoot dosha cancelled.",") are mutual friends — the Bhakoot flaw is cancelled."],
+    // ---- notes (products.py, English but carry the token 'dosha') ----
+    ["Nadi dosha present — traditionally the most weighted dosha. Note: cancellation applies if moon signs differ or nakshatra padas differ; a detailed pada-level check is recommended.","Nadi flaw present — traditionally the most weighted affliction. Note: cancellation applies if moon signs differ or nakshatra padas differ; a detailed pada-level check is recommended."],
+    ["Low score is spread across kootas rather than one dosha — often improvable factors (understanding, timing) rather than structural.","Low score is spread across kootas rather than one flaw — often improvable factors (understanding, timing) rather than structural."],
+    // ---- KOOTA_TEXT couple-voiced bands (jyotish_maps.py) ----
+    ["Kaam aur ego ke matters mein aap dono ka natural order milta hai — ghar ke decisions mein tug-of-war kam hoga.","In matters of work and ego you both fall into a natural order — there will be less tug-of-war in household decisions."],
+    ["Kaam-kaaj aur ego ke sawaalon mein role-clarity conscious rakhni hogi — kaun kya lead karta hai, yeh baat-cheet se tay karo, assumption se nahi.","On questions of work and ego you will have to keep role-clarity conscious — decide who leads what through conversation, not assumption."],
+    ["Aap dono ka ek dusre par sway balanced hai — koi kisi ko 'chala' nahi raha, dono saath chal rahe hain.","Your sway over each other is balanced — neither is 'driving' the other, you are both moving together."],
+    ["Influence ek taraf thoda zyada hai — jab tak dominant partner ise care se use kare, yeh stability deta hai.","The influence tilts a little to one side — as long as the dominant partner uses it with care, it lends stability."],
+    ["Mutual pull kam hai — matlab rishta convince karne se nahi, respect karne se chalega. Space dena yahan pyaar dikhaane ka tareeka hai.","The mutual pull is low — meaning the relationship will run on respect, not persuasion. Giving space is the way to show love here."],
+    ["Nakshatra-count dono taraf shubh hai — saath rehne se dono ki wellbeing badhti hai, classical texts ise strong protection maanti hain.","The nakshatra-count is auspicious both ways — being together raises the wellbeing of both, and classical texts consider this strong protection."],
+    ["Ek direction shubh, ek nahi — ek partner ko rishtey se zyada milta hai. Balance ke liye giving conscious rakhni hogi.","One direction is auspicious, one is not — one partner gains more from the relationship. To keep balance, giving will have to stay conscious."],
+    ["Tara count inauspicious hai — traditionally health/wellbeing par dhyaan. Practical matlab: ek dusre ki sehat aur stress ka khayal is jodi ka zaroori ritual hona chahiye.","The Tara count is inauspicious — traditionally, attention to health/wellbeing. Practical meaning: caring for each other's health and stress should be an essential ritual for this couple."],
+    ["Instinctive aur physical wavelength naturally milti hai — bina koshish ke comfort, jo har jodi ko naseeb nahi hota.","The instinctive and physical wavelength meets naturally — effortless comfort, which not every couple is blessed with."],
+    ["Physical-instinctive match neutral hai — chemistry banayi ja sakti hai, bas dono ki pace alag ho sakti hai; patience rakho.","The physical-instinctive match is neutral — chemistry can be built, only your paces may differ; keep patience."],
+    ["Yoni enemy-pair hai — instincts alag chalti hain. Yeh attraction ko nahi rokta, par daily-life habits (sona, uthna, touch, space) mein adjustment maangta hai. Naam se mat daro, pattern samjho.","This is a Yoni enemy-pair — instincts run differently. This does not stop attraction, but it asks for adjustment in daily-life habits (sleeping, waking, touch, space). Do not fear the name, understand the pattern."],
+    ["Moon-lords doston mein hain — aap dono ka sochne ka tareeka compatible hai. Behas hogi toh bhi bhasha ek hi hogi.","The Moon-lords are friends — the two of you think in compatible ways. Even when there is an argument, the language will be the same."],
+    ["Moon-lords neutral hain — mental wavelength banti hai shared experiences se. Saath cheezein karo, wavelength khud align hogi.","The Moon-lords are neutral — mental wavelength builds through shared experiences. Do things together and the wavelength will align on its own."],
+    ["Moon-lords ki adaawat hai — matlab default sochne ke tareeke alag hain. Iska ilaaj hai 'translate' karna seekhna: partner ki baat ko uske frame mein samajhna, apne mein nahi.","The Moon-lords are at odds — meaning your default ways of thinking differ. The remedy is learning to 'translate': understanding your partner's point in their frame, not your own."],
+    ["Temperament same category ka hai — energy levels, social style, gussa-shanti ka pattern milta hai.","The temperament is of the same category — energy levels, social style, and the anger-and-calm pattern all match."],
+    ["Deva-Manushya pairing — ek zyada idealist, ek zyada practical. Achhi jodi, bas expectations ko naam dena seekho.","A Deva-Manushya pairing — one more idealist, one more practical. A good match, just learn to name your expectations."],
+    ["Gana mismatch hai — temperament genuinely alag hain (jaise ek ko bheed chahiye, ek ko sannata). Yeh deal-breaker nahi, design-brief hai: ghar aisa banao jismein dono modes ki jagah ho.","There is a Gana mismatch — temperaments are genuinely different (say, one needs a crowd, the other silence). This is not a deal-breaker, it is a design-brief: build a home that has room for both modes."],
+    ["Moon-signs ki relative position shubh hai — emotional bond aur family-growth ke liye classical green signal.","The relative position of the Moon-signs is auspicious — a classical green signal for the emotional bond and family-growth."],
+    ["Bhakoot dosha hai — 6-8, 2-12 ya 5-9 ki position. Traditionally emotional distance ya financial friction se joda jaata hai. Cancellation check neeche dekho — aksar lords ki dosti ise cancel kar deti hai.","There is a Bhakoot flaw — a 6-8, 2-12 or 5-9 position. Traditionally it is linked to emotional distance or financial friction. See the cancellation check below — often the lords' friendship cancels it."],
+    ["Nadi alag hai — sabse heavy koota clear hai. Classical texts iske liye sabse zyada points isi liye deti hain.","The Nadi is different — the heaviest koota is clear. That is exactly why classical texts award the most points for it."],
+    ["Nadi same hai — traditionally sabse serious dosha, progeny aur vitality se juda. LEKIN: iske cancellation rules sabse well-defined hain. Neeche ka cancellation-check hi asli verdict hai, yeh zero nahi.","The Nadi is the same — traditionally the most serious flaw, tied to progeny and vitality. BUT: its cancellation rules are the most well-defined. The cancellation-check below is the real verdict, not this zero."],
+    // ---- ELEMENT_PAIR couple text (jyotish_maps.py) ----
+    ["Do fire moons — passion, speed aur honesty double; conflict bhi bright jalta hai par jaldi bujhta hai. Rule seekhiye: ek waqt par ek hi jale.","Two fire moons — passion, speed and honesty are doubled; conflict too burns bright but dies down fast. Learn the rule: only one burns at a time."],
+    ["Do earth moons — stability, saving, building. Rishta ghar jaisa lagta hai; risk sirf yeh ki routine romance ko na kha jaaye.","Two earth moons — stability, saving, building. The relationship feels like home; the only risk is that routine may eat the romance."],
+    ["Do air moons — baatein kabhi khatam nahi hongi. Mental match excellent; grounding (routine, decisions) ko conscious effort dena hoga.","Two air moons — the conversations will never end. The mental match is excellent; grounding (routine, decisions) will need conscious effort."],
+    ["Do water moons — bina bole samajhna. Emotional depth rare-level ki hai; mood ek dusre par lehron ki tarah aate hain, isliye ek ka calm rehna zaroori.","Two water moons — understanding without words. The emotional depth is rare; moods wash over each other like waves, so it is essential that one stays calm."],
+    ["Fire + earth — spark aur zameen. Ek raftaar laata hai, doosra thehraav. Fire ko patience, earth ko thodi spontaneity seekhni hogi — phir yeh builder-jodi hai.","Fire + earth — spark and ground. One brings pace, the other steadiness. Fire will have to learn patience, earth a little spontaneity — then this is a builder-couple."],
+    ["Fire + air — hawa aag ko badhaati hai. Energy, plans, adventures — natural chemistry. Dhyaan bas itna: dono udna jaante hain, landing kaun karayega yeh tay kar lo.","Fire + air — air feeds the flame. Energy, plans, adventures — natural chemistry. Just note: both know how to fly, so settle who will handle the landing."],
+    ["Fire + water — bhaap banti hai: intense attraction, intense reactions. Fire ko softness, water ko directness seekhni hogi. Mehnat maangta hai, magic deta hai.","Fire + water — steam forms: intense attraction, intense reactions. Fire will have to learn softness, water directness. It demands effort, it gives magic."],
+    ["Earth + air — practical milta hai conceptual se. Air ideas laata hai, earth unhe khada karta hai. Pace ka difference hi friction hai, aur wahi complementarity bhi.","Earth + air — the practical meets the conceptual. Air brings ideas, earth stands them up. The difference in pace is the friction, and also the very complementarity."],
+    ["Earth + water — mitti aur paani: sabse naturally nourishing pair. Ek security deta hai, doosra depth. Classical texts ise sahaj-anukool maanti hain.","Earth + water — soil and water: the most naturally nourishing pair. One gives security, the other depth. Classical texts consider this innately compatible."],
+    ["Air + water — words milte hain feelings se. Air ko seekhna hoga ki har baat logic nahi hoti; water ko, ki har baat kehni padti hai. Bridge bana toh poetry hai.","Air + water — words meet feelings. Air will have to learn that not everything is logic; water, that not everything can go unsaid. Build the bridge and it is poetry."],
+    // ---- ELEMENT_HI labels (jyotish_maps.py) ----
+    ["Agni (fire)","Fire"],
+    ["Prithvi (earth)","Earth"],
+    ["Vayu (air)","Air"],
+    ["Jal (water)","Water"],
+    // ---- catch-all: any residual 'dosha' token -> 'flaw' (applied last, shortest) ----
+    ["dosha","flaw"]
+  ];
+  var EXACT = {"HAAN":"YES","NAHI":"NO","नहीं":"NO","HAN":"YES","Pichhle saal":"Past years","kab":"when","aur":"and","Graha":"Planet","Bhaav":"House","hai.":"."};
+  var TITLE = { en: "Horoscope Matching | Axtroshastra" };
+  function norm(s){ return s.replace(/ /g," ").replace(/ [‐‑‒–—-] /g," — ").replace(/[‐‑‒–—]/g,"—").replace(/\s+/g," "); }
+  var SORTED = FRAG.map(function(p){ return [norm(p[0]), p[1]]; }).sort(function(a,b){ return b[0].length - a[0].length; });
+  function walk(node, fn){
+    for(var i=0;i<node.childNodes.length;i++){
+      var n=node.childNodes[i];
+      if(n.nodeType===3){ fn(n); }
+      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE' && n.id!=='axlang'){ walk(n, fn); }
+    }
+  }
+  function translate(hi){
+    var t=norm(hi), trimmed=t.trim();
+    if(Object.prototype.hasOwnProperty.call(EXACT, trimmed)){ return t.replace(trimmed, EXACT[trimmed]); }
+    for(var i=0;i<SORTED.length;i++){ if(t.indexOf(SORTED[i][0])>=0){ t = t.split(SORTED[i][0]).join(SORTED[i][1]); } }
+    return t;
+  }
+  function apply(lang){
+    walk(document.body, function(tn){
+      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
+      if(tn.__hi==null) tn.__hi = tn.nodeValue;
+      if(!tn.__hi.trim()) return;
+      tn.nodeValue = translate(tn.__hi);
+    });
+    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
+    if(lang==='en' && TITLE.en){ if(!window.__titlehi) window.__titlehi=document.title; document.title=TITLE.en; }
+    else if(window.__titlehi){ document.title=window.__titlehi; }
+    try{ localStorage.setItem('axlang', lang); }catch(e){}
+    var box=document.getElementById('axlang');
+    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en'); box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
+    window.__axlang=lang;
+    document.documentElement.classList.remove('ax-pre');
+  }
+  var css=document.createElement('style');
+  css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.92);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}';
+  document.head.appendChild(css);
+  var box=document.createElement('div'); box.id='axlang';
+  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
+  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  document.body.appendChild(box);
+  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
+  apply(saved);
+  window.axShare=function(){var url=location.href;var t=(window.__axlang==='en'?'Check out our Kundli Milan compatibility report from Axtroshastra':'Hamari Kundli Milan report Axtroshastra se');if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
+})();
+</script>
+"""
+
+
 def render_report(p: dict) -> str:
     meta, sig, mg = p["meta"], p["significators"], p["manglik"]
     name = escape(meta["name"])  # user-supplied: escape to prevent stored XSS
@@ -801,7 +924,7 @@ def render_milan(p: dict) -> str:
 
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
     vcol = VERDICT_COLOR[p["verdict_key"]]
-    return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
+    return f"""<!DOCTYPE html><html lang="hi-IN"><head>{AX_PRE}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{m['p1']} ✕ {m['p2']} — Kundli Milan | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -854,6 +977,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
 Guna milan is one classical input to a marriage decision, not the whole decision.
 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+{MILAN_I18N}
 </body></html>"""
 
 
