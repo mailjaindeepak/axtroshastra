@@ -242,7 +242,33 @@ REPORT_I18N = r"""<script>
     ["pehla remedy hamesha action hai — strong window mein actively dhoondhna. Yeh support hai, substitute nahi.","the first remedy is always action — actively searching in a strong window. This is a support, not a substitute."],
     ["Ek aur sawaal, usi chart","One more question, from the same chart"],
     ["career kab lift hoga?","when will your career take off?"],
-    ["par CAREER bhejiye","send CAREER on"]
+    ["par CAREER bhejiye","send CAREER on"],
+    // ---- Manglik page (page 5) ----
+    ["Manglik placement hai — par cancelled hai","There is a Manglik placement — but it is cancelled"],
+    ["Manglik placement hai — calmly samjhiye","There is a Manglik placement — understand it calmly"],
+    ["Mars manglik position mein hai, lekin classical cancellation rules apply hote hain:","Mars is in a manglik position, but classical cancellation rules apply:"],
+    ["Tradition mein cancelled manglik ko manglik nahi mana jaata — matching mein isse issue nahi banna chahiye.","In tradition a cancelled manglik is not counted as manglik — it should not be an issue in matching."],
+    ["Mars manglik houses mein hai. Yeh koi shraap nahi hai — classical texts iske liye simple remedial framing dete hain, aur manglik-manglik matching mein yeh neutral ho jaata hai. Dar ki nahi, jaankari ki baat hai.","Mars is in the manglik houses. This is no curse — classical texts give it a simple remedial framing, and in manglik-manglik matching it becomes neutral. This is a matter of information, not fear."],
+    ["manglik houses mein","in the manglik houses"],
+    // ---- Sade Sati (in '3 aur sach' section) ----
+    ["Sade Sati check: chal rahi hai","Sade Sati check: currently running"],
+    ["Iska matlab delay ka pressure, denial nahi — Shani ke period mein bani shaadiyan sabse tikau maani jaati hain. Windows upar isi ko account karke grade hue hain.","This means delay-pressure, not denial — marriages made during Saturn's period are considered the most durable. The windows above are graded taking this into account."],
+    ["Sade Sati check: abhi nahi chal rahi.","Sade Sati check: not currently running."],
+    ["rising (pehla charan)","rising (first phase)"],
+    ["peak (dusra charan)","peak (second phase)"],
+    ["setting (aakhri charan)","setting (final phase)"],
+    // ---- Section titles / headlines ----
+    ["Aapka pattern","Your pattern"],
+    ["Aapka nakshatra:","Your nakshatra:"],
+    ["Aapka Venus","Your Venus"],
+    ["3 aur sach","3 more truths"],
+    // ---- Venus love-style suffix (own/exalted) ----
+    ["Venus apne hi sign mein strong hai; pyaar mein aapki instinct par bharosa kiya ja sakta hai.","Venus is strong in its own sign; in love, your instincts can be trusted."],
+    // ---- '3 aur sach' check bodies (untranslated branches) ----
+    ["Saturn ka koi direct influence aapke 7th house par nahi — classical 'late marriage' indicator aapke chart mein absent hai.","Saturn has no direct influence on your 7th house — the classical 'late marriage' indicator is absent from your chart."],
+    ["Aapke chart mein 5th–7th connection hai — love-marriage ya self-driven rishtey ka yog. Arranged setup mein bhi pasand aapki hi chalegi.","Your chart has a 5th–7th connection — a leaning toward love-marriage or a self-driven relationship. Even in an arranged setup, your own preference will prevail."],
+    ["Rahu/12th ka 7th se connection hai — partner doori se, alag community se, ya unexpected background se aane ka yog hai. Surprise ke liye taiyaar rahiye.","There's a Rahu/12th-to-7th connection — the partner may come from a distance, a different community, or an unexpected background. Be ready for a surprise."],
+    ["Partner ka yog aapke apne circle aur community ke aas-paas ka hai — door ka yog chart mein prominent nahi.","The partner is indicated within your own circle and community — a distant match is not prominent in the chart."]
   ];
   var EXACT = {"HAAN":"YES","NAHI":"NO","नहीं":"NO","HAN":"YES","Pichhle saal":"Past years","kab":"when","aur":"and","Graha":"Planet","Bhaav":"House","hai.":"."};
   var TITLE = { en: "Marriage Timing Report | Axtroshastra" };
