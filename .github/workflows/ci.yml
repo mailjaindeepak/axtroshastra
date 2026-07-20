@@ -1,10 +1,13 @@
 name: CI
 
-# Runs on every push (any branch) and every PR, so both teammates get the same
-# gate before anything is promoted toward production.
+# Tests run on every push (any branch) and every PR, so both teammates get the
+# same feedback. Production deploy is NOT automatic — it only runs when a human
+# manually triggers this workflow ("Run workflow" in the Actions tab), and even
+# then only if the tests pass. That's the deliberate "check it, then ship it" gate.
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -88,14 +91,16 @@ jobs:
   # ---------------------------------------------------------------------------
   # Production deploy — the ENFORCEMENT step.
   #   * needs: [test, e2e]  -> cannot run unless BOTH test suites pass (red = no deploy)
-  #   * if: push to aws-mysql -> only the production branch deploys (not PRs / feature branches)
-  #   * environment: production -> optional manual-approval gate (set "Required reviewers"
-  #     in Settings > Environments > production for a human sign-off before prod)
+  #   * workflow_dispatch only -> deploy happens ONLY when a human clicks "Run workflow"
+  #     (Actions tab), never automatically on push. That's the human "ship it" gate.
+  #   * ref must be aws-mysql -> you can only dispatch a prod deploy from the prod branch.
+  #   * environment: production -> if you later move to GitHub Pro/Team, add "Required
+  #     reviewers" here for a second per-deploy approval; harmless until then.
   # Requires repo secrets AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
   deploy:
-    name: Deploy to production (only if tests pass)
+    name: Deploy to production (manual, only if tests pass)
     needs: [test, e2e]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/aws-mysql'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/aws-mysql'
     runs-on: ubuntu-latest
     environment: production
     steps:
