@@ -1,13 +1,14 @@
 name: CI
 
+# Runs on every push (any branch) and every PR, so both teammates get the same
+# gate before anything is promoted toward production.
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   test:
+    name: Python tests (engine + API)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"   # matches the Elastic Beanstalk platform
           cache: pip
 
       - name: Install dependencies
@@ -24,9 +25,62 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run test suite (incl. engine regression guard)
+        # NOTE: do not set STATS_KEY / RAZORPAY_WEBHOOK_SECRET / DB_PATH here.
+        # tests/conftest.py sets the exact values the tests expect (via setdefault);
+        # overriding them from the workflow makes the admin-auth tests fail.
+        run: pytest -q
+
+  e2e:
+    name: Playwright E2E (mobile + desktop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install app dependencies (source list, not the aarch64 wheelhouse)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.build.txt
+
+      - name: Start the app (SQLite + demo mode)
         env:
           DEMO_MODE: "1"
-          DB_PATH: /tmp/ci_reports.db
-          RAZORPAY_WEBHOOK_SECRET: ci-secret
-          STATS_KEY: ci-stats-key
-        run: pytest -q
+          DB_PATH: /tmp/e2e.db
+        run: |
+          nohup uvicorn api:app --host 127.0.0.1 --port 8000 > /tmp/app.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/shaadi >/dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:8000/shaadi >/dev/null || { echo "app failed to boot"; cat /tmp/app.log; exit 1; }
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Playwright + browser
+        working-directory: tests/e2e
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: tests/e2e
+        env:
+          CI: "1"
+          E2E_BASE_URL: http://127.0.0.1:8000
+        run: npx playwright test
+
+      - name: Upload Playwright report + screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            tests/e2e/playwright-report
+            tests/e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 14

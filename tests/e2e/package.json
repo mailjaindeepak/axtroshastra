@@ -1,0 +1,13 @@
+{
+  "name": "axtroshastra-e2e",
+  "private": true,
+  "description": "Playwright end-to-end / UI tests for the Axtroshastra funnel forms.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "install-browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}

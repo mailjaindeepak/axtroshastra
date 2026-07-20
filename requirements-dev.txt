@@ -1,4 +1,7 @@
 # Development / test dependencies (not needed in production runtime).
--r requirements.txt
+# Use the SOURCE deps (normal PyPI), NOT requirements.txt — that one is the
+# offline aarch64 wheelhouse (--no-index) for Elastic Beanstalk and cannot
+# install on x86 CI runners or dev machines.
+-r requirements.build.txt
 pytest>=8.0
 httpx>=0.27        # required by fastapi.testclient

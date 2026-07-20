@@ -28,6 +28,13 @@ data/
 htmlcov/
 coverage.xml
 
+# ---- Node / Playwright (E2E) ----
+node_modules/
+tests/e2e/playwright-report/
+tests/e2e/test-results/
+tests/e2e/blob-report/
+playwright/.cache/
+
 # ---- OS / editor ----
 .DS_Store
 Thumbs.db
