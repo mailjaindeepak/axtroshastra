@@ -1,0 +1,166 @@
+{
+ "chart": {
+  "lagna": "Mesha",
+  "planets": {
+   "Jupiter": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Ardra",
+    "retro": false,
+    "sign": "Mithuna"
+   },
+   "Ketu": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Ashlesha",
+    "retro": true,
+    "sign": "Karka"
+   },
+   "Mars": {
+    "combust": false,
+    "dignity": "exalted",
+    "nakshatra": "Shravana",
+    "retro": false,
+    "sign": "Makara"
+   },
+   "Mercury": {
+    "combust": true,
+    "dignity": "debilitated",
+    "nakshatra": "Uttara Bhadrapada",
+    "retro": false,
+    "sign": "Meena"
+   },
+   "Moon": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Purva Ashadha",
+    "retro": false,
+    "sign": "Dhanu"
+   },
+   "Rahu": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Shravana",
+    "retro": true,
+    "sign": "Makara"
+   },
+   "Saturn": {
+    "combust": false,
+    "dignity": "own",
+    "nakshatra": "Uttara Ashadha",
+    "retro": false,
+    "sign": "Makara"
+   },
+   "Sun": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Uttara Bhadrapada",
+    "retro": false,
+    "sign": "Meena"
+   },
+   "Venus": {
+    "combust": false,
+    "dignity": "neutral",
+    "nakshatra": "Shravana",
+    "retro": false,
+    "sign": "Makara"
+   }
+  }
+ },
+ "current_period": {
+  "ad": "Saturn",
+  "ad_end": "2025-09-11",
+  "md": "Rahu"
+ },
+ "meta": {
+  "ayanamsa": "Lahiri",
+  "generated": "2025-01-01",
+  "houses": "whole_sign",
+  "name": "Golden",
+  "system": "lagna",
+  "time_quality": "T0",
+  "two_timelines_detected": false,
+  "window_padding_days": 74
+ },
+ "significators": {
+  "fifth_lord": "Sun",
+  "fifth_lord_house": 12,
+  "fifth_sign": "Simha",
+  "fourth_lord": "Moon",
+  "fourth_lord_house": 9,
+  "fourth_sign": "Karka",
+  "karakas": [
+   "Mercury",
+   "Jupiter",
+   "Saturn"
+  ],
+  "key_lords": [
+   "Moon",
+   "Sun",
+   "Jupiter",
+   "Saturn"
+  ],
+  "ninth_lord": "Jupiter",
+  "ninth_lord_house": 3,
+  "ninth_sign": "Dhanu",
+  "ref_sign": "Mesha",
+  "tenth_lord": "Saturn",
+  "tenth_lord_house": 10,
+  "tenth_sign": "Makara"
+ },
+ "teaser_moon": "Dhanu",
+ "windows": [
+  {
+   "core_end": "2035-09",
+   "core_start": "2022-11",
+   "dasha": "Rahu MD \u2014 Saturn + Mercury + Ketu + Venus + Sun + Moon + Mars AD",
+   "end": "2035-12",
+   "grade": "Moderate",
+   "peak_months": [
+    "Nov 2026",
+    "Dec 2026",
+    "Mar 2028"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_IS_KEY_LORD",
+     "why": "Antardasha lord rules the 4th/5th/9th/10th house"
+    },
+    {
+     "id": "AD_IS_KARAKA",
+     "why": "Antardasha lord is Mercury/Jupiter/Saturn (study-career karaka)"
+    },
+    {
+     "id": "AD_IN_KEY_HOUSE",
+     "why": "AD lord occupies or aspects a 4th/5th/9th/10th house"
+    },
+    {
+     "id": "MD_KEY_CONNECT",
+     "why": "MD lord has a 4th/5th/9th/10th-house connection"
+    },
+    {
+     "id": "AD_WITH_KEY_LORD",
+     "why": "AD lord conjunct a 4th/5th/9th/10th lord"
+    },
+    {
+     "id": "AD_WEAK",
+     "why": "AD lord debilitated or combust"
+    },
+    {
+     "id": "TR_JUP_TRIG",
+     "why": "Jupiter transits 1/5/9/10/11 from lagna or Moon in window"
+    },
+    {
+     "id": "TR_SAT_DISCIPLINE",
+     "why": "Saturn sits on the 1st/10th axis for most of the window \u2014 harder-won, not necessarily worse (see report note)"
+    },
+    {
+     "id": "TR_JUP_ON_10L",
+     "why": "Jupiter transits over the natal 10th lord (career)"
+    }
+   ],
+   "score": 7.5,
+   "start": "2022-08"
+  }
+ ]
+}

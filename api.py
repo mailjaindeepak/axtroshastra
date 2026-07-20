@@ -26,8 +26,9 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Res
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
-from report_view import render_report, render_milan, render_blueprint, north_chart_svg
+from report_view import render_report, render_milan, render_blueprint, render_vidyarthi, north_chart_svg
 from products import compute_milan, compute_blueprint
+from vidyarthi import compute_vidyarthi_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
@@ -82,7 +83,10 @@ TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")     # 'whatsapp:+14155238886' (sandbox) or your sender
 TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved template SID for production
 
-def send_whatsapp_report(phone: str, rid: str, name: str):
+PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Kundli Milan",
+                  "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing"}
+
+def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marriage"):
     """Fire-and-forget WhatsApp delivery after payment. Never raises."""
     if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_FROM and phone and PUBLIC_BASE_URL):
         return
@@ -91,6 +95,7 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
         to = phone if phone.startswith("+") else "+91" + phone[-10:]
         client = Client(TWILIO_SID, TWILIO_TOKEN)
         link = f"{PUBLIC_BASE_URL}/report/{rid}"
+        label = PRODUCT_LABEL.get(product, "Marriage Timing")
         if TWILIO_CONTENT_SID:                       # production: approved template
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
@@ -99,7 +104,7 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
         else:                                        # sandbox / 24h session freeform
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
-                body=(f"Namaste {name}! 🙏 Aapki Axtroshastra Marriage Timing "
+                body=(f"Namaste {name}! 🙏 Aapki Axtroshastra {label} "
                       f"Report ready hai:\n{link}\n\nPDF download button report "
                       f"ke andar hai. Koi bhi sawaal ho — reply kijiye. "
                       f"100% refund within 7 days."))
@@ -111,6 +116,8 @@ def _render_for(product, payload):
         return render_milan(payload)
     if product == "blueprint":
         return render_blueprint(payload)
+    if product == "vidyarthi":
+        return render_vidyarthi(payload)
     return render_report(payload)
 
 
@@ -201,7 +208,7 @@ class KundliIn(BaseModel):
     variant: str | None = None
     email: str | None = None
     captcha_token: str | None = None
-    product: str = "marriage"          # marriage | blueprint
+    product: str = "marriage"          # marriage | blueprint | vidyarthi
 
     @field_validator("time_quality")
     @classmethod
@@ -312,6 +319,10 @@ def create_kundli(inp: KundliIn):
     if inp.product == "blueprint":
         report = compute_blueprint(inp.name, inp.dob, tob, tz, lat, lon,
                                    time_quality=inp.time_quality)
+    elif inp.product == "vidyarthi":
+        report = compute_vidyarthi_report(inp.name, inp.dob, tob, tz, lat, lon,
+                                          female=(inp.gender == "female"),
+                                          time_quality=inp.time_quality)
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -383,7 +394,8 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 mark_paid(rid, payment_id=ent.get("id"), phone=phone)
                 background_tasks.add_task(
                     send_whatsapp_report, phone, rid,
-                    rec["payload"]["meta"]["name"])
+                    rec["payload"]["meta"]["name"],
+                    rec["payload"].get("product", "marriage"))
                 email = rec["payload"]["meta"].get("_email")
                 if email:                        # (#7) email + PDF delivery
                     background_tasks.add_task(email_report, email, rid, rec["payload"])
@@ -439,6 +451,8 @@ def report_page(rid: str):
         return HTMLResponse(render_milan(payload))
     if product == "blueprint":
         return HTMLResponse(render_blueprint(payload))
+    if product == "vidyarthi":
+        return HTMLResponse(render_vidyarthi(payload))
     return HTMLResponse(render_report(payload))
 
 
@@ -528,7 +542,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/blog",
+    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/padhai", "/blog",
             "/privacy", "/terms", "/refunds"] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
@@ -568,7 +582,8 @@ def make_pass(key: str = "", n: int = 5):
             "example_links": [f"{base}/shaadi?pass={toks[0]}",
                               f"{base}/milan?pass={toks[0]}",
                               f"{base}/match?pass={toks[0]}",
-                              f"{base}/jeevan?pass={toks[0]}"],
+                              f"{base}/jeevan?pass={toks[0]}",
+                              f"{base}/padhai?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
 
 

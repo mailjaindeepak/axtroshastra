@@ -48,6 +48,18 @@ GRADE_ACTION = {
 }
 GRADE_COLOR = {"Strong": "#C93B2E", "Moderate": "#E4B04A", "Building": "#8F92AB"}
 
+# ---- /padhai (student career & academic) grade-action copy ----
+STUDY_GRADE_ACTION = {
+    "Strong": ("Push hard.", "This is your highest-activation window — apply, sit the exam, "
+               "take the interview, start the course. Effort here converts at the best rate "
+               "your chart offers in this horizon."),
+    "Moderate": ("Stay consistent.", "Keep preparing and keep applying — breakthroughs formed "
+                 "here do stick, especially in the peak months below. Don't force an outcome; "
+                 "do keep showing up."),
+    "Building": ("Prepare.", "Use this phase to build the habit and the foundation — the "
+                 "discipline you build now pays off in the next stronger window."),
+}
+
 # North Indian chart: house polygon centers (viewBox 0 0 400 400), houses 1-12
 HOUSE_POS = {1: (200, 105), 2: (105, 58), 3: (55, 105), 4: (105, 200),
              5: (55, 295), 6: (105, 345), 7: (200, 295), 8: (295, 345),
@@ -1114,5 +1126,118 @@ mein sabse achha kaam karte hain.</p></div>
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
+100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+</body></html>"""
+
+
+def render_vidyarthi(p: dict) -> str:
+    """/padhai — student career & academic timing report. Mirrors render_blueprint's
+    single-page structure; the windows section mirrors render_report's grade/action
+    pattern (STUDY_GRADE_ACTION, GRADE_COLOR) adapted for study/exam/career timing."""
+    m = p["meta"]
+    m = {**m, "name": escape(m["name"])}  # user-supplied name: escape to prevent stored XSS
+    ex = p.get("extras", {})
+
+    pretty = lambda ym: datetime.strptime(ym, "%Y-%m").strftime("%b %Y")
+    win_html = ""
+    for w in p["windows"]:
+        color = GRADE_COLOR.get(w["grade"], "#8F92AB")
+        headline, action = STUDY_GRADE_ACTION.get(w["grade"], STUDY_GRADE_ACTION["Building"])
+        reasons = "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"] if r["why"])
+        peak = (f"<p class='soft'>Peak months: {', '.join(w['peak_months'])}</p>"
+                if w.get("peak_months") else "")
+        win_html += f"""<div class='wcard' style='border-left-color:{color}'>
+<p class='wdate'>{pretty(w['start'])} – {pretty(w['end'])}
+<span class='wgrade' style='color:{color}'>{w['grade']}</span></p>
+<p class='wdasha'>{w['dasha']}</p>
+<p class='whead'><b>{headline}</b> {action}</p>
+{f"<ul class='wreasons'>{reasons}</ul>" if reasons else ''}
+{peak}</div>"""
+
+    hardship_html = ""
+    if ex.get("has_hardship"):
+        gem_line = (f"<li><b>Gemstone:</b> {ex['gem']} — only via a qualified jeweller/astrologer trial.</li>"
+                    if ex.get("gem") else f"<li><b>Gemstone:</b> {ex.get('gem_note', '')}</li>")
+        hardship_html = f"""<h2>Being honest about the hard part</h2>
+<div class='card'><p>{ex['line']}</p>
+<p style='margin-top:8px'><b>Classical support for this period:</b></p>
+<ul class='rem'><li><b>Fast day:</b> {ex.get('fast_day', '—')}</li>
+<li><b>Mantra:</b> {ex.get('mantra', '—')} — 108 times, on {ex.get('fast_day', 'the fast day')}</li>
+{gem_line}</ul>
+<p class='soft'>The first remedy is always action — showing up in the strong windows above.
+This is support, not a substitute.</p></div>"""
+    else:
+        hardship_html = f"""<h2>Being honest about the hard part</h2>
+<div class='card'><p>{ex.get('line', '')}</p></div>"""
+
+    ss = ex.get("sade_sati", {})
+    if ss.get("active"):
+        ss_html = (f"<h2>Sade Sati check</h2><div class='ssb'>"
+                   f"<b>Currently active:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
+                   f"Classically this means discipline and restructuring — it can feel like delay, "
+                   f"but what's built in this period tends to be durable. Not a warning; a work period.</div>")
+    else:
+        ss_html = (f"<h2>Sade Sati check</h2><div class='ssb'>"
+                   f"<b>Not currently active.</b> Next phase approx {ss.get('next_starts', '—')}. "
+                   f"No Saturn pressure on this axis right now.</div>")
+
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{m['name']} — Career &amp; Academic Timing | Axtroshastra</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
+--haldi:#E4B04A;--muted:#6B6D82;--line:#E7E0D2;--display:'Bricolage Grotesque',sans-serif}}
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
+line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60px}}
+.hero{{background:var(--midnight);color:#F3EFE4;margin:0 -20px;padding:36px 22px;text-align:center}}
+.hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:13px;letter-spacing:.08em}}
+.hero h1{{font-family:var(--display);font-size:26px;margin-top:14px;color:#fff}}
+.hero p{{color:#A9ABC0;font-size:13px;margin-top:6px}}
+h2{{font-family:var(--display);font-size:21px;margin:34px 0 12px}}
+.card{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
+.wcard{{background:#fff;border:1.5px solid var(--line);border-left:5px solid #8F92AB;
+border-radius:12px;padding:16px;margin-bottom:12px}}
+.wdate{{font-family:var(--display);font-weight:800;font-size:17px}}
+.wgrade{{margin-left:8px;font-size:13px;font-weight:700}}
+.wdasha{{color:var(--muted);font-size:13px;margin-top:2px}}
+.whead{{font-size:14.5px;margin-top:8px}}
+.wreasons{{margin:8px 0 0 20px;font-size:13.5px;color:#4A4C63}}
+ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
+.soft{{color:var(--muted);font-size:13px;margin-top:10px}}
+.tn{{font-size:12px;color:var(--muted);margin-top:24px}}
+.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:14.5px}}
+.rem{{margin:8px 0 0 20px}}
+</style></head><body>
+<div class="hero"><p class="brand">✦ AXTROSHASTRA · CAREER &amp; ACADEMIC TIMING</p>
+<h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
+{p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
+
+<h2>Your breakthrough windows</h2>
+{win_html if win_html else "<div class='card'><p>No standout window in this horizon — the report below still covers your study, exam and career reads.</p></div>"}
+
+<h2>Study strength</h2>
+<div class="card"><p>{ex.get('study_strength', '')}.</p></div>
+
+<h2>Exam &amp; intelligence pattern</h2>
+<div class="card"><p>{ex.get('exam_strength', '')}.</p></div>
+
+<h2>Higher education &amp; luck</h2>
+<div class="card"><p>{ex.get('higher_education', '')}.</p></div>
+
+<h2>Career direction</h2>
+<div class="card"><p>{ex.get('career_direction', '')}.</p>
+<p class="soft">This reads your 10th house — the same house our Life Blueprint report also draws on.</p></div>
+
+{hardship_html}
+{ss_html}
+
+<h2>Current period</h2>
+<div class="card"><p><b>{p['teaser']['current_dasha']}</b> — till {p['teaser']['dasha_till']}.
+Decisions made now tend to carry the theme of whichever window above is closest.</p></div>
+
+<p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
+Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effort is yours.<br>
 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 </body></html>"""
