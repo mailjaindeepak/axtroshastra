@@ -193,7 +193,9 @@ PAGES_DIR = os.path.join(BASE, "pages")
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
-    """Liveness/readiness probe: 200 only if the database is reachable."""
+    """Liveness probe: 200 if the DB is *reachable*. Kept cheap on purpose — this
+    is the high-frequency ALB/EB probe, so it only opens a connection and runs a
+    trivial query. For the deeper write-durability check use /healthz/db."""
     try:
         with db() as c:
             c.execute("SELECT 1")
@@ -201,6 +203,47 @@ def healthz():
     except Exception as e:
         logger.error("healthz db check failed: %s", e)
         raise HTTPException(503, "db unavailable")
+
+
+@app.get("/healthz/db", include_in_schema=False)
+def healthz_db():
+    """Deep readiness probe: proves the DB accepts a write AND that the write is
+    *durable across connections* — the exact failure we hit once (writes returned
+    200, committed, but a later read on a new connection 404'd). A plain SELECT 1
+    or a same-connection read-after-write would NOT catch that, so we:
+      1. INSERT a sentinel row and let the connection commit + close (via `with`),
+      2. re-open a SEPARATE connection and read the row back,
+      3. delete it.
+    Any mismatch raises 503 loudly instead of the app silently accepting writes
+    that never persist. Intended for monitoring/alerting + a scheduled check, NOT
+    for the high-frequency ALB probe (that's /healthz)."""
+    token = secrets.token_hex(8)
+    now = datetime.utcnow().isoformat()
+    try:
+        # (1) write on one connection; `with` commits and closes on exit.
+        with _lock, db() as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS health_check(
+                token TEXT PRIMARY KEY, ts TEXT)""")
+            c.execute("INSERT INTO health_check(token, ts) VALUES(?,?)", (token, now))
+        # (2) read back on a FRESH connection — this is what proves durability.
+        with db() as c:
+            row = c.execute("SELECT token FROM health_check WHERE token=?",
+                            (token,)).fetchone()
+        if not row or row[0] != token:
+            raise RuntimeError("write not durable: sentinel missing on re-read")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("healthz/db write self-check FAILED: %s", e)
+        raise HTTPException(503, "db write self-check failed")
+    finally:
+        # (3) best-effort cleanup so the table stays tiny; never fails the probe.
+        try:
+            with _lock, db() as c:
+                c.execute("DELETE FROM health_check WHERE token=?", (token,))
+        except Exception as e:
+            logger.warning("healthz/db cleanup failed for %s: %s", token, e)
+    return {"status": "ok", "db": "write-read-verified"}
 
 
 @app.get("/", include_in_schema=False)
