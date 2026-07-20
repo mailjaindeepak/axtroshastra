@@ -50,6 +50,30 @@ def _warm_gazetteer():
         pass
 
 
+@app.on_event("startup")
+def _log_db_target():
+    """Log which storage backend the app actually connected to, and prove the
+    connection works, at boot. This makes a misconfig obvious in `eb logs`
+    instead of silent: e.g. our RDS listens on the NON-default port 1232, so if
+    DB_PORT is ever dropped from the env the app would try :3306, and this line
+    prints the wrong target + CONNECT FAILED right at startup. Password is never
+    logged — only backend and host:port/db (or the sqlite path)."""
+    if dbcompat.using_mysql():
+        backend = "mysql"
+        target = (f"{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '3306')}"
+                  f"/{os.getenv('DB_NAME')}")
+    else:
+        backend = "sqlite"
+        target = os.getenv("DB_PATH", os.path.join(BASE, "data", "reports.db"))
+    try:
+        with db() as c:
+            c.execute("SELECT 1")
+        logger.info("[db] connected OK  backend=%s  target=%s", backend, target)
+    except Exception as e:
+        logger.error("[db] CONNECT FAILED  backend=%s  target=%s  err=%s",
+                     backend, target, e)
+
+
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")   # e.g. https://axtroshastra.com
 
 # ---- Twilio WhatsApp delivery (all optional; no-op until env vars set) ----
