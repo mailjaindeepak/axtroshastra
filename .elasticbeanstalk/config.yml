@@ -1,0 +1,19 @@
+branch-defaults:
+  aws-mysql:
+    environment: AxtroShastraProd
+environment-defaults:
+  AxtroShastraProd:
+    branch: null
+    repository: null
+global:
+  application_name: AxtroShastra
+  default_ec2_keyname: null
+  default_platform: Python 3.12
+  default_region: ap-south-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  sc: git
+  workspace_type: Application

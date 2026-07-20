@@ -84,3 +84,36 @@ jobs:
             tests/e2e/test-results
           if-no-files-found: ignore
           retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Production deploy — the ENFORCEMENT step.
+  #   * needs: [test, e2e]  -> cannot run unless BOTH test suites pass (red = no deploy)
+  #   * if: push to aws-mysql -> only the production branch deploys (not PRs / feature branches)
+  #   * environment: production -> optional manual-approval gate (set "Required reviewers"
+  #     in Settings > Environments > production for a human sign-off before prod)
+  # Requires repo secrets AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+  deploy:
+    name: Deploy to production (only if tests pass)
+    needs: [test, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/aws-mysql'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # eb deploy archives the git tree
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install EB CLI
+        run: pip install --upgrade pip awsebcli
+
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-south-1
+        run: eb deploy AxtroShastraProd
