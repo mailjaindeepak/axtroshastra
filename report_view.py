@@ -916,6 +916,59 @@ def _theme_rows(kootas: list) -> str:
 <p class='tblurb'>{th['blurb']}. <b>{verdict}</b></p></div>"""
     return out
 
+# For weak / non-matching factors: a practical thing to work on + an optional
+# traditional remedy. Agency-first — the action is the real lever, the remedy is
+# a cultural add-on for those who want it. No medical or gemstone-buying claims.
+REMEDIES = {
+    "Varna": {
+        "work_on": "Spell out who owns which calls — money, home, plans, social life — out loud, instead of assuming. Rotate the 'lead' by area so neither of you is always the one giving in.",
+        "remedy": "A gentle classical practice: offer water to the rising sun together on Sunday mornings — a tiny shared ritual said to balance ego and authority."},
+    "Vashya": {
+        "work_on": "A lower pull just means the bond runs on respect, not gravity — so make closeness deliberate: one protected date a week and small daily check-ins beat leaving it to chance.",
+        "remedy": "Venus rules attraction — on Fridays keep something white nearby and repeat 'Om Shukraya Namah' a few times together."},
+    "Tara": {
+        "work_on": "Make each other's wellbeing a shared project — sleep, food, stress. This pairing does best when you actively look after one another instead of assuming the other is fine.",
+        "remedy": "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for mutual wellbeing."},
+    "Yoni": {
+        "work_on": "This is about different instincts, not low attraction. Talk openly about pace, touch and daily rhythms — who's a morning person, who needs space — and say what you need instead of hoping it's guessed.",
+        "remedy": "Venus is your ally here too — Friday is the day; soft, warm tones at home and 'Om Shukraya Namah' are the classical nudges for intimacy."},
+    "Graha Maitri": {
+        "work_on": "You think in different 'languages'. Practise translating: before you reply, say your partner's point back in their words. A weekly 20-minute, phones-away talk builds the wavelength fast.",
+        "remedy": "For mental harmony: green on Wednesdays with 'Om Budhaya Namah' (Mercury), and an unhurried moonlit walk together on Mondays (Moon)."},
+    "Gana": {
+        "work_on": "Your energies genuinely differ (say, one loves a crowd, one loves quiet). Don't try to fix it — design around it: agree a simple signal for 'I need people' vs 'I need calm' and honour it without taking it personally.",
+        "remedy": "A shared calming ritual helps — light a diya at dusk and chant 'Om Namah Shivaya' together; traditionally it settles temperament clashes."},
+    "Bhakoot": {
+        "work_on": "The classic risks here are emotional distance and money friction — get ahead of both with a light monthly 'us & money' check-in, and keep small daily affection non-negotiable.",
+        "remedy": "A Moon remedy: on Mondays wear white, chant 'Om Somaya Namah', and offer milk or white flowers at a Shiva temple together."},
+    "Nadi": {
+        "work_on": "Traditionally the heaviest factor, tied to health and children — so the real 'remedy' is proactive: regular check-ups, good sleep, low chronic stress, and unhurried timing if you plan a family.",
+        "remedy": "A classical Nadi practice is the Maha Mrityunjaya mantra and donating toward medicines/health; the modern equivalent is a simple pre-marriage health check for both."},
+}
+
+def _workon_rows(kootas: list, cancellations: list) -> str:
+    """Actionable cards for every weak (<50%) / non-matching koota, weakest first."""
+    cancelled = {c.get("koota") for c in (cancellations or [])}
+    weak = sorted((k for k in kootas if k["max"] and k["score"] / k["max"] < 0.5),
+                  key=lambda k: k["score"] / k["max"])
+    if not weak:
+        return ("<div class='work good'><b>No structural weak spots here 🎉</b>"
+                "<p>To keep it this strong: protect one proper date a week, talk money and "
+                "feelings early (before they pile up), and don't let routine quietly eat the "
+                "romance. Strong charts still need showing up.</p></div>")
+    cards = ""
+    for k in weak:
+        ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"]})
+        rem = REMEDIES.get(k["name"], {"work_on": "", "remedy": ""})
+        tag = "Non-match" if k["score"] == 0 else "Weak spot"
+        canc = ("<span class='wcanc'>✅ traditionally cancelled for you — treat as lighter priority</span>"
+                if k["name"] in cancelled else "")
+        cards += f"""<div class='work'>
+<div class='wtop'><span class='wemoji'>{ui['emoji']}</span><b>{ui['label']}</b><span class='wtag'>{tag}</span></div>{canc}
+<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>
+<p class='wrem'><b>🪔 Traditional remedy:</b> {rem['remedy']}</p></div>"""
+    return cards
+
 def render_milan(p: dict) -> str:
     m = p["meta"]
     m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
@@ -947,16 +1000,19 @@ def render_milan(p: dict) -> str:
                      "cancellation rules apply nahi hote — dosha effective hai. Iska matlab section "
                      "'Score ka matlab' mein neeche padhiye; dar se nahi, samajh se decide kijiye.</div>")
 
-    # ---------- strengths & watchouts ----------
+    # ---------- strengths ----------
     sw_html = ""
-    if p.get("strengths") or p.get("watchouts"):
+    if p.get("strengths"):
         st = "".join(f"<li><b>{KOOTA_UI.get(s, {'label': s})['label']}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
                      for s in p.get("strengths", []))
-        wo = "".join(f"<li><b>{KOOTA_UI.get(s, {'label': s})['label']}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
-                     for s in p.get("watchouts", []))
-        sw_html = "<h2>Is jodi ki taakat — aur dhyaan ki jagah</h2>"
-        if st: sw_html += f"<p class='swh' style='color:#2E7D53'>💪 Strengths</p><ul class='swl'>{st}</ul>"
-        if wo: sw_html += f"<p class='swh' style='color:#C93B2E'>⚠️ Watch-outs</p><ul class='swl'>{wo}</ul>"
+        if st:
+            sw_html = f"<h2>Where you're naturally strong 💚</h2><ul class='swl'>{st}</ul>"
+
+    # ---------- what to work on (weak / non-match factors + remedies) ----------
+    workon_html = ("<h2>What you can work on 🛠️</h2>"
+                   "<p class='lead'>Low scores aren't a verdict — they're a to-do list. Here's the "
+                   "practical fix for each softer spot, plus a traditional remedy if that's your vibe.</p>"
+                   + _workon_rows(p["kootas"], p.get("cancellations")))
 
     # ---------- element dynamic + nakshatra lines ----------
     el_html = ""
@@ -1019,6 +1075,17 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .kname{{display:flex;flex-direction:column;line-height:1.2;min-width:0}}
 .kname b{{font-size:16px}}
 .ksan{{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-top:2px}}
+.work{{background:#fff;border:1.5px solid var(--line);border-left:4px solid var(--sindoor);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px}}
+.work.good{{border-left-color:#2E7D53}}
+.work.good b{{font-family:var(--display);font-size:15.5px}}.work.good p{{margin-top:7px}}
+.wtop{{display:flex;align-items:center;gap:9px;font-family:var(--display)}}
+.wemoji{{font-size:19px;line-height:1;flex:none}}
+.wtop b{{font-size:15.5px;flex:1;min-width:0}}
+.wtag{{font-family:var(--display);font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--sindoor);background:#FBE7E3;border-radius:20px;padding:3px 9px;flex:none}}
+.wcanc{{display:inline-block;font-size:12px;color:#2E7D53;font-weight:600;margin-top:6px}}
+.wdo{{margin-top:9px}}
+.wrem{{margin-top:7px;color:var(--muted);font-size:13.5px}}
+.wdo b,.wrem b{{font-family:var(--display)}}
 .kbar{{height:7px;background:#EFE8D8;border-radius:4px;margin:8px 0;overflow:hidden}}
 .kbar div{{height:100%;border-radius:4px}}
 .kd{{font-size:13px;color:var(--muted)}}
@@ -1036,7 +1103,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .elbox b{{font-family:var(--display)}}.elbox p{{margin-top:6px}}
 .lowbox p{{margin-bottom:10px}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li{{break-inside:avoid}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li{{break-inside:avoid}}
 h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
@@ -1051,6 +1118,7 @@ h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:ex
 <p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}
 {canc_html}
 {sw_html}
+{workon_html}
 {el_html}
 <h2>Manglik check</h2><div class="mg">{p['manglik']['note']}</div>
 {('<h2>Important notes</h2>' + notes) if notes else ''}
