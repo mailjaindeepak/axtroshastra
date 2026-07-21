@@ -250,6 +250,19 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     # ---- nakshatra one-liners for each ----
     nak_lines = {"p1": NAK_PROFILE[g["nak"]][2], "p2": NAK_PROFILE[b["nak"]][2]}
 
+    # ---- per-person profile facts (for the expanded report sections) ----
+    profiles = {
+        "p1": {"name": p1["name"], "sign": SIGNS_EN[g["sign"]], "nak": NAKSHATRAS[g["nak"]],
+               "pada": g["pada"], "element": e1, "lord": SIGN_LORD[g["sign"]],
+               "symbol": NAK_PROFILE[g["nak"]][0], "persona": NAK_PROFILE[g["nak"]][1],
+               "love": NAK_PROFILE[g["nak"]][2]},
+        "p2": {"name": p2["name"], "sign": SIGNS_EN[b["sign"]], "nak": NAKSHATRAS[b["nak"]],
+               "pada": b["pada"], "element": e2, "lord": SIGN_LORD[b["sign"]],
+               "symbol": NAK_PROFILE[b["nak"]][0], "persona": NAK_PROFILE[b["nak"]][1],
+               "love": NAK_PROFILE[b["nak"]][2]},
+    }
+    match_pct = int(round(effective / 36 * 100))
+
     return {
         "product": "milan",
         "meta": {"p1": p1["name"], "p2": p2["name"],
@@ -271,6 +284,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         "watchouts": [k["name"] for k in watchouts],
         "element": element, "nak_lines": nak_lines,
         "padas": {"p1": g["pada"], "p2": b["pada"]},
+        "profiles": profiles, "match_pct": match_pct,
         "manglik": {"p1": m1, "p2": m2, "note": manglik_note},
         "notes": notes,
     }

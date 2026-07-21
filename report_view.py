@@ -896,15 +896,9 @@ THEMES = [
 
 def _theme_rows(kootas: list) -> str:
     """Build the 5-theme 'at a glance' cards, strongest first (confidence-first)."""
-    by_name = {k["name"]: k for k in kootas}
-    scored = []
-    for th in THEMES:
-        got = sum(by_name[n]["score"] for n in th["kootas"] if n in by_name)
-        mx = sum(by_name[n]["max"] for n in th["kootas"] if n in by_name)
-        scored.append((th, got, mx, (got / mx * 100) if mx else 0))
-    scored.sort(key=lambda t: t[3], reverse=True)   # strong themes on top, weak below
     out = ""
-    for th, got, mx, pct in scored:
+    for t in _theme_scores(kootas):
+        th, got, mx, pct = t["theme"], t["got"], t["mx"], t["pct"]
         if pct >= 75:
             chip, chip_bg, bar_color, verdict = "Strong 💚", "#2E7D53", "#2E7D53", "You're naturally strong here."
         elif pct >= 45:
@@ -966,11 +960,200 @@ def _workon_rows(kootas: list, cancellations: list) -> str:
         tag = "Non-match" if k["score"] == 0 else "Weak spot"
         canc = ("<span class='wcanc'>✅ traditionally cancelled for you — treat as lighter priority</span>"
                 if k["name"] in cancelled else "")
+        ap = ACTION_PLAN.get(k["name"])
+        plan = ""
+        if ap:
+            plan = (f"<div class='wplan'>"
+                    f"<p><span class='wpk'>Try this week</span> {ap['try']}</p>"
+                    f"<p><span class='wpk'>Say this</span> {ap['talk']}</p>"
+                    f"<p><span class='wpk'>You'll know it's working when</span> {ap['green']}</p></div>")
         cards += f"""<div class='work'>
 <div class='wtop'><span class='wemoji'>{ui['emoji']}</span><b>{ui['label']}</b><span class='wtag'>{tag}</span></div>{canc}
-<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>
+<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>{plan}
 <p class='wrem'><b>🪔 Traditional remedy:</b> {rem['remedy']}</p></div>"""
     return cards
+
+# ---------------- Phase-1 expanded-report content + builders ----------------
+ELEMENT_EMOJI = {"fire": "🔥", "earth": "🌿", "air": "💨", "water": "🌊"}
+
+LOVE_LANG = {
+    "fire": "being pursued — spontaneity, passion, and a partner who matches your spark",
+    "earth": "being shown up for — reliability, steady effort, and physical care",
+    "air": "being understood — real conversation, wit, and mental connection",
+    "water": "being felt — emotional attunement, tenderness, and a sense of safety",
+}
+
+# Couple archetype keyed by the frozenset of the two Moon elements (same-element sets have 1 item).
+ARCHETYPE = {
+    frozenset({"fire"}): {"name": "The Wildfire", "emoji": "🔥", "tagline": "Two sparks, double the passion",
+        "body": "You two run hot — big feelings, big fun, and the occasional big argument that's over as fast as it started. Your superpower is intensity; your homework is learning that only one of you needs to catch fire at a time."},
+    frozenset({"earth"}): {"name": "The Homebuilders", "emoji": "🏡", "tagline": "Steady, safe, built to last",
+        "body": "You're the couple friends call 'solid'. You value security, loyalty and a life built brick by brick. The only risk: don't let the routine quietly replace the romance."},
+    frozenset({"air"}): {"name": "The Kindred Minds", "emoji": "💭", "tagline": "Endless conversation, one wavelength",
+        "body": "You'll never run out of things to talk about — ideas, plans, jokes only you two get. The thing to practise together: turning all those brilliant plans into actual decisions."},
+    frozenset({"water"}): {"name": "The Deep End", "emoji": "🌊", "tagline": "You feel everything, together",
+        "body": "Rare, almost wordless understanding — you read each other's moods like weather. Beautiful, but when you're both caught in a wave, someone has to be the calm shore."},
+    frozenset({"fire", "earth"}): {"name": "Spark & Ground", "emoji": "🔥🌿", "tagline": "Drive meets steadiness",
+        "body": "One of you brings the pace, the other the patience. Fire learns to slow down, earth learns to loosen up — and together you actually build the things you dream about."},
+    frozenset({"fire", "air"}): {"name": "The Firestorm", "emoji": "🔥💨", "tagline": "Energy that feeds itself",
+        "body": "Air feeds the flame — adventures, plans, natural chemistry. You both love to fly; just decide early who's handling the landing."},
+    frozenset({"fire", "water"}): {"name": "Steam", "emoji": "🔥🌊", "tagline": "Intense pull, intense feeling",
+        "body": "Fire and water make steam — magnetic attraction and big reactions. Fire learns softness, water learns directness. It takes effort, and it makes magic."},
+    frozenset({"earth", "air"}): {"name": "Dreamer & Builder", "emoji": "🌿💨", "tagline": "Ideas meet foundations",
+        "body": "Air brings the ideas, earth makes them real. Your different speeds are the friction — and exactly what makes you complete each other."},
+    frozenset({"earth", "water"}): {"name": "The Nourishers", "emoji": "🌿🌊", "tagline": "The most naturally nurturing pair",
+        "body": "Soil and water — classical texts call this innately compatible. One gives security, the other depth. This is the easy, home-feeling kind of love."},
+    frozenset({"air", "water"}): {"name": "Head & Heart", "emoji": "💭🌊", "tagline": "Words meet feelings",
+        "body": "Air learns that not everything is logic; water learns that not everything can go unsaid. Build that bridge and it's pure poetry."},
+}
+ARCHETYPE_DEFAULT = {"name": "The Originals", "emoji": "✨", "tagline": "Your own kind of match",
+    "body": "You don't fit a neat box — which is its own kind of interesting."}
+
+# Rich strength copy, keyed by theme name (shown when a theme is strong).
+THEME_DEEP = {
+    "Chemistry & Attraction": "The spark is real and it's mutual — you're drawn to each other in a way that doesn't need forcing. That easy physical comfort is something a lot of couples spend years trying to build. Keep novelty alive and it stays a strength, not a given.",
+    "Everyday Vibe": "Your day-to-day energies just fit — similar social batteries, similar humour, a similar way of handling good days and bad ones. This is the quiet superpower that makes living together feel light instead of like work.",
+    "Mind & Values": "You think in the same language. Even your disagreements will make sense to each other, because your values and mental wiring line up. This is the stuff long conversations — and long marriages — are made of.",
+    "Love & Long-Term": "Emotionally, you're built to go the distance. Classical texts read this as a green signal for closeness, family and growing together — the deep, settle-in kind of bond rather than just a spark.",
+    "Health & Vitality": "On the heaviest traditional factor, you're clear — read as vitality and a healthy foundation for a life (and a family) together. It's the factor astrologers weigh the most, and it's working in your favour.",
+}
+
+# Extra action-plan detail for weak factors, keyed by koota.
+ACTION_PLAN = {
+    "Varna": {"try": "This week, each of you names one area you'd love to lead and one you'd happily hand over.", "talk": "“Where do you want me to take charge — and where do you want to?”", "green": "You stop quietly keeping score of who decided what."},
+    "Vashya": {"try": "Lock one proper date into the calendar for the next two weeks — non-negotiable.", "talk": "“What makes you feel closest to me?”", "green": "Time together starts to feel chosen, not squeezed in."},
+    "Tara": {"try": "Do one small health thing together — a walk, cooking a real meal, an early night.", "talk": "“What's been draining you lately, and how can I help?”", "green": "You both feel better after time together, not more tired."},
+    "Yoni": {"try": "Compare your daily rhythms — sleep, energy, affection — and pick one to sync.", "talk": "“What does feeling close look like for you, day to day?”", "green": "Different paces stop feeling like rejection."},
+    "Graha Maitri": {"try": "One 20-minute, phones-away conversation this week — no fixing, just listening.", "talk": "“Let me say that back — did I get it right?”", "green": "You argue in the same language, not past each other."},
+    "Gana": {"try": "Agree a simple signal for 'I need people' vs 'I need quiet' — and honour it once.", "talk": "“What recharges you — a night out, or a night in?”", "green": "Different moods stop getting taken personally."},
+    "Bhakoot": {"try": "Do a light 15-minute 'us, money & feelings' check-in.", "talk": "“What's something you've been carrying that I haven't noticed?”", "green": "Small distances get named before they grow."},
+    "Nadi": {"try": "Book the unglamorous stuff — check-ups, good sleep, less chronic stress — as a team.", "talk": "“How do we want to look after each other's health?”", "green": "You treat wellbeing as a shared project, not a solo one."},
+}
+
+
+def _theme_scores(kootas: list) -> list:
+    """Per-theme aggregate scores, strongest first."""
+    by = {k["name"]: k for k in kootas}
+    out = []
+    for th in THEMES:
+        got = sum(by[n]["score"] for n in th["kootas"] if n in by)
+        mx = sum(by[n]["max"] for n in th["kootas"] if n in by)
+        out.append({"theme": th, "got": got, "mx": mx, "pct": (got / mx * 100) if mx else 0})
+    out.sort(key=lambda t: t["pct"], reverse=True)
+    return out
+
+
+def _archetype(profiles: dict) -> dict:
+    return ARCHETYPE.get(frozenset({profiles["p1"]["element"], profiles["p2"]["element"]}), ARCHETYPE_DEFAULT)
+
+
+def _match_band(pct: int):
+    if pct >= 80: return ("an exceptional match", "#2E7D53")
+    if pct >= 67: return ("a strong match", "#2E7D53")
+    if pct >= 50: return ("a workable match", "#B4881B")
+    return ("a match that'll take some work", "#C93B2E")
+
+
+def _match_pct(p: dict) -> int:
+    return int(p.get("match_pct") or round(p.get("effective", p["total"]) / 36 * 100))
+
+
+def _opening_note(p: dict) -> str:
+    arche = _archetype(p["profiles"])
+    ts = _theme_scores(p["kootas"])
+    p1 = escape(p["profiles"]["p1"]["name"]); p2 = escape(p["profiles"]["p2"]["name"])
+    pct = _match_pct(p); phrase, _ = _match_band(pct)
+    top = ts[0]["theme"]; weak = ts[-1]
+    strong_line = f"You're strongest in <b>{top['name'].lower()}</b> — {top['blurb']}."
+    if weak["pct"] < 55:
+        grow_line = (f" The one area worth a little intention is <b>{weak['theme']['name'].lower()}</b> — "
+                     "and we've put simple, doable steps for it further down.")
+    else:
+        grow_line = " And honestly, there's no weak link here worth losing sleep over."
+    return (f"<div class='opennote'><p>{p1} &amp; {p2} — on the classical Ashtakoota system you come out as "
+            f"<b>{arche['name']}</b> {arche['emoji']}, {phrase} at <b>{pct}%</b> on the things that actually "
+            f"matter in a relationship.</p><p>{strong_line}{grow_line}</p>"
+            f"<p class='onsub'>Here's the full picture — the good stuff first. 💛</p></div>")
+
+
+def _sharecard_html(p: dict) -> str:
+    arche = _archetype(p["profiles"])
+    ts = _theme_scores(p["kootas"])
+    strong = [t for t in ts if t["pct"] >= 60][:3] or ts[:2]
+    chips = "".join(f"<span class='scchip'>{t['theme']['emoji']} {t['theme']['name']}</span>" for t in strong)
+    p1 = escape(p["profiles"]["p1"]["name"]); p2 = escape(p["profiles"]["p2"]["name"])
+    pct = _match_pct(p)
+    return (f"<div class='sharecard' id='sharecard'>"
+            f"<div class='scbrand'>✦ AXTROSHASTRA · COMPATIBILITY</div>"
+            f"<div class='scnames'>{p1} <span>✕</span> {p2}</div>"
+            f"<div class='scarch'>{arche['emoji']} {arche['name']}</div>"
+            f"<div class='scpct'>{pct}<small>% match on what matters</small></div>"
+            f"<div class='scchips'>{chips}</div>"
+            f"<div class='sctag'>“{arche['tagline']}”</div></div>"
+            f"<p class='sctag2'>{arche['body']}</p>"
+            f"<button class='sharebtn' onclick='axShare()'>Share our couple card 💫</button>")
+
+
+def _profiles_html(p: dict) -> str:
+    def card(who):
+        pr = p["profiles"][who]
+        el = pr["element"]
+        return (f"<div class='prof'>"
+                f"<div class='prtop'><span class='prel'>{ELEMENT_EMOJI.get(el,'✨')}</span>"
+                f"<span class='prname'><b>{escape(pr['name'])}</b>"
+                f"<span class='prsign'>{pr['sign']} Moon · {pr['nak']} nakshatra</span></span></div>"
+                f"<p class='prline'><b>Their nature:</b> {pr['persona']}.</p>"
+                f"<p class='prline'><b>In love:</b> {pr['love']}.</p>"
+                f"<p class='prline'><b>Feels most loved by:</b> {LOVE_LANG.get(el,'')}.</p></div>")
+    return ("<h2>The two of you, decoded 🔮</h2>"
+            "<p class='lead'>A quick read on each of you, drawn from your Moon sign and birth-star (nakshatra).</p>"
+            f"<div class='profwrap'>{card('p1')}{card('p2')}</div>")
+
+
+def _strength_deepdive_html(p: dict) -> str:
+    strong = [t for t in _theme_scores(p["kootas"]) if t["pct"] >= 60]
+    if not strong:
+        return ""
+    items = "".join(
+        f"<div class='deep'><div class='dtop'><span class='demoji'>{t['theme']['emoji']}</span>"
+        f"<b>{t['theme']['name']}</b></div><p>{THEME_DEEP.get(t['theme']['name'],'')}</p></div>"
+        for t in strong)
+    return ("<h2>Why you two work 💚</h2>"
+            "<p class='lead'>The areas where you're genuinely strong — and what they'll feel like in real life.</p>"
+            + items)
+
+
+def _askbesties_html(p: dict) -> str:
+    return ("<h2>Share it with your girls 💌</h2>"
+            "<div class='besties'>"
+            "<p>Screenshot the couple card up top and send it to your 3 closest friends. Then ask them the "
+            "real question: <b>“Does this actually sound like us?”</b></p>"
+            "<p>Your besties know you better than any chart — their gut-check is the best second opinion you'll "
+            "get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll keep you honest "
+            "and cheer you on.</p>"
+            "<button class='sharebtn' onclick='axShare()'>Share my report 💫</button>"
+            "<p class='bnote'>Shared with love · your report stays private unless you send it.</p></div>")
+
+
+def _method_html(p: dict, m: dict) -> str:
+    def row(pr):
+        return (f"<tr><td>{escape(pr['name'])}</td><td>{pr['sign']}</td>"
+                f"<td>{pr['nak']} · pada {pr['pada']}</td><td>{pr['element'].title()}</td></tr>")
+    table = ("<table class='meth'><thead><tr><th>Person</th><th>Moon sign</th><th>Birth-star</th>"
+             f"<th>Element</th></tr></thead><tbody>{row(p['profiles']['p1'])}{row(p['profiles']['p2'])}</tbody></table>")
+    gloss = "".join(
+        f"<li><b>{KOOTA_UI[k]['label']}</b> <span class='gsan'>({k} · out of {mx})</span> — {KOOTA_UI[k]['blurb']}.</li>"
+        for k, mx in [("Yoni", 4), ("Gana", 6), ("Graha Maitri", 5), ("Bhakoot", 7),
+                      ("Nadi", 8), ("Vashya", 2), ("Tara", 3), ("Varna", 1)])
+    return ("<h2>How we calculated this 🔬</h2><div class='methbox'>"
+            "<p>Your match is computed with the classical <b>Ashtakoota</b> (eight-fold) system of Vedic "
+            "astrology — the same method a family astrologer uses — but from precise, <b>NASA-grade planetary "
+            "positions</b> and the standard <b>Lahiri ayanamsa</b>. Same inputs, same score, every time — "
+            "consistent and verifiable, not mood-of-the-day.</p>"
+            f"<p>Here's exactly what we read from your birth details:</p>{table}"
+            f"<p class='methsub'>{m['time_note']}</p></div>"
+            "<h3 class='glossh'>The 8 factors, in plain English</h3><ul class='gloss'>" + gloss + "</ul>")
+
 
 def render_milan(p: dict) -> str:
     m = p["meta"]
@@ -1043,6 +1226,17 @@ def render_milan(p: dict) -> str:
             "Score ko information ki tarah use kijiye — kis cheez par kaam karna hoga yeh jaanne ke "
             "liye — verdict ki tarah nahi.</p></div>")
 
+    # ---------- Phase-1 expanded sections (present only on newer reports) ----------
+    has_profiles = bool(p.get("profiles"))
+    opening_html = _opening_note(p) if has_profiles else ""
+    couple_html = ("<h2>Your couple type ✨</h2>" + _sharecard_html(p)) if has_profiles else ""
+    deepdive_html = _strength_deepdive_html(p) if has_profiles else sw_html
+    profiles_html = _profiles_html(p) if has_profiles else ""
+    method_html = _method_html(p, m) if has_profiles else ""
+    besties_html = _askbesties_html(p) if has_profiles else ""
+    matchpct_html = (f"<p class='matchpct'>{_match_pct(p)}% match on what matters</p>"
+                     if has_profiles else "")
+
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
     vcol = VERDICT_COLOR[p["verdict_key"]]
     return f"""<!DOCTYPE html><html lang="hi-IN"><head>{AX_PRE}<meta charset="utf-8">
@@ -1105,25 +1299,78 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .elbox,.nlbox,.lowbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px;font-size:14px}}
 .elbox b{{font-family:var(--display)}}.elbox p{{margin-top:6px}}
 .lowbox p{{margin-bottom:10px}}
+/* ---- Phase-1 expanded sections ---- */
+.matchpct{{display:inline-block;margin-top:12px;font-family:var(--display);font-weight:800;font-size:15px;color:#151C39;background:var(--haldi);border-radius:20px;padding:7px 16px}}
+.opennote{{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:18px;margin-top:22px;font-size:15px}}
+.opennote p{{margin-bottom:9px}}.opennote p:last-child{{margin-bottom:0}}
+.onsub{{color:var(--muted);font-size:13.5px;font-style:italic}}
+.sharecard{{background:radial-gradient(1200px 500px at 50% -30%, #23305C, var(--midnight) 70%);color:#F3EFE4;border-radius:18px;padding:26px 22px 24px;text-align:center;box-shadow:0 14px 40px rgba(21,28,57,.28)}}
+.scbrand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
+.scnames{{font-family:var(--display);font-weight:800;font-size:24px;color:#fff;margin-top:12px}}
+.scnames span{{color:var(--haldi);margin:0 6px}}
+.scarch{{font-family:var(--display);font-weight:700;font-size:15px;color:#E9E4D5;margin-top:6px}}
+.scpct{{font-family:var(--display);font-weight:800;font-size:52px;color:var(--haldi);margin:14px 0 0;line-height:1}}
+.scpct small{{display:block;font-size:12px;color:#B9BBD0;font-weight:700;letter-spacing:.02em;margin-top:6px}}
+.scchips{{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:16px}}
+.scchip{{background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);color:#F1E4C4;font-size:11.5px;font-weight:700;border-radius:20px;padding:5px 11px}}
+.sctag{{color:#D9D4C3;font-style:italic;font-size:13.5px;margin-top:16px}}
+.sctag2{{font-size:14px;color:#3A3C55;margin:12px 2px 0}}
+.sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:16px;padding:14px;margin-top:14px;cursor:pointer}}
+.profwrap{{display:flex;flex-direction:column;gap:10px}}
+.prof{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px}}
+.prtop{{display:flex;align-items:center;gap:11px;margin-bottom:6px}}
+.prel{{font-size:26px;line-height:1;flex:none}}
+.prname{{display:flex;flex-direction:column;line-height:1.25}}
+.prname b{{font-family:var(--display);font-size:17px}}
+.prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-top:2px}}
+.prline{{font-size:14px;margin-top:6px}}.prline b{{font-family:var(--display)}}
+@media(min-width:560px){{.profwrap{{flex-direction:row}}.prof{{flex:1}}}}
+.deep{{background:#F3F8F3;border:1.5px solid #CDE4D3;border-radius:12px;padding:14px 16px;margin-bottom:10px}}
+.dtop{{display:flex;align-items:center;gap:9px;font-family:var(--display);margin-bottom:6px}}
+.dtop b{{font-size:16px}}.demoji{{font-size:19px;flex:none}}
+.deep p{{font-size:14px}}
+.wplan{{background:#FBF4E6;border-radius:10px;padding:11px 12px;margin-top:10px;font-size:13.5px}}
+.wplan p{{margin:5px 0}}
+.wpk{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:6px}}
+.besties{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:18px}}
+.besties p{{font-size:14.5px;margin-bottom:10px}}
+.bnote{{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}}
+.methbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:14px}}
+.methbox p{{margin-bottom:9px}}
+.meth{{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px}}
+.meth th,.meth td{{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}}
+.meth th{{font-family:var(--display);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}}
+.methsub{{font-size:12.5px;color:var(--muted);margin-top:4px}}
+.glossh{{font-family:var(--display);font-size:17px;margin:22px 0 10px}}
+.gloss{{list-style:none}}
+.gloss li{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13.5px}}
+.gloss b{{font-family:var(--display)}}
+.gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li{{break-inside:avoid}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan{{break-inside:avoid}}
 h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
 <h1>{m['p1']} ✕ {m['p2']}</h1>
 <p class="score">{p['total']}<small>/36</small></p>
 <span class="verdict">{p['verdict'].upper()}</span>
+{matchpct_html}
 {("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>Dosha cancellation ke baad: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
+{opening_html}
+{couple_html}
 <h2>Your match, in plain English 💫</h2>
 <p class="lead">The five things that actually make or break a relationship — scored straight from your two charts.</p>
 {theme_html}
+{deepdive_html}
+{profiles_html}
 <h2>The full breakdown — all 8 factors</h2>
 <p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}
 {canc_html}
-{sw_html}
 {workon_html}
 {el_html}
 <h2>Manglik check</h2><div class="mg">{p['manglik']['note']}</div>
+{method_html}
+{besties_html}
 {('<h2>Important notes</h2>' + notes) if notes else ''}
 {low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
