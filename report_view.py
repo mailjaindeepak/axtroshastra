@@ -977,7 +977,7 @@ def render_milan(p: dict) -> str:
     m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
     theme_html = _theme_rows(p["kootas"])
     rows = ""
-    for k in p["kootas"]:
+    for k in sorted(p["kootas"], key=lambda k: (k["score"] / k["max"]) if k["max"] else 0, reverse=True):
         pct = k["score"] / k["max"] * 100
         bar_color = "#2E7D53" if pct >= 75 else ("#E4B04A" if pct >= 40 else "#C93B2E")
         ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"], "blurb": k.get("meaning", "")})
