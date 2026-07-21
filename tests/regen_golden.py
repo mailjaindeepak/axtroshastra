@@ -12,6 +12,7 @@ os.environ.setdefault("DB_PATH", "/tmp/regen.db")
 
 from engine import compute_report, compute_chart  # noqa: E402
 import divisional  # noqa: E402
+from vidyarthi import compute_vidyarthi_report  # noqa: E402
 
 GOLDEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "golden")
 ASOF = datetime(2025, 1, 1)
@@ -31,6 +32,15 @@ def main():
     local = datetime.fromisoformat("1990-03-21T08:15:00")
     chart = compute_chart(local - timedelta(hours=5.5), 28.61, 77.21)
     json.dump(divisional.analyze(chart), open(os.path.join(GOLDEN, "divisional.json"), "w"),
+              indent=1, sort_keys=True, default=str)
+
+    vrep = compute_vidyarthi_report(name="Golden", dob="1990-03-21", tob="08:15",
+                                    tz_offset_hours=5.5, lat=28.61, lon_geo=77.21,
+                                    female=True, time_quality="T0", as_of=ASOF)
+    vsnap = {"meta": vrep["meta"], "chart": vrep["chart"],
+             "significators": vrep["significators"], "current_period": vrep["current_period"],
+             "windows": vrep["windows"], "teaser_moon": vrep["teaser"]["moon_sign"]}
+    json.dump(vsnap, open(os.path.join(GOLDEN, "vidyarthi_T0.json"), "w"),
               indent=1, sort_keys=True, default=str)
     print("Golden snapshots regenerated in", GOLDEN)
 

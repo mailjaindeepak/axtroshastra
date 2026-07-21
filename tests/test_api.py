@@ -53,3 +53,29 @@ def test_name_is_html_escaped_in_rendered_report(client):
     html = client.get(f"/report/{rid}").text
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html
+
+
+def test_vidyarthi_returns_teaser_not_full_report(client):
+    body = _new_report(client, product="vidyarthi")
+    assert "report_id" in body
+    assert "teaser" in body
+    assert "report" not in body  # full report must never be returned pre-payment
+    assert "windows" not in body["teaser"]  # windows are paid-only content
+
+
+def test_vidyarthi_report_is_gated_before_payment(client):
+    rid = _new_report(client, product="vidyarthi")["report_id"]
+    r = client.get(f"/api/report/{rid}")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["paid"] is False
+    assert "report" not in body
+
+
+def test_vidyarthi_unlocks_and_renders_after_demo_pay(client):
+    rid = _new_report(client, product="vidyarthi", name="<script>alert(1)</script>")["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    html = client.get(f"/report/{rid}").text
+    assert "Career" in html            # the vidyarthi renderer, not the marriage one
+    assert "<script>alert(1)</script>" not in html
+    assert "&lt;script&gt;" in html
