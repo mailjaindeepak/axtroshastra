@@ -3,6 +3,7 @@ Axtroshastra report renderer — 9-page mobile-first report from engine JSON.
 Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
+import json
 from datetime import datetime
 from html import escape
 import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
@@ -435,7 +436,7 @@ MILAN_I18N = r"""<script>
   document.body.appendChild(box);
   var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
   apply(saved);
-  window.axShare=function(){var url=location.href;var t=(window.__axlang==='en'?'Check out our Kundli Milan compatibility report from Axtroshastra':'Hamari Kundli Milan report Axtroshastra se');if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
+  window.axShare=function(){var url=location.href;var t=window.AX_SHARE_TEXT||(window.__axlang==='en'?'Check out our compatibility report from Axtroshastra':'Hamari compatibility report Axtroshastra se');if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
 })();
 </script>
 """
@@ -1058,6 +1059,14 @@ def _match_pct(p: dict) -> int:
     return int(p.get("match_pct") or round(p.get("effective", p["total"]) / 36 * 100))
 
 
+def _share_text(p: dict) -> str:
+    """Personalised share caption (couple type + match %). Plain text, not HTML."""
+    arche = _archetype(p["profiles"]); pct = _match_pct(p)
+    p1 = p["profiles"]["p1"]["name"]; p2 = p["profiles"]["p2"]["name"]
+    return (f"{p1} ✕ {p2}: turns out we're {arche['name']} {arche['emoji']} — "
+            f"{pct}% compatible on what actually matters 💫 Checked it on Axtroshastra:")
+
+
 def _opening_note(p: dict) -> str:
     arche = _archetype(p["profiles"])
     ts = _theme_scores(p["kootas"])
@@ -1091,7 +1100,10 @@ def _sharecard_html(p: dict) -> str:
             f"<div class='scchips'>{chips}</div>"
             f"<div class='sctag'>“{arche['tagline']}”</div></div>"
             f"<p class='sctag2'>{arche['body']}</p>"
-            f"<button class='sharebtn' onclick='axShare()'>Share our couple card 💫</button>")
+            f"<div class='sharebtns'>"
+            f"<button class='sharebtn' onclick='axSaveCard()'>Save card as image 📸</button>"
+            f"<button class='sharebtn ghost' onclick='axShare()'>Share link 💫</button>"
+            f"</div>")
 
 
 def _profiles_html(p: dict) -> str:
@@ -1126,13 +1138,34 @@ def _strength_deepdive_html(p: dict) -> str:
 def _askbesties_html(p: dict) -> str:
     return ("<h2>Share it with your girls 💌</h2>"
             "<div class='besties'>"
-            "<p>Screenshot the couple card up top and send it to your 3 closest friends. Then ask them the "
+            "<p>Save the couple card up top and send it to your 3 closest friends. Then ask them the "
             "real question: <b>“Does this actually sound like us?”</b></p>"
             "<p>Your besties know you better than any chart — their gut-check is the best second opinion you'll "
             "get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll keep you honest "
             "and cheer you on.</p>"
-            "<button class='sharebtn' onclick='axShare()'>Share my report 💫</button>"
+            "<div class='sharebtns'>"
+            "<button class='sharebtn' onclick='axSaveCard()'>Save card 📸</button>"
+            "<button class='sharebtn ghost' onclick='axShare()'>Share report 💫</button></div>"
+            "<div class='friendnote'><b>👀 Hey — did a friend send you this?</b>"
+            "<p>She shared it because your honest take matters more than any chart. Two ways to be a great "
+            "friend right now: tell her if the ‘you two’ bits actually ring true, and for anything marked "
+            "<b>‘work on it’</b>, be the one who cheers her on. That's the whole point. 💛</p></div>"
             "<p class='bnote'>Shared with love · your report stays private unless you send it.</p></div>")
+
+
+def _certificate_html(p: dict) -> str:
+    arche = _archetype(p["profiles"]); pct = _match_pct(p)
+    p1 = escape(p["profiles"]["p1"]["name"]); p2 = escape(p["profiles"]["p2"]["name"])
+    return ("<h2>Your keepsake ✦</h2>"
+            "<div class='cert'><div class='certin'>"
+            "<div class='certseal'>✦</div>"
+            "<div class='certk'>Certificate of Compatibility</div>"
+            f"<div class='certnames'>{p1} <span>&amp;</span> {p2}</div>"
+            f"<div class='certarch'>are officially<br><b>{arche['emoji']} {arche['name']}</b></div>"
+            f"<div class='certpct'>{pct}% match on what matters</div>"
+            f"<div class='certfoot'>Computed {p['meta']['generated']} · Classical Ashtakoota system<br>"
+            "✦ AXTROSHASTRA · Computational Vedic Astrology</div>"
+            "</div></div>")
 
 
 def _method_html(p: dict, m: dict) -> str:
@@ -1234,8 +1267,25 @@ def render_milan(p: dict) -> str:
     profiles_html = _profiles_html(p) if has_profiles else ""
     method_html = _method_html(p, m) if has_profiles else ""
     besties_html = _askbesties_html(p) if has_profiles else ""
+    cert_html = _certificate_html(p) if has_profiles else ""
     matchpct_html = (f"<p class='matchpct'>{_match_pct(p)}% match on what matters</p>"
                      if has_profiles else "")
+    # personalised share text + image-card download (couple card -> PNG via html2canvas)
+    share_js = ""
+    if has_profiles:
+        share_js = (
+            '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>'
+            "<script>window.AX_SHARE_TEXT=" + json.dumps(_share_text(p)) + ";"
+            "function axSaveCard(){var el=document.getElementById('sharecard');"
+            "if(!el||!window.html2canvas){return axShare();}"
+            "html2canvas(el,{scale:2,backgroundColor:null,useCORS:true}).then(function(cv){"
+            "cv.toBlob(function(blob){if(!blob){return axShare();}"
+            "var f=new File([blob],'axtroshastra-match.png',{type:'image/png'});"
+            "if(navigator.canShare&&navigator.canShare({files:[f]})){"
+            "navigator.share({files:[f],text:window.AX_SHARE_TEXT||'',title:'Axtroshastra'}).catch(function(){});}"
+            "else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='axtroshastra-match.png';"
+            "document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},4000);}"
+            "},'image/png');}).catch(function(){axShare();});}</script>")
 
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
     vcol = VERDICT_COLOR[p["verdict_key"]]
@@ -1316,6 +1366,20 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .sctag{{color:#D9D4C3;font-style:italic;font-size:13.5px;margin-top:16px}}
 .sctag2{{font-size:14px;color:#3A3C55;margin:12px 2px 0}}
 .sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:16px;padding:14px;margin-top:14px;cursor:pointer}}
+.sharebtns{{display:flex;gap:10px}}.sharebtns .sharebtn{{flex:1}}
+.sharebtn.ghost{{background:transparent;color:var(--sindoor);border:2px solid var(--sindoor);padding:12px}}
+.friendnote{{background:#F6E7C6;border-radius:12px;padding:14px 15px;margin-top:14px;font-size:13.5px}}
+.friendnote b{{font-family:var(--display)}}.friendnote p{{margin-top:6px;margin-bottom:0}}
+.cert{{background:linear-gradient(#FFFDF7,#F7EFDD);border:2px solid var(--haldi);border-radius:16px;padding:8px;box-shadow:0 12px 34px rgba(35,37,59,.12)}}
+.certin{{border:1.5px dashed #CDA43E;border-radius:12px;padding:24px 18px;text-align:center}}
+.certseal{{font-size:30px;color:var(--haldi);line-height:1}}
+.certk{{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}}
+.certnames{{font-family:var(--display);font-weight:800;font-size:24px;color:var(--ink);margin-top:12px}}
+.certnames span{{color:var(--haldi);margin:0 5px;font-weight:700}}
+.certarch{{font-size:14px;color:#4A4C63;margin-top:10px;line-height:1.5}}
+.certarch b{{font-family:var(--display);font-size:18px;color:var(--ink)}}
+.certpct{{display:inline-block;font-family:var(--display);font-weight:800;font-size:14px;color:#151C39;background:var(--haldi);border-radius:20px;padding:6px 15px;margin-top:14px}}
+.certfoot{{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5;letter-spacing:.02em}}
 .profwrap{{display:flex;flex-direction:column;gap:10px}}
 .prof{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px}}
 .prtop{{display:flex;align-items:center;gap:11px;margin-bottom:6px}}
@@ -1347,7 +1411,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .gloss b{{font-family:var(--display)}}
 .gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan{{break-inside:avoid}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote{{break-inside:avoid}}
 h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
@@ -1370,12 +1434,14 @@ h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:ex
 {el_html}
 <h2>Manglik check</h2><div class="mg">{p['manglik']['note']}</div>
 {method_html}
+{cert_html}
 {besties_html}
 {('<h2>Important notes</h2>' + notes) if notes else ''}
 {low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
 Guna milan is one classical input to a marriage decision, not the whole decision.
 <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+{share_js}
 {MILAN_I18N}
 </body></html>"""
 
