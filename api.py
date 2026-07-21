@@ -101,8 +101,7 @@ def send_whatsapp_report(phone: str, rid: str, name: str):
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 body=(f"Namaste {name}! 🙏 Aapki Axtroshastra Marriage Timing "
                       f"Report ready hai:\n{link}\n\nPDF download button report "
-                      f"ke andar hai. Koi bhi sawaal ho — reply kijiye. "
-                      f"100% refund within 7 days."))
+                      f"ke andar hai. Koi bhi sawaal ho — reply kijiye."))
     except Exception as e:                            # delivery must never break the webhook
         logger.error("[twilio] send failed for %s: %s", rid, e)
 
