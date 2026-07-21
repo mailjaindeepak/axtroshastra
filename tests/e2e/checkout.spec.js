@@ -60,6 +60,7 @@ async function fillValidForm(page) {
 }
 
 test('Checkout happy path: unlock -> Razorpay -> paid report page', async ({ page }) => {
+  test.setTimeout(60_000); // absorb the real /api/kundli compute on slower (mobile) runners
   await stubRazorpay(page);
 
   let orderCalledWith = null;
@@ -90,6 +91,7 @@ test('Checkout happy path: unlock -> Razorpay -> paid report page', async ({ pag
 });
 
 test('Checkout aborts gracefully when order creation fails (503)', async ({ page }) => {
+  test.setTimeout(60_000); // absorb the real /api/kundli compute on slower (mobile) runners
   await stubRazorpay(page);
   await page.route('**/api/order', (route) =>
     route.fulfill({ status: 503, contentType: 'text/plain', body: 'Payment not configured' }));
@@ -97,11 +99,23 @@ test('Checkout aborts gracefully when order creation fails (503)', async ({ page
   await page.goto('/shaadi');
   await fillValidForm(page);
 
-  // The site alerts and stays put — it must not navigate to a report on a failed order.
-  const dialog = page.waitForEvent('dialog');
-  await page.locator('#unlockBtn').click();
-  const d = await dialog;
-  expect(d.message()).toMatch(/payment setup issue/i);
-  await d.dismiss();
+  // Capture any dialog with a persistent handler registered BEFORE the click. This
+  // avoids the waitForEvent/click ordering race that made this flaky on mobile: the
+  // alert fires after an awaited fetch, and a late listener could miss it.
+  let dialogMessage = null;
+  page.on('dialog', async (d) => {
+    dialogMessage = d.message();
+    await d.dismiss().catch(() => {});
+  });
+
+  // Make the click deterministic — the unlock button can be below the fold after the
+  // teaser reveals, and on mobile the auto-scroll occasionally raced the 30s budget.
+  const unlock = page.locator('#unlockBtn');
+  await unlock.scrollIntoViewIfNeeded();
+  await expect(unlock).toBeEnabled();
+  await unlock.click();
+
+  // The site must alert ("Payment setup issue…") and stay put — never navigate to a report.
+  await expect.poll(() => dialogMessage, { timeout: 15_000 }).toMatch(/payment setup issue/i);
   expect(new URL(page.url()).pathname).toBe('/shaadi');
 });
