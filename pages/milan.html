@@ -278,7 +278,7 @@ fbq('track', 'PageView');
       <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p1-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">Place of birth</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
-      <button class="btn" type="submit">Guna milan karo — FREE preview</button>
+      <button class="btn" type="submit">Check Compatibility Free</button>
     </form>
   </div>
 </header>
@@ -424,7 +424,7 @@ fbq('track', 'PageView');
 <section class="final">
   <div class="wrap">
     <h2>Rishta pakka karne se pehle,<br><em>kundli mila lo.</em></h2>
-    <a class="btn" href="#milanForm">Guna milan karo — FREE preview</a>
+    <a class="btn" href="#milanForm">Check Compatibility Free</a>
   </div>
 </section>
 
@@ -441,7 +441,7 @@ fbq('track', 'PageView');
     <p class="l1">Compatibility Report</p>
     <p class="l2">₹299 · instant delivery</p>
   </div>
-  <a class="btn" href="#milanForm" id="stickyBtn">Check Free</a>
+  <a class="btn" href="#milanForm" id="stickyBtn">Check Compatibility Free</a>
 </div>
 
 <!-- ============ ANALYZING OVERLAY (shown 6–8s after form submit) ============ -->
@@ -557,7 +557,7 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
     hideAnalyzing();
     alert(err.message + (__en ? ' — please try again.' : ' — dobara try kijiye.'));
   }finally{
-    btn.textContent = (window.__axlang === 'en') ? 'Match the gunas — FREE preview' : 'Guna milan karo — FREE preview'; btn.disabled = false;
+    btn.textContent = 'Check Compatibility Free'; btn.disabled = false;
   }
 });
 
@@ -794,7 +794,6 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     "Dono ki birth details daaliye 👇":"Enter both people's birth details 👇",
     "Naam":"Name",
     "(nahi pata? khaali chhodiye)":"(don't know? leave it blank)",
-    "Guna milan karo — FREE preview":"Match the gunas — FREE preview",
     "Guna milan":"Guna match",
     "ready hai ✅":"is ready ✅",
     "⭐ Aapka":"⭐ Your",
