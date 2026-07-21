@@ -262,6 +262,31 @@ fbq('track', 'PageView');
         <input id="f-name" type="text" placeholder="Aapka naam" required>
       </div>
       <div class="field">
+        <label for="f-stage">Aap kis stage par hain?</label>
+        <select id="f-stage" required aria-label="Stage">
+          <option value="" disabled selected hidden>Stage chuniye</option>
+          <option value="10th">10th grade — stream choose karna hai</option>
+          <option value="12th">12th grade — degree/field choose karna hai</option>
+          <option value="college">College/Undergrad — job ya postgrad</option>
+          <option value="postgrad">Postgrad — business ya job</option>
+        </select>
+      </div>
+      <div class="field" id="fieldWrap" hidden>
+        <label for="f-field">Aapka field/stream kya hai?</label>
+        <select id="f-field" aria-label="Field">
+          <option value="" disabled selected hidden>Field chuniye</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Medicine">Medicine</option>
+          <option value="Commerce/Finance">Commerce/Finance</option>
+          <option value="Law">Law</option>
+          <option value="Arts/Design">Arts/Design</option>
+          <option value="Science/Research">Science/Research</option>
+          <option value="Civil Services">Civil Services</option>
+          <option value="Business">Business</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
           <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
@@ -513,6 +538,14 @@ unknown.addEventListener('change', function(){
   document.getElementById('tobApprox').hidden = !this.checked;
 });
 
+// stage -> field: only students already committed to a field (college/postgrad)
+// see the field dropdown; 10th/12th get general direction only, no field shown.
+var stageSel = document.getElementById('f-stage');
+var fieldWrap = document.getElementById('fieldWrap');
+stageSel.addEventListener('change', function(){
+  fieldWrap.hidden = !(this.value === 'college' || this.value === 'postgrad');
+});
+
 // map form state -> time_quality tier
 function timeQuality(){
   if(!unknown.checked) return {tq:'T0', tob: document.getElementById('f-tob').value};
@@ -557,7 +590,9 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
         variant: location.pathname,
-        product: 'vidyarthi'
+        product: 'vidyarthi',
+        stage: document.getElementById('f-stage').value || null,
+        field: document.getElementById('f-field').value || null
       })});
     var results = await Promise.all([fetchP, minWait]);
     var res = results[0];
@@ -780,6 +815,14 @@ window.addEventListener('scroll', function(){
     "Apni details bhariye — jawab 2 minute mein.":"Enter your details below and get the answer in 2 minutes.",
     "Apni birth details daaliye 👇":"Enter your birth details 👇",
     "Naam":"Name",
+    "Aap kis stage par hain?":"Which stage are you at?",
+    "Stage chuniye":"Choose your stage",
+    "10th grade — stream choose karna hai":"10th grade — choosing a stream",
+    "12th grade — degree/field choose karna hai":"12th grade — choosing a degree/field",
+    "College/Undergrad — job ya postgrad":"College/Undergrad — job vs postgrad",
+    "Postgrad — business ya job":"Postgrad — business vs job",
+    "Aapka field/stream kya hai?":"What's your field/stream?",
+    "Field chuniye":"Choose your field",
     "Approximate time":"Approximate time",
     "Subah (4 AM – 10 AM)":"Morning (4 AM – 10 AM)",
     "Din (10 AM – 4 PM)":"Day (10 AM – 4 PM)",

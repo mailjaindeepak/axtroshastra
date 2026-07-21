@@ -33,3 +33,32 @@ def test_teaser_never_leaks_full_report_fields():
     r = compute_vidyarthi_report(**BIRTH)
     assert "windows" not in r["teaser"]
     assert "extras" not in r["teaser"]
+
+
+def test_windows_stay_within_a_few_years():
+    # Regression guard: scoring against 4 houses at once (fixed) used to merge
+    # nearly an entire Mahadasha into one multi-decade "window" -- not credible
+    # as something a student can plan around. Cap matches vidyarthi.MAX_WINDOW_DAYS.
+    r = compute_vidyarthi_report(**BIRTH)
+    for w in r["windows"]:
+        from datetime import datetime
+        span_days = (datetime.strptime(w["end"], "%Y-%m")
+                     - datetime.strptime(w["start"], "%Y-%m")).days
+        assert span_days <= 365 * 4, f"window {w['start']}-{w['end']} is implausibly long"
+
+
+def test_stage_field_note_no_stage():
+    r = compute_vidyarthi_report(**BIRTH)
+    assert r["extras"]["stage_note"] is None
+
+
+def test_stage_field_note_deciding_stage_has_no_named_field():
+    r = compute_vidyarthi_report(**BIRTH, stage="10th")
+    note = r["extras"]["stage_note"]
+    assert note is not None
+    assert "direction" in note.lower()
+
+
+def test_stage_field_note_committed_stage_is_field_aware():
+    r = compute_vidyarthi_report(**BIRTH, stage="college", field="Engineering")
+    assert "engineering" in r["extras"]["stage_note"].lower()

@@ -209,6 +209,8 @@ class KundliIn(BaseModel):
     email: str | None = None
     captcha_token: str | None = None
     product: str = "marriage"          # marriage | blueprint | vidyarthi
+    stage: str | None = None           # vidyarthi only: 10th | 12th | college | postgrad
+    field: str | None = None           # vidyarthi only: set when stage is college/postgrad
 
     @field_validator("time_quality")
     @classmethod
@@ -322,7 +324,8 @@ def create_kundli(inp: KundliIn):
     elif inp.product == "vidyarthi":
         report = compute_vidyarthi_report(inp.name, inp.dob, tob, tz, lat, lon,
                                           female=(inp.gender == "female"),
-                                          time_quality=inp.time_quality)
+                                          time_quality=inp.time_quality,
+                                          stage=inp.stage, field=inp.field)
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,

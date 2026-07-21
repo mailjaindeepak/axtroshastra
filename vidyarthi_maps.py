@@ -80,3 +80,37 @@ HARDSHIP_LINE = {
     "_none": "No single placement stands out as the weak point right now — the more useful question is which "
              "habit, not which planet, is holding back your results.",
 }
+
+# ---- life-stage labels (form value -> display text) ----
+STAGE_LABEL = {
+    "10th": "10th grade — choosing a stream",
+    "12th": "12th grade — choosing a degree/field",
+    "college": "College/Undergrad — job vs postgrad",
+    "postgrad": "Postgrad — business vs job",
+}
+
+# ---- field-specific notes, shown only for "college"/"postgrad" stages where
+# the student has already committed to a field. Short, honest, connects the
+# existing house-based direction to what it plausibly means for that field —
+# does NOT overclaim ("you will succeed in X"), just names what the general
+# indication tends to look like in that context. ----
+FIELD_NOTE = {
+    "Engineering": "For engineering, this house energy usually shows up as either strong "
+        "execution ability or a tendency to over-engineer simple problems — worth noticing which one you lean toward.",
+    "Medicine": "For medicine, this tends to translate into either strong diagnostic patience or "
+        "burnout risk from carrying others' outcomes personally — both are real patterns worth watching for.",
+    "Commerce/Finance": "For commerce and finance, this usually shows up as either sharp numerical "
+        "instinct or a pull toward safe, conventional choices over genuinely better ones — worth questioning which is driving a decision.",
+    "Law": "For law, this tends to show up as either strong argumentative clarity or a habit of "
+        "over-arguing in situations that don't call for it — both are worth being aware of.",
+    "Arts/Design": "For arts and design, this usually shows up as either a distinct creative voice or "
+        "self-doubt about whether the work is 'serious enough' — the chart doesn't answer that, only you can.",
+    "Science/Research": "For science and research, this tends to translate into either genuine depth "
+        "of focus or getting stuck perfecting one problem too long — worth checking which is happening.",
+    "Civil Services": "For civil services, this usually shows up as either steady, disciplined "
+        "preparation or repeated near-misses from spreading effort too thin — the difference is usually a plan, not luck.",
+    "Business": "For business and entrepreneurship, this tends to show up as either real risk-taking "
+        "instinct or restlessness that abandons ideas before they're tested — both look similar from outside.",
+    "Other": "The general direction above still applies — the specific field matters less than "
+        "whether the daily habits underneath it are actually being followed.",
+}

@@ -33,18 +33,25 @@ from engine import (
 )
 from jyotish_maps import REMEDY_7L
 from products import CAREER_HOUSE, PLANET_GIFT, PLANET_LESSON
-from vidyarthi_maps import STUDY_HOUSE, EXAM_HOUSE, HIGHERED_HOUSE, HARDSHIP_LINE
+from vidyarthi_maps import (STUDY_HOUSE, EXAM_HOUSE, HIGHERED_HOUSE, HARDSHIP_LINE,
+                            STAGE_LABEL, FIELD_NOTE)
 
-KEY_HOUSES = (4, 5, 9, 10)
+KEY_HOUSES = (4, 5, 9, 10)          # used for the DESCRIPTIVE reads (study/exam/higher-ed/career text)
+TIMING_HOUSES = (10, 11)            # used for WINDOW TIMING only — career rise + gains, the direct
+                                     # analogue of marriage's single-house (7th) focus. Scoring against
+                                     # all 4 KEY_HOUSES made almost every antardasha "qualify" (they
+                                     # overlap too much), producing windows that merged into one
+                                     # multi-decade span instead of a real, narrow breakthrough window.
 
 
 # ---------------------------------------------------------------- significators
 def student_significators(chart: dict, ref_sign: int) -> dict:
     """ref_sign = lagna sign (T0/T1) or Moon sign (Chandra lagna, T2/T3)."""
     g = chart["grahas"]
-    house_sign = {h: (ref_sign + h - 1) % 12 for h in KEY_HOUSES}
-    house_lord = {h: SIGN_LORD[house_sign[h]] for h in KEY_HOUSES}
-    key_lords = list(dict.fromkeys(house_lord.values()))  # dedupe, keep order
+    house_sign = {h: (ref_sign + h - 1) % 12 for h in KEY_HOUSES + (11,)}
+    house_lord = {h: SIGN_LORD[house_sign[h]] for h in KEY_HOUSES + (11,)}
+    key_lords = list(dict.fromkeys(house_lord[h] for h in KEY_HOUSES))       # descriptive reads
+    timing_lords = list(dict.fromkeys(house_lord[h] for h in TIMING_HOUSES))  # window timing only
     karakas = ["Mercury", "Jupiter", "Saturn"]
     return {
         "ref_sign": ref_sign,
@@ -52,7 +59,8 @@ def student_significators(chart: dict, ref_sign: int) -> dict:
         "fifth_sign": house_sign[5], "fifth_lord": house_lord[5],
         "ninth_sign": house_sign[9], "ninth_lord": house_lord[9],
         "tenth_sign": house_sign[10], "tenth_lord": house_lord[10],
-        "key_lords": key_lords, "karakas": karakas,
+        "eleventh_sign": house_sign[11], "eleventh_lord": house_lord[11],
+        "key_lords": key_lords, "timing_lords": timing_lords, "karakas": karakas,
         "fourth_lord_house": houses_from(ref_sign, g[house_lord[4]].sign),
         "fifth_lord_house": houses_from(ref_sign, g[house_lord[5]].sign),
         "ninth_lord_house": houses_from(ref_sign, g[house_lord[9]].sign),
@@ -61,16 +69,19 @@ def student_significators(chart: dict, ref_sign: int) -> dict:
 
 
 # ---------------------------------------------------------------- scoring
+# NOTE: these fire against TIMING_HOUSES (10th/11th) only — the descriptive
+# reads (study/exam/higher-ed) use the broader KEY_HOUSES but don't need a
+# score, since they're not timed.
 RULES_STUDY = [  # (rule_id, points, description)
-    ("AD_IS_KEY_LORD",    2.5, "Antardasha lord rules the 4th/5th/9th/10th house"),
-    ("MD_IS_KEY_LORD",    2.0, "Mahadasha lord rules the 4th/5th/9th/10th house"),
+    ("AD_IS_KEY_LORD",    2.5, "Antardasha lord rules the 10th/11th house"),
+    ("MD_IS_KEY_LORD",    2.0, "Mahadasha lord rules the 10th/11th house"),
     ("AD_IS_KARAKA",      2.0, "Antardasha lord is Mercury/Jupiter/Saturn (study-career karaka)"),
-    ("AD_IN_KEY_HOUSE",   2.0, "AD lord occupies or aspects a 4th/5th/9th/10th house"),
-    ("AD_WITH_KEY_LORD",  1.5, "AD lord conjunct a 4th/5th/9th/10th lord"),
-    ("MD_KEY_CONNECT",    1.0, "MD lord has a 4th/5th/9th/10th-house connection"),
+    ("AD_IN_KEY_HOUSE",   2.0, "AD lord occupies or aspects the 10th/11th house"),
+    ("AD_WITH_KEY_LORD",  1.5, "AD lord conjunct the 10th/11th lord"),
+    ("MD_KEY_CONNECT",    1.0, "MD lord has a 10th/11th-house connection"),
     ("AD_WEAK",          -1.5, "AD lord debilitated or combust"),
-    ("AD_DRY",           -1.0, "AD is Saturn/Ketu with no study/career-house connection"),
-    ("TR_JUP_TRIG",       2.0, "Jupiter transits 1/5/9/10/11 from lagna or Moon in window"),
+    ("AD_DRY",           -1.0, "AD is Saturn/Ketu with no career-house connection"),
+    ("TR_JUP_TRIG",       2.0, "Jupiter transits 1/10/11 from lagna or Moon in window"),
     ("TR_JUP_ON_10L",     1.0, "Jupiter transits over the natal 10th lord (career)"),
     ("TR_SAT_DISCIPLINE",-0.5, "Saturn sits on the 1st/10th axis for most of the window — "
                                "harder-won, not necessarily worse (see report note)"),
@@ -78,30 +89,51 @@ RULES_STUDY = [  # (rule_id, points, description)
 RULE_PTS = {r[0]: r[1] for r in RULES_STUDY}
 RULE_DESC = {r[0]: r[2] for r in RULES_STUDY}
 
+# Marriage timing's qualifying bar is "any grade at all" (score >= 3, engine.py's
+# grade()) because scoring against one house (7th) already makes qualification
+# rare. Three of the nine Vimshottari lords (Mercury/Jupiter/Saturn) are ALSO
+# this engine's karakas, so AD_IS_KARAKA + MD_KEY_CONNECT alone can cross that
+# bar for a third of all periods -- verified this produced a single window
+# spanning nearly an entire Mahadasha (contiguous "qualifying" antardashas all
+# merge). Requiring >=5 (marriage's "Moderate" tier) breaks that contiguity so
+# real, narrower windows surface instead of one multi-decade span.
+MIN_QUALIFY_SCORE = 5.0
+
+# Additional safety net, independent of the scoring calibration above: even
+# after narrowing to 10th/11th and raising the bar, TR_JUP_TRIG alone (Jupiter
+# transiting 1/10/11 from lagna OR Moon at ANY point in a multi-year window)
+# turned out to fire for almost any span, since a slow-moving Jupiter cycles
+# through all houses over ~12 years -- checked against two reference points,
+# it's rare for a multi-year window to NOT catch it once. Rather than keep
+# re-tuning individual rule weights against one test chart, cap how long a
+# single reported window is allowed to be: a "breakthrough window" a student
+# can actually plan around should be a few years, not a decade-plus span.
+MAX_WINDOW_DAYS = 365 * 3
+
 
 def score_ad_student(chart, sig, md_lord, ad_lord, ref_sign) -> tuple:
     g = chart["grahas"]
-    key_lords = sig["key_lords"]
+    timing_lords = sig["timing_lords"]
 
-    def has_key_connection(p):
-        return (p in key_lords or
-                houses_from(ref_sign, g[p].sign) in KEY_HOUSES or
-                any(aspects_house(chart, p, ref_sign, h) for h in KEY_HOUSES))
+    def has_timing_connection(p):
+        return (p in timing_lords or
+                houses_from(ref_sign, g[p].sign) in TIMING_HOUSES or
+                any(aspects_house(chart, p, ref_sign, h) for h in TIMING_HOUSES))
 
     fired = []
-    if ad_lord in key_lords: fired.append("AD_IS_KEY_LORD")
-    if md_lord in key_lords: fired.append("MD_IS_KEY_LORD")
+    if ad_lord in timing_lords: fired.append("AD_IS_KEY_LORD")
+    if md_lord in timing_lords: fired.append("MD_IS_KEY_LORD")
     if ad_lord in sig["karakas"]: fired.append("AD_IS_KARAKA")
-    if houses_from(ref_sign, g[ad_lord].sign) in KEY_HOUSES or \
-       any(aspects_house(chart, ad_lord, ref_sign, h) for h in KEY_HOUSES):
+    if houses_from(ref_sign, g[ad_lord].sign) in TIMING_HOUSES or \
+       any(aspects_house(chart, ad_lord, ref_sign, h) for h in TIMING_HOUSES):
         fired.append("AD_IN_KEY_HOUSE")
-    if ad_lord not in key_lords and any(g[ad_lord].sign == g[kl].sign for kl in key_lords):
+    if ad_lord not in timing_lords and any(g[ad_lord].sign == g[tl].sign for tl in timing_lords):
         fired.append("AD_WITH_KEY_LORD")
-    if md_lord not in key_lords and has_key_connection(md_lord):
+    if md_lord not in timing_lords and has_timing_connection(md_lord):
         fired.append("MD_KEY_CONNECT")
     if g[ad_lord].dignity == "debilitated" or g[ad_lord].combust:
         fired.append("AD_WEAK")
-    if ad_lord in ("Saturn", "Ketu") and not has_key_connection(ad_lord):
+    if ad_lord in ("Saturn", "Ketu") and not has_timing_connection(ad_lord):
         fired.append("AD_DRY")
     return sum(RULE_PTS[f] for f in fired), fired
 
@@ -118,7 +150,7 @@ def transit_gate_student(chart, sig, ref_signs, start: datetime, end: datetime) 
         n += 1
         for ref in ref_signs:                                # lagna and/or moon
             h = houses_from(ref, sign_of(jlon))
-            if h in (1, 5, 9, 10, 11):
+            if h in (1, 10, 11):
                 jup_hit = True
                 months.append(t.strftime("%b %Y"))
         if abs((jlon - g10l.lon + 180) % 360 - 180) < 8.0:
@@ -175,11 +207,27 @@ def _study_career_reads(chart, sig):
     }
 
 
-def vidyarthi_extras(chart, sig, today):
+def _stage_field_note(stage, field, career_direction):
+    """Students still DECIDING (10th/12th) get general direction only -- no
+    named fields, per design decision. Students already committed (college/
+    postgrad) get a short field-specific note if they picked a field."""
+    if stage in ("10th", "12th"):
+        return ("At your stage the useful signal is direction, not a named field yet: "
+                f"{career_direction}.")
+    if stage in ("college", "postgrad") and field:
+        return FIELD_NOTE.get(field, FIELD_NOTE["Other"])
+    return None
+
+
+def vidyarthi_extras(chart, sig, today, stage=None, field=None):
     g = chart["grahas"]; moon = g["Moon"]
     extras = {"sade_sati": _sade_sati(moon.sign, today)}
     extras.update(_hardship_and_remedy(chart, sig))
     extras.update(_study_career_reads(chart, sig))
+    extras["stage"] = stage
+    extras["stage_label"] = STAGE_LABEL.get(stage)
+    extras["field"] = field
+    extras["stage_note"] = _stage_field_note(stage, field, extras["career_direction"])
     return extras
 
 
@@ -187,12 +235,15 @@ def vidyarthi_extras(chart, sig, today):
 def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: float,
                              lat: float, lon_geo: float, female: bool = False,
                              time_quality: str = "T0", horizon_years: int = 10,
-                             min_age: int = 10, as_of: datetime = None) -> dict:
+                             min_age: int = 10, as_of: datetime = None,
+                             stage: str = None, field: str = None) -> dict:
     """
     dob 'YYYY-MM-DD', tob 'HH:MM' local (for T2/T3 pass band midpoint / 12:00).
     time_quality: T0 exact | T1 approx +-45m | T2 band +-3h | T3 unknown.
     min_age is lower than marriage's default (10 vs 21) because academic/exam
     breakthrough windows meaningfully start in the teenage years.
+    stage: "10th" | "12th" | "college" | "postgrad" (optional). field: one of
+    FIELD_NOTE's keys, only meaningful when stage is "college"/"postgrad".
     """
     local = datetime.fromisoformat(f"{dob}T{tob}:00")
     dt_utc = local - timedelta(hours=tz_offset_hours)
@@ -246,7 +297,7 @@ def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: flo
                                "start": ad["start"], "end": ad["end"],
                                "score": round(s, 1), "rules": fired, "peak_months": peak})
 
-    qualifying = sorted([c for c in candidates if grade(c["score"])],
+    qualifying = sorted([c for c in candidates if c["score"] >= MIN_QUALIFY_SCORE],
                         key=lambda c: c["start"])
     if not qualifying:
         best = sorted(candidates, key=lambda c: -c["score"])[:2]
@@ -254,7 +305,8 @@ def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: flo
         qualifying = sorted(best, key=lambda c: c["start"])
     merged = []
     for c in qualifying:
-        if merged and (c["start"] - merged[-1]["end"]).days < 120:
+        if merged and (c["start"] - merged[-1]["end"]).days < 120 and \
+           (c["end"] - merged[-1]["start"]).days <= MAX_WINDOW_DAYS:
             m = merged[-1]
             m["end"] = c["end"]; m["score"] = max(m["score"], c["score"])
             m["rules"] = list(dict.fromkeys(m["rules"] + c["rules"]))
@@ -286,7 +338,7 @@ def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: flo
     active_ad = next((a for a in active_md["ads"] if a["start"] <= today <= a["end"]),
                      None) if active_md else None
 
-    extras = vidyarthi_extras(chart, sig, today)
+    extras = vidyarthi_extras(chart, sig, today, stage=stage, field=field)
 
     return {
         "product": "vidyarthi",
@@ -317,7 +369,7 @@ def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: flo
                                        "dignity": p.dignity, "retro": p.retro,
                                        "combust": p.combust} for p in g.values()}},
         "significators": {k: (SIGNS[v] if k in ("ref_sign", "fourth_sign", "fifth_sign",
-                                                 "ninth_sign", "tenth_sign") else v)
+                                                 "ninth_sign", "tenth_sign", "eleventh_sign") else v)
                           for k, v in sig.items()},
         "windows": out_windows,
         "current_period": {"md": active_md["lord"] if active_md else None,

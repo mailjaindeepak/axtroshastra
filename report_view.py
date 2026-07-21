@@ -1181,6 +1181,26 @@ This is support, not a substitute.</p></div>"""
                    f"<b>Not currently active.</b> Next phase approx {ss.get('next_starts', '—')}. "
                    f"No Saturn pressure on this axis right now.</div>")
 
+    # ---------- concise "answer at a glance" block, mirrors render_report's
+    # top_summary — a stressed student should get the headline in 10 seconds,
+    # with the full reasoning still available below, not removed. ----------
+    w1 = p["windows"][0] if p["windows"] else None
+    w2 = p["windows"][1] if p["windows"] and len(p["windows"]) > 1 else None
+    honest_line = (ex.get("line") or "").split(". ")[0].rstrip(".") + "."
+    top_summary = ""
+    if w1:
+        top_summary = (
+            "<div class='ans'>"
+            + "<p class='plabel'>Your answer, at a glance</p>"
+            + f"<p class='ans-win'><b>Next breakthrough window:</b> {pretty(w1['start'])} – {pretty(w1['end'])} "
+            + f"<span class='g'>({w1['grade']})</span></p>"
+            + (f"<p class='ans-win2'>After that: {pretty(w2['start'])} – {pretty(w2['end'])} ({w2['grade']})</p>" if w2 else "")
+            + f"<p class='ans-dir'><b>Direction:</b> {ex.get('career_direction', '')}.</p>"
+            + f"<p class='ans-honest'>{honest_line}</p>"
+            + "<p class='ans-note'>Full reasoning, study &amp; exam reads, and remedies are below.</p>"
+            + "</div>"
+        )
+
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{m['name']} — Career &amp; Academic Timing | Axtroshastra</title>
@@ -1209,10 +1229,21 @@ ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
 .ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:14.5px}}
 .rem{{margin:8px 0 0 20px}}
+.ans{{margin:18px 0 4px;padding:20px 22px;border:1px solid var(--haldi);border-radius:14px;background:#FFF9EC}}
+.ans .plabel{{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.1em;
+text-transform:uppercase;color:#B8860B;margin:0 0 8px}}
+.ans-win{{font-size:16.5px;margin:.3em 0}}
+.ans-win .g{{color:#2E7D53;font-weight:700}}
+.ans-win2{{color:var(--muted);font-size:14px;margin:.15em 0}}
+.ans-dir{{margin:.5em 0 .2em;font-size:14.5px}}
+.ans-honest{{margin:.3em 0;font-size:13.5px;color:#4A4C63}}
+.ans-note{{font-size:12px;color:var(--muted);margin-top:.6em;line-height:1.5}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · CAREER &amp; ACADEMIC TIMING</p>
 <h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
 {p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
+
+{top_summary}
 
 <h2>Your breakthrough windows</h2>
 {win_html if win_html else "<div class='card'><p>No standout window in this horizon — the report below still covers your study, exam and career reads.</p></div>"}
@@ -1228,7 +1259,8 @@ ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
 
 <h2>Career direction</h2>
 <div class="card"><p>{ex.get('career_direction', '')}.</p>
-<p class="soft">This reads your 10th house — the same house our Life Blueprint report also draws on.</p></div>
+<p class="soft">This reads your 10th house — the same house our Life Blueprint report also draws on.</p>
+{f"<p style='margin-top:10px'><b>{escape(ex['stage_label'])}:</b> {ex['stage_note']}</p>" if ex.get('stage_note') else ''}</div>
 
 {hardship_html}
 {ss_html}

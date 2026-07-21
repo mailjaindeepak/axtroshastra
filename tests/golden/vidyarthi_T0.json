@@ -83,6 +83,8 @@
   "window_padding_days": 74
  },
  "significators": {
+  "eleventh_lord": "Saturn",
+  "eleventh_sign": "Kumbha",
   "fifth_lord": "Sun",
   "fifth_lord_house": 12,
   "fifth_sign": "Simha",
@@ -106,25 +108,24 @@
   "ref_sign": "Mesha",
   "tenth_lord": "Saturn",
   "tenth_lord_house": 10,
-  "tenth_sign": "Makara"
+  "tenth_sign": "Makara",
+  "timing_lords": [
+   "Saturn"
+  ]
  },
  "teaser_moon": "Dhanu",
  "windows": [
   {
-   "core_end": "2035-09",
+   "core_end": "2025-09",
    "core_start": "2022-11",
-   "dasha": "Rahu MD \u2014 Saturn + Mercury + Ketu + Venus + Sun + Moon + Mars AD",
-   "end": "2035-12",
+   "dasha": "Rahu MD \u2014 Saturn AD",
+   "end": "2025-11",
    "grade": "Moderate",
-   "peak_months": [
-    "Nov 2026",
-    "Dec 2026",
-    "Mar 2028"
-   ],
+   "peak_months": [],
    "rules_fired": [
     {
      "id": "AD_IS_KEY_LORD",
-     "why": "Antardasha lord rules the 4th/5th/9th/10th house"
+     "why": "Antardasha lord rules the 10th/11th house"
     },
     {
      "id": "AD_IS_KARAKA",
@@ -132,27 +133,43 @@
     },
     {
      "id": "AD_IN_KEY_HOUSE",
-     "why": "AD lord occupies or aspects a 4th/5th/9th/10th house"
+     "why": "AD lord occupies or aspects the 10th/11th house"
     },
     {
      "id": "MD_KEY_CONNECT",
-     "why": "MD lord has a 4th/5th/9th/10th-house connection"
+     "why": "MD lord has a 10th/11th-house connection"
+    }
+   ],
+   "score": 7.5,
+   "start": "2022-08"
+  },
+  {
+   "core_end": "2032-04",
+   "core_start": "2029-04",
+   "dasha": "Rahu MD \u2014 Venus AD",
+   "end": "2032-07",
+   "grade": "Moderate",
+   "peak_months": [
+    "Apr 2029",
+    "May 2029",
+    "Jun 2029"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_IN_KEY_HOUSE",
+     "why": "AD lord occupies or aspects the 10th/11th house"
     },
     {
      "id": "AD_WITH_KEY_LORD",
-     "why": "AD lord conjunct a 4th/5th/9th/10th lord"
+     "why": "AD lord conjunct the 10th/11th lord"
     },
     {
-     "id": "AD_WEAK",
-     "why": "AD lord debilitated or combust"
+     "id": "MD_KEY_CONNECT",
+     "why": "MD lord has a 10th/11th-house connection"
     },
     {
      "id": "TR_JUP_TRIG",
-     "why": "Jupiter transits 1/5/9/10/11 from lagna or Moon in window"
-    },
-    {
-     "id": "TR_SAT_DISCIPLINE",
-     "why": "Saturn sits on the 1st/10th axis for most of the window \u2014 harder-won, not necessarily worse (see report note)"
+     "why": "Jupiter transits 1/10/11 from lagna or Moon in window"
     },
     {
      "id": "TR_JUP_ON_10L",
@@ -160,7 +177,39 @@
     }
    ],
    "score": 7.5,
-   "start": "2022-08"
+   "start": "2029-02"
+  },
+  {
+   "core_end": "2035-09",
+   "core_start": "2034-09",
+   "dasha": "Rahu MD \u2014 Mars AD",
+   "end": "2035-12",
+   "grade": "Moderate",
+   "peak_months": [
+    "Apr 2035",
+    "May 2035",
+    "Jun 2035"
+   ],
+   "rules_fired": [
+    {
+     "id": "AD_IN_KEY_HOUSE",
+     "why": "AD lord occupies or aspects the 10th/11th house"
+    },
+    {
+     "id": "AD_WITH_KEY_LORD",
+     "why": "AD lord conjunct the 10th/11th lord"
+    },
+    {
+     "id": "MD_KEY_CONNECT",
+     "why": "MD lord has a 10th/11th-house connection"
+    },
+    {
+     "id": "TR_JUP_TRIG",
+     "why": "Jupiter transits 1/10/11 from lagna or Moon in window"
+    }
+   ],
+   "score": 6.5,
+   "start": "2034-06"
   }
  ]
 }
