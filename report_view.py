@@ -935,7 +935,7 @@ REMEDIES = {
         "remedy": "For mental harmony: green on Wednesdays with 'Om Budhaya Namah' (Mercury), and an unhurried moonlit walk together on Mondays (Moon)."},
     "Gana": {
         "work_on": "Your energies genuinely differ (say, one loves a crowd, one loves quiet). Don't try to fix it — design around it: agree a simple signal for 'I need people' vs 'I need calm' and honour it without taking it personally.",
-        "remedy": "A shared calming ritual helps — light a diya at dusk and chant 'Om Namah Shivaya' together; traditionally it settles temperament clashes."},
+        "remedy": "A shared calming ritual helps — light a small oil lamp at dusk and chant 'Om Namah Shivaya' together; traditionally it settles temperament clashes."},
     "Bhakoot": {
         "work_on": "The classic risks here are emotional distance and money friction — get ahead of both with a light monthly 'us & money' check-in, and keep small daily affection non-negotiable.",
         "remedy": "A Moon remedy: on Mondays wear white, chant 'Om Somaya Namah', and offer milk or white flowers at a Shiva temple together."},
@@ -1236,12 +1236,10 @@ def render_milan(p: dict) -> str:
     # ---------- element dynamic + nakshatra lines ----------
     el_html = ""
     if p.get("element"):
-        el = p["element"]; nl = p.get("nak_lines", {})
-        el_html = (f"<h2>Aap dono ki energy</h2>"
+        el = p["element"]
+        el_html = (f"<h2>Your combined energy</h2>"
                    f"<div class='elbox'><b>{m['p1']}: {el['p1']} · {m['p2']}: {el['p2']}</b>"
-                   f"<p>{el['text']}</p></div>"
-                   f"<div class='nlbox'><p><b>{m['p1']}:</b> {nl.get('p1','')}</p>"
-                   f"<p style='margin-top:8px'><b>{m['p2']}:</b> {nl.get('p2','')}</p></div>")
+                   f"<p>{el['text']}</p></div>")
 
     # ---------- low score guidance ----------
     low_html = ""
@@ -1386,7 +1384,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .prel{{font-size:26px;line-height:1;flex:none}}
 .prname{{display:flex;flex-direction:column;line-height:1.25}}
 .prname b{{font-family:var(--display);font-size:17px}}
-.prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-top:2px}}
+.prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-top:3px;line-height:1.5}}
 .prline{{font-size:14px;margin-top:6px}}.prline b{{font-family:var(--display)}}
 @media(min-width:560px){{.profwrap{{flex-direction:row}}.prof{{flex:1}}}}
 .deep{{background:#F3F8F3;border:1.5px solid #CDE4D3;border-radius:12px;padding:14px 16px;margin-bottom:10px}}
@@ -1411,8 +1409,8 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .gloss b{{font-family:var(--display)}}
 .gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote{{break-inside:avoid}}
-h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote,.sharebtns,.sharebtn,.matchpct,.profwrap{{break-inside:avoid}}
+h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
 <h1>{m['p1']} ✕ {m['p2']}</h1>
@@ -1439,7 +1437,7 @@ h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:ex
 {('<h2>Important notes</h2>' + notes) if notes else ''}
 {low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
-Guna milan is one classical input to a marriage decision, not the whole decision.
+This compatibility score is one classical input to a marriage decision, not the whole decision.
 <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 {share_js}
 {MILAN_I18N}
