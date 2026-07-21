@@ -895,13 +895,16 @@ THEMES = [
 ]
 
 def _theme_rows(kootas: list) -> str:
-    """Build the 5-theme 'at a glance' cards from the computed koota scores."""
+    """Build the 5-theme 'at a glance' cards, strongest first (confidence-first)."""
     by_name = {k["name"]: k for k in kootas}
-    out = ""
+    scored = []
     for th in THEMES:
         got = sum(by_name[n]["score"] for n in th["kootas"] if n in by_name)
         mx = sum(by_name[n]["max"] for n in th["kootas"] if n in by_name)
-        pct = (got / mx * 100) if mx else 0
+        scored.append((th, got, mx, (got / mx * 100) if mx else 0))
+    scored.sort(key=lambda t: t[3], reverse=True)   # strong themes on top, weak below
+    out = ""
+    for th, got, mx, pct in scored:
         if pct >= 75:
             chip, chip_bg, bar_color, verdict = "Strong 💚", "#2E7D53", "#2E7D53", "You're naturally strong here."
         elif pct >= 45:
