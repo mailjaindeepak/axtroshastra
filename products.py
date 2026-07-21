@@ -250,16 +250,30 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     # ---- nakshatra one-liners for each ----
     nak_lines = {"p1": NAK_PROFILE[g["nak"]][2], "p2": NAK_PROFILE[b["nak"]][2]}
 
+    # ---- full birth charts for the kundli diagrams (both partners) ----
+    # Planet positions by sign are stable through the day; the Lagna (ascendant)
+    # needs the exact birth time. When no time is given we fall back to a Moon
+    # chart (Chandra lagna), which is honest and stable and matches the Moon-based
+    # Ashtakoota method used here.
+    def _chart_payload(ch, tob):
+        return {"lagna": SIGNS[ch["lagna_sign"]],
+                "moon_sign": SIGNS[ch["grahas"]["Moon"].sign],
+                "time_known": bool(tob),
+                "planets": {gp.name: {"sign": SIGNS[gp.sign], "retro": gp.retro}
+                            for gp in ch["grahas"].values()}}
+    chart_p1 = _chart_payload(charts[0], p1.get("tob"))
+    chart_p2 = _chart_payload(charts[1], p2.get("tob"))
+
     # ---- per-person profile facts (for the expanded report sections) ----
     profiles = {
         "p1": {"name": p1["name"], "sign": SIGNS_EN[g["sign"]], "nak": NAKSHATRAS[g["nak"]],
                "pada": g["pada"], "element": e1, "lord": SIGN_LORD[g["sign"]],
                "symbol": NAK_PROFILE[g["nak"]][0], "persona": NAK_PROFILE[g["nak"]][1],
-               "love": NAK_PROFILE[g["nak"]][2]},
+               "love": NAK_PROFILE[g["nak"]][2], "chart": chart_p1},
         "p2": {"name": p2["name"], "sign": SIGNS_EN[b["sign"]], "nak": NAKSHATRAS[b["nak"]],
                "pada": b["pada"], "element": e2, "lord": SIGN_LORD[b["sign"]],
                "symbol": NAK_PROFILE[b["nak"]][0], "persona": NAK_PROFILE[b["nak"]][1],
-               "love": NAK_PROFILE[b["nak"]][2]},
+               "love": NAK_PROFILE[b["nak"]][2], "chart": chart_p2},
     }
     match_pct = int(round(effective / 36 * 100))
 

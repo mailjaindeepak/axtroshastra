@@ -929,54 +929,77 @@ def _theme_rows(kootas: list) -> str:
 # For weak / non-matching factors: a practical thing to work on + an optional
 # traditional remedy. Agency-first — the action is the real lever, the remedy is
 # a cultural add-on for those who want it. No medical or gemstone-buying claims.
+# Each weak factor gets: a shared "together" line, a clear who-does-what split
+# (p1/p2 by name where the two jobs genuinely differ, or "each" where the action
+# is the same for both), and an optional traditional remedy. Splitting the
+# responsibility means neither partner assumes the other will handle it.
 REMEDIES = {
     "Varna": {
-        "work_on": "Spell out who owns which calls — money, home, plans, social life — out loud, instead of assuming. Rotate the 'lead' by area so neither of you is always the one giving in.",
-        "remedy": "A gentle classical practice: offer water to the rising sun together on Sunday mornings — a tiny shared ritual said to balance ego and authority."},
+        "work_on": "Spell out who owns which calls — money, home, plans, social life — out loud, instead of assuming.",
+        "p1": "Name the one area you most want to lead — and say it plainly.",
+        "p2": "Name the one area you're happy to hand over — and genuinely let go of it.",
+        "remedy": "A gentle classical practice: offer water to the rising sun together on Sunday mornings — a small shared ritual said to balance ego and authority."},
     "Vashya": {
-        "work_on": "A lower pull just means the bond runs on respect, not gravity — so make closeness deliberate: one protected date a week and small daily check-ins beat leaving it to chance.",
+        "work_on": "A lower pull just means the bond runs on respect, not gravity — so make closeness deliberate, not left to chance.",
+        "p1": "Own the plan — set up one proper, protected date this week.",
+        "p2": "Own the daily thread — keep the small check-ins going through the week.",
         "remedy": "Venus rules attraction — on Fridays keep something white nearby and repeat 'Om Shukraya Namah' a few times together."},
     "Tara": {
-        "work_on": "Make each other's wellbeing a shared project — sleep, food, stress. This pairing does best when you actively look after one another instead of assuming the other is fine.",
+        "work_on": "Make each other's wellbeing a shared project — sleep, food, stress — instead of assuming the other is fine.",
+        "p1": "Keep an eye on the basics — nudge each other on rest, food and sleep.",
+        "p2": "Keep an eye on the load — check in on stress and what's draining them.",
         "remedy": "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for mutual wellbeing."},
     "Yoni": {
-        "work_on": "This is about different instincts, not low attraction. Talk openly about pace, touch and daily rhythms — who's a morning person, who needs space — and say what you need instead of hoping it's guessed.",
-        "remedy": "Venus is your ally here too — Friday is the day; soft, warm tones at home and 'Om Shukraya Namah' are the classical nudges for intimacy."},
+        "work_on": "This is about different instincts, not low attraction — so talk openly about pace, touch and daily rhythms.",
+        "each": "Name one rhythm — sleep, space or affection — you'd like the other to understand, and ask for theirs.",
+        "remedy": "Venus is your ally here too — Friday is the day; soft, warm tones at home and 'Om Shukraya Namah' are the classical nudges for closeness."},
     "Graha Maitri": {
-        "work_on": "You think in different 'languages'. Practise translating: before you reply, say your partner's point back in their words. A weekly 20-minute, phones-away talk builds the wavelength fast.",
+        "work_on": "You think in different 'languages', so practise translating before you react.",
+        "each": "In a disagreement, say your partner's point back in their words before you reply — until they say 'yes, that's it.'",
         "remedy": "For mental harmony: green on Wednesdays with 'Om Budhaya Namah' (Mercury), and an unhurried moonlit walk together on Mondays (Moon)."},
     "Gana": {
-        "work_on": "Your energies genuinely differ (say, one loves a crowd, one loves quiet). Don't try to fix it — design around it: agree a simple signal for 'I need people' vs 'I need calm' and honour it without taking it personally.",
+        "work_on": "Your energies genuinely differ (say, one loves a crowd, one loves quiet). Don't try to fix it — design around it.",
+        "each": "Tell the other plainly what recharges you — a night out or a night in — and agree a simple signal for it.",
         "remedy": "A shared calming ritual helps — light a small oil lamp at dusk and chant 'Om Namah Shivaya' together; traditionally it settles temperament clashes."},
     "Bhakoot": {
-        "work_on": "The classic risks here are emotional distance and money friction — get ahead of both with a light monthly 'us & money' check-in, and keep small daily affection non-negotiable.",
+        "work_on": "The classic risks here are emotional distance and money friction — get ahead of both, and keep daily affection non-negotiable.",
+        "p1": "Own the money rhythm — a light monthly 'us & money' check-in.",
+        "p2": "Own the emotional rhythm — a regular, honest 'how are we, really?' talk.",
         "remedy": "A Moon remedy: on Mondays wear white, chant 'Om Somaya Namah', and offer milk or white flowers at a Shiva temple together."},
     "Nadi": {
-        "work_on": "Traditionally the heaviest factor, tied to health and children — so the real 'remedy' is proactive: regular check-ups, good sleep, low chronic stress, and unhurried timing if you plan a family.",
+        "work_on": "Traditionally the heaviest factor, tied to health and children — so the real 'remedy' is proactive care, together.",
+        "each": "Book your own basics — a check-up, better sleep, less chronic stress; treat wellbeing as a team sport.",
         "remedy": "A classical Nadi practice is the Maha Mrityunjaya mantra and donating toward medicines/health; the modern equivalent is a simple pre-marriage health check for both."},
 }
 
-def _koota_fix_html(k: dict, cancelled: set) -> str:
-    """Inline fix + traditional remedy, rendered INSIDE a weak koota's own card so
-    the concern and its answer are never separated (anxiety stays low)."""
+def _koota_fix_html(k: dict, cancelled: set, names=("Partner 1", "Partner 2")) -> str:
+    """Inline fix + who-does-what split + traditional remedy, rendered INSIDE a weak
+    koota's own card so the concern and its answer are never separated (anxiety stays
+    low). The split divides responsibility so neither partner assumes the other will act."""
     if not (k["max"] and k["score"] / k["max"] < 0.5):
         return ""
-    rem = REMEDIES.get(k["name"], {"work_on": "", "remedy": ""})
-    if not rem.get("work_on"):
+    rem = REMEDIES.get(k["name"])
+    if not rem or not rem.get("work_on"):
         return ""
+    n1, n2 = names
     ap = ACTION_PLAN.get(k["name"])
     canc = ("<p class='wcanc'>✅ Traditionally cancelled for you — treat this as a lighter priority.</p>"
             if k["name"] in cancelled else "")
-    plan = ""
-    if ap:
-        plan = (f"<div class='wplan'>"
-                f"<p><span class='wpk'>Try this week</span> {ap['try']}</p>"
-                f"<p><span class='wpk'>Say this</span> {ap['talk']}</p>"
-                f"<p><span class='wpk'>You'll know it's working when</span> {ap['green']}</p></div>")
+    # who does what — split the responsibility clearly
+    if rem.get("each"):
+        split = f"<div class='wsplit'><p><span class='wpk'>👥 Each of you</span> {rem['each']}</p></div>"
+    else:
+        rows = ""
+        if rem.get("p1"): rows += f"<p><span class='wpk'>👤 {n1}</span> {rem['p1']}</p>"
+        if rem.get("p2"): rows += f"<p><span class='wpk'>👤 {n2}</span> {rem['p2']}</p>"
+        split = f"<div class='wsplit'>{rows}</div>" if rows else ""
+    talk = (f"<p class='wtalk'><b>💬 Say this:</b> {ap['talk']}</p>"
+            if ap and ap.get("talk") else "")
     rem_line = (f"<p class='wrem'><b>🪔 Traditional remedy:</b> {rem['remedy']}</p>"
                 if rem.get("remedy") else "")
     return (f"<div class='kfix'>{canc}"
-            f"<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>{plan}{rem_line}</div>")
+            f"<p class='wdo'><b>💡 Work on it — together:</b> {rem['work_on']}</p>"
+            f"{split}{talk}{rem_line}</div>")
 
 # ---------------- Phase-1 expanded-report content + builders ----------------
 ELEMENT_EMOJI = {"fire": "🔥", "earth": "🌿", "air": "💨", "water": "🌊"}
@@ -1110,6 +1133,20 @@ def _sharecard_html(p: dict) -> str:
             f"</div>")
 
 
+def _milan_chart_block(pr: dict) -> str:
+    """Render this partner's kundli. Lagna chart when the birth time is known,
+    otherwise a Moon chart (stable, honest, and consistent with Moon-based matching)."""
+    ch = pr.get("chart")
+    if not ch or not ch.get("planets"):
+        return ""
+    tk = ch.get("time_known")
+    house1 = ch["lagna"] if tk else ch.get("moon_sign", ch["lagna"])
+    svg = north_chart_svg({"chart": {"lagna": house1, "planets": ch["planets"]}})
+    cap = ("Lagna (ascendant) chart — cast from the exact birth time"
+           if tk else "Moon chart — from date &amp; place (birth time not given, so the ascendant isn't fixed)")
+    return f"<div class='kchartwrap'>{svg}<p class='kcap'>{cap}</p></div>"
+
+
 def _profiles_html(p: dict) -> str:
     def card(who):
         pr = p["profiles"][who]
@@ -1120,10 +1157,18 @@ def _profiles_html(p: dict) -> str:
                 f"<span class='prsign'>{pr['sign']} Moon · {pr['nak']} nakshatra</span></span></div>"
                 f"<p class='prline'><b>Their nature:</b> {pr['persona']}.</p>"
                 f"<p class='prline'><b>In love:</b> {pr['love']}.</p>"
-                f"<p class='prline'><b>Feels most loved by:</b> {LOVE_LANG.get(el,'')}.</p></div>")
+                f"<p class='prline'><b>Feels most loved by:</b> {LOVE_LANG.get(el,'')}.</p>"
+                f"{_milan_chart_block(pr)}</div>")
+    has_chart = bool(p["profiles"].get("p1", {}).get("chart"))
+    legend = ("<p class='klegend'>Chart key: <b>Su</b> Sun · <b>Mo</b> Moon · <b>Ma</b> Mars · "
+              "<b>Me</b> Mercury · <b>Ju</b> Jupiter · <b>Ve</b> Venus · <b>Sa</b> Saturn · "
+              "<b>Ra</b> Rahu · <b>Ke</b> Ketu · ↺ retrograde. The small numbers are the zodiac "
+              "signs (1 Aries … 12 Pisces). This is the North-Indian style your family astrologer uses — "
+              "so you can verify every placement yourself.</p>") if has_chart else ""
     return ("<h2>The two of you, decoded 🔮</h2>"
-            "<p class='lead'>A quick read on each of you, drawn from your Moon sign and birth-star (nakshatra).</p>"
-            f"<div class='profwrap'>{card('p1')}{card('p2')}</div>")
+            "<p class='lead'>A quick read on each of you — plus your actual birth chart, "
+            "drawn from your Moon sign and birth-star (nakshatra).</p>"
+            f"<div class='profwrap'>{card('p1')}{card('p2')}</div>{legend}")
 
 
 def _strength_deepdive_html(p: dict) -> str:
@@ -1205,7 +1250,7 @@ def render_milan(p: dict) -> str:
             bar_color = "#E4B04A"  # softened — this dosha is cancelled for this couple
         ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"], "blurb": k.get("meaning", "")})
         score_disp = int(k["score"]) if float(k["score"]).is_integer() else k["score"]
-        fix = _koota_fix_html(k, cancelled)
+        fix = _koota_fix_html(k, cancelled, (m['p1'], m['p2']))
         rows += f"""<div class='koota'>
 <div class='ktop'><div class='klabel'><span class='kemoji'>{ui['emoji']}</span><span class='kname'><b>{ui['label']}</b><span class='ksan'>{k['name']} koota</span></span></div><span class='ks'>{score_disp}/{k['max']}</span></div>
 <div class='kbar'><div style='width:{pct:.0f}%;background:{bar_color}'></div></div>
@@ -1405,6 +1450,11 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-top:3px;line-height:1.5}}
 .prline{{font-size:14px;margin-top:6px}}.prline b{{font-family:var(--display)}}
 @media(min-width:560px){{.profwrap{{flex-direction:row}}.prof{{flex:1}}}}
+.kchartwrap{{background:var(--midnight);border-radius:12px;padding:12px 12px 8px;margin-top:12px}}
+.kchart{{width:100%;max-width:290px;height:auto;display:block;margin:0 auto}}
+.kcap{{color:#B9BBD0;font-size:11.5px;text-align:center;margin-top:8px;line-height:1.4}}
+.klegend{{font-size:11.5px;color:var(--muted);line-height:1.6;margin:12px 2px 0;background:#fbf7ef;border:1px solid var(--line);border-radius:10px;padding:11px 13px}}
+.klegend b{{color:var(--ink)}}
 .deep{{background:#F3F8F3;border:1.5px solid #CDE4D3;border-radius:12px;padding:14px 16px;margin-bottom:10px}}
 .dtop{{display:flex;align-items:center;gap:9px;font-family:var(--display);margin-bottom:6px}}
 .dtop b{{font-size:16px}}.demoji{{font-size:19px;flex:none}}
@@ -1412,6 +1462,9 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .wplan{{background:#FBF4E6;border-radius:10px;padding:11px 12px;margin-top:10px;font-size:13.5px}}
 .wplan p{{margin:5px 0}}
 .wpk{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:6px}}
+.wsplit{{background:#FBF4E6;border-radius:10px;padding:9px 12px;margin-top:9px;font-size:13.5px}}
+.wsplit p{{margin:5px 0}}
+.wtalk{{margin-top:8px;font-size:13.5px}}
 .besties{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:18px}}
 .besties p{{font-size:14.5px;margin-bottom:10px}}
 .bnote{{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}}
@@ -1427,7 +1480,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .gloss b{{font-family:var(--display)}}
 .gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote,.sharebtns,.sharebtn,.matchpct,.profwrap{{break-inside:avoid}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote,.sharebtns,.sharebtn,.matchpct,.profwrap,.kchartwrap{{break-inside:avoid}}
 h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
