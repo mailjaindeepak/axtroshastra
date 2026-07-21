@@ -197,12 +197,12 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     else: verdict, vkey = "Below threshold — needs careful consideration", "weak"
 
     m1, m2 = _moon_manglik(charts[0]), _moon_manglik(charts[1])
-    if m1 and m2: manglik_note = ("Dono charts mein manglik placement hai — classical "
-                                  "rule mein manglik-manglik pairing neutral ho jaati hai. Not an obstacle.")
-    elif m1 or m2: manglik_note = ("Ek chart mein manglik placement hai (Moon-based check). "
-                                   "Cancellation rules aksar apply hote hain — full lagna-based "
-                                   "check ke liye exact birth times chahiye.")
-    else: manglik_note = "Kisi bhi chart mein manglik dosha nahi hai (Moon-based check). ✅"
+    if m1 and m2: manglik_note = ("Both charts carry a Manglik placement — and in the classical rule a "
+                                  "Manglik–Manglik pairing cancels out. Not an obstacle.")
+    elif m1 or m2: manglik_note = ("One chart carries a Manglik placement (Moon-based check). "
+                                   "Cancellation rules usually apply — a full lagna-based check needs "
+                                   "exact birth times for both.")
+    else: manglik_note = "Neither chart carries a Manglik placement (Moon-based check). ✅"
 
     notes = []
     if nadi_dosha:

@@ -917,7 +917,7 @@ def _theme_rows(kootas: list) -> str:
         elif pct >= 45:
             chip, chip_bg, bar_color, verdict = "Solid 💛", "#B4881B", "#E4B04A", "Good foundation — a little effort keeps it easy."
         else:
-            chip, chip_bg, bar_color, verdict = "Needs work ❤️‍🔥", "#C93B2E", "#C93B2E", "This one takes conscious effort — worth knowing early."
+            chip, chip_bg, bar_color, verdict = "Needs work ❤️‍🔥", "#C93B2E", "#C93B2E", "Takes a little conscious effort — and the exact fix is on this factor's card in the breakdown below. 👇"
         got_disp = int(got) if float(got).is_integer() else got
         out += f"""<div class='theme'>
 <div class='ttop'><span class='temoji'>{th['emoji']}</span><b>{th['name']}</b>
@@ -956,35 +956,27 @@ REMEDIES = {
         "remedy": "A classical Nadi practice is the Maha Mrityunjaya mantra and donating toward medicines/health; the modern equivalent is a simple pre-marriage health check for both."},
 }
 
-def _workon_rows(kootas: list, cancellations: list) -> str:
-    """Actionable cards for every weak (<50%) / non-matching koota, weakest first."""
-    cancelled = {c.get("koota") for c in (cancellations or [])}
-    weak = sorted((k for k in kootas if k["max"] and k["score"] / k["max"] < 0.5),
-                  key=lambda k: k["score"] / k["max"])
-    if not weak:
-        return ("<div class='work good'><b>No structural weak spots here 🎉</b>"
-                "<p>To keep it this strong: protect one proper date a week, talk money and "
-                "feelings early (before they pile up), and don't let routine quietly eat the "
-                "romance. Strong charts still need showing up.</p></div>")
-    cards = ""
-    for k in weak:
-        ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"]})
-        rem = REMEDIES.get(k["name"], {"work_on": "", "remedy": ""})
-        tag = "Non-match" if k["score"] == 0 else "Weak spot"
-        canc = ("<span class='wcanc'>✅ traditionally cancelled for you — treat as lighter priority</span>"
-                if k["name"] in cancelled else "")
-        ap = ACTION_PLAN.get(k["name"])
-        plan = ""
-        if ap:
-            plan = (f"<div class='wplan'>"
-                    f"<p><span class='wpk'>Try this week</span> {ap['try']}</p>"
-                    f"<p><span class='wpk'>Say this</span> {ap['talk']}</p>"
-                    f"<p><span class='wpk'>You'll know it's working when</span> {ap['green']}</p></div>")
-        cards += f"""<div class='work'>
-<div class='wtop'><span class='wemoji'>{ui['emoji']}</span><b>{ui['label']}</b><span class='wtag'>{tag}</span></div>{canc}
-<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>{plan}
-<p class='wrem'><b>🪔 Traditional remedy:</b> {rem['remedy']}</p></div>"""
-    return cards
+def _koota_fix_html(k: dict, cancelled: set) -> str:
+    """Inline fix + traditional remedy, rendered INSIDE a weak koota's own card so
+    the concern and its answer are never separated (anxiety stays low)."""
+    if not (k["max"] and k["score"] / k["max"] < 0.5):
+        return ""
+    rem = REMEDIES.get(k["name"], {"work_on": "", "remedy": ""})
+    if not rem.get("work_on"):
+        return ""
+    ap = ACTION_PLAN.get(k["name"])
+    canc = ("<p class='wcanc'>✅ Traditionally cancelled for you — treat this as a lighter priority.</p>"
+            if k["name"] in cancelled else "")
+    plan = ""
+    if ap:
+        plan = (f"<div class='wplan'>"
+                f"<p><span class='wpk'>Try this week</span> {ap['try']}</p>"
+                f"<p><span class='wpk'>Say this</span> {ap['talk']}</p>"
+                f"<p><span class='wpk'>You'll know it's working when</span> {ap['green']}</p></div>")
+    rem_line = (f"<p class='wrem'><b>🪔 Traditional remedy:</b> {rem['remedy']}</p>"
+                if rem.get("remedy") else "")
+    return (f"<div class='kfix'>{canc}"
+            f"<p class='wdo'><b>💡 Work on it:</b> {rem['work_on']}</p>{plan}{rem_line}</div>")
 
 # ---------------- Phase-1 expanded-report content + builders ----------------
 ELEMENT_EMOJI = {"fire": "🔥", "earth": "🌿", "air": "💨", "water": "🌊"}
@@ -998,28 +990,28 @@ LOVE_LANG = {
 
 # Couple archetype keyed by the frozenset of the two Moon elements (same-element sets have 1 item).
 ARCHETYPE = {
-    frozenset({"fire"}): {"name": "The Wildfire", "emoji": "🔥", "tagline": "Two sparks, double the passion",
+    frozenset({"fire"}): {"name": "The Passionate Pair", "emoji": "🔥", "tagline": "Two sparks, double the passion",
         "body": "You two run hot — big feelings, big fun, and the occasional big argument that's over as fast as it started. Your superpower is intensity; your homework is learning that only one of you needs to catch fire at a time."},
-    frozenset({"earth"}): {"name": "The Homebuilders", "emoji": "🏡", "tagline": "Steady, safe, built to last",
+    frozenset({"earth"}): {"name": "The Steady Pair", "emoji": "🏡", "tagline": "Steady, safe, built to last",
         "body": "You're the couple friends call 'solid'. You value security, loyalty and a life built brick by brick. The only risk: don't let the routine quietly replace the romance."},
-    frozenset({"air"}): {"name": "The Kindred Minds", "emoji": "💭", "tagline": "Endless conversation, one wavelength",
+    frozenset({"air"}): {"name": "The Best Friends", "emoji": "💭", "tagline": "Endless talks, always on the same page",
         "body": "You'll never run out of things to talk about — ideas, plans, jokes only you two get. The thing to practise together: turning all those brilliant plans into actual decisions."},
-    frozenset({"water"}): {"name": "The Deep End", "emoji": "🌊", "tagline": "You feel everything, together",
+    frozenset({"water"}): {"name": "The Deep Feelers", "emoji": "🌊", "tagline": "You feel everything, together",
         "body": "Rare, almost wordless understanding — you read each other's moods like weather. Beautiful, but when you're both caught in a wave, someone has to be the calm shore."},
-    frozenset({"fire", "earth"}): {"name": "Spark & Ground", "emoji": "🔥🌿", "tagline": "Drive meets steadiness",
+    frozenset({"fire", "earth"}): {"name": "Passion Meets Patience", "emoji": "🔥🌿", "tagline": "Drive meets steadiness",
         "body": "One of you brings the pace, the other the patience. Fire learns to slow down, earth learns to loosen up — and together you actually build the things you dream about."},
-    frozenset({"fire", "air"}): {"name": "The Firestorm", "emoji": "🔥💨", "tagline": "Energy that feeds itself",
+    frozenset({"fire", "air"}): {"name": "The Adventurers", "emoji": "🔥💨", "tagline": "Energy that keeps growing",
         "body": "Air feeds the flame — adventures, plans, natural chemistry. You both love to fly; just decide early who's handling the landing."},
-    frozenset({"fire", "water"}): {"name": "Steam", "emoji": "🔥🌊", "tagline": "Intense pull, intense feeling",
+    frozenset({"fire", "water"}): {"name": "The Magnetic Pair", "emoji": "🔥🌊", "tagline": "Strong pull, strong feelings",
         "body": "Fire and water make steam — magnetic attraction and big reactions. Fire learns softness, water learns directness. It takes effort, and it makes magic."},
-    frozenset({"earth", "air"}): {"name": "Dreamer & Builder", "emoji": "🌿💨", "tagline": "Ideas meet foundations",
+    frozenset({"earth", "air"}): {"name": "The Dreamer & The Builder", "emoji": "🌿💨", "tagline": "Ideas meet real plans",
         "body": "Air brings the ideas, earth makes them real. Your different speeds are the friction — and exactly what makes you complete each other."},
-    frozenset({"earth", "water"}): {"name": "The Nourishers", "emoji": "🌿🌊", "tagline": "The most naturally nurturing pair",
+    frozenset({"earth", "water"}): {"name": "The Caring Pair", "emoji": "🌿🌊", "tagline": "The most naturally caring match",
         "body": "Soil and water — classical texts call this innately compatible. One gives security, the other depth. This is the easy, home-feeling kind of love."},
-    frozenset({"air", "water"}): {"name": "Head & Heart", "emoji": "💭🌊", "tagline": "Words meet feelings",
+    frozenset({"air", "water"}): {"name": "Head & Heart", "emoji": "💭🌊", "tagline": "Clear thinking meets deep feeling",
         "body": "Air learns that not everything is logic; water learns that not everything can go unsaid. Build that bridge and it's pure poetry."},
 }
-ARCHETYPE_DEFAULT = {"name": "The Originals", "emoji": "✨", "tagline": "Your own kind of match",
+ARCHETYPE_DEFAULT = {"name": "One of a Kind", "emoji": "✨", "tagline": "Your own kind of match",
     "body": "You don't fit a neat box — which is its own kind of interesting."}
 
 # Rich strength copy, keyed by theme name (shown when a theme is strong).
@@ -1148,20 +1140,20 @@ def _strength_deepdive_html(p: dict) -> str:
 
 
 def _askbesties_html(p: dict) -> str:
-    return ("<h2>Share it with your girls 💌</h2>"
+    return ("<h2>Share it with your friends 💌</h2>"
             "<div class='besties'>"
-            "<p>Save the couple card up top and send it to your 3 closest friends. Then ask them the "
+            "<p>Save the couple card up top and send it to a few friends who know you both. Then ask them the "
             "real question: <b>“Does this actually sound like us?”</b></p>"
-            "<p>Your besties know you better than any chart — their gut-check is the best second opinion you'll "
-            "get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll keep you honest "
-            "and cheer you on.</p>"
+            "<p>The people close to you know you better than any chart — their gut-check is the best second "
+            "opinion you'll get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll "
+            "keep you honest and cheer you on.</p>"
             "<div class='sharebtns'>"
             "<button class='sharebtn' onclick='axSaveCard()'>Save card 📸</button>"
             "<button class='sharebtn ghost' onclick='axShare()'>Share report 💫</button></div>"
             "<div class='friendnote'><b>👀 Hey — did a friend send you this?</b>"
-            "<p>She shared it because your honest take matters more than any chart. Two ways to be a great "
-            "friend right now: tell her if the ‘you two’ bits actually ring true, and for anything marked "
-            "<b>‘work on it’</b>, be the one who cheers her on. That's the whole point. 💛</p></div>"
+            "<p>They shared it because your honest take matters more than any chart. Two ways to be a great "
+            "friend right now: tell them if the ‘you two’ bits actually ring true, and for anything marked "
+            "<b>‘work on it’</b>, be the one who cheers them on. That's the whole point. 💛</p></div>"
             "<p class='bnote'>Shared with love · your report stays private unless you send it.</p></div>")
 
 
@@ -1204,17 +1196,21 @@ def render_milan(p: dict) -> str:
     m = p["meta"]
     m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
     theme_html = _theme_rows(p["kootas"])
+    cancelled = {c.get("koota") for c in (p.get("cancellations") or [])}
     rows = ""
     for k in sorted(p["kootas"], key=lambda k: (k["score"] / k["max"]) if k["max"] else 0, reverse=True):
         pct = k["score"] / k["max"] * 100
         bar_color = "#2E7D53" if pct >= 75 else ("#E4B04A" if pct >= 40 else "#C93B2E")
+        if k["name"] in cancelled and pct < 40:
+            bar_color = "#E4B04A"  # softened — this dosha is cancelled for this couple
         ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"], "blurb": k.get("meaning", "")})
         score_disp = int(k["score"]) if float(k["score"]).is_integer() else k["score"]
+        fix = _koota_fix_html(k, cancelled)
         rows += f"""<div class='koota'>
 <div class='ktop'><div class='klabel'><span class='kemoji'>{ui['emoji']}</span><span class='kname'><b>{ui['label']}</b><span class='ksan'>{k['name']} koota</span></span></div><span class='ks'>{score_disp}/{k['max']}</span></div>
 <div class='kbar'><div style='width:{pct:.0f}%;background:{bar_color}'></div></div>
 <p class='kd'>{ui['blurb']}</p>
-<p class='kt'>{k.get('text','')}</p></div>"""
+<p class='kt'>{k.get('text','')}</p>{fix}</div>"""
 
     # ---------- cancellations & effective score ----------
     canc_html = ""
@@ -1223,13 +1219,14 @@ def render_milan(p: dict) -> str:
             f"<div class='canc'>✅ <b>{c['koota']} dosha cancelled</b> (+{c['restored']} restored)"
             f"<p>{c['rule']}</p></div>" for c in p["cancellations"])
         canc_html = (f"<h2>Dosha cancellation check</h2>{cards}"
-                     f"<div class='effbox'>Cancellations ke baad effective score: "
+                     f"<div class='effbox'>Effective score after cancellations: "
                      f"<b>{p['effective']}/36</b> — {p['effective_verdict']}</div>")
     elif any(k['name'] in ('Nadi','Bhakoot') and k['score']==0 for k in p['kootas']):
         canc_html = ("<h2>Dosha cancellation check</h2>"
-                     "<div class='canc' style='border-color:#C93B2E'>Is jodi mein dosha ke standard "
-                     "cancellation rules apply nahi hote — dosha effective hai. Iska matlab section "
-                     "'Score ka matlab' mein neeche padhiye; dar se nahi, samajh se decide kijiye.</div>")
+                     "<div class='canc' style='border-color:#E4B04A'>For your two charts, the usual "
+                     "rules that cancel this dosha don't apply — so it stays active. This isn't a verdict. "
+                     "It simply marks this as an area to be intentional about; the practical steps are on "
+                     "that factor's own card in the breakdown above. Decide with understanding, not fear.</div>")
 
     # ---------- strengths ----------
     sw_html = ""
@@ -1239,12 +1236,6 @@ def render_milan(p: dict) -> str:
         if st:
             sw_html = f"<h2>Where you're naturally strong 💚</h2><ul class='swl'>{st}</ul>"
 
-    # ---------- what to work on (weak / non-match factors + remedies) ----------
-    workon_html = ("<h2>What you can work on 🛠️</h2>"
-                   "<p class='lead'>Low scores aren't a verdict — they're a to-do list. Here's the "
-                   "practical fix for each softer spot, plus a traditional remedy if that's your vibe.</p>"
-                   + _workon_rows(p["kootas"], p.get("cancellations")))
-
     # ---------- element dynamic + nakshatra lines ----------
     el_html = ""
     if p.get("element"):
@@ -1253,21 +1244,32 @@ def render_milan(p: dict) -> str:
                    f"<div class='elbox'><b>{m['p1']}: {el['p1']} · {m['p2']}: {el['p2']}</b>"
                    f"<p>{el['text']}</p></div>")
 
+    # ---------- Manglik: keep the concern and its reassurance together ----------
+    mg = p["manglik"]
+    if mg.get("p1") or mg.get("p2"):
+        mg_extra = ("<p class='mgfix'><b>What to do:</b> this is not a curse, and in matching it is very "
+                    "often mild or fully cancelled. Read the cancellation note above, and if it matters to "
+                    "your families, the classical remedy is a simple Mangal / Hanuman practice on Tuesdays. "
+                    "Treat it as information to understand, not a verdict to fear.</p>")
+    else:
+        mg_extra = ("<p class='mgfix'><b>All clear:</b> neither chart carries a Manglik placement on this "
+                    "check — one less thing to worry about.</p>")
+    manglik_html = f"<h2>Manglik check</h2><div class=\"mg\">{mg['note']}{mg_extra}</div>"
+
     # ---------- low score guidance ----------
     low_html = ""
     if p.get("effective", p["total"]) < 24:
-        low_html = ("<h2>Score kam hai — iska matlab kya hai?</h2>"
+        low_html = ("<h2>What a lower score really means</h2>"
             "<div class='lowbox'>"
-            "<p><b>Pehli baat:</b> guna milan ek classical input hai, poora faisla nahi. "
-            "Yeh Moon-positions ki compatibility napta hai — values, maturity aur commitment nahi, "
-            "jo kisi bhi rishtey ke asli pillars hain.</p>"
-            "<p><b>Dusri baat:</b> upar dekhiye kaunse kootas mein kami hai. Gana ya Graha Maitri "
-            "ki kami <i>improvable</i> hai — yeh communication-patterns ki baat hai jo couples seekh "
-            "lete hain. Nadi/Bhakoot dosha (agar cancelled nahi) traditional weight zyada rakhta hai — "
-            "wahan family-elders aur apne vivek dono se salaah kijiye.</p>"
-            "<p><b>Teesri baat:</b> lakhs of successful marriages kam score ke saath hui hain. "
-            "Score ko information ki tarah use kijiye — kis cheez par kaam karna hoga yeh jaanne ke "
-            "liye — verdict ki tarah nahi.</p></div>")
+            "<p><b>First:</b> guna milan is one classical input, not the whole verdict. It measures how "
+            "compatible your Moon positions are — not values, maturity or commitment, which are the real "
+            "pillars of any marriage.</p>"
+            "<p><b>Second:</b> look at which factors scored low. A shortfall in the softer factors — "
+            "temperament, mental wavelength — is improvable; those are communication patterns couples "
+            "learn. A Nadi or Bhakoot dosha, if it isn't cancelled, carries more traditional weight — "
+            "there, take counsel from your elders and your own judgement together.</p>"
+            "<p><b>Third:</b> countless happy marriages began with a low score. Use the number as "
+            "information — to see what you'll want to work on — not as a verdict.</p></div>")
 
     # ---------- Phase-1 expanded sections (present only on newer reports) ----------
     has_profiles = bool(p.get("profiles"))
@@ -1350,6 +1352,10 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .note{{background:#fff;border:1.5px solid var(--haldi)}}
 .tn{{font-size:12px;color:var(--muted);margin-top:24px}}
 .kt{{font-size:14px;margin-top:8px;color:#33355000;color:#3A3C55}}
+.kfix{{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}}
+.kfix .wdo{{margin-top:0}}
+.mgfix{{margin-top:10px;font-size:13.5px}}
+.mgfix b{{font-family:var(--display)}}
 .canc{{background:#fff;border:2px solid #2E7D53;border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px}}
 .canc p{{margin-top:5px}}
 .effbox{{background:var(--midnight);color:#F3EFE4;border-radius:12px;padding:16px;font-size:15px;text-align:center}}
@@ -1429,20 +1435,19 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 <p class="score">{p['total']}<small>/36</small></p>
 <span class="verdict">{p['verdict'].upper()}</span>
 {matchpct_html}
-{("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>Dosha cancellation ke baad: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
+{("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>After dosha cancellation: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
 {opening_html}
 {couple_html}
+{profiles_html}
 <h2>Your match, in plain English 💫</h2>
 <p class="lead">The five things that actually make or break a relationship — scored straight from your two charts.</p>
 {theme_html}
 {deepdive_html}
-{profiles_html}
 <h2>The full breakdown — all 8 factors</h2>
 <p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}
 {canc_html}
-{workon_html}
 {el_html}
-<h2>Manglik check</h2><div class="mg">{p['manglik']['note']}</div>
+{manglik_html}
 {method_html}
 {cert_html}
 {besties_html}
