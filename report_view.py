@@ -859,17 +859,77 @@ not guarantees. <a href='https://wa.me/919650973345' style='color:inherit'>Whats
 VERDICT_COLOR = {"excellent": "#2E7D53", "verygood": "#2E7D53",
                  "ok": "#E4B04A", "weak": "#C93B2E"}
 
+# Plain-language decode of each classical koota — modern label + emoji + real-life meaning.
+# Sanskrit name (the dict key) is kept as a small credibility subtitle in the UI.
+KOOTA_UI = {
+    "Varna":        {"emoji": "🧭", "label": "Drive & Ego Balance",
+                     "blurb": "who naturally takes the lead — without it turning into a power struggle"},
+    "Vashya":       {"emoji": "🧲", "label": "Mutual Pull",
+                     "blurb": "how naturally you're drawn to and influence each other"},
+    "Tara":         {"emoji": "🍀", "label": "Luck & Wellbeing",
+                     "blurb": "whether being together tends to make life feel smoother for you both"},
+    "Yoni":         {"emoji": "🔥", "label": "Physical Chemistry",
+                     "blurb": "instinctive, physical and intimate compatibility"},
+    "Graha Maitri": {"emoji": "🧠", "label": "Mental Wavelength",
+                     "blurb": "how easily your minds click and how you talk things through"},
+    "Gana":         {"emoji": "🎭", "label": "Vibe & Temperament",
+                     "blurb": "your everyday energy, social style and how your moods land"},
+    "Bhakoot":      {"emoji": "❤️", "label": "Emotional Bond",
+                     "blurb": "long-term closeness and building a life and family together"},
+    "Nadi":         {"emoji": "🧬", "label": "Health & Family",
+                     "blurb": "vitality and the classical health / progeny factor"},
+}
+
+# 5 relatable themes that group the 8 kootas (each koota belongs to exactly one).
+THEMES = [
+    {"emoji": "🔥", "name": "Chemistry & Attraction", "kootas": ["Yoni", "Vashya"],
+     "blurb": "the spark — physical pull and how you gravitate toward each other"},
+    {"emoji": "🎭", "name": "Everyday Vibe", "kootas": ["Gana"],
+     "blurb": "your day-to-day energy and whether your moods sync"},
+    {"emoji": "🧠", "name": "Mind & Values", "kootas": ["Graha Maitri", "Varna"],
+     "blurb": "how your minds click, and who leads what"},
+    {"emoji": "❤️", "name": "Love & Long-Term", "kootas": ["Bhakoot", "Tara"],
+     "blurb": "long-term closeness and how good you are for each other"},
+    {"emoji": "🧬", "name": "Health & Vitality", "kootas": ["Nadi"],
+     "blurb": "vitality and the traditional family / progeny factor"},
+]
+
+def _theme_rows(kootas: list) -> str:
+    """Build the 5-theme 'at a glance' cards from the computed koota scores."""
+    by_name = {k["name"]: k for k in kootas}
+    out = ""
+    for th in THEMES:
+        got = sum(by_name[n]["score"] for n in th["kootas"] if n in by_name)
+        mx = sum(by_name[n]["max"] for n in th["kootas"] if n in by_name)
+        pct = (got / mx * 100) if mx else 0
+        if pct >= 75:
+            chip, chip_bg, bar_color, verdict = "Strong 💚", "#2E7D53", "#2E7D53", "You're naturally strong here."
+        elif pct >= 45:
+            chip, chip_bg, bar_color, verdict = "Solid 💛", "#B4881B", "#E4B04A", "Good foundation — a little effort keeps it easy."
+        else:
+            chip, chip_bg, bar_color, verdict = "Needs work ❤️‍🔥", "#C93B2E", "#C93B2E", "This one takes conscious effort — worth knowing early."
+        got_disp = int(got) if float(got).is_integer() else got
+        out += f"""<div class='theme'>
+<div class='ttop'><span class='temoji'>{th['emoji']}</span><b>{th['name']}</b>
+<span class='tchip' style='background:{chip_bg}'>{chip}</span></div>
+<div class='kbar'><div style='width:{pct:.0f}%;background:{bar_color}'></div></div>
+<p class='tblurb'>{th['blurb']}. <b>{verdict}</b></p></div>"""
+    return out
+
 def render_milan(p: dict) -> str:
     m = p["meta"]
     m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
+    theme_html = _theme_rows(p["kootas"])
     rows = ""
     for k in p["kootas"]:
         pct = k["score"] / k["max"] * 100
         bar_color = "#2E7D53" if pct >= 75 else ("#E4B04A" if pct >= 40 else "#C93B2E")
+        ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"], "blurb": k.get("meaning", "")})
+        score_disp = int(k["score"]) if float(k["score"]).is_integer() else k["score"]
         rows += f"""<div class='koota'>
-<div class='ktop'><b>{k['name']}</b><span class='ks'>{k['score']}/{k['max']}</span></div>
+<div class='ktop'><div class='klabel'><span class='kemoji'>{ui['emoji']}</span><span class='kname'><b>{ui['label']}</b><span class='ksan'>{k['name']} koota</span></span></div><span class='ks'>{score_disp}/{k['max']}</span></div>
 <div class='kbar'><div style='width:{pct:.0f}%;background:{bar_color}'></div></div>
-<p class='kd'>{k['detail']} · <i>{k['meaning']}</i></p>
+<p class='kd'>{ui['blurb']}</p>
 <p class='kt'>{k.get('text','')}</p></div>"""
 
     # ---------- cancellations & effective score ----------
@@ -890,9 +950,9 @@ def render_milan(p: dict) -> str:
     # ---------- strengths & watchouts ----------
     sw_html = ""
     if p.get("strengths") or p.get("watchouts"):
-        st = "".join(f"<li><b>{s}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
+        st = "".join(f"<li><b>{KOOTA_UI.get(s, {'label': s})['label']}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
                      for s in p.get("strengths", []))
-        wo = "".join(f"<li><b>{s}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
+        wo = "".join(f"<li><b>{KOOTA_UI.get(s, {'label': s})['label']}</b> — {next(k['text'] for k in p['kootas'] if k['name']==s)}</li>"
                      for s in p.get("watchouts", []))
         sw_html = "<h2>Is jodi ki taakat — aur dhyaan ki jagah</h2>"
         if st: sw_html += f"<p class='swh' style='color:#2E7D53'>💪 Strengths</p><ul class='swl'>{st}</ul>"
@@ -945,8 +1005,20 @@ line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60
 font-weight:800;font-size:13px;border-radius:20px;padding:7px 18px;margin-top:10px}}
 h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .koota{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
-.ktop{{display:flex;justify-content:space-between;font-family:var(--display)}}
-.ks{{font-weight:800}}
+.ktop{{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--display)}}
+.ks{{font-weight:800;flex:none;font-size:17px}}
+.lead{{color:var(--muted);font-size:14px;margin:-8px 0 14px}}
+.theme{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
+.ttop{{display:flex;align-items:center;gap:9px;font-family:var(--display)}}
+.temoji{{font-size:20px;line-height:1;flex:none}}
+.ttop b{{font-size:16px;flex:1;min-width:0}}
+.tchip{{color:#fff;font-family:var(--display);font-weight:800;font-size:11px;border-radius:20px;padding:4px 10px;white-space:nowrap;flex:none}}
+.tblurb{{font-size:13.5px;color:#3A3C55;margin-top:9px}}
+.klabel{{display:flex;align-items:center;gap:10px;min-width:0}}
+.kemoji{{font-size:20px;line-height:1;flex:none}}
+.kname{{display:flex;flex-direction:column;line-height:1.2;min-width:0}}
+.kname b{{font-size:16px}}
+.ksan{{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-top:2px}}
 .kbar{{height:7px;background:#EFE8D8;border-radius:4px;margin:8px 0;overflow:hidden}}
 .kbar div{{height:100%;border-radius:4px}}
 .kd{{font-size:13px;color:var(--muted)}}
@@ -964,7 +1036,7 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .elbox b{{font-family:var(--display)}}.elbox p{{margin-top:6px}}
 .lowbox p{{margin-bottom:10px}}
 @media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li{{break-inside:avoid}}
+.koota,.theme,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li{{break-inside:avoid}}
 h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
@@ -972,7 +1044,11 @@ h2{{break-after:avoid}}*{{-webkit-print-color-adjust:exact;print-color-adjust:ex
 <p class="score">{p['total']}<small>/36</small></p>
 <span class="verdict">{p['verdict'].upper()}</span>
 {("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>Dosha cancellation ke baad: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
-<h2>Ashtakoota — aatho kootas ka breakdown</h2>{rows}
+<h2>Your match, in plain English 💫</h2>
+<p class="lead">The five things that actually make or break a relationship — scored straight from your two charts.</p>
+{theme_html}
+<h2>The full breakdown — all 8 factors</h2>
+<p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}
 {canc_html}
 {sw_html}
 {el_html}
