@@ -16,13 +16,13 @@
 <title>Kundli Milan — 36 Guna Match | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
 <link rel="canonical" href="https://www.axtroshastra.com/milan">
-<meta property="og:title" content="Kundli Milan — 36 Guna Match ₹499">
+<meta property="og:title" content="Kundli Milan — 36 Guna Match ₹299">
 <meta property="og:description" content="Dono kundliyon ka Ashtakoota milan — score, doshas, honest cancellation analysis.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/milan">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Dono kundliyon ka 36-guna Ashtakoota milan — score, doshas, aur unka honest matlab. ₹499, 2 minute mein.">
+<meta name="description" content="Dono kundliyon ka 36-guna Ashtakoota milan — score, doshas, aur unka honest matlab. ₹299, 2 minute mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -179,6 +179,20 @@ section{padding:52px 0}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
 
+/* ---------- ANALYZING OVERLAY ---------- */
+.ax-analyzing{position:fixed;inset:0;z-index:9998;background:radial-gradient(1200px 600px at 50% 0%, var(--midnight-2), var(--midnight) 70%);color:#F3EFE4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.ax-analyzing.show{display:flex}
+.ax-analyzing .ring{width:76px;height:76px;border-radius:50%;border:4px solid rgba(228,176,74,.22);border-top-color:var(--haldi);animation:axspin 1s linear infinite;margin-bottom:26px}
+@keyframes axspin{to{transform:rotate(360deg)}}
+.ax-analyzing h3{font-family:var(--display);font-weight:800;font-size:22px;color:#fff;margin-bottom:10px}
+.ax-analyzing .step{font-family:var(--display);font-weight:700;font-size:15px;color:#D9D4C3;min-height:22px;transition:opacity .2s ease}
+.ax-analyzing .bar{width:220px;height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:22px}
+.ax-analyzing .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--haldi),var(--sindoor))}
+.ax-analyzing.show .bar>i{animation:axbar 7s ease-in-out forwards}
+@keyframes axbar{0%{width:0}90%{width:92%}100%{width:100%}}
+.ax-analyzing .cap{font-size:12.5px;color:#8F92AB;margin-top:18px;max-width:34ch}
+@media (prefers-reduced-motion: reduce){.ax-analyzing .ring{animation:none} .ax-analyzing.show .bar>i{animation:none;width:100%}}
+
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
 footer{background:var(--midnight);color:#8F92AB;font-size:12px;text-align:center;padding:26px 20px 120px}
@@ -249,25 +263,22 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
 
-    <p class="eyebrow">Kundli Milan · 36 Guna</p>
-    <h1>Kya yeh rishta<br><em>match</em> karta hai?</h1>
-    <p class="sub">Dono kundliyon ka guna milan.<br>Score, doshas, aur unka sach.</p>
-    <p class="sub2">Full Ashtakoota matching — aatho kootas ka breakdown, manglik check, aur doshas ki honest cancellation-analysis.</p>
+    <h1>Is he Really the <em>ONE</em>?</h1>
+    <p class="sub">Stop Overthinking.<br>Get the Truth.</p>
 
     <form class="form-card" id="milanForm" autocomplete="on">
       <p class="fc-title">Dono ki birth details daaliye 👇</p>
-      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1 (ladka)</p>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1 (Girl)</p>
+      <div class="field"><label for="p2-name">Naam</label><input id="p2-name" type="text" required></div>
+      <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p2-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p2-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p2-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
+      <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><div class="tob3"><select id="p2-hh" aria-label="Hour"></select><select id="p2-mm2" aria-label="Minute"></select><select id="p2-ap" aria-label="AM/PM"></select></div><input id="p2-tob" type="hidden"></div>
+      <div class="field"><label for="p2-place">Place of birth</label><div class="place-wrap"><input id="p2-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p2-place-list" class="city-suggest"></div></div><div id="p2-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2 (Boy)</p>
       <div class="field"><label for="p1-name">Naam</label><input id="p1-name" type="text" required></div>
       <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p1-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(nahi pata? khaali chhodiye)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">Place of birth</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
-      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2 (ladki)</p>
-      <div class="field"><label for="p2-name">Naam</label><input id="p2-name" type="text" required></div>
-      <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p2-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p2-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p2-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
-      <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(optional)</span></label><div class="tob3"><select id="p2-hh" aria-label="Hour"></select><select id="p2-mm2" aria-label="Minute"></select><select id="p2-ap" aria-label="AM/PM"></select></div><input id="p2-tob" type="hidden"></div>
-      <div class="field"><label for="p2-place">Place of birth</label><div class="place-wrap"><input id="p2-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p2-place-list" class="city-suggest"></div></div><div id="p2-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.</div></div>
       <button class="btn" type="submit">Guna milan karo — FREE preview</button>
-      <p class="btn-note">Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.</p>
     </form>
   </div>
 </header>
@@ -305,7 +316,7 @@ fbq('track', 'PageView');
     <div class="paywall">
       <h3>Full Kundli Milan Report</h3>
       <div class="price">
-        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
+        <span class="now">₹299</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
       </div>
       <ul>
         <li>✅ <b>Total score /36</b> — aur verdict, honest bands ke saath</li>
@@ -314,7 +325,7 @@ fbq('track', 'PageView');
         <li>✅ <b>Manglik matching</b> — dono charts ka</li>
         <li>✅ <b>Kya improve ho sakta hai</b> — score ka practical matlab</li>
       </ul>
-      <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — ₹499</button>
+      <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — ₹299</button>
       <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery</p>
     </div>
   </div>
@@ -427,16 +438,46 @@ fbq('track', 'PageView');
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
-    <p class="l1">Kundli Milan Report</p>
-    <p class="l2">₹499 · instant delivery</p>
+    <p class="l1">Compatibility Report</p>
+    <p class="l2">₹299 · instant delivery</p>
   </div>
-  <a class="btn" href="#milanForm" id="stickyBtn">Match FREE</a>
+  <a class="btn" href="#milanForm" id="stickyBtn">Check Free</a>
+</div>
+
+<!-- ============ ANALYZING OVERLAY (shown 6–8s after form submit) ============ -->
+<div class="ax-analyzing" id="axAnalyzing" role="status" aria-live="polite" aria-hidden="true">
+  <div class="ring"></div>
+  <h3>Reading the two charts…</h3>
+  <p class="step" id="axStep">Calculating Moon positions…</p>
+  <div class="bar"><i></i></div>
+  <p class="cap">NASA-grade ephemeris · classical Ashtakoota · Lahiri ayanamsa</p>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
+
+// ---- Analyzing overlay: cycles reassuring "work happening" steps while the match computes ----
+var AX_STEPS = ['Calculating Moon positions…','Mapping both nakshatras…','Matching all 36 gunas…','Checking Manglik & doshas…','Applying cancellation rules…','Preparing your snapshot…'];
+var __axStepTimer = null;
+function showAnalyzing(){
+  var ov = document.getElementById('axAnalyzing'); if(!ov) return;
+  var bar = ov.querySelector('.bar > i');
+  if(bar){ bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }  // restart bar
+  ov.classList.add('show'); ov.setAttribute('aria-hidden','false');
+  try{ document.body.style.overflow = 'hidden'; }catch(e){}
+  var stepEl = document.getElementById('axStep'); var i = 0;
+  if(stepEl) stepEl.textContent = AX_STEPS[0];
+  clearInterval(__axStepTimer);
+  __axStepTimer = setInterval(function(){ i = (i + 1) % AX_STEPS.length; if(stepEl) stepEl.textContent = AX_STEPS[i]; }, 1150);
+}
+function hideAnalyzing(){
+  var ov = document.getElementById('axAnalyzing'); if(!ov) return;
+  ov.classList.remove('show'); ov.setAttribute('aria-hidden','true');
+  try{ document.body.style.overflow = ''; }catch(e){}
+  clearInterval(__axStepTimer);
+}
 
 // populate both Month dropdowns (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
@@ -476,6 +517,8 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
   if(p1dob === 'invalid' || p2dob === 'invalid'){ alert(__en ? 'One of the dates does not exist — please re-check.' : 'Ek date exist nahi karti — dobara check kijiye.'); return; }
   var btn = this.querySelector('.btn');
   btn.textContent = __en ? 'Matching…' : 'Milan ho raha hai…'; btn.disabled = true;
+  showAnalyzing();
+  var __t0 = Date.now(), __MINMS = 7000;
   try{
     var res = await fetch('/api/milan', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -495,18 +538,23 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
     REPORT_ID = data.report_id;
     var t = data.teaser;
     document.getElementById('t-name').textContent = 'Match';
-    document.getElementById('m1-name').textContent = document.getElementById('p1-name').value.trim();
-    document.getElementById('m2-name').textContent = document.getElementById('p2-name').value.trim();
-    document.getElementById('m1-moon').textContent = t.p1_moon + ' · ' + t.p1_nak;
-    document.getElementById('m2-moon').textContent = t.p2_moon + ' · ' + t.p2_nak;
+    document.getElementById('m1-name').textContent = document.getElementById('p2-name').value.trim();
+    document.getElementById('m2-name').textContent = document.getElementById('p1-name').value.trim();
+    document.getElementById('m1-moon').textContent = t.p2_moon + ' · ' + t.p2_nak;
+    document.getElementById('m2-moon').textContent = t.p1_moon + ' · ' + t.p1_nak;
     document.getElementById('m-gana').textContent = t.gana_preview.replace('Gana: ','');
+    // keep the "background work" animation visible for ~7s even if the API responds faster
+    var __waited = Date.now() - __t0;
+    if(__waited < __MINMS){ await new Promise(function(r){ setTimeout(r, __MINMS - __waited); }); }
+    hideAnalyzing();
     var el = document.getElementById('teaser');
     el.classList.add('show'); el.scrollIntoView({behavior:'smooth'});
     var sb = document.getElementById('stickyBtn');
-    sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
+    sb.textContent = 'Unlock ₹299'; sb.setAttribute('href', '#teaser');
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'milan_preview'});
   }catch(err){
+    hideAnalyzing();
     alert(err.message + (__en ? ' — please try again.' : ' — dobara try kijiye.'));
   }finally{
     btn.textContent = (window.__axlang === 'en') ? 'Match the gunas — FREE preview' : 'Guna milan karo — FREE preview'; btn.disabled = false;
@@ -526,11 +574,11 @@ async function startPayment(){
   if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:299});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
-    name: 'Axtroshastra', description: 'Marriage Timing Report',
+    name: 'Axtroshastra', description: 'Compatibility Report',
     theme: {color: '#C93B2E'},
     handler: function(){ awaitReport(); }          // webhook is truth; this just starts polling
   });
@@ -545,15 +593,15 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+        if(window.fbq) fbq('track','Purchase',{value:299,currency:'INR'});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:299});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.textContent = 'Unlock my report — ₹499'; btn.disabled = false;
+  btn.textContent = 'Unlock my report — ₹299'; btn.disabled = false;
   alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
 
@@ -591,6 +639,10 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
+// sticky CTA: once a preview exists it unlocks via Razorpay; before that it scrolls to the form
+document.getElementById('stickyBtn').addEventListener('click', function(e){
+  if(REPORT_ID){ e.preventDefault(); startPayment(); }
+});
 </script>
 <script>
 (function(){
@@ -740,12 +792,9 @@ window.addEventListener('scroll', function(){
     "Score, doshas, aur unka sach.":"Score, doshas, and the truth about them.",
     "Full Ashtakoota matching — aatho kootas ka breakdown, manglik check, aur doshas ki honest cancellation-analysis.":"Full Ashtakoota matching — a breakdown of all eight kootas, a manglik check, and an honest cancellation analysis of the doshas.",
     "Dono ki birth details daaliye 👇":"Enter both people's birth details 👇",
-    "PARTNER 1 (ladka)":"PARTNER 1 (groom)",
-    "PARTNER 2 (ladki)":"PARTNER 2 (bride)",
     "Naam":"Name",
     "(nahi pata? khaali chhodiye)":"(don't know? leave it blank)",
     "Guna milan karo — FREE preview":"Match the gunas — FREE preview",
-    "Free match preview pehle. Full 36-guna report ₹499 — pay only if you want the score.":"Free match preview first. Full 36-guna report ₹499 — pay only if you want the score.",
     "Guna milan":"Guna match",
     "ready hai ✅":"is ready ✅",
     "⭐ Aapka":"⭐ Your",

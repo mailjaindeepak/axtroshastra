@@ -130,6 +130,7 @@ RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
+MILAN_PRICE_PAISE = 29900                 # ₹299 — milan (/milan) landing price only
 
 
 def _valid_admin_key(key: str) -> bool:
@@ -350,8 +351,10 @@ def create_order(body: dict):
                              ("free_pass:" + tok, rid))
                 return {"free": True}
         return {"error": "invalid_pass"}
+    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
+    amount_paise = MILAN_PRICE_PAISE if variant == "/milan" else PRICE_PAISE
     order = rzp_client().order.create({
-        "amount": PRICE_PAISE, "currency": "INR",
+        "amount": amount_paise, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
     set_order(rid, order["id"])
     return {"razorpay_order_id": order["id"], "amount": order["amount"],
