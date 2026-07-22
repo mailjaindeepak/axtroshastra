@@ -1237,6 +1237,71 @@ def _method_html(p: dict, m: dict) -> str:
             "<h3 class='glossh'>The 8 factors, in plain English</h3><ul class='gloss'>" + gloss + "</ul>")
 
 
+def _tldr_html(p: dict) -> str:
+    """Scannable, low-text summary shown directly under the hero. Answers the three
+    questions a reader actually has — what's good, what to watch, what to do — before
+    any long-form detail. Built entirely from existing payload fields, so it renders
+    for older stored reports too (render-time only, no payload-shape dependency)."""
+    ts = _theme_scores(p["kootas"])
+    strong = [t for t in ts if t["pct"] >= 60]
+    weak = [t for t in ts if t["pct"] < 45]
+
+    # --- what's working ---
+    if strong:
+        good_chips = "".join(f"<span class='sx-chip good'>{t['theme']['emoji']} {t['theme']['name']}</span>" for t in strong)
+        good_note = f"{len(strong)} of 5 big areas — naturally strong."
+    else:
+        good_chips = "<span class='sx-chip good'>💚 A workable, balanced match</span>"
+        good_note = "Steady across the board — no runaway strengths, no big gaps."
+
+    # --- what to watch ---
+    cancelled = {c.get("koota") for c in (p.get("cancellations") or [])}
+    weak_cancelled = any(k["name"] in cancelled for k in p["kootas"]
+                         if k["max"] and k["score"] / k["max"] < 0.5)
+    if weak:
+        watch_chips = "".join(f"<span class='sx-chip warn'>{t['theme']['emoji']} {t['theme']['name']}</span>" for t in weak)
+        watch_note = ("A classical flaw shows up here — <b>and it's cancelled for you</b>. "
+                      "Fixable with habits, not luck." if weak_cancelled
+                      else "Not a dealbreaker — just the area to be a little intentional about.")
+    else:
+        watch_chips = "<span class='sx-chip ok'>✅ Nothing major</span>"
+        watch_note = "No weak link here worth losing sleep over."
+
+    # --- your moves (pulled up from the weak factors' fixes; capped at 3) ---
+    weak_k = sorted([k for k in p["kootas"] if k["max"] and k["score"] / k["max"] < 0.5],
+                    key=lambda k: k["score"] / k["max"])
+    moves = []
+    for k in weak_k:
+        rem = REMEDIES.get(k["name"])
+        if not rem or not rem.get("work_on"):
+            continue
+        ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"]})
+        moves.append((ui["emoji"], ui["label"], rem["work_on"]))
+        if len(moves) == 3:
+            break
+    if moves:
+        items = "".join(
+            f"<li><span class='sx-n'>{i}</span><div><span class='sx-tag'>{em} {lab}</span>{txt}</div></li>"
+            for i, (em, lab, txt) in enumerate(moves, 1))
+        plan_h = "Your move" if len(moves) == 1 else f"Your {len(moves)} moves"
+        plan_card = (f"<div class='sx-card plan'><div class='sx-h'>🎯 {plan_h}</div>"
+                     f"<ul class='sx-moves'>{items}</ul></div>")
+    else:
+        plan_card = ("<div class='sx-card plan'><div class='sx-h'>🎯 Your move</div>"
+                     "<p class='sx-note'>Nothing to fix here — just don't take a good thing for granted. "
+                     "Keep making time for each other.</p></div>")
+
+    return (
+        "<div class='sx-wrap'>"
+        f"<div class='sx-card good'><div class='sx-h'>💚 What's working</div>"
+        f"<div class='sx-chips'>{good_chips}</div><p class='sx-note'>{good_note}</p></div>"
+        f"<div class='sx-card watch'><div class='sx-h'>🚧 Watch-out{'' if len(weak) == 1 else 's'}</div>"
+        f"<div class='sx-chips'>{watch_chips}</div><p class='sx-note'>{watch_note}</p></div>"
+        f"{plan_card}"
+        "</div>"
+        "<p class='sx-cue'>That's the gist — the full breakdown is below ↓</p>")
+
+
 def render_milan(p: dict) -> str:
     m = p["meta"]
     m = {**m, "p1": escape(m["p1"]), "p2": escape(m["p2"])}  # user-supplied names: escape
@@ -1323,6 +1388,13 @@ def render_milan(p: dict) -> str:
     deepdive_html = _strength_deepdive_html(p) if has_profiles else sw_html
     profiles_html = _profiles_html(p) if has_profiles else ""
     method_html = _method_html(p, m) if has_profiles else ""
+    if method_html:
+        method_body = method_html.replace("<h2>How we calculated this 🔬</h2>", "", 1)
+        method_acc = ("<details class=\"acc\"><summary><span class=\"acc-t\">🔬 How we calculated this</span>"
+                      "<span class=\"acc-x\">the method <span class=\"caret\">▾</span></span></summary>"
+                      f"<div class=\"acc-body\">{method_body}</div></details>")
+    else:
+        method_acc = ""
     besties_html = _askbesties_html(p) if has_profiles else ""
     cert_html = _certificate_html(p) if has_profiles else ""
     matchpct_html = (f"<p class='matchpct'>{_match_pct(p)}% match on what matters</p>"
@@ -1345,6 +1417,7 @@ def render_milan(p: dict) -> str:
             "},'image/png');}).catch(function(){axShare();});}</script>")
 
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
+    tldr_html = _tldr_html(p)
     vcol = VERDICT_COLOR[p["verdict_key"]]
     return f"""<!DOCTYPE html><html lang="hi-IN"><head>{AX_PRE}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1479,7 +1552,38 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .gloss li{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13.5px}}
 .gloss b{{font-family:var(--display)}}
 .gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
-@media print{{#axlang{{display:none!important}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
+/* ---- scannable TL;DR summary (directly under hero) ---- */
+.sx-wrap{{display:grid;gap:10px;margin-top:16px}}
+@media(min-width:560px){{.sx-wrap{{grid-template-columns:1fr 1fr}}}}
+.sx-card{{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:15px 16px}}
+.sx-card.good{{border-top:4px solid #2E7D53}}
+.sx-card.watch{{border-top:4px solid var(--sindoor)}}
+.sx-card.plan{{border:1.5px solid var(--haldi);background:#FBF4E6}}
+@media(min-width:560px){{.sx-card.plan{{grid-column:1/-1}}}}
+.sx-h{{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}}
+.sx-card.good .sx-h{{color:#2E7D53}}.sx-card.watch .sx-h{{color:var(--sindoor)}}.sx-card.plan .sx-h{{color:#8A6410}}
+.sx-chips{{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}}
+.sx-chip{{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-weight:700;font-size:13px;padding:6px 11px;border-radius:20px}}
+.sx-chip.good,.sx-chip.ok{{background:#E3F0E8;color:#1E5A3C}}
+.sx-chip.warn{{background:#FBE9E6;color:var(--sindoor-dark,#A82F24)}}
+.sx-note{{margin-top:10px;font-size:12.5px;color:var(--muted)}}
+.sx-note b{{color:var(--ink)}}
+.sx-moves{{list-style:none;margin:11px 0 0;display:grid;gap:8px}}
+.sx-moves li{{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px 12px;font-size:13.5px}}
+.sx-n{{font-family:var(--display);font-weight:800;color:var(--sindoor);flex:none;line-height:1.5}}
+.sx-tag{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.02em;text-transform:uppercase;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:7px;white-space:nowrap}}
+.sx-cue{{text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px}}
+/* ---- tap-to-open detail sections ---- */
+details.acc{{background:#fff;border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}}
+details.acc>summary{{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:15px 16px;font-family:var(--display);font-weight:800;font-size:18px}}
+details.acc>summary::-webkit-details-marker{{display:none}}
+.acc-t{{flex:1;min-width:0}}
+.acc-x{{font-family:var(--display);font-weight:700;font-size:12px;color:var(--muted);white-space:nowrap}}
+.acc-body{{padding:2px 16px 16px;border-top:1px dashed var(--line)}}
+.acc-body>.lead{{margin-top:12px}}
+details.acc[open]>summary .acc-x .caret{{transform:rotate(180deg)}}
+.caret{{display:inline-block;transition:transform .15s;color:var(--haldi)}}
+@media print{{#axlang{{display:none!important}}details.acc>*{{display:block!important}}details.acc>summary .acc-x{{display:none}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
 .koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote,.sharebtns,.sharebtn,.matchpct,.profwrap,.kchartwrap{{break-inside:avoid}}
 h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
@@ -1489,6 +1593,7 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 <span class="verdict">{p['verdict'].upper()}</span>
 {matchpct_html}
 {("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>After dosha cancellation: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
+{tldr_html}
 {opening_html}
 {couple_html}
 {profiles_html}
@@ -1496,12 +1601,12 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 <p class="lead">The five things that actually make or break a relationship — scored straight from your two charts.</p>
 {theme_html}
 {deepdive_html}
-<h2>The full breakdown — all 8 factors</h2>
-<p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}
+<details class="acc"><summary><span class="acc-t">📊 The full breakdown — all 8 factors</span><span class="acc-x">{p['total']}/36 <span class="caret">▾</span></span></summary>
+<div class="acc-body"><p class="lead">This is the classical 8-part Ashtakoota system, decoded. Every score here feeds the five themes above.</p>{rows}</div></details>
 {canc_html}
 {el_html}
 {manglik_html}
-{method_html}
+{method_acc}
 {cert_html}
 {besties_html}
 {('<h2>Important notes</h2>' + notes) if notes else ''}
@@ -1510,6 +1615,7 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 This compatibility score is one classical input to a marriage decision, not the whole decision.
 <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 {share_js}
+<script>window.addEventListener('beforeprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{d.__wo=d.open;d.open=true;}});}});window.addEventListener('afterprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{if(d.__wo===false)d.open=false;}});}});</script>
 {MILAN_I18N}
 </body></html>"""
 
