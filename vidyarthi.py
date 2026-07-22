@@ -32,7 +32,7 @@ from engine import (
     DASHA_SEQ, DASHA_YRS, grade, _sade_sati,
 )
 from jyotish_maps import REMEDY_7L
-from products import CAREER_HOUSE, PLANET_GIFT, PLANET_LESSON
+from products import CAREER_HOUSE, CAREER_ARCHETYPE, PLANET_GIFT, PLANET_LESSON
 from vidyarthi_maps import (STUDY_HOUSE, EXAM_HOUSE, HIGHERED_HOUSE, HARDSHIP_LINE,
                             STAGE_LABEL, FIELD_NOTE)
 
@@ -198,6 +198,7 @@ def _study_career_reads(chart, sig):
         "exam_strength": EXAM_HOUSE[sig["fifth_lord_house"] - 1],
         "higher_education": HIGHERED_HOUSE[sig["ninth_lord_house"] - 1],
         "career_direction": CAREER_HOUSE[sig["tenth_lord_house"] - 1],
+        "career_archetype": CAREER_ARCHETYPE[sig["tenth_lord_house"] - 1],
         "natural_gift": next((f"{p.name} — {PLANET_GIFT[p.name]}"
                               for p in g.values()
                               if p.dignity in ("own", "exalted") and p.name in PLANET_GIFT), None),
@@ -317,14 +318,27 @@ def compute_vidyarthi_report(name: str, dob: str, tob: str, tz_offset_hours: flo
     windows = sorted(merged, key=lambda c: -c["score"])[:3]
     windows = sorted(windows, key=lambda c: c["start"])
 
+    # Pad each window's displayed range, then clamp so adjacent windows never
+    # visually overlap -- padding is symmetric per window, but two windows
+    # close together (e.g. consecutive ADs in the same MD) could otherwise
+    # have window N's padded end fall after window N+1's padded start, which
+    # reads as a data error to anyone looking at the dates.
+    padded_start = [w["start"] - timedelta(days=pad_days) for w in windows]
+    padded_end = [w["end"] + timedelta(days=pad_days) for w in windows]
+    for i in range(1, len(windows)):
+        if padded_start[i] < padded_end[i - 1]:
+            midpoint = windows[i - 1]["end"] + (windows[i]["start"] - windows[i - 1]["end"]) / 2
+            padded_end[i - 1] = min(padded_end[i - 1], midpoint)
+            padded_start[i] = max(padded_start[i], midpoint)
+
     grade_cap = "Moderate" if time_quality in ("T2", "T3") else "Strong"
     out_windows = []
-    for w in windows:
+    for i, w in enumerate(windows):
         g_ = grade(w["score"]) or "Building"
         if grade_cap == "Moderate" and g_ == "Strong": g_ = "Moderate"
         out_windows.append({
-            "start": (w["start"] - timedelta(days=pad_days)).strftime("%Y-%m"),
-            "end": (w["end"] + timedelta(days=pad_days)).strftime("%Y-%m"),
+            "start": padded_start[i].strftime("%Y-%m"),
+            "end": padded_end[i].strftime("%Y-%m"),
             "core_start": w["start"].strftime("%Y-%m"),
             "core_end": w["end"].strftime("%Y-%m"),
             "grade": g_, "score": w["score"],

@@ -344,6 +344,36 @@ CAREER_HOUSE = [
     "network-scale work — large organisations, communities, gains through circles",
     "behind-the-scenes or beyond-borders — foreign lands, institutions, imaginative fields"]
 
+# Career archetype, same index as CAREER_HOUSE (tenth_lord_house - 1). Mirrors
+# milan's ARCHETYPE shape (name/emoji/tagline/body) for a consistent voice
+# across products -- a real, deterministic label from the chart, not a mockup.
+CAREER_ARCHETYPE = [
+    {"name": "The Founder", "emoji": "🚀", "tagline": "Building something with your name on it",
+     "body": "You're wired for independence — work fits you best when you're shaping the role, not just filling it."},
+    {"name": "The Steward", "emoji": "💰", "tagline": "Steady hands with resources",
+     "body": "Money, assets, family enterprise — you have a natural instinct for managing and growing what's already there."},
+    {"name": "The Communicator", "emoji": "🎤", "tagline": "Your words do the heavy lifting",
+     "body": "Media, sales, writing, thinking fast on your feet — your career runs on courage and clear communication."},
+    {"name": "The Anchor", "emoji": "🏡", "tagline": "Strong roots, strong results",
+     "body": "You do your best work close to a steady base — property, education, or anything that needs strong foundations."},
+    {"name": "The Creative", "emoji": "🎨", "tagline": "Original ideas, playful execution",
+     "body": "Teaching, entertainment, working with young people — you're built for fields that reward imagination over routine."},
+    {"name": "The Fixer", "emoji": "🛠️", "tagline": "You solve what others avoid",
+     "body": "Healthcare, law, operations — competitive, service-driven fields where your problem-solving instinct is the whole point."},
+    {"name": "The Connector", "emoji": "🤝", "tagline": "Better work happens with people",
+     "body": "Consulting, client relationships, trade — you're built for partnership-driven work, not solo grind."},
+    {"name": "The Investigator", "emoji": "🔍", "tagline": "You go where others stop looking",
+     "body": "Research and depth-fields, working with what's hidden or complex — patience with complexity is your edge."},
+    {"name": "The Scholar", "emoji": "📚", "tagline": "Knowledge is your currency",
+     "body": "Higher education, publishing, foreign connections — your fortune grows the further you're willing to learn and travel."},
+    {"name": "The Builder", "emoji": "🏛️", "tagline": "Status earned the structured way",
+     "body": "Government, corporate ladders, public responsibility — you're built for roles where the position carries real weight."},
+    {"name": "The Networker", "emoji": "🌐", "tagline": "Your circle multiplies your wins",
+     "body": "Large organisations, communities, collective effort — the bigger the network, the bigger your gains tend to be."},
+    {"name": "The Explorer", "emoji": "🧭", "tagline": "Your path looks different, on purpose",
+     "body": "Foreign lands, institutions, imaginative fields — success for you often comes through the unconventional route."},
+]
+
 PLANET_GIFT = {"Sun": "natural authority", "Moon": "emotional intelligence",
                "Mars": "courage and stamina", "Mercury": "sharp communication",
                "Jupiter": "wisdom and luck-expansion", "Venus": "charm and aesthetic sense",

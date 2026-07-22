@@ -49,18 +49,6 @@ GRADE_ACTION = {
 }
 GRADE_COLOR = {"Strong": "#C93B2E", "Moderate": "#E4B04A", "Building": "#8F92AB"}
 
-# ---- /padhai (student career & academic) grade-action copy ----
-STUDY_GRADE_ACTION = {
-    "Strong": ("Push hard.", "This is your highest-activation window — apply, sit the exam, "
-               "take the interview, start the course. Effort here converts at the best rate "
-               "your chart offers in this horizon."),
-    "Moderate": ("Stay consistent.", "Keep preparing and keep applying — breakthroughs formed "
-                 "here do stick, especially in the peak months below. Don't force an outcome; "
-                 "do keep showing up."),
-    "Building": ("Prepare.", "Use this phase to build the habit and the foundation — the "
-                 "discipline you build now pays off in the next stronger window."),
-}
-
 # North Indian chart: house polygon centers (viewBox 0 0 400 400), houses 1-12
 HOUSE_POS = {1: (200, 105), 2: (105, 58), 3: (55, 105), 4: (105, 200),
              5: (55, 295), 6: (105, 345), 7: (200, 295), 8: (295, 345),
@@ -1757,75 +1745,102 @@ Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice 
 </body></html>"""
 
 
+# Per-window framing by rank (0=nearest, 1=next, 2=furthest) -- replaces a
+# single generic per-grade paragraph that was identical on every "Strong"
+# window (a real complaint: 3 windows reading as the same content 3 times).
+# The lede now differs by POSITION, which is always true regardless of the
+# chart, so windows never repeat verbatim again.
+RANK_TAG = ["Right now", "Second wave", "Further out"]
+RANK_TAG_COLOR = ["#C93B2E", "#E4B04A", "#6C5CE7"]
+RANK_LEDE = [
+    "This is your best shot in the near term — the reasons below are specific to this window.",
+    "A second window in the same broader phase — driven by a different part of your chart, so it plays out differently.",
+    "A window further out — usually a genuinely new chapter, not a continuation of what came before.",
+]
+
+
 def render_vidyarthi(p: dict) -> str:
-    """/padhai — student career & academic timing report. Mirrors render_blueprint's
-    single-page structure; the windows section mirrors render_report's grade/action
-    pattern (STUDY_GRADE_ACTION, GRADE_COLOR) adapted for study/exam/career timing."""
+    """/padhai — student career & academic timing report. Structure mirrors
+    render_milan's shareable/keepsake pattern (sharecard, keepsake certificate,
+    emoji section headers, plain-English leads) for a consistent voice across
+    products, adapted for career/academic timing instead of compatibility."""
     m = p["meta"]
     m = {**m, "name": escape(m["name"])}  # user-supplied name: escape to prevent stored XSS
     ex = p.get("extras", {})
+    arche = ex.get("career_archetype") or {"name": "Your Path", "emoji": "✦",
+                                            "tagline": "", "body": ""}
 
     pretty = lambda ym: datetime.strptime(ym, "%Y-%m").strftime("%b %Y")
+    w1 = p["windows"][0] if p["windows"] else None
+
     win_html = ""
-    for w in p["windows"]:
-        color = GRADE_COLOR.get(w["grade"], "#8F92AB")
-        headline, action = STUDY_GRADE_ACTION.get(w["grade"], STUDY_GRADE_ACTION["Building"])
-        reasons = "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"] if r["why"])
-        peak = (f"<p class='soft'>Peak months: {', '.join(w['peak_months'])}</p>"
+    for i, w in enumerate(p["windows"]):
+        rank = min(i, 2)
+        reasons = "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"] if r["why"])[:3] or \
+                  "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"][:3] if r["why"])
+        peak = (f"<span class='wpeak'>🔥 Best months: {', '.join(w['peak_months'])}</span>"
                 if w.get("peak_months") else "")
-        win_html += f"""<div class='wcard' style='border-left-color:{color}'>
-<p class='wdate'>{pretty(w['start'])} – {pretty(w['end'])}
-<span class='wgrade' style='color:{color}'>{w['grade']}</span></p>
+        win_html += f"""<div class='wcard'>
+<span class='wtag' style='background:{RANK_TAG_COLOR[rank]}'>{RANK_TAG[rank]}</span>
+<p class='wdate'>{pretty(w['start'])} – {pretty(w['end'])} <span class='wgrade'>{w['grade']}</span></p>
 <p class='wdasha'>{w['dasha']}</p>
-<p class='whead'><b>{headline}</b> {action}</p>
-{f"<ul class='wreasons'>{reasons}</ul>" if reasons else ''}
+<p class='wlede'>{RANK_LEDE[rank]}</p>
+{f"<ul class='wwhy'>{reasons}</ul>" if reasons else ''}
 {peak}</div>"""
 
     hardship_html = ""
     if ex.get("has_hardship"):
         gem_line = (f"<li><b>Gemstone:</b> {ex['gem']} — only via a qualified jeweller/astrologer trial.</li>"
                     if ex.get("gem") else f"<li><b>Gemstone:</b> {ex.get('gem_note', '')}</li>")
-        hardship_html = f"""<h2>Being honest about the hard part</h2>
-<div class='card'><p>{ex['line']}</p>
+        hardship_html = f"""<div class='honest'><h3>💬 Real talk</h3><p>{ex['line']}</p>
 <p style='margin-top:8px'><b>Classical support for this period:</b></p>
 <ul class='rem'><li><b>Fast day:</b> {ex.get('fast_day', '—')}</li>
 <li><b>Mantra:</b> {ex.get('mantra', '—')} — 108 times, on {ex.get('fast_day', 'the fast day')}</li>
 {gem_line}</ul>
-<p class='soft'>The first remedy is always action — showing up in the strong windows above.
-This is support, not a substitute.</p></div>"""
+<p class='soft'>The first remedy is always action — showing up in the windows above. This is support, not a substitute.</p></div>"""
     else:
-        hardship_html = f"""<h2>Being honest about the hard part</h2>
-<div class='card'><p>{ex.get('line', '')}</p></div>"""
+        hardship_html = f"<div class='honest'><h3>💬 Real talk</h3><p>{ex.get('line', '')}</p></div>"
 
     ss = ex.get("sade_sati", {})
     if ss.get("active"):
-        ss_html = (f"<h2>Sade Sati check</h2><div class='ssb'>"
-                   f"<b>Currently active:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
+        ss_html = (f"<div class='ssb'><b>Sade Sati — currently active:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
                    f"Classically this means discipline and restructuring — it can feel like delay, "
                    f"but what's built in this period tends to be durable. Not a warning; a work period.</div>")
     else:
-        ss_html = (f"<h2>Sade Sati check</h2><div class='ssb'>"
-                   f"<b>Not currently active.</b> Next phase approx {ss.get('next_starts', '—')}. "
-                   f"No Saturn pressure on this axis right now.</div>")
+        ss_html = (f"<div class='ssb'><b>Sade Sati — not currently active.</b> Next phase approx "
+                   f"{ss.get('next_starts', '—')}. No Saturn pressure on this axis right now.</div>")
 
-    # ---------- concise "answer at a glance" block, mirrors render_report's
-    # top_summary — a stressed student should get the headline in 10 seconds,
-    # with the full reasoning still available below, not removed. ----------
-    w1 = p["windows"][0] if p["windows"] else None
-    w2 = p["windows"][1] if p["windows"] and len(p["windows"]) > 1 else None
+    stage_html = (f"<p style='margin-top:10px'><b>{escape(ex['stage_label'])}:</b> {ex['stage_note']}</p>"
+                  if ex.get("stage_note") else "")
+
+    # ---------- shareable "career card" — mirrors render_milan's .sharecard ----------
+    chips = [f"✨ {arche['tagline']}"]
+    chips.append(f"🎯 {p['teaser']['windows_count']} breakthrough window"
+                 f"{'s' if p['teaser']['windows_count'] != 1 else ''} found")
+    if ex.get("natural_gift"):
+        chips.append(f"💎 {ex['natural_gift']}")
+    chips_html = "".join(f"<span class='scchip'>{c}</span>" for c in chips)
+    sharecard_html = f"""<div class="sharecard" id="sharecard">
+<p class="scbrand">✦ AXTROSHASTRA</p>
+<p class="scname">{m['name']}'s Career Card</p>
+<p class="scarche">{arche['emoji']} {escape(arche['name'])}</p>
+{f"<p class='scwin'>Next breakthrough window<br><b>{pretty(w1['start'])} – {pretty(w1['end'])}</b> · {w1['grade']}</p>" if w1 else ""}
+<div class="scchips">{chips_html}</div>
+</div>
+<button class="sharebtn" onclick="axShare()">📲 Share my Career Card</button>"""
+
+    # ---------- "answer at a glance" — mirrors render_report's top_summary ----------
     honest_line = (ex.get("line") or "").split(". ")[0].rstrip(".") + "."
-    top_summary = ""
+    glance_html = ""
     if w1:
-        top_summary = (
-            "<div class='ans'>"
-            + "<p class='plabel'>Your answer, at a glance</p>"
-            + f"<p class='ans-win'><b>Next breakthrough window:</b> {pretty(w1['start'])} – {pretty(w1['end'])} "
-            + f"<span class='g'>({w1['grade']})</span></p>"
-            + (f"<p class='ans-win2'>After that: {pretty(w2['start'])} – {pretty(w2['end'])} ({w2['grade']})</p>" if w2 else "")
-            + f"<p class='ans-dir'><b>Direction:</b> {ex.get('career_direction', '')}.</p>"
-            + f"<p class='ans-honest'>{honest_line}</p>"
-            + "<p class='ans-note'>Full reasoning, study &amp; exam reads, and remedies are below.</p>"
-            + "</div>"
+        glance_html = (
+            "<div class='glance'>"
+            "<p class='plabel'>The short version</p>"
+            f"<p class='win'><b>Your nearest window: {pretty(w1['start'])} – {pretty(w1['end'])}</b> "
+            f"<span class='g'>● {w1['grade']}</span></p>"
+            f"<p class='dir'><b>What suits you:</b> {ex.get('career_direction', '')}.</p>"
+            f"<p class='note'>{honest_line} Everything below is the \"why,\" section by section.</p>"
+            "</div>"
         )
 
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
@@ -1833,61 +1848,108 @@ This is support, not a substitute.</p></div>"""
 <title>{m['name']} — Career &amp; Academic Timing | Axtroshastra</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
-:root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
---haldi:#E4B04A;--muted:#6B6D82;--line:#E7E0D2;--display:'Bricolage Grotesque',sans-serif}}
+:root{{--ink:#23253B;--midnight:#151C39;--midnight2:#23305C;--paper:#FAF6ED;--card:#fff;
+--haldi:#E4B04A;--haldi-soft:#F6E7C6;--sindoor:#C93B2E;--green:#2E7D53;--green-soft:#E6F2EA;
+--violet:#6C5CE7;--violet-soft:#EEEBFC;--muted:#6B6D82;--line:#E7E0D2;--display:'Bricolage Grotesque',sans-serif}}
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
 line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60px}}
-.hero{{background:var(--midnight);color:#F3EFE4;margin:0 -20px;padding:36px 22px;text-align:center}}
-.hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:13px;letter-spacing:.08em}}
-.hero h1{{font-family:var(--display);font-size:26px;margin-top:14px;color:#fff}}
-.hero p{{color:#A9ABC0;font-size:13px;margin-top:6px}}
-h2{{font-family:var(--display);font-size:21px;margin:34px 0 12px}}
-.card{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
-.wcard{{background:#fff;border:1.5px solid var(--line);border-left:5px solid #8F92AB;
-border-radius:12px;padding:16px;margin-bottom:12px}}
-.wdate{{font-family:var(--display);font-weight:800;font-size:17px}}
-.wgrade{{margin-left:8px;font-size:13px;font-weight:700}}
-.wdasha{{color:var(--muted);font-size:13px;margin-top:2px}}
-.whead{{font-size:14.5px;margin-top:8px}}
-.wreasons{{margin:8px 0 0 20px;font-size:13.5px;color:#4A4C63}}
-ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
-.soft{{color:var(--muted);font-size:13px;margin-top:10px}}
-.tn{{font-size:12px;color:var(--muted);margin-top:24px}}
-.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:14.5px}}
-.rem{{margin:8px 0 0 20px}}
-.ans{{margin:18px 0 4px;padding:20px 22px;border:1px solid var(--haldi);border-radius:14px;background:#FFF9EC}}
-.ans .plabel{{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.1em;
-text-transform:uppercase;color:#B8860B;margin:0 0 8px}}
-.ans-win{{font-size:16.5px;margin:.3em 0}}
-.ans-win .g{{color:#2E7D53;font-weight:700}}
-.ans-win2{{color:var(--muted);font-size:14px;margin:.15em 0}}
-.ans-dir{{margin:.5em 0 .2em;font-size:14.5px}}
-.ans-honest{{margin:.3em 0;font-size:13.5px;color:#4A4C63}}
-.ans-note{{font-size:12px;color:var(--muted);margin-top:.6em;line-height:1.5}}
+h2{{font-family:var(--display);font-size:20px;margin:32px 0 8px}}
+.lead{{color:var(--muted);font-size:13.5px;margin:0 0 12px}}
+.hero{{background:radial-gradient(1000px 460px at 50% -25%, var(--midnight2), var(--midnight) 68%);
+color:#F3EFE4;margin:0 -20px;padding:32px 24px 26px;text-align:center}}
+.hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
+.hero h1{{font-family:var(--display);font-size:25px;color:#fff;margin-top:12px}}
+.hero .meta{{color:#8F92AB;font-size:12.5px;margin-top:10px}}
+.sharecard{{background:radial-gradient(1000px 420px at 50% -30%, #26325E, var(--midnight) 72%);color:#F3EFE4;
+border-radius:18px;padding:24px 22px 22px;text-align:center;box-shadow:0 14px 40px rgba(21,28,57,.28);margin-top:22px}}
+.scbrand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
+.scname{{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;margin-top:10px}}
+.scarche{{font-family:var(--display);font-weight:700;font-size:16px;color:var(--haldi);margin-top:4px}}
+.scwin{{font-size:13.5px;color:#D9D4C3;margin-top:12px}}
+.scwin b{{color:#fff;font-family:var(--display)}}
+.scchips{{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px}}
+.scchip{{background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);color:#F1E4C4;font-size:11px;
+font-weight:700;border-radius:20px;padding:5px 10px}}
+.sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:#25D366;color:#fff;
+font-family:var(--display);font-weight:800;font-size:14.5px;padding:12px;margin-top:12px;cursor:pointer}}
+.glance{{background:var(--haldi-soft);border:1.5px solid var(--haldi);border-radius:14px;padding:18px 18px 16px;margin-top:18px}}
+.glance .plabel{{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+color:#9C6B0E;margin-bottom:6px}}
+.glance .win{{font-size:15.5px;margin:2px 0}}
+.glance .g{{color:var(--green);font-weight:800}}
+.glance .dir{{font-size:13.5px;margin-top:8px}}
+.glance .note{{font-size:12px;color:#8a7a4e;margin-top:10px}}
+.wcard{{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}}
+.wtag{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.05em;
+text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:20px;margin-bottom:8px}}
+.wdate{{font-family:var(--display);font-weight:800;font-size:16.5px}}
+.wgrade{{margin-left:7px;font-size:11px;font-weight:700;background:var(--haldi-soft);color:#9C6B0E;padding:2px 8px;border-radius:20px}}
+.wdasha{{color:var(--muted);font-size:12.5px;margin:2px 0 8px}}
+.wlede{{font-size:14px}}
+.wwhy{{list-style:none;margin:9px 0 0}}
+.wwhy li{{position:relative;padding-left:17px;font-size:13px;color:var(--muted);margin-bottom:5px}}
+.wwhy li::before{{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--haldi)}}
+.wpeak{{display:inline-block;margin-top:9px;font-size:11.5px;background:var(--green-soft);color:var(--green);
+padding:3px 10px;border-radius:20px;font-weight:700}}
+.fcard{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
+.ftop{{display:flex;align-items:center;gap:10px;font-family:var(--display)}}
+.femoji{{font-size:21px;line-height:1;flex:none}}
+.ftop b{{font-size:15.5px}}
+.fcard p{{font-size:13.5px;margin-top:7px}}
+.honest{{background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:14px;padding:18px;margin-top:14px}}
+.honest h3{{font-family:var(--display);font-size:15.5px;margin-bottom:8px;color:var(--violet)}}
+.honest p{{font-size:13.5px;margin-bottom:8px}}
+.honest .rem{{margin:8px 0 0 20px}}
+.honest .soft{{color:var(--muted);font-size:12px;margin-top:8px}}
+.ssb{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;font-size:13.5px;margin-top:12px}}
+.card{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
+.cert{{background:linear-gradient(#FFFDF7,#F7EFDD);border:2px solid var(--haldi);border-radius:16px;padding:8px;
+margin-top:14px;box-shadow:0 12px 34px rgba(35,37,59,.12)}}
+.certin{{border:1.5px dashed #CDA43E;border-radius:12px;padding:22px 18px;text-align:center}}
+.certseal{{font-size:26px;color:var(--haldi);line-height:1}}
+.certk{{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}}
+.certname{{font-family:var(--display);font-weight:800;font-size:20px;margin-top:10px}}
+.certarch{{font-size:14.5px;color:var(--muted);margin-top:5px}}
+.certwin{{font-size:14px;color:#4A4C63;margin-top:10px}}
+.certwin b{{font-family:var(--display);font-size:16px;color:var(--ink)}}
+.certfoot{{font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:.02em}}
+.actions{{display:flex;gap:10px;margin-top:24px}}
+.btn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:14px;padding:12px 10px;
+border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}}
+.btn.pdf{{background:var(--midnight);color:#fff}}
+.btn.share{{background:#25D366;color:#fff}}
+.tn{{font-size:11.5px;color:var(--muted);margin-top:22px;line-height:1.6}}
+@media print{{#ax-pdf,.sharebtn,.btn.share{{display:none!important}}body{{background:#fff}}
+.wcard,.fcard,.honest,.cert,.sharecard{{break-inside:avoid}}h2{{break-after:avoid}}
+*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
-<div class="hero"><p class="brand">✦ AXTROSHASTRA · CAREER &amp; ACADEMIC TIMING</p>
-<h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
-{p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
 
-{top_summary}
+<header class="hero">
+<p class="brand">✦ AXTROSHASTRA · CAREER &amp; ACADEMIC TIMING</p>
+<h1>{m['name']}</h1>
+<p class="meta">Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} · {p['teaser']['nakshatra']} · Generated {m['generated']}</p>
+</header>
 
-<h2>Your breakthrough windows</h2>
+{sharecard_html}
+
+{glance_html}
+
+<h2>Your breakthrough windows 🚀</h2>
+<p class="lead">Strongest first — each window is genuinely different, not the same line repeated.</p>
 {win_html if win_html else "<div class='card'><p>No standout window in this horizon — the report below still covers your study, exam and career reads.</p></div>"}
 
-<h2>Study strength</h2>
-<div class="card"><p>{ex.get('study_strength', '')}.</p></div>
-
-<h2>Exam &amp; intelligence pattern</h2>
-<div class="card"><p>{ex.get('exam_strength', '')}.</p></div>
-
-<h2>Higher education &amp; luck</h2>
-<div class="card"><p>{ex.get('higher_education', '')}.</p></div>
-
-<h2>Career direction</h2>
-<div class="card"><p>{ex.get('career_direction', '')}.</p>
-<p class="soft">This reads your 10th house — the same house our Life Blueprint report also draws on.</p>
-{f"<p style='margin-top:10px'><b>{escape(ex['stage_label'])}:</b> {ex['stage_note']}</p>" if ex.get('stage_note') else ''}</div>
+<h2>The rest of your chart, decoded</h2>
+<p class="lead">How you learn, how you test, where your luck sits, and the work you're built for.</p>
+<div class="fcard"><div class="ftop"><span class="femoji">📚</span><b>How you study best</b></div>
+<p>{ex.get('study_strength', '')}.</p></div>
+<div class="fcard"><div class="ftop"><span class="femoji">🎯</span><b>Your exam pattern</b></div>
+<p>{ex.get('exam_strength', '')}.</p></div>
+<div class="fcard"><div class="ftop"><span class="femoji">🎓</span><b>Higher education &amp; luck</b></div>
+<p>{ex.get('higher_education', '')}.</p></div>
+<div class="fcard"><div class="ftop"><span class="femoji">🧭</span><b>Career direction — {arche['emoji']} {escape(arche['name'])}</b></div>
+<p>{ex.get('career_direction', '')}. {arche['body']}</p>
+{stage_html}</div>
 
 {hardship_html}
 {ss_html}
@@ -1896,7 +1958,26 @@ text-transform:uppercase;color:#B8860B;margin:0 0 8px}}
 <div class="card"><p><b>{p['teaser']['current_dasha']}</b> — till {p['teaser']['dasha_till']}.
 Decisions made now tend to carry the theme of whichever window above is closest.</p></div>
 
+<h2>Your keepsake ✦</h2>
+<div class="cert"><div class="certin">
+<div class="certseal">✦</div>
+<p class="certk">Axtroshastra · Career Timing</p>
+<p class="certname">{m['name']}</p>
+<p class="certarch">is officially {arche['emoji']} {escape(arche['name'])}</p>
+{f"<p class='certwin'>Standout window<br><b>{pretty(w1['start'])} – {pretty(w1['end'])}</b></p>" if w1 else ""}
+<p class="certfoot">Screenshot this. Come back to it when the doubt hits.</p>
+</div></div>
+
+<div class="actions">
+<a class="btn pdf" id="ax-pdf" href="#" onclick="window.print();return false;">⬇️ Download PDF</a>
+<a class="btn share" href="#" onclick="axShare();return false;">📲 Share on WhatsApp</a>
+</div>
+
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effort is yours.<br>
 100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+
+<script>
+window.axShare=function(){{var url=location.href;var t=(window.__axlang==='en'?'Check out my career timing report from Axtroshastra':'Meri career timing report Axtroshastra se');if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+</script>
 </body></html>"""
