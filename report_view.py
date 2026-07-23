@@ -430,13 +430,8 @@ MILAN_I18N = r"""<script>
   var css=document.createElement('style');
   css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.92);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}';
   document.head.appendChild(css);
-  var box=document.createElement('div'); box.id='axlang';
-  box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
-  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
-  document.body.appendChild(box);
-  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
-  apply(saved);
-  window.axShare=function(){var url=location.href;var t=window.AX_SHARE_TEXT||(window.__axlang==='en'?'Check out our compatibility report from Axtroshastra':'Hamari compatibility report Axtroshastra se');if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
+  apply('en');   // language toggle removed — Milan report is English-only
+  window.axShare=function(){var url=location.href;var t=window.AX_SHARE_TEXT||'Check out our compatibility report from Axtroshastra';if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
 })();
 </script>
 """
@@ -1116,8 +1111,7 @@ def _sharecard_html(p: dict) -> str:
             f"<div class='sctag'>“{arche['tagline']}”</div></div>"
             f"<p class='sctag2'>{arche['body']}</p>"
             f"<div class='sharebtns'>"
-            f"<button class='sharebtn' onclick='axSaveCard()'>Save card as image 📸</button>"
-            f"<button class='sharebtn ghost' onclick='axShare()'>Share link 💫</button>"
+            f"<button class='sharebtn' onclick='axShare()'>Share link 💫</button>"
             f"</div>")
 
 
@@ -1175,14 +1169,13 @@ def _strength_deepdive_html(p: dict) -> str:
 def _askbesties_html(p: dict) -> str:
     return ("<h2>Share it with your friends 💌</h2>"
             "<div class='besties'>"
-            "<p>Save the couple card up top and send it to a few friends who know you both. Then ask them the "
+            "<p>Share this report with a few friends who know you both. Then ask them the "
             "real question: <b>“Does this actually sound like us?”</b></p>"
             "<p>The people close to you know you better than any chart — their gut-check is the best second "
             "opinion you'll get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll "
             "keep you honest and cheer you on.</p>"
             "<div class='sharebtns'>"
-            "<button class='sharebtn' onclick='axSaveCard()'>Save card 📸</button>"
-            "<button class='sharebtn ghost' onclick='axShare()'>Share report 💫</button></div>"
+            "<button class='sharebtn' onclick='axShare()'>Share link 💫</button></div>"
             "<div class='friendnote'><b>👀 Hey — did a friend send you this?</b>"
             "<p>They shared it because your honest take matters more than any chart. Two ways to be a great "
             "friend right now: tell them if the ‘you two’ bits actually ring true, and for anything marked "
@@ -1387,22 +1380,28 @@ def render_milan(p: dict) -> str:
     cert_html = _certificate_html(p) if has_profiles else ""
     matchpct_html = (f"<p class='matchpct'>{_match_pct(p)}% match on what matters</p>"
                      if has_profiles else "")
-    # personalised share text + image-card download (couple card -> PNG via html2canvas)
+    # personalised share text for axShare (couple-card image download removed)
     share_js = ""
     if has_profiles:
-        share_js = (
-            '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>'
-            "<script>window.AX_SHARE_TEXT=" + json.dumps(_share_text(p)) + ";"
-            "function axSaveCard(){var el=document.getElementById('sharecard');"
-            "if(!el||!window.html2canvas){return axShare();}"
-            "html2canvas(el,{scale:2,backgroundColor:null,useCORS:true}).then(function(cv){"
-            "cv.toBlob(function(blob){if(!blob){return axShare();}"
-            "var f=new File([blob],'axtroshastra-match.png',{type:'image/png'});"
-            "if(navigator.canShare&&navigator.canShare({files:[f]})){"
-            "navigator.share({files:[f],text:window.AX_SHARE_TEXT||'',title:'Axtroshastra'}).catch(function(){});}"
-            "else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='axtroshastra-match.png';"
-            "document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},4000);}"
-            "},'image/png');}).catch(function(){axShare();});}</script>")
+        share_js = "<script>window.AX_SHARE_TEXT=" + json.dumps(_share_text(p)) + ";</script>"
+
+    # bottom-sticky actions: print-to-PDF + WhatsApp share (report link via axShare)
+    sticky_bar = (
+        "<style>@media screen{body{padding-bottom:80px}}"
+        "#ax-stickybar{position:fixed;left:0;right:0;bottom:0;z-index:9997;"
+        "background:rgba(16,20,40,.96);border-top:1px solid rgba(228,176,74,.35);"
+        "box-shadow:0 -6px 20px rgba(0,0,0,.28);"
+        "padding:10px 12px calc(10px + env(safe-area-inset-bottom))}"
+        "#ax-stickybar .inner{max-width:640px;margin:0 auto;display:flex;gap:10px}"
+        "#ax-stickybar a{flex:1;text-align:center;text-decoration:none;border-radius:12px;"
+        "padding:13px 10px;font:800 15px/1 'Bricolage Grotesque',system-ui,sans-serif}"
+        "#ax-stickybar .pdf{background:#C93B2E;color:#fff}"
+        "#ax-stickybar .wa{background:#25D366;color:#0b2f18}"
+        "@media print{#ax-stickybar{display:none!important}}</style>"
+        "<div id='ax-stickybar'><div class='inner'>"
+        "<a class='pdf' href='#' onclick='window.print();return false;'>&#11015; Download PDF</a>"
+        "<a class='wa' href='#' onclick='axShare();return false;'>Share on WhatsApp</a>"
+        "</div></div>")
 
     notes = "".join(f"<div class='note'>{n}</div>" for n in p["notes"])
     tldr_html = _tldr_html(p)
@@ -1604,6 +1603,7 @@ This compatibility score is one classical input to a marriage decision, not the 
 <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 {share_js}
 <script>window.addEventListener('beforeprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{d.__wo=d.open;d.open=true;}});}});window.addEventListener('afterprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{if(d.__wo===false)d.open=false;}});}});</script>
+{sticky_bar}
 {MILAN_I18N}
 </body></html>"""
 
