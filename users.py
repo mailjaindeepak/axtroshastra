@@ -20,6 +20,7 @@ by that shim (why the schema looks the way it does):
     whose PRIMARY KEY *is* the mobile (VARCHAR via the `TEXT PRIMARY KEY` rule),
     and `status` is set on INSERT rather than via a column DEFAULT.
 """
+import json
 import secrets
 from datetime import datetime
 
@@ -101,8 +102,9 @@ def upsert_user_from_payment(db, mobile: str, email: str = "", name: str = ""):
         # Atomic claim: the mapping row's PK guarantees one user per mobile.
         c.execute("INSERT OR IGNORE INTO user_mobiles(mobile,user_id,created_at) "
                   "VALUES(?,?,?)", (mobile, candidate, now))
-        uid = c.execute("SELECT user_id FROM user_mobiles WHERE mobile=?",
-                        (mobile,)).fetchone()[0]
+        row = c.execute("SELECT user_id FROM user_mobiles WHERE mobile=?",
+                        (mobile,)).fetchone()
+        uid = row[0] if row else candidate     # never subscript a None result
         # Create the user row on first sight (no-op if it already exists).
         c.execute("INSERT OR IGNORE INTO users"
                   "(id,mobile,email,name,status,created_at,updated_at) "
@@ -150,3 +152,33 @@ def get_user_for_report(db, rid: str):
     if not row or not row[0]:
         return None
     return get_user(db, row[0])
+
+
+# --------------------------------------------------------------------------- #
+# one-time backfill
+# --------------------------------------------------------------------------- #
+def backfill(db, limit: int = 5000) -> dict:
+    """Create + link accounts for reports that were already paid before the
+    accounts code existed (or were rescued by reconcile with the old code):
+    paid=1, a phone on file, but no linked user. Idempotent — the mobile map
+    de-dupes, so re-running only picks up rows still missing a user. Mobile is
+    the anchor; email/name are pulled from the report payload when present."""
+    with db() as c:
+        rows = c.execute(
+            "SELECT id, phone, payload FROM reports "
+            "WHERE paid=1 AND (user_id IS NULL OR user_id='') "
+            "AND phone IS NOT NULL AND phone<>'' LIMIT ?", (limit,)).fetchall()
+    linked = 0
+    for rid, phone, payload in rows:
+        email, name = "", ""
+        try:
+            meta = (json.loads(payload) if payload else {}).get("meta") or {}
+            email = meta.get("_email") or ""
+            name = meta.get("name") or ""
+        except Exception:
+            pass
+        uid = upsert_user_from_payment(db, mobile=phone, email=email, name=name)
+        if uid:
+            link_report(db, rid, uid)
+            linked += 1
+    return {"scanned": len(rows), "linked": linked}

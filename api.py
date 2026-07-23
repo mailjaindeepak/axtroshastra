@@ -461,11 +461,20 @@ def get_report_api(rid: str):
     return {"paid": True, "report": payload, "account": account}
 
 
+def _fmt_mobile(m: str) -> str:
+    """Display '+919650973345' as '+91 96509 73345'; raw fallback for anything else."""
+    if m and m.startswith("+91") and len(m) == 13 and m[3:].isdigit():
+        d = m[3:]
+        return f"+91 {d[:5]} {d[5:]}"
+    return m
+
+
 def _account_banner(rid: str) -> str:
-    """Small confirmation strip shown at the top of a paid report with the mobile
-    + email we saved for the account. Empty string when no account is linked, so
-    it can never break the page. Injected after <body> (report HTML is a full
-    document that ends its head with '</head><body>')."""
+    """English 'Account created' card shown on a paid report with the saved mobile
+    (+ email when we have one). A neutral band wraps a white card so it reads as a
+    deliberate confirmation on any product's hero colour. Empty string when no
+    account is linked, so it can never break the page. Injected at the top of
+    <body> (report HTML ends its head with '</head><body>')."""
     try:
         u = users.get_user_for_report(db, rid)
     except Exception as e:
@@ -474,18 +483,42 @@ def _account_banner(rid: str) -> str:
     if not u or not (u.get("mobile") or u.get("email")):
         return ""
     import html as _html
-    bits = []
+
+    def _row(label, value):
+        return ('<div style="display:flex;align-items:center;gap:10px;font-size:13.5px;'
+                'color:#2b2521">'
+                f'<span style="color:#8a7d72;width:58px;font-size:12px">{label}</span>'
+                f'<span style="font-weight:600;letter-spacing:.2px">{value}</span></div>')
+
+    rows = ""
     if u.get("mobile"):
-        bits.append("Mobile: " + _html.escape(u["mobile"]))
+        rows += _row("Mobile", _html.escape(_fmt_mobile(u["mobile"])))
     if u.get("email"):
-        bits.append("Email: " + _html.escape(u["email"]))
-    detail = " &nbsp;&middot;&nbsp; ".join(bits)
-    return ("<div style=\"background:#0d3b2e;color:#eafff5;font-family:"
-            "system-ui,-apple-system,sans-serif;font-size:13.5px;line-height:1.5;"
-            "padding:10px 16px;text-align:center\">"
-            "Aapka account save ho gaya &mdash; " + detail + ". "
-            "Isi mobile se aap login karke apni saari reports dekh sakenge "
-            "(login jald aa raha hai).</div>")
+        rows += _row("Email", _html.escape(u["email"]))
+
+    return (
+        '<div style="background:#f3ece0;padding:14px;font-family:system-ui,'
+        "-apple-system,'Segoe UI',Roboto,sans-serif\">"
+        '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid '
+        '#ece3d6;border-radius:14px;box-shadow:0 2px 10px rgba(70,50,30,.05);'
+        'padding:15px 16px 13px">'
+        '<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">'
+        '<span style="width:34px;height:34px;border-radius:50%;background:#eef7f1;'
+        'border:1px solid #cfe8dc;color:#157a52;display:inline-flex;align-items:center;'
+        'justify-content:center;font-size:16px;flex:0 0 auto">&#10003;</span>'
+        '<div><div style="font-size:15px;font-weight:700;color:#2b2521">Account created'
+        '</div><div style="font-size:12px;color:#8a7d72;margin-top:1px">Saved from this '
+        'purchase</div></div></div>'
+        '<div style="border-top:1px solid #ece3d6;padding-top:11px;display:grid;gap:8px">'
+        + rows +
+        '</div>'
+        '<div style="margin-top:12px;font-size:11.5px;color:#8a7d72;display:flex;'
+        'align-items:center;gap:6px;flex-wrap:wrap">'
+        '<span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;'
+        'background:#fbeeeb;color:#c93b2e;border-radius:20px;padding:3px 8px;'
+        'font-weight:700">Coming soon</span> Log in with your mobile to see all your '
+        'reports.</div>'
+        '</div></div>')
 
 
 @app.get("/report/{rid}", include_in_schema=False)
@@ -633,6 +666,16 @@ def make_pass(key: str = "", n: int = 5):
                               f"{base}/jeevan?pass={toks[0]}",
                               f"{base}/padhai?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
+
+
+@app.get("/api/backfill_users")
+def backfill_users(key: str = "", limit: int = 5000):
+    """One-time (idempotent) admin action: create + link accounts for reports that
+    were paid before the accounts code shipped — paid, with a phone on file, but no
+    linked user. Safe to re-run. Gated by STATS_KEY."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    return users.backfill(db, limit)
 
 
 @app.get("/api/stats")

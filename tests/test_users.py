@@ -80,6 +80,31 @@ def test_demo_pay_creates_no_account(client):
     assert body["account"] is None
 
 
+def test_backfill_links_prepaid_reports(client):
+    """A report paid before the accounts code existed (paid + phone, no user_id)
+    gets an account created and linked by the backfill endpoint, and is then shown
+    to the user like any webhook-created account."""
+    import api
+    rid = _new_report(client)
+    with api.db() as c:   # simulate an old, pre-accounts paid report
+        c.execute("UPDATE reports SET paid=1, payment_id='pay_old', "
+                  "phone='+919650973345' WHERE id=?", (rid,))
+
+    r = client.get("/api/backfill_users?key=test-stats-key")
+    assert r.status_code == 200, r.text
+    assert r.json()["linked"] >= 1
+
+    acct = client.get(f"/api/report/{rid}").json()["account"]
+    assert acct is not None and acct["mobile"] == "+919650973345"
+    # re-running is a no-op for already-linked rows
+    assert client.get("/api/backfill_users?key=test-stats-key").json()["linked"] == 0
+
+
+def test_backfill_requires_admin_key(client):
+    assert client.get("/api/backfill_users").status_code == 403
+    assert client.get("/api/backfill_users?key=wrong").status_code == 403
+
+
 def test_norm_mobile_unit():
     assert users._norm_mobile("+91 98120-45678") == "+919812045678"
     assert users._norm_mobile("9812345678") == "+919812345678"

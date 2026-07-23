@@ -13,10 +13,13 @@ of truth for storage and no circular import with api.py.
 
 Env: RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET (reused from the app).
 """
+import logging
 import os
 from datetime import datetime
 
 import users
+
+logger = logging.getLogger("axtroshastra.payments")
 
 
 def ensure_tables(db):
@@ -89,8 +92,8 @@ def reconcile(db, limit: int = 200) -> dict:
                         db, mobile=pay.get("contact") or "", email=pay.get("email") or "")
                     if uid:
                         users.link_report(db, rid, uid)
-                except Exception:
-                    pass
+                except Exception as e:   # never fatal, but MUST be visible (was silent)
+                    logger.error("[users] reconcile account link failed for %s: %s", rid, e)
                 recovered += 1
         except Exception:
             continue
