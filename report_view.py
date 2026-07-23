@@ -2282,7 +2282,7 @@ border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center
 <tr><td>Nakshatra</td><td>{p['teaser']['nakshatra']} · pada {p['teaser']['pada']}</td></tr>
 <tr><td>Lagna</td><td>{p['chart']['lagna']}</td></tr>
 </table>
-<p class="sectionnote">The 5 factor scores and career-type percentages come from the classical strength (dignity) of each house's ruling planet — exalted/own-sign lords score high, debilitated or combust placements score low. The near-term outlook checks 2 years first, then 5, then 10, only expanding until it finds your nearest genuine window.</p>
+<p class="sectionnote">The 5 factor scores and career-type percentages come from Uccha Bala — each house's ruling planet is scored by its exact degree-distance from its classical exaltation point (highest) to its debilitation point (lowest), so no two birth charts land on the same numbers by coincidence. The near-term outlook checks 2 years first, then 5, then 10, only expanding until it finds your nearest genuine window.</p>
 </div>
 
 <h2>What each factor means</h2>
