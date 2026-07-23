@@ -4,7 +4,7 @@ Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from html import escape
 import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
 
@@ -101,6 +101,213 @@ def _weak_periods(payload: dict) -> list:
             gaps.append((prev_end.strftime("%b %Y"), s.strftime("%b %Y")))
         prev_end = max(prev_end, e)
     return gaps[:2]
+
+
+# ---------------------------------------------------------------- vidyarthi (/padhai) unified report helpers
+GRADE_FILL = {"Strong": "linear-gradient(90deg,#2E7D53,#3fae7a)",
+              "Moderate": "linear-gradient(90deg,#E4B04A,#C9922E)",
+              "Building": "linear-gradient(90deg,#8F92AB,#6b6f80)"}
+CAREER_BAR_COLORS = ["linear-gradient(90deg,#E4B04A,#C9922E)",
+                     "linear-gradient(90deg,#2E7D53,#1F5E3D)",
+                     "linear-gradient(90deg,#6C5CE7,#4C3FC4)"]
+
+
+def _nearterm(p):
+    """The smallest horizon (2/5/10y) that contains the soonest window, so the
+    near-term outlook shows the shortest truthful timeline instead of a full
+    decade by default."""
+    windows = p["windows"]
+    if not windows:
+        return None
+    today = datetime.strptime(p["meta"]["generated"], "%Y-%m-%d")
+    soonest = min(windows, key=lambda w: w["start"])
+    start = datetime.strptime(soonest["start"], "%Y-%m")
+    full_horizon = p["teaser"]["horizon"][1] - p["teaser"]["horizon"][0]
+    horizon_years = next((h for h in (2, 5, 10) if start <= today + timedelta(days=int(h * 365.25))),
+                         full_horizon)
+    return {"window": soonest, "horizon_years": horizon_years, "today": today}
+
+
+def _nearterm_html(p):
+    nt = _nearterm(p)
+    if not nt:
+        return ""
+    w, hz, today = nt["window"], nt["horizon_years"], nt["today"]
+    w_start = datetime.strptime(w["start"], "%Y-%m")
+    w_end = datetime.strptime(w["end"], "%Y-%m")
+    total_days = hz * 365.25
+    left_pct = max(0.0, min(100.0, (w_start - today).days / total_days * 100))
+    end_off_days = min(total_days, (w_end - today).days)
+    width_pct = max(6.0, min(100 - left_pct, (end_off_days - max(0, (w_start - today).days)) / total_days * 100))
+    is_active = w["start"] <= today.strftime("%Y-%m") <= w["end"]
+    label = f"{w['grade']} window — right now" if is_active else f"{w['grade']} window ahead"
+    fill = GRADE_FILL.get(w["grade"], GRADE_FILL["Building"])
+
+    peak_html = ""
+    if w.get("peak_months"):
+        try:
+            p_start = datetime.strptime(w["peak_months"][0], "%b %Y")
+            p_end = datetime.strptime(w["peak_months"][-1], "%b %Y")
+            p_left = max(0.0, min(100.0, (p_start - today).days / total_days * 100))
+            p_width = max(4.0, min(100 - p_left, (p_end - p_start).days / total_days * 100 + 4))
+            peak_html = f"<div class='peak' style='left:{p_left:.1f}%;width:{p_width:.1f}%'></div>"
+        except ValueError:
+            pass
+
+    labels = [(today + timedelta(days=int(total_days * i / 4))).strftime("%b %Y") for i in range(5)]
+    yrs_html = "".join(f"<span>{l}</span>" for l in labels)
+
+    peak_note = (f" Dashed outline marks your <b>peak stretch — {', '.join(w['peak_months'])}</b>."
+                if w.get("peak_months") else "")
+    beyond_note = (f" This {w['grade']} window actually runs through {w_end.strftime('%b %Y')}; we're only "
+                  f"showing you the next {hz} year{'s' if hz != 1 else ''} so the headline stays easy to act on."
+                  if (w_end - today).days > total_days else "")
+    expand_note = (" If nothing had shown up in this window, we'd have automatically expanded to a 5-year, "
+                  "then 10-year view — you're seeing the shortest horizon that actually applies to you."
+                  if hz <= 5 else "")
+
+    return f"""<h2>Your near-term outlook</h2>
+<p class="lead">We check the next 1–2 years first — not a decade of dates you don't need yet.</p>
+<div class="near">
+<div class="track"><div class="fill" style="left:{left_pct:.1f}%;width:{width_pct:.1f}%;background:{fill}">{label}</div>{peak_html}</div>
+<div class="yrs">{yrs_html}</div>
+<p class="note">{peak_note}{beyond_note}{expand_note}</p>
+</div>"""
+
+
+def _nowcard_html(p):
+    today_ym = p["meta"]["generated"][:7]
+    active = next((w for w in p["windows"] if w["start"] <= today_ym <= w["end"]), None)
+    verdict = (f"✅ You're already inside a {active['grade']} window" if active
+              else "🌱 Between windows right now — a good stretch to prepare.")
+    translation = ("you're in a productive stretch — this dasha combination is actively supporting your goals."
+                  if active else
+                  "this is a \"put in the reps\" phase. It can feel slow, but effort you invest now is the "
+                  "kind that lasts — you're building the base your next breakthrough stands on.")
+    return f"""<div class="nowcard">
+<p class="k">📍 Where you are right now</p>
+<p class="big">{p['teaser']['current_dasha']} · until {p['teaser']['dasha_till']}</p>
+<p>Translation: {translation}</p>
+<span class="verdict">{verdict}</span></div>"""
+
+
+def _split_html(five_factors):
+    strong = [f for f in five_factors if f["status"] == "strong"]
+    watch = [f for f in five_factors if f["status"] == "watch"]
+    strong_li = "".join(f"<li>{f['emoji']} {escape(f['label'])}</li>" for f in strong) or "<li>None right now</li>"
+    watch_li = "".join(f"<li>{f['emoji']} {escape(f['label'])}</li>" for f in watch) or "<li>None right now</li>"
+    return f"""<h2>What's working / what needs attention</h2>
+<p class="lead">Five things that decide whether effort actually pays off. Here's where your chart already helps you, and where it doesn't.</p>
+<div class="split">
+<div class="splitcol good"><p class="st">✅ Naturally strong ({len(strong)} of 5)</p><ul>{strong_li}</ul></div>
+<div class="splitcol watch"><p class="st">⚠️ Needs attention ({len(watch)} of 5)</p><ul>{watch_li}</ul></div>
+</div>"""
+
+
+def _qa_html(p, ex, w1):
+    today_ym = p["meta"]["generated"][:7]
+    active_now = w1 and w1["start"] <= today_ym <= w1["end"]
+    dir_text = ex.get("career_direction", "")
+    if w1:
+        q3 = (f"You're already in it — strongest right now through "
+              f"{datetime.strptime(w1['end'], '%Y-%m').strftime('%b %Y')}. That's when doors open most easily, "
+              f"so line up applications and exams for this stretch." if active_now else
+              f"Your nearest window opens {datetime.strptime(w1['start'], '%Y-%m').strftime('%b %Y')} — "
+              f"that's when to line up applications and exams.")
+    else:
+        q3 = "No standout window in this horizon yet — steady effort still compounds either way."
+    track_line = " You're inside a Strong window right now." if active_now else ""
+    return f"""<h2>Your 3 biggest questions, answered</h2>
+<p class="lead">The stuff actually running through your head — straight answers first.</p>
+<div class="qa">
+<div class="item"><p class="q"><span class="em">🧭</span> Am I even on the right track?</p>
+<p class="a">Yes — {dir_text}.{track_line} The direction isn't your problem; consistency is.</p></div>
+<div class="item"><p class="q"><span class="em">🎯</span> What should I actually focus on?</p>
+<p class="a">One fixed daily study routine, and protecting your calm before exams. Those two habits move your results more than anything else in your chart.</p></div>
+<div class="item"><p class="q"><span class="em">⏳</span> When will the effort pay off?</p>
+<p class="a">{q3}</p></div>
+</div>"""
+
+
+def _career_html(candidates):
+    if not candidates:
+        return ""
+    rows = ""
+    for i, c in enumerate(candidates):
+        a = c["archetype"]
+        rows += (f"""<div class="careerrow"><span class="cr-label">{a['emoji']} {escape(a['name'])}</span>
+<div class="cr-track"><div class="cr-fill" style="width:{c['score']}%;background:{CAREER_BAR_COLORS[i % 3]}">"""
+                f"""<span>{c['score']}%</span></div></div></div>
+<p class="career-desc">{escape(a['tagline'])} — {a['body']}</p>""")
+    plural = "are your strongest" if len(candidates) > 1 else "is your strongest"
+    return f"""<h2>Your career type {candidates[0]['archetype']['emoji']}</h2>
+<p class="lead">Every chart leans toward more than one direction. Here {plural}, ranked.</p>
+<div class="careerbar-wrap">{rows}</div>"""
+
+
+FACTOR_PLAIN = {"strong": "This one's already working in your favour",
+                "watch": "This one takes deliberate effort"}
+
+
+def _factor_cards_html(five_factors):
+    out = ""
+    for f in five_factors:
+        cls = f["status"]
+        status_label = "Naturally strong" if cls == "strong" else "Needs attention"
+        color = "var(--green)" if cls == "strong" else "var(--rose)"
+        dropdown = (f"<details><summary>What can I do about this?</summary><p>{f['advice']}</p></details>"
+                   if f["status"] == "watch" and f.get("advice") else "")
+        out += f"""<div class="factor">
+<div class="ftop"><span class="fname">{f['emoji']} {escape(f['label'])}</span><span class="fstatus {cls}">{status_label}</span></div>
+<div class="meter"><div style="width:{f['score']}%;background:{color}"></div></div>
+<p class="fplain {cls}">{FACTOR_PLAIN[cls]} — {f['score']}%</p>
+<p class="fexpl">{f['explanation']}.</p>
+{dropdown}</div>"""
+    return out
+
+
+def _do_next_html(ex, w1):
+    factors = ex.get("five_factors", [])
+    weakest = min(factors, key=lambda f: f["score"]) if factors else None
+    step1 = (weakest["advice"] if weakest and weakest.get("advice")
+            else (f"Keep reinforcing {weakest['label']} — it's already one of your steadier areas."
+                  if weakest else "Keep your current habits consistent."))
+    if w1:
+        peak = f", especially {', '.join(w1['peak_months'])}" if w1.get("peak_months") else ""
+        step3 = (f"Line up applications, exams, or course starts around your nearest window "
+                f"({datetime.strptime(w1['start'], '%Y-%m').strftime('%b %Y')}{peak}).")
+    else:
+        step3 = "Keep preparing — no standout window in this horizon yet, so steady effort compounds."
+    return f"""<h2>Do this next</h2>
+<div class="actionbox"><p class="ak">Your 3-step plan</p><ol>
+<li><b>This month:</b> {step1}</li>
+<li><b>Before your next exam:</b> protect sleep in the final week more than last-minute revision.</li>
+<li><b>Timing:</b> {step3}</li>
+</ol></div>"""
+
+
+def _holdback_html(p):
+    gaps = _weak_periods(p)
+    if not gaps:
+        return ("""<div class="hold">✅ <b>No major quiet stretches in your horizon</b> — your windows are """
+                """close enough together that there's rarely a long "just wait" period ahead.</div>""")
+    s, e = gaps[0]
+    return (f"""<div class="hold">⏸️ <b>Not every month is a "push" month.</b> Your next quiet stretch — """
+           f"""where consolidating beats forcing new starts — runs roughly <b>{s} – {e}</b>. Effort there """
+           f"""is better spent on skills than outcomes.</div>""")
+
+
+def _tagpicker_html(candidates):
+    rows = ""
+    for i, c in enumerate(candidates):
+        a = c["archetype"]
+        name = f"{a['emoji']} {escape(a['name'])}"
+        checked = " checked" if i == 0 else ""
+        rows += f"""<div class="tp-row" data-name="{name}" data-pct="{c['score']}">
+<label class="tp-check"><input type="checkbox"{checked} onchange="axCheckboxChanged(this)"> {name}</label>
+<button type="button" class="tp-pct" onclick="axTogglePctBtn(this)">{c['score']}%</button>
+</div>"""
+    return rows
 
 
 AX_PRE = r"""<script>
@@ -1745,103 +1952,55 @@ Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice 
 </body></html>"""
 
 
-# Per-window framing by rank (0=nearest, 1=next, 2=furthest) -- replaces a
-# single generic per-grade paragraph that was identical on every "Strong"
-# window (a real complaint: 3 windows reading as the same content 3 times).
-# The lede now differs by POSITION, which is always true regardless of the
-# chart, so windows never repeat verbatim again.
-RANK_TAG = ["Right now", "Second wave", "Further out"]
-RANK_TAG_COLOR = ["#C93B2E", "#E4B04A", "#6C5CE7"]
-RANK_LEDE = [
-    "This is your best shot in the near term — the reasons below are specific to this window.",
-    "A second window in the same broader phase — driven by a different part of your chart, so it plays out differently.",
-    "A window further out — usually a genuinely new chapter, not a continuation of what came before.",
-]
-
-
 def render_vidyarthi(p: dict) -> str:
-    """/padhai — student career & academic timing report. Structure mirrors
-    render_milan's shareable/keepsake pattern (sharecard, keepsake certificate,
-    emoji section headers, plain-English leads) for a consistent voice across
-    products, adapted for career/academic timing instead of compatibility."""
+    """/padhai — student career & academic timing report. Unified v3 layout:
+    positive-first ordering (profile -> now -> near-term outlook -> strengths)
+    through the middle "what needs work" section (5 factors, strongest first,
+    with fix-it dropdowns) to a confidence-boosting close (honest part,
+    keepsake, FAQ). Every number traces to a real chart computation — dignity
+    scores for the 5 factors and 3 ranked career types, north_chart_svg for
+    the kundli, _weak_periods for the hold-back window — none of it mocked."""
     m = p["meta"]
     m = {**m, "name": escape(m["name"])}  # user-supplied name: escape to prevent stored XSS
     ex = p.get("extras", {})
-    arche = ex.get("career_archetype") or {"name": "Your Path", "emoji": "✦",
-                                            "tagline": "", "body": ""}
-
-    pretty = lambda ym: datetime.strptime(ym, "%Y-%m").strftime("%b %Y")
-    w1 = p["windows"][0] if p["windows"] else None
-
-    win_html = ""
-    for i, w in enumerate(p["windows"]):
-        rank = min(i, 2)
-        reasons = "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"] if r["why"])[:3] or \
-                  "".join(f"<li>{r['why']}</li>" for r in w["rules_fired"][:3] if r["why"])
-        peak = (f"<span class='wpeak'>🔥 Best months: {', '.join(w['peak_months'])}</span>"
-                if w.get("peak_months") else "")
-        win_html += f"""<div class='wcard'>
-<span class='wtag' style='background:{RANK_TAG_COLOR[rank]}'>{RANK_TAG[rank]}</span>
-<p class='wdate'>{pretty(w['start'])} – {pretty(w['end'])} <span class='wgrade'>{w['grade']}</span></p>
-<p class='wdasha'>{w['dasha']}</p>
-<p class='wlede'>{RANK_LEDE[rank]}</p>
-{f"<ul class='wwhy'>{reasons}</ul>" if reasons else ''}
-{peak}</div>"""
+    five_factors = ex.get("five_factors", [])
+    candidates = ex.get("career_candidates") or []
+    top = candidates[0] if candidates else None
+    top_arche = (top["archetype"] if top else
+                ex.get("career_archetype") or {"name": "Your Path", "emoji": "✦", "tagline": "", "body": ""})
+    top_score = top["score"] if top else None
+    w1 = min(p["windows"], key=lambda w: w["start"]) if p["windows"] else None
 
     hardship_html = ""
     if ex.get("has_hardship"):
         gem_line = (f"<li><b>Gemstone:</b> {ex['gem']} — only via a qualified jeweller/astrologer trial.</li>"
                     if ex.get("gem") else f"<li><b>Gemstone:</b> {ex.get('gem_note', '')}</li>")
-        hardship_html = f"""<div class='honest'><h3>💬 Real talk</h3><p>{ex['line']}</p>
+        hardship_html = f"""<div class='reassure honest'><b>💬 The honest part</b><p style='margin-top:6px'>{ex['line']}</p>
 <p style='margin-top:8px'><b>Classical support for this period:</b></p>
 <ul class='rem'><li><b>Fast day:</b> {ex.get('fast_day', '—')}</li>
 <li><b>Mantra:</b> {ex.get('mantra', '—')} — 108 times, on {ex.get('fast_day', 'the fast day')}</li>
 {gem_line}</ul>
-<p class='soft'>The first remedy is always action — showing up in the windows above. This is support, not a substitute.</p></div>"""
+<p class='soft'>The first remedy is always action — showing up in the window above. This is support, not a substitute.</p></div>"""
     else:
-        hardship_html = f"<div class='honest'><h3>💬 Real talk</h3><p>{ex.get('line', '')}</p></div>"
+        hardship_html = f"<div class='reassure honest'><b>💬 The honest part</b><p style='margin-top:6px'>{ex.get('line', '')}</p></div>"
 
     ss = ex.get("sade_sati", {})
     if ss.get("active"):
         ss_html = (f"<div class='ssb'><b>Sade Sati — currently active:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
-                   f"Classically this means discipline and restructuring — it can feel like delay, "
-                   f"but what's built in this period tends to be durable. Not a warning; a work period.</div>")
+                  f"Classically this means discipline and restructuring — it can feel like delay, but what's "
+                  f"built in this period tends to be durable. Not a warning; a work period.</div>")
     else:
         ss_html = (f"<div class='ssb'><b>Sade Sati — not currently active.</b> Next phase approx "
-                   f"{ss.get('next_starts', '—')}. No Saturn pressure on this axis right now.</div>")
+                  f"{ss.get('next_starts', '—')}. No Saturn pressure on this axis right now.</div>")
 
-    stage_html = (f"<p style='margin-top:10px'><b>{escape(ex['stage_label'])}:</b> {ex['stage_note']}</p>"
-                  if ex.get("stage_note") else "")
+    field_fit_html = (f"""<div class="fieldfit">🎓 <b>{escape(ex['stage_label'])}:</b> {ex['stage_note']}</div>"""
+                      if ex.get("stage_note") else "")
 
-    # ---------- shareable "career card" — mirrors render_milan's .sharecard ----------
-    chips = [f"✨ {arche['tagline']}"]
-    chips.append(f"🎯 {p['teaser']['windows_count']} breakthrough window"
-                 f"{'s' if p['teaser']['windows_count'] != 1 else ''} found")
-    if ex.get("natural_gift"):
-        chips.append(f"💎 {ex['natural_gift']}")
-    chips_html = "".join(f"<span class='scchip'>{c}</span>" for c in chips)
-    sharecard_html = f"""<div class="sharecard" id="sharecard">
-<p class="scbrand">✦ AXTROSHASTRA</p>
-<p class="scname">{m['name']}'s Career Card</p>
-<p class="scarche">{arche['emoji']} {escape(arche['name'])}</p>
-{f"<p class='scwin'>Next breakthrough window<br><b>{pretty(w1['start'])} – {pretty(w1['end'])}</b> · {w1['grade']}</p>" if w1 else ""}
-<div class="scchips">{chips_html}</div>
-</div>
-<button class="sharebtn" onclick="axShare()">📲 Share my Career Card</button>"""
+    kundli_svg = north_chart_svg(p)
 
-    # ---------- "answer at a glance" — mirrors render_report's top_summary ----------
-    honest_line = (ex.get("line") or "").split(". ")[0].rstrip(".") + "."
-    glance_html = ""
-    if w1:
-        glance_html = (
-            "<div class='glance'>"
-            "<p class='plabel'>The short version</p>"
-            f"<p class='win'><b>Your nearest window: {pretty(w1['start'])} – {pretty(w1['end'])}</b> "
-            f"<span class='g'>● {w1['grade']}</span></p>"
-            f"<p class='dir'><b>What suits you:</b> {ex.get('career_direction', '')}.</p>"
-            f"<p class='note'>{honest_line} Everything below is the \"why,\" section by section.</p>"
-            "</div>"
-        )
+    tagpicker_rows = _tagpicker_html(candidates)
+    tag_default = (f"<span class='chip'>{top_arche['emoji']} {escape(top_arche['name'])} · {top_score}%</span>"
+                  if top else "")
 
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1850,128 +2009,290 @@ def render_vidyarthi(p: dict) -> str:
 <style>
 :root{{--ink:#23253B;--midnight:#151C39;--midnight2:#23305C;--paper:#FAF6ED;--card:#fff;
 --haldi:#E4B04A;--haldi-soft:#F6E7C6;--sindoor:#C93B2E;--green:#2E7D53;--green-soft:#E6F2EA;
---violet:#6C5CE7;--violet-soft:#EEEBFC;--muted:#6B6D82;--line:#E7E0D2;--display:'Bricolage Grotesque',sans-serif}}
+--rose:#C2185B;--rose-soft:#FBE7F0;--violet:#6C5CE7;--violet-soft:#EEEBFC;--muted:#6B6D82;--line:#E7E0D2;
+--display:'Bricolage Grotesque',sans-serif}}
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
 line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60px}}
 h2{{font-family:var(--display);font-size:20px;margin:32px 0 8px}}
 .lead{{color:var(--muted);font-size:13.5px;margin:0 0 12px}}
 .hero{{background:radial-gradient(1000px 460px at 50% -25%, var(--midnight2), var(--midnight) 68%);
-color:#F3EFE4;margin:0 -20px;padding:32px 24px 26px;text-align:center}}
+color:#F3EFE4;margin-top:16px;padding:32px 24px 26px;text-align:center;border-radius:26px;
+box-shadow:0 14px 34px rgba(21,28,57,.18)}}
 .hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
 .hero h1{{font-family:var(--display);font-size:25px;color:#fff;margin-top:12px}}
 .hero .meta{{color:#8F92AB;font-size:12.5px;margin-top:10px}}
-.sharecard{{background:radial-gradient(1000px 420px at 50% -30%, #26325E, var(--midnight) 72%);color:#F3EFE4;
-border-radius:18px;padding:24px 22px 22px;text-align:center;box-shadow:0 14px 40px rgba(21,28,57,.28);margin-top:22px}}
-.scbrand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
-.scname{{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;margin-top:10px}}
-.scarche{{font-family:var(--display);font-weight:700;font-size:16px;color:var(--haldi);margin-top:4px}}
-.scwin{{font-size:13.5px;color:#D9D4C3;margin-top:12px}}
-.scwin b{{color:#fff;font-family:var(--display)}}
-.scchips{{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px}}
-.scchip{{background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);color:#F1E4C4;font-size:11px;
-font-weight:700;border-radius:20px;padding:5px 10px}}
-.sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:#25D366;color:#fff;
-font-family:var(--display);font-weight:800;font-size:14.5px;padding:12px;margin-top:12px;cursor:pointer}}
-.glance{{background:var(--haldi-soft);border:1.5px solid var(--haldi);border-radius:14px;padding:18px 18px 16px;margin-top:18px}}
-.glance .plabel{{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-color:#9C6B0E;margin-bottom:6px}}
-.glance .win{{font-size:15.5px;margin:2px 0}}
-.glance .g{{color:var(--green);font-weight:800}}
-.glance .dir{{font-size:13.5px;margin-top:8px}}
-.glance .note{{font-size:12px;color:#8a7a4e;margin-top:10px}}
-.wcard{{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}}
-.wtag{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.05em;
-text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:20px;margin-bottom:8px}}
-.wdate{{font-family:var(--display);font-weight:800;font-size:16.5px}}
-.wgrade{{margin-left:7px;font-size:11px;font-weight:700;background:var(--haldi-soft);color:#9C6B0E;padding:2px 8px;border-radius:20px}}
-.wdasha{{color:var(--muted);font-size:12.5px;margin:2px 0 8px}}
-.wlede{{font-size:14px}}
-.wwhy{{list-style:none;margin:9px 0 0}}
-.wwhy li{{position:relative;padding-left:17px;font-size:13px;color:var(--muted);margin-bottom:5px}}
-.wwhy li::before{{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--haldi)}}
-.wpeak{{display:inline-block;margin-top:9px;font-size:11.5px;background:var(--green-soft);color:var(--green);
-padding:3px 10px;border-radius:20px;font-weight:700}}
-.fcard{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
-.ftop{{display:flex;align-items:center;gap:10px;font-family:var(--display)}}
-.femoji{{font-size:21px;line-height:1;flex:none}}
-.ftop b{{font-size:15.5px}}
-.fcard p{{font-size:13.5px;margin-top:7px}}
-.honest{{background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:14px;padding:18px;margin-top:14px}}
-.honest h3{{font-family:var(--display);font-size:15.5px;margin-bottom:8px;color:var(--violet)}}
-.honest p{{font-size:13.5px;margin-bottom:8px}}
-.honest .rem{{margin:8px 0 0 20px}}
-.honest .soft{{color:var(--muted);font-size:12px;margin-top:8px}}
+.hero .fitscore{{font-family:var(--display);font-weight:800;font-size:44px;color:var(--haldi);margin-top:10px;line-height:1}}
+.hero .fitscore small{{font-size:13px;color:#B9BBD0;display:block;font-weight:600;margin-top:4px}}
+.hero .arche{{display:inline-block;background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);
+color:#F1E4C4;font-family:var(--display);font-weight:700;font-size:13px;border-radius:20px;padding:6px 16px;margin-top:12px}}
+.profile{{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}}
+.profile .ptop{{display:flex;align-items:center;gap:12px}}
+.profile .pemoji{{font-size:28px}}
+.profile .pname{{font-family:var(--display);font-weight:800;font-size:17px}}
+.profile .psign{{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:2px}}
+.profile .pline{{font-size:14px;margin-top:10px}}
+.kchart-wrap{{background:var(--midnight);border-radius:14px;padding:14px;margin-top:12px;text-align:center}}
+.kchart-wrap .kcap{{font-size:11px;color:#8F92AB;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}}
+.kchart{{width:100%;max-width:280px;margin:0 auto;display:block}}
+.nowcard{{background:linear-gradient(180deg,#26325E,var(--midnight));color:#F3EFE4;border-radius:16px;
+padding:20px;margin-top:20px;text-align:center}}
+.nowcard .k{{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--haldi)}}
+.nowcard .big{{font-family:var(--display);font-weight:800;font-size:18px;color:#fff;margin:8px 0 6px}}
+.nowcard p{{font-size:13.5px;color:#CFCBBB}}
+.nowcard .verdict{{display:inline-block;background:var(--green);color:#fff;font-family:var(--display);font-weight:800;
+font-size:12px;border-radius:20px;padding:5px 14px;margin-top:10px}}
+.near{{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}}
+.near .track{{position:relative;height:38px;background:var(--haldi-soft);border-radius:8px;overflow:hidden;margin-top:12px}}
+.near .fill{{position:absolute;top:0;bottom:0;border-radius:6px;display:flex;align-items:center;justify-content:center;
+font:800 11px/1 var(--display);color:#fff;padding:0 6px;overflow:hidden;white-space:nowrap}}
+.near .peak{{position:absolute;top:-4px;bottom:-4px;border:2px dashed rgba(255,255,255,.7);border-radius:8px}}
+.near .yrs{{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:6px}}
+.near .note{{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}}
+.near .note b{{color:var(--ink)}}
+.split{{display:flex;gap:10px;margin-top:20px}}
+.splitcol{{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px}}
+.splitcol.good{{border-color:var(--green)}}
+.splitcol.watch{{border-color:var(--rose)}}
+.splitcol .st{{font-family:var(--display);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em}}
+.splitcol.good .st{{color:var(--green)}}
+.splitcol.watch .st{{color:var(--rose)}}
+.splitcol ul{{list-style:none;margin-top:8px}}
+.splitcol li{{font-size:13.5px;margin-bottom:6px}}
+.glossary{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;margin-top:18px;font-size:13px}}
+.glossary b{{font-family:var(--display)}}
+.glossary .row{{display:flex;gap:8px;margin-top:6px}}
+.qa{{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:6px 18px;margin-top:14px}}
+.qa .item{{padding:14px 0;border-bottom:1px solid var(--line)}}
+.qa .item:last-child{{border-bottom:0}}
+.qa .q{{font-family:var(--display);font-weight:800;font-size:14.5px;display:flex;gap:8px;align-items:baseline}}
+.qa .q .em{{font-size:16px}}
+.qa .a{{font-size:13.5px;color:#3A3C55;margin-top:5px;padding-left:24px}}
+.careerbar-wrap{{margin-top:14px}}
+.careerrow{{display:flex;align-items:center;gap:10px;margin-bottom:12px}}
+.careerrow .cr-label{{width:150px;flex:none;font-size:13px;font-weight:700;font-family:var(--display)}}
+.careerrow .cr-track{{flex:1;height:20px;background:#EFE8D8;border-radius:6px;overflow:hidden}}
+.careerrow .cr-fill{{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}}
+.careerrow .cr-fill span{{font:800 11px/1 var(--display);color:#fff}}
+.career-desc{{font-size:13px;color:var(--muted);margin:2px 0 12px 160px}}
+.pair{{display:flex;gap:10px;margin-top:14px}}
+.pcard{{flex:1;border-radius:14px;padding:16px;color:#fff}}
+.pcard.up{{background:linear-gradient(160deg,#2E7D53,#1F5E3D)}}
+.pcard.lesson{{background:linear-gradient(160deg,#C2185B,#8E1044)}}
+.pcard .pk{{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;opacity:.85}}
+.pcard .pv{{font-family:var(--display);font-weight:800;font-size:16px;margin-top:6px}}
+.pcard .pd{{font-size:12.5px;margin-top:6px;opacity:.92}}
+.factor{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px}}
+.factor .ftop{{display:flex;justify-content:space-between;align-items:center}}
+.factor .fname{{font-family:var(--display);font-weight:800;font-size:15.5px}}
+.factor .fstatus{{font-size:11px;font-weight:800;border-radius:20px;padding:3px 10px}}
+.factor .fstatus.strong{{background:var(--green-soft);color:var(--green)}}
+.factor .fstatus.watch{{background:var(--rose-soft);color:var(--rose)}}
+.factor .meter{{height:6px;background:#EFE8D8;border-radius:4px;margin:10px 0 8px;overflow:hidden}}
+.factor .meter div{{height:100%;border-radius:4px}}
+.factor .fplain{{font-family:var(--display);font-weight:700;font-size:13.5px}}
+.factor .fplain.strong{{color:var(--green)}}
+.factor .fplain.watch{{color:var(--rose)}}
+.factor .fexpl{{font-size:13.5px;color:#3A3C55;margin-top:5px}}
+.factor details{{margin-top:10px;background:var(--paper);border-radius:8px;padding:2px 12px}}
+.factor summary{{font-family:var(--display);font-weight:700;font-size:12.5px;color:var(--sindoor);cursor:pointer;
+list-style:none;padding:9px 0}}
+.factor summary::-webkit-details-marker{{display:none}}
+.factor summary::before{{content:"› ";font-weight:800}}
+.factor details[open] summary::before{{content:"⌄ "}}
+.factor details p{{font-size:13px;color:#3A3C55;padding-bottom:10px}}
+.fieldfit{{background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:14px}}
+.fieldfit b{{font-family:var(--display);color:var(--violet)}}
+.actionbox{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}}
+.actionbox .ak{{font-family:var(--display);font-weight:800;color:var(--sindoor);font-size:12px;text-transform:uppercase;letter-spacing:.03em}}
+.actionbox ol{{margin:8px 0 0 18px;font-size:14px}}
+.actionbox li{{margin-bottom:10px}}
+.actionbox li b{{font-family:var(--display)}}
+.hold{{background:#FFF6E9;border:1.5px solid var(--haldi);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:13.5px}}
+.hold b{{font-family:var(--display)}}
+.reassure{{background:var(--green-soft);border:2px solid var(--green);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:14px}}
+.reassure b{{font-family:var(--display)}}
 .ssb{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;font-size:13.5px;margin-top:12px}}
 .card{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
-.cert{{background:linear-gradient(#FFFDF7,#F7EFDD);border:2px solid var(--haldi);border-radius:16px;padding:8px;
-margin-top:14px;box-shadow:0 12px 34px rgba(35,37,59,.12)}}
-.certin{{border:1.5px dashed #CDA43E;border-radius:12px;padding:22px 18px;text-align:center}}
-.certseal{{font-size:26px;color:var(--haldi);line-height:1}}
-.certk{{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}}
-.certname{{font-family:var(--display);font-weight:800;font-size:20px;margin-top:10px}}
-.certarch{{font-size:14.5px;color:var(--muted);margin-top:5px}}
-.certwin{{font-size:14px;color:#4A4C63;margin-top:10px}}
-.certwin b{{font-family:var(--display);font-size:16px;color:var(--ink)}}
-.certfoot{{font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:.02em}}
+.cert-toggle{{display:flex;gap:8px;margin-top:6px}}
+.cert-toggle button{{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);
+font:700 12.5px var(--display);cursor:pointer;color:var(--muted)}}
+.cert-toggle button.active{{background:var(--midnight);color:#fff;border-color:var(--midnight)}}
+.certwrap{{margin-top:14px;border-radius:24px;padding:3px;position:relative;
+background:linear-gradient(135deg,#E4B04A,#F6E7C6 45%,#E4B04A);box-shadow:0 16px 40px rgba(35,37,59,.16)}}
+.cert-card{{border-radius:21px;padding:26px 20px 20px;text-align:center;transition:background .2s,color .2s}}
+.certwrap[data-skin="light"] .cert-card{{background:linear-gradient(175deg,#FFFDF7,#FBF1DC);color:#23253B}}
+.certwrap[data-skin="dark"] .cert-card{{background:radial-gradient(600px 300px at 50% -10%,#26325E,#0F1226 72%);color:#F3EFE4}}
+.cert-brand{{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--display);
+font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--haldi)}}
+.cert-tagline{{font-size:9.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}}
+.certwrap[data-skin="dark"] .cert-tagline{{color:#9C9FC4}}
+.cert-inner{{border-radius:16px;padding:20px 16px;margin-top:16px}}
+.cert-eyebrow{{font-family:var(--display);font-weight:700;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}}
+.certwrap[data-skin="dark"] .cert-eyebrow{{color:#9C9FC4}}
+.cert-name{{font-family:var(--display);font-weight:800;font-size:23px;margin-top:8px;
+background:linear-gradient(90deg,#C9922E,#E4B04A 40%,#C9922E);-webkit-background-clip:text;background-clip:text;color:transparent}}
+.certwrap[data-skin="dark"] .cert-name{{background:linear-gradient(90deg,#F6E7C6,#E4B04A 50%,#F6E7C6);-webkit-background-clip:text;background-clip:text}}
+.cert-tags{{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;min-height:32px}}
+.chip{{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:800;font-size:12.5px;
+background:var(--haldi);color:#151C39;border-radius:20px;padding:7px 13px;box-shadow:0 4px 10px rgba(228,176,74,.35)}}
+.cert-footer{{margin-top:18px;padding-top:14px;border-top:1px solid rgba(228,176,74,.35);
+display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted)}}
+.certwrap[data-skin="dark"] .cert-footer{{color:#8F92AB}}
+.cert-footer b{{color:var(--haldi);font-family:var(--display)}}
+.cert-warn{{font-size:11.5px;color:var(--sindoor);margin-top:8px;text-align:center;display:none}}
+.cert-warn.show{{display:block}}
+.tagpicker{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 14px;margin-top:12px}}
+.tp-row{{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}}
+.tp-row:last-child{{border-bottom:0}}
+.tp-check{{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer}}
+.tp-check input{{width:16px;height:16px;accent-color:var(--sindoor)}}
+.tp-pct{{font-family:var(--display);font-weight:800;font-size:11.5px;border-radius:20px;padding:5px 11px;cursor:pointer;
+border:1.5px solid var(--haldi);background:var(--haldi-soft);color:#8A6413}}
+.tp-pct.off{{background:transparent;border-color:var(--line);color:var(--muted)}}
+.certactions{{display:flex;gap:10px;margin-top:12px}}
+.certbtn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:13px;padding:11px 10px;
+border-radius:11px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;display:flex;
+align-items:center;justify-content:center;gap:6px;color:var(--ink)}}
+.certbtn.primary{{background:var(--midnight);color:#fff;border-color:var(--midnight)}}
+.share{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:16px 18px;margin-top:14px;font-size:14px}}
+.stillconfused{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 16px;margin-top:14px}}
+.stillconfused details{{padding:12px 0;border-bottom:1px solid var(--line)}}
+.stillconfused details:last-child{{border-bottom:0}}
+.stillconfused summary{{font-family:var(--display);font-weight:700;font-size:14px;cursor:pointer;list-style:none}}
+.stillconfused summary::-webkit-details-marker{{display:none}}
+.stillconfused summary::before{{content:"› ";color:var(--sindoor)}}
+.stillconfused p{{font-size:13px;color:#3A3C55;margin-top:8px;padding-left:14px}}
+.method{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:13.5px;margin-top:14px}}
+.method table{{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}}
+.method th,.method td{{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}}
+.method th{{font-family:var(--display);font-size:10.5px;text-transform:uppercase;color:var(--muted)}}
+.sectionnote{{background:#F3ECDD;border-left:3px solid var(--violet);padding:8px 12px;border-radius:6px;font-size:11.5px;color:var(--muted);margin-top:8px}}
+.gloss{{list-style:none;margin-top:8px}}
+.gloss li{{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13px}}
+.gloss b{{font-family:var(--display)}}
 .actions{{display:flex;gap:10px;margin-top:24px}}
 .btn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:14px;padding:12px 10px;
 border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}}
 .btn.pdf{{background:var(--midnight);color:#fff}}
 .btn.share{{background:#25D366;color:#fff}}
 .tn{{font-size:11.5px;color:var(--muted);margin-top:22px;line-height:1.6}}
-@media print{{#ax-pdf,.sharebtn,.btn.share{{display:none!important}}body{{background:#fff}}
-.wcard,.fcard,.honest,.cert,.sharecard{{break-inside:avoid}}h2{{break-after:avoid}}
+@media print{{#ax-pdf,.btn.share,.certbtn,.cert-toggle,.tagpicker{{display:none!important}}body{{background:#fff}}
+.factor,.hold,.reassure,.certwrap,.near{{break-inside:avoid}}h2{{break-after:avoid}}
 *{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 
 <header class="hero">
 <p class="brand">✦ AXTROSHASTRA · CAREER &amp; ACADEMIC TIMING</p>
 <h1>{m['name']}</h1>
-<p class="meta">Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} · {p['teaser']['nakshatra']} · Generated {m['generated']}</p>
+{f"<p class='fitscore'>{top_score}%<small>match with your strongest career direction</small></p>" if top_score is not None else ""}
+<span class="arche">{top_arche['emoji']} {escape(top_arche['name'])}</span>
 </header>
 
-{sharecard_html}
+<h2>Your profile</h2>
+<p class="lead">The base your whole report is calculated from — not guesswork, your actual birth chart.</p>
+<div class="profile">
+<div class="ptop"><span class="pemoji">🌙</span><div><p class="pname">Moon in {p['teaser']['moon_sign']}</p>
+<p class="psign">{p['teaser']['nakshatra']} · pada {p['teaser']['pada']} · Lagna {p['chart']['lagna']}</p></div></div>
+<p class="pline"><b>How you learn:</b> {ex.get('study_strength', '')}.</p>
+{f"<p class='pline'><b>What comes naturally:</b> {ex['natural_gift']}.</p>" if ex.get('natural_gift') else ''}
+<div class="kchart-wrap">{kundli_svg}<p class="kcap">Your birth chart · North Indian style · the same one from your form</p></div>
+</div>
 
-{glance_html}
+{_nowcard_html(p)}
 
-<h2>Your breakthrough windows 🚀</h2>
-<p class="lead">Strongest first — each window is genuinely different, not the same line repeated.</p>
-{win_html if win_html else "<div class='card'><p>No standout window in this horizon — the report below still covers your study, exam and career reads.</p></div>"}
+{_nearterm_html(p)}
 
-<h2>The rest of your chart, decoded</h2>
-<p class="lead">How you learn, how you test, where your luck sits, and the work you're built for.</p>
-<div class="fcard"><div class="ftop"><span class="femoji">📚</span><b>How you study best</b></div>
-<p>{ex.get('study_strength', '')}.</p></div>
-<div class="fcard"><div class="ftop"><span class="femoji">🎯</span><b>Your exam pattern</b></div>
-<p>{ex.get('exam_strength', '')}.</p></div>
-<div class="fcard"><div class="ftop"><span class="femoji">🎓</span><b>Higher education &amp; luck</b></div>
-<p>{ex.get('higher_education', '')}.</p></div>
-<div class="fcard"><div class="ftop"><span class="femoji">🧭</span><b>Career direction — {arche['emoji']} {escape(arche['name'])}</b></div>
-<p>{ex.get('career_direction', '')}. {arche['body']}</p>
-{stage_html}</div>
+{_split_html(five_factors)}
+
+<div class="glossary">
+<b>What do "Strong" and "Building" actually mean?</b>
+<div class="row">💪 <span><b>Strong</b> = this is genuinely your best shot — act on it.</span></div>
+<div class="row">🌤️ <span><b>Moderate</b> = still good, keep showing up, don't force it.</span></div>
+<div class="row">🌱 <span><b>Building</b> = preparation phase — the payoff comes later, not now.</span></div>
+</div>
+
+{_qa_html(p, ex, w1)}
+
+{_career_html(candidates)}
+
+<h2>Your superpower &amp; your one lesson</h2>
+<div class="pair">
+<div class="pcard up"><p class="pk">💎 Superpower</p><p class="pv">{ex.get('natural_gift') or '—'}</p>
+<p class="pd">Well-placed in your chart — this is a real strength to lean on.</p></div>
+<div class="pcard lesson"><p class="pk">📈 Growth edge</p><p class="pv">{ex.get('growth_lesson') or '—'}</p>
+<p class="pd">Naming this early is most of the fix.</p></div>
+</div>
+
+<h2>Your five core factors</h2>
+<p class="lead">Strongest first, so you see what's already working before what needs work.</p>
+{_factor_cards_html(five_factors)}
+
+{field_fit_html}
+
+{_do_next_html(ex, w1)}
+
+{_holdback_html(p)}
 
 {hardship_html}
 {ss_html}
 
-<h2>Current period</h2>
-<div class="card"><p><b>{p['teaser']['current_dasha']}</b> — till {p['teaser']['dasha_till']}.
-Decisions made now tend to carry the theme of whichever window above is closest.</p></div>
-
 <h2>Your keepsake ✦</h2>
-<div class="cert"><div class="certin">
-<div class="certseal">✦</div>
-<p class="certk">Axtroshastra · Career Timing</p>
-<p class="certname">{m['name']}</p>
-<p class="certarch">is officially {arche['emoji']} {escape(arche['name'])}</p>
-{f"<p class='certwin'>Standout window<br><b>{pretty(w1['start'])} – {pretty(w1['end'])}</b></p>" if w1 else ""}
-<p class="certfoot">Screenshot this. Come back to it when the doubt hits.</p>
-</div></div>
+<p class="lead">Shareable, and yours to personalise — choose a skin, pick which of your computed types to show.</p>
+<div class="cert-toggle">
+<button type="button" id="skinLightBtn" class="active" onclick="axSetSkin('light')">☀️ Light</button>
+<button type="button" id="skinDarkBtn" onclick="axSetSkin('dark')">🌙 Dark</button>
+</div>
+<div class="certwrap" id="certWrap" data-skin="light">
+<div class="cert-card" id="certCard">
+<p class="cert-brand">✦ Axtroshastra</p>
+<p class="cert-tagline">Career &amp; Academic Timing</p>
+<div class="cert-inner">
+<p class="cert-eyebrow">Certificate of Career Direction</p>
+<p class="cert-name">{m['name']}</p>
+<div class="cert-tags" id="certTags">{tag_default}</div>
+</div>
+<div class="cert-footer"><span>axtroshastra.com</span><span><b>Issued</b> {m['generated']}</span></div>
+</div>
+</div>
+<div class="tagpicker">{tagpicker_rows}<p class="cert-warn" id="certWarn">Keep at least one tag — pick another before removing this one.</p></div>
+<div class="certactions">
+<button type="button" class="certbtn" onclick="axDownloadCard()">⬇️ Download this card</button>
+<button type="button" class="certbtn primary" onclick="axShareCard()">📲 Share this card</button>
+</div>
+<div class="share">📲 <b>Show this to a parent, teacher, or mentor</b> and ask: "does this sound like me?" People who know your habits give the best gut-check.</div>
+
+<h2>Still a little confused?</h2>
+<div class="stillconfused">
+<details><summary>Does "Strong" mean I'll definitely succeed?</summary><p>No — it means the timing helps you, like a tailwind. You still have to run. A strong window with no effort beats nothing; effort in a strong window beats everything.</p></details>
+<details><summary>What if I don't like the direction it gives me?</summary><p>It's a lean, not a life sentence. The chart shows what comes <i>easiest</i> — you're free to go elsewhere, it'll just ask more effort. Use it as information, not a cage.</p></details>
+<details><summary>Why only a couple years, not the full picture?</summary><p>Because a wall of decade-long dates creates anxiety, not clarity. We show you the nearest window that applies, and expand further out only if nothing's close.</p></details>
+</div>
 
 <div class="actions">
 <a class="btn pdf" id="ax-pdf" href="#" onclick="window.print();return false;">⬇️ Download PDF</a>
 <a class="btn share" href="#" onclick="axShare();return false;">📲 Share on WhatsApp</a>
 </div>
+
+<h2>How we calculated this</h2>
+<div class="method">
+<p>Classical Vimshottari dasha + transit system, computed from precise NASA-grade planetary positions and standard Lahiri ayanamsa. Same inputs, same result, every time — not mood-of-the-day.</p>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Moon sign</td><td>{p['teaser']['moon_sign']}</td></tr>
+<tr><td>Nakshatra</td><td>{p['teaser']['nakshatra']} · pada {p['teaser']['pada']}</td></tr>
+<tr><td>Lagna</td><td>{p['chart']['lagna']}</td></tr>
+</table>
+<p class="sectionnote">The 5 factor scores and career-type percentages come from the classical strength (dignity) of each house's ruling planet — exalted/own-sign lords score high, debilitated or combust placements score low. The near-term outlook checks 2 years first, then 5, then 10, only expanding until it finds your nearest genuine window.</p>
+</div>
+
+<h2>What each factor means</h2>
+<ul class="gloss">
+<li><b>Study Habits</b> — your 4th house: the environment and discipline that shapes how you actually learn.</li>
+<li><b>Exam &amp; Performance</b> — your 5th house: intelligence, memory, and how you perform under pressure.</li>
+<li><b>Higher Education Luck</b> — your 9th house: fortune, scholarships, and guru-grace in advanced study.</li>
+<li><b>Career Direction</b> — your 10th house: the classic career house — status, structure, public role.</li>
+<li><b>Follow-Through</b> — Saturn's own placement: discipline, delay, and hard-won (but durable) success.</li>
+</ul>
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effort is yours.<br>
@@ -1979,5 +2300,23 @@ Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effo
 
 <script>
 window.axShare=function(){{var url=location.href;var t=(window.__axlang==='en'?'Check out my career timing report from Axtroshastra':'Meri career timing report Axtroshastra se');if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+function axSetSkin(skin){{var wrap=document.getElementById('certWrap');if(!wrap)return;wrap.dataset.skin=skin;
+document.getElementById('skinLightBtn').classList.toggle('active',skin==='light');
+document.getElementById('skinDarkBtn').classList.toggle('active',skin==='dark');}}
+function axCheckboxChanged(cb){{var anyChecked=Array.prototype.some.call(document.querySelectorAll('.tp-row input[type=checkbox]'),function(i){{return i.checked;}});
+var warn=document.getElementById('certWarn');
+if(!anyChecked){{cb.checked=true;warn.classList.add('show');setTimeout(function(){{warn.classList.remove('show');}},2200);}}
+axRenderTags();}}
+function axTogglePctBtn(btn){{btn.classList.toggle('off');axRenderTags();}}
+function axRenderTags(){{var rows=document.querySelectorAll('.tp-row');var container=document.getElementById('certTags');container.innerHTML='';
+rows.forEach(function(row){{var checked=row.querySelector('input[type=checkbox]').checked;if(!checked)return;
+var name=row.dataset.name;var pctBtn=row.querySelector('.tp-pct');var showPct=!pctBtn.classList.contains('off');
+var text=name+(showPct?' · '+row.dataset.pct+'%':'');var span=document.createElement('span');span.className='chip';
+span.textContent=text;container.appendChild(span);}});}}
+function axDownloadCard(){{window.print();}}
+function axShareCard(){{var container=document.getElementById('certTags');if(!container.children.length){{alert('Add at least one tag to your card before sharing.');return;}}
+var url=location.href;var t='My Axtroshastra career type — check it out';
+if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}}
+if(document.querySelectorAll('.tp-row').length)axRenderTags();
 </script>
 </body></html>"""

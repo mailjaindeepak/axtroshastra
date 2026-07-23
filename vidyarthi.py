@@ -34,7 +34,17 @@ from engine import (
 from jyotish_maps import REMEDY_7L
 from products import CAREER_HOUSE, CAREER_ARCHETYPE, PLANET_GIFT, PLANET_LESSON
 from vidyarthi_maps import (STUDY_HOUSE, EXAM_HOUSE, HIGHERED_HOUSE, HARDSHIP_LINE,
-                            STAGE_LABEL, FIELD_NOTE)
+                            STAGE_LABEL, FIELD_NOTE, FOLLOWTHROUGH_TEXT, FACTOR_ADVICE)
+
+# Classical dignity -> a deterministic 0-100 strength score. Only four dignity
+# tiers exist in this engine (own/exalted/debilitated/neutral, see engine.py's
+# Graha.dignity) -- neutral is the common case and isn't inherently weak, so it
+# scores comfortably above the "needs attention" line unless combustion drags
+# it down. This is what the report's 5-factor and career-match percentages are
+# actually computed from -- not mock numbers.
+DIGNITY_SCORE = {"exalted": 92, "own": 82, "neutral": 68, "debilitated": 30}
+COMBUST_PENALTY = 15
+WATCH_THRESHOLD = 55
 
 KEY_HOUSES = (4, 5, 9, 10)          # used for the DESCRIPTIVE reads (study/exam/higher-ed/career text)
 TIMING_HOUSES = (10, 11)            # used for WINDOW TIMING only — career rise + gains, the direct
@@ -208,6 +218,73 @@ def _study_career_reads(chart, sig):
     }
 
 
+def _dignity_score(planet) -> tuple:
+    """Deterministic strength score from classical dignity, 0-100. Feeds the
+    5-factor and career-ranking percentages so every number on the report
+    traces back to a real chart placement."""
+    score = DIGNITY_SCORE[planet.dignity]
+    if planet.combust:
+        score = max(15, score - COMBUST_PENALTY)
+    status = "strong" if score >= WATCH_THRESHOLD else "watch"
+    return score, status
+
+
+def _five_factors(chart, sig) -> list:
+    """The report's 5 core factors, strongest-first. Each is scored from the
+    dignity of the classical house-lord that governs it (Saturn's own dignity
+    for Follow-Through, since that factor isn't house-lord dependent)."""
+    g = chart["grahas"]
+    items = []
+    for key, emoji, label, lord, house, expl in (
+        ("study", "🧠", "Study Habits", sig["fourth_lord"], sig["fourth_lord_house"],
+         STUDY_HOUSE[sig["fourth_lord_house"] - 1]),
+        ("exam", "🎯", "Exam & Performance", sig["fifth_lord"], sig["fifth_lord_house"],
+         EXAM_HOUSE[sig["fifth_lord_house"] - 1]),
+        ("highered", "🎓", "Higher Education Luck", sig["ninth_lord"], sig["ninth_lord_house"],
+         HIGHERED_HOUSE[sig["ninth_lord_house"] - 1]),
+        ("career", "🧭", "Career Direction", sig["tenth_lord"], sig["tenth_lord_house"],
+         CAREER_HOUSE[sig["tenth_lord_house"] - 1]),
+    ):
+        score, status = _dignity_score(g[lord])
+        items.append({"key": key, "emoji": emoji, "label": label, "lord": lord, "house": house,
+                     "score": score, "status": status, "explanation": expl,
+                     "advice": FACTOR_ADVICE[key] if status == "watch" else None})
+    sat_score, sat_status = _dignity_score(g["Saturn"])
+    items.append({"key": "followthrough", "emoji": "💪", "label": "Follow-Through", "lord": "Saturn",
+                 "house": None, "score": sat_score, "status": sat_status,
+                 "explanation": FOLLOWTHROUGH_TEXT[g["Saturn"].dignity],
+                 "advice": FACTOR_ADVICE["followthrough"] if sat_status == "watch" else None})
+    items.sort(key=lambda f: -f["score"])
+    return items
+
+
+def _career_candidates(chart, sig) -> list:
+    """Up to 3 distinct career archetypes, ranked by the dignity-strength of
+    the significator that points to each -- 10th lord (career action), 11th
+    lord (gains/network), Sun (authority/soul-purpose), with 5th/4th lord as
+    fallback significators if those three collide on the same house. Same
+    CAREER_ARCHETYPE table as the single-archetype read, just scored and
+    ranked instead of only taking the top one."""
+    g = chart["grahas"]
+    ref = sig["ref_sign"]
+    raw = [
+        (sig["tenth_lord"], sig["tenth_lord_house"]),
+        (sig["eleventh_lord"], houses_from(ref, g[sig["eleventh_lord"]].sign)),
+        ("Sun", houses_from(ref, g["Sun"].sign)),
+        (sig["fifth_lord"], sig["fifth_lord_house"]),
+        (sig["fourth_lord"], sig["fourth_lord_house"]),
+    ]
+    seen, out = set(), []
+    for lord, house in raw:
+        if house in seen:
+            continue
+        seen.add(house)
+        score, _ = _dignity_score(g[lord])
+        out.append({"archetype": CAREER_ARCHETYPE[house - 1], "lord": lord, "house": house, "score": score})
+    out.sort(key=lambda c: -c["score"])
+    return out[:3]
+
+
 def _stage_field_note(stage, field, career_direction):
     """Students still DECIDING (10th/12th) get general direction only -- no
     named fields, per design decision. Students already committed (college/
@@ -225,6 +302,8 @@ def vidyarthi_extras(chart, sig, today, stage=None, field=None):
     extras = {"sade_sati": _sade_sati(moon.sign, today)}
     extras.update(_hardship_and_remedy(chart, sig))
     extras.update(_study_career_reads(chart, sig))
+    extras["five_factors"] = _five_factors(chart, sig)
+    extras["career_candidates"] = _career_candidates(chart, sig)
     extras["stage"] = stage
     extras["stage_label"] = STAGE_LABEL.get(stage)
     extras["field"] = field
