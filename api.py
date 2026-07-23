@@ -32,6 +32,7 @@ from vidyarthi import compute_vidyarthi_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
+import users                 # account layer: create/link a user at payment time
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -192,6 +193,7 @@ def mark_paid(rid, payment_id=None, phone=None):
 # ----------------------------------------------------------------- geocode
 # geocoding lives in geocoding.py: cache -> CITIES_IN -> external -> Delhi fallback (#1)
 payments.ensure_tables(db)   # (#6) webhook_events + refunds tables
+users.ensure_tables(db)      # users + user_mobiles tables + reports.user_id link
 
 # ----------------------------------------------------------------- models
 class KundliIn(BaseModel):
@@ -401,9 +403,21 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     send_whatsapp_report, phone, rid,
                     rec["payload"]["meta"]["name"],
                     rec["payload"].get("product", "marriage"))
-                email = rec["payload"]["meta"].get("_email")
-                if email:                        # (#7) email + PDF delivery
-                    background_tasks.add_task(email_report, email, rid, rec["payload"])
+                form_email = rec["payload"]["meta"].get("_email")
+                # Account: create/link a user from the Razorpay payment (mobile +
+                # email). Prefer the email Razorpay collected; fall back to the one
+                # typed into the form. Never let account creation break the webhook.
+                pay_email = ent.get("email") or form_email or ""
+                try:
+                    uid = users.upsert_user_from_payment(
+                        db, mobile=phone, email=pay_email,
+                        name=rec["payload"]["meta"].get("name"))
+                    if uid:
+                        users.link_report(db, rid, uid)
+                except Exception as e:
+                    logger.error("[users] account upsert failed for %s: %s", rid, e)
+                if form_email:                   # (#7) email + PDF delivery
+                    background_tasks.add_task(email_report, form_email, rid, rec["payload"])
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -439,7 +453,39 @@ def get_report_api(rid: str):
     payload = _refresh_current_period(rec["payload"])
     if not rec["paid"]:
         return {"paid": False, "teaser": payload["teaser"]}
-    return {"paid": True, "report": payload}
+    account = None
+    try:                                 # saved mobile + email, shown post-payment
+        account = users.get_user_for_report(db, rid)
+    except Exception as e:
+        logger.error("[users] account lookup failed for %s: %s", rid, e)
+    return {"paid": True, "report": payload, "account": account}
+
+
+def _account_banner(rid: str) -> str:
+    """Small confirmation strip shown at the top of a paid report with the mobile
+    + email we saved for the account. Empty string when no account is linked, so
+    it can never break the page. Injected after <body> (report HTML is a full
+    document that ends its head with '</head><body>')."""
+    try:
+        u = users.get_user_for_report(db, rid)
+    except Exception as e:
+        logger.error("[users] banner lookup failed for %s: %s", rid, e)
+        return ""
+    if not u or not (u.get("mobile") or u.get("email")):
+        return ""
+    import html as _html
+    bits = []
+    if u.get("mobile"):
+        bits.append("Mobile: " + _html.escape(u["mobile"]))
+    if u.get("email"):
+        bits.append("Email: " + _html.escape(u["email"]))
+    detail = " &nbsp;&middot;&nbsp; ".join(bits)
+    return ("<div style=\"background:#0d3b2e;color:#eafff5;font-family:"
+            "system-ui,-apple-system,sans-serif;font-size:13.5px;line-height:1.5;"
+            "padding:10px 16px;text-align:center\">"
+            "Aapka account save ho gaya &mdash; " + detail + ". "
+            "Isi mobile se aap login karke apni saari reports dekh sakenge "
+            "(login jald aa raha hai).</div>")
 
 
 @app.get("/report/{rid}", include_in_schema=False)
@@ -451,14 +497,11 @@ def report_page(rid: str):
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
-    product = payload.get("product", "marriage")
-    if product == "milan":
-        return HTMLResponse(render_milan(payload))
-    if product == "blueprint":
-        return HTMLResponse(render_blueprint(payload))
-    if product == "vidyarthi":
-        return HTMLResponse(render_vidyarthi(payload))
-    return HTMLResponse(render_report(payload))
+    html = _render_for(payload.get("product", "marriage"), payload)
+    banner = _account_banner(rid)
+    if banner:
+        html = html.replace("</head><body>", "</head><body>" + banner, 1)
+    return HTMLResponse(html)
 
 
 @app.get("/report/{rid}/pdf", include_in_schema=False)

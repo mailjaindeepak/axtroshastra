@@ -16,6 +16,8 @@ Env: RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET (reused from the app).
 import os
 from datetime import datetime
 
+import users
+
 
 def ensure_tables(db):
     with db() as c:
@@ -82,6 +84,13 @@ def reconcile(db, limit: int = 200) -> dict:
                 with db() as c:
                     c.execute("UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=?",
                               (pay.get("id"), pay.get("contact") or "", rid))
+                try:                     # account: same mobile+email capture as the webhook
+                    uid = users.upsert_user_from_payment(
+                        db, mobile=pay.get("contact") or "", email=pay.get("email") or "")
+                    if uid:
+                        users.link_report(db, rid, uid)
+                except Exception:
+                    pass
                 recovered += 1
         except Exception:
             continue
