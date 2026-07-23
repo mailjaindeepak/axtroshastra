@@ -94,6 +94,34 @@ STAGE_LABEL = {
 # existing house-based direction to what it plausibly means for that field —
 # does NOT overclaim ("you will succeed in X"), just names what the general
 # indication tends to look like in that context. ----
+FOLLOWTHROUGH_TEXT = {
+    "exalted": "discipline comes easily to you when it matters — Saturn is exceptionally well-placed, "
+               "and hard, sustained effort is genuinely one of your natural strengths, not a struggle.",
+    "own": "you have real staying power — Saturn sits in a sign it governs, so consistent, unglamorous "
+          "effort is something you're built for more than most.",
+    "neutral": "follow-through isn't automatic, but it isn't fighting you either — a little structure "
+              "(a fixed routine, a visible checklist) is usually enough to make it stick.",
+    "debilitated": "this is what's actually holding you back, not talent or planets — comfort-seeking "
+                  "quietly wins over the harder task unless you name the hard task each day, out loud.",
+}
+
+# ---- what-to-do advice, shown only when a factor scores "watch" (needs
+# attention) — one concrete, doable action per factor, not a vague platitude ----
+FACTOR_ADVICE = {
+    "study": "Set ONE fixed daily study block — same time, same place — for the next two weeks, no "
+            "exceptions. Discipline that's scheduled beats discipline that's willed. Once the habit is "
+            "about 21 days old, this factor stops being a weakness.",
+    "exam": "Protect your sleep and solitude in the final week before any exam, more than one more "
+           "revision session. A calm, rested mind outperforms a crammed one on this placement specifically.",
+    "highered": "Don't wait for higher-education opportunities to come to you — apply, ask, and follow "
+               "up more than feels natural. This house rewards initiative more than it rewards waiting.",
+    "career": "Get specific about the *kind* of role you want, on paper, this month. A vague direction "
+             "underuses this placement; a named target doesn't.",
+    "followthrough": "Each morning, before you open your phone, say out loud the one hard task you're "
+                    "avoiding. Comfort-seeking wins by default — naming the task first removes its "
+                    "biggest advantage: silence.",
+}
+
 FIELD_NOTE = {
     "Engineering": "For engineering, this house energy usually shows up as either strong "
         "execution ability or a tendency to over-engineer simple problems — worth noticing which one you lean toward.",
