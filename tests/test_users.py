@@ -46,10 +46,12 @@ def test_webhook_creates_and_links_account(client):
     assert acct["mobile"] == "+919812345678"
     assert acct["email"] == "buyer@example.com"
 
-    # The saved mobile is shown on the paid report page.
+    # The saved details are shown on the paid report page (banner: "Account
+    # created" with the mobile formatted as +91 XXXXX XXXXX).
     html = client.get(f"/report/{rid}").text
-    assert "9812345678" in html
-    assert "account save" in html.lower()
+    assert "+91 98123 45678" in html
+    assert "buyer@example.com" in html
+    assert "account created" in html.lower()
 
 
 def test_bare_ten_digit_mobile_is_normalised(client):
