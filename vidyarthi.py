@@ -215,18 +215,24 @@ def _hardship_and_remedy(chart, sig):
 
 def _study_career_reads(chart, sig):
     g = chart["grahas"]
+    # Strongest/weakest of the 7 classical planets by the same continuous Uccha
+    # Bala score used for the 5-factor/career scoring -- NOT gated on the
+    # discrete own/exalted/debilitated dignity flag. That gate was too narrow:
+    # a real chart can easily have zero planets in own/exalted sign (confirmed
+    # bug -- Sonia, 7 Jan 2000 20:40 Jaipur, all 7 planets read "neutral" or
+    # "debilitated", so natural_gift fell through to None and rendered blank
+    # on the live report). max/min over 7 planets always finds someone.
+    gift_planets = [p for p in g.values() if p.name in PLANET_GIFT]
+    strongest = max(gift_planets, key=lambda p: _dignity_score(p)[0])
+    weakest = min(gift_planets, key=lambda p: _dignity_score(p)[0])
     return {
         "study_strength": STUDY_HOUSE[sig["fourth_lord_house"] - 1],
         "exam_strength": EXAM_HOUSE[sig["fifth_lord_house"] - 1],
         "higher_education": HIGHERED_HOUSE[sig["ninth_lord_house"] - 1],
         "career_direction": CAREER_HOUSE[sig["tenth_lord_house"] - 1],
         "career_archetype": CAREER_ARCHETYPE[sig["tenth_lord_house"] - 1],
-        "natural_gift": next((f"{p.name} — {PLANET_GIFT[p.name]}"
-                              for p in g.values()
-                              if p.dignity in ("own", "exalted") and p.name in PLANET_GIFT), None),
-        "growth_lesson": next((f"{p.name} — {PLANET_LESSON[p.name]}"
-                               for p in g.values()
-                               if p.dignity == "debilitated" and p.name in PLANET_LESSON), None),
+        "natural_gift": f"{strongest.name} — {PLANET_GIFT[strongest.name]}",
+        "growth_lesson": f"{weakest.name} — {PLANET_LESSON[weakest.name]}",
     }
 
 
