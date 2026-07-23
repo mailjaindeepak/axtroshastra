@@ -36,15 +36,27 @@ from products import CAREER_HOUSE, CAREER_ARCHETYPE, PLANET_GIFT, PLANET_LESSON
 from vidyarthi_maps import (STUDY_HOUSE, EXAM_HOUSE, HIGHERED_HOUSE, HARDSHIP_LINE,
                             STAGE_LABEL, FIELD_NOTE, FOLLOWTHROUGH_TEXT, FACTOR_ADVICE)
 
-# Classical dignity -> a deterministic 0-100 strength score. Only four dignity
-# tiers exist in this engine (own/exalted/debilitated/neutral, see engine.py's
-# Graha.dignity) -- neutral is the common case and isn't inherently weak, so it
-# scores comfortably above the "needs attention" line unless combustion drags
-# it down. This is what the report's 5-factor and career-match percentages are
-# actually computed from -- not mock numbers.
-DIGNITY_SCORE = {"exalted": 92, "own": 82, "neutral": 68, "debilitated": 30}
+# Uccha Bala (a real Shadbala sub-component): continuous 0-100 strength from
+# the planet's EXACT degree-distance to its classical exaltation point (100)
+# vs. its debilitation point, exactly 180 degrees opposite (0). Values below
+# are the standard classical exaltation degrees, expressed as absolute
+# ecliptic longitude (sign_index*30 + degree-in-sign, SIGNS order Mesha=0):
+# Sun 10 Mesha, Moon 3 Vrishabha, Mars 28 Makara, Mercury 15 Kanya,
+# Jupiter 5 Karka, Venus 27 Meena, Saturn 20 Tula.
+#
+# This replaces an earlier version that scored off engine.py's `dignity`
+# flag (own/exalted/debilitated/neutral -- 4 buckets total). That collapsed
+# every "neutral" placement -- roughly two-thirds of all possible sign
+# placements for any given planet -- onto one identical score, so most
+# factors converged on the same number across different people's charts
+# (a real, confirmed bug: 15/25 random test charts shared a duplicate
+# 5-factor score profile). Uccha Bala is degree-based, so it varies
+# continuously and is effectively unique per birth moment.
+EXALT_DEG = {"Sun": 10.0, "Moon": 33.0, "Mars": 298.0, "Mercury": 165.0,
+            "Jupiter": 95.0, "Venus": 357.0, "Saturn": 200.0}
+DIGNITY_SCORE_FALLBACK = {"exalted": 92, "own": 82, "neutral": 68, "debilitated": 30}  # Rahu/Ketu safety net
 COMBUST_PENALTY = 15
-WATCH_THRESHOLD = 55
+WATCH_THRESHOLD = 50
 
 KEY_HOUSES = (4, 5, 9, 10)          # used for the DESCRIPTIVE reads (study/exam/higher-ed/career text)
 TIMING_HOUSES = (10, 11)            # used for WINDOW TIMING only — career rise + gains, the direct
@@ -219,12 +231,20 @@ def _study_career_reads(chart, sig):
 
 
 def _dignity_score(planet) -> tuple:
-    """Deterministic strength score from classical dignity, 0-100. Feeds the
-    5-factor and career-ranking percentages so every number on the report
-    traces back to a real chart placement."""
-    score = DIGNITY_SCORE[planet.dignity]
+    """Continuous 0-100 strength score (Uccha Bala: degree-distance from the
+    planet's exact debilitation point -> 0, to its exact exaltation point ->
+    100), minus a combustion penalty. Feeds the 5-factor and career-ranking
+    percentages so every number on the report traces back to a real,
+    per-degree chart placement -- not a coarse dignity bucket."""
+    exalt = EXALT_DEG.get(planet.name)
+    if exalt is None:  # Rahu/Ketu have no classical exaltation degree in this system
+        score = float(DIGNITY_SCORE_FALLBACK[planet.dignity])
+    else:
+        debil = (exalt + 180) % 360
+        score = abs((planet.lon - debil + 180) % 360 - 180) / 180 * 100
     if planet.combust:
-        score = max(15, score - COMBUST_PENALTY)
+        score = max(5, score - COMBUST_PENALTY)
+    score = round(score)
     status = "strong" if score >= WATCH_THRESHOLD else "watch"
     return score, status
 
