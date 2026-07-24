@@ -497,7 +497,7 @@ fbq('track', 'PageView');
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
-var REPORT_ID = null;
+window.REPORT_ID = null; window.__renderTeaser = renderTeaser;
 
 // populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
@@ -642,7 +642,7 @@ function renderTeaser(t){
   });
   var el = document.getElementById('teaser');
   el.classList.add('show');
-  el.scrollIntoView({behavior:'smooth'});
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
   sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
   sb.setAttribute('href', 'javascript:void(0)');
@@ -763,7 +763,8 @@ window.addEventListener('scroll', function(){
     }).join('');
     list.classList.add('open');
   }
-  function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  function pick(c){selected=c;window.__axCity=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  window.__axApplyCity=function(c){selected=c;window.__axCity=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();};
   inp.addEventListener('input',function(){
     hint.textContent='';var q=inp.value.trim();if(selected&&q===selected.label){items=[];render();clearTimeout(timer);return;}
     clearTimeout(timer);
@@ -786,13 +787,14 @@ window.addEventListener('scroll', function(){
   document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
   var form=inp.closest('form');
   if(form)form.addEventListener('submit',function(e){
-    if(!selected||inp.value.trim()!==selected.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
+    var __c=selected||window.__axCity; if(!__c||inp.value.trim()!==__c.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
   },true);
   var of=window.fetch;
   window.fetch=function(url,opts){
     try{
-      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected&&inp.value.trim()===selected.label){
-        var b=JSON.parse(opts.body);b.lat=selected.lat;b.lon=selected.lon;b.tz=selected.tz;b.place=selected.label;opts.body=JSON.stringify(b);
+      var __c=selected||window.__axCity;
+      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&__c&&inp.value.trim()===__c.label){
+        var b=JSON.parse(opts.body);b.lat=__c.lat;b.lon=__c.lon;b.tz=__c.tz;b.place=__c.label;opts.body=JSON.stringify(b);
       }
     }catch(_){}
     return of.apply(this,arguments);
@@ -816,6 +818,7 @@ window.addEventListener('scroll', function(){
   box.addEventListener('click', function(e){
     var b=e.target.closest('button'); if(!b) return;
     var l=b.getAttribute('data-l'); if(l===CURRENT) return;
+    try{ sessionStorage.setItem('axtro_switch','1'); }catch(_){}
     location.href = TARGET[l] || '/career';
   });
   document.body.appendChild(box);
@@ -844,8 +847,16 @@ window.addEventListener('scroll', function(){
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
   function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
-  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
-  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  function checkDate(){
+    var y=(yy.value||"").trim(), cur=new Date().getFullYear(), msg="";
+    if(y.length===4){
+      var n=+y;
+      if(n<1900 || n>cur){ msg=L("Enter a birth year between 1900 and "+cur+".","Birth year 1900 se "+cur+" ke beech daaliye."); }
+      else if(!dateValid()){ msg=L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
+    }
+    dobHint.textContent = msg;
+  }
+  if(dd){ ["input","change"].forEach(function(ev){ dd.addEventListener(ev,checkDate); yy.addEventListener(ev,checkDate); }); mm.addEventListener("change",checkDate); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
@@ -868,13 +879,54 @@ window.addEventListener('scroll', function(){
     brand.addEventListener("click", function(){ location.href="/"; });
     brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
   var ov=document.getElementById("calcOv");
-  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ var g=ov.classList.contains("show"); document.body.style.overflow = g ? "hidden" : ""; var cap=document.getElementById("axlang"); if(cap) cap.style.display = g ? "none" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
   function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return setTimeout(wireCap,200); }
     cap.style.transition="opacity .25s ease"; var t;
     window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
     function full(){ cap.style.opacity=""; clearTimeout(t); }
     cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
   wireCap();
+})();
+</script>
+<script>
+/* Retain what the user typed (and any generated snapshot) across the
+   English <-> Hinglish route switch, so switching pages never loses data. */
+(function(){
+  var KEY='axtro_career_state';
+  var IDS=['f-name','f-stage','f-field','f-dd','f-mm','f-yy','f-hh','f-mm2','f-ap','f-approx','f-place'];
+  function save(){
+    try{
+      var st={};
+      IDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
+      var u=document.getElementById('unknownTime'); if(u) st.unknownTime=u.checked;
+      if(window.__axCity) st.city=window.__axCity;
+      if(window.REPORT_ID) st.reportId=window.REPORT_ID;
+      if(window.__teaserData) st.teaser=window.__teaserData;
+      sessionStorage.setItem(KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+  function fire(el,type){ try{ el.dispatchEvent(new Event(type,{bubbles:true})); }catch(e){} }
+  function restore(){
+    var sw=null; try{ sw=sessionStorage.getItem('axtro_switch'); sessionStorage.removeItem('axtro_switch'); }catch(e){}
+    if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
+    var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
+    if(!st) return;
+    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    var stg=document.getElementById('f-stage'); if(stg && st['f-stage']!=null) fire(stg,'change');
+    var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
+    var hh=document.getElementById('f-hh'); if(hh) fire(hh,'change');
+    if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
+    if(st.reportId && st.teaser){
+      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
+      window.__axNoScroll=true;
+      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
+      window.__axNoScroll=false;
+    }
+  }
+  document.addEventListener('input', save, true);
+  document.addEventListener('change', save, true);
+  window.addEventListener('pagehide', save);
+  if(document.readyState!=='loading') restore(); else document.addEventListener('DOMContentLoaded', restore);
 })();
 </script>
 </body>
