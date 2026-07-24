@@ -206,6 +206,23 @@ fbq('track', 'PageView');
 })(window, document, "clarity", "script", "xkbm56cwzh");
 </script>
 <style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
+<style>
+/* social proof / reviews (shared with homepage) */
+.stats-row{display:flex;gap:10px;margin:22px 0}
+.stat-tile{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
+.stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
+.stat-tile .n .star{color:var(--haldi)}
+.stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
+.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
+.revs::-webkit-scrollbar{display:none}
+.rev{flex:0 0 84%;max-width:320px;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
+.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
+.rev p{font-size:14.5px;color:var(--ink);line-height:1.5;margin:0}
+.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
+.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+@media(min-width:560px){.rev{flex:0 0 46%}}
+@media(min-width:720px){.rev{flex:0 0 320px}}
+</style>
 </head>
 <body>
 
@@ -377,8 +394,23 @@ fbq('track', 'PageView');
 <!-- ============ SOCIAL PROOF ============ -->
 <section class="proof">
   <div class="wrap">
-    <p class="count" id="reportCount"></p>
-    <p class="cap">reports generated</p>
+        <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">Loved across India</p>
+      <h2>You're in good company</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+    </div>
+        <div class="revs" id="revsTrack">
+      <div class="rev"><div class="stars">★★★★★</div><p>"Bought it half-expecting generic gyaan. The career and wealth sections were oddly specific about my actual life — not horoscope-column vague."</p><div class="who">— Nikhil, 29</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"What sold me: every point had a reason — dasha, house, lord. Took a few lines to a pandit ji and he agreed. Felt legit."</p><div class="who">— Zoya, 31</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Read it on a random low day and the 'coming phases' bit genuinely gave me something to look forward to. No fake hype, just a map."</p><div class="who">— Tanvi, 30</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"The strengths section named things about me I could never put into words. Screenshotted it for the days I doubt myself."</p><div class="who">— Rohit, 28</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"I liked the honesty — it listed growth lessons too, not just flattery. That's what made the praise believable."</p><div class="who">— Kavya, 26</div></div>
+    </div>
+    <p class="revs-hint">← swipe, or hover to pause →</p>
   </div>
 </section>
 
@@ -673,6 +705,32 @@ window.addEventListener('scroll', function(){
   opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
   function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
   hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
+})();
+</script>
+
+<script>
+/* Reviews auto-scroll: horizontal auto-scroll; pause on hover (desktop) or tap
+   (mobile); resume when the user scrolls the page up or down. */
+(function(){
+  var track = document.getElementById('revsTrack');
+  if(!track) return;
+  Array.prototype.slice.call(track.children).forEach(function(n){ track.appendChild(n.cloneNode(true)); });
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var paused = reduce, speed = 0.5;
+  function half(){ return track.scrollWidth / 2; }
+  function tick(){
+    if(!paused && half() > 0){
+      track.scrollLeft += speed;
+      if(track.scrollLeft >= half()) track.scrollLeft -= half();
+    }
+    requestAnimationFrame(tick);
+  }
+  track.addEventListener('mouseenter', function(){ paused = true; });
+  track.addEventListener('mouseleave', function(){ if(!reduce) paused = false; });
+  track.addEventListener('pointerdown', function(){ paused = true; });
+  track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
+  window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
+  requestAnimationFrame(tick);
 })();
 </script>
 </body>
