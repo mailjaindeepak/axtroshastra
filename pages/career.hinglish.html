@@ -2,24 +2,18 @@
 <html lang="hi-IN">
 <head>
 <meta charset="UTF-8">
-<script>
-(function(){
-  try{
-    var l = localStorage.getItem('axlang') || 'en';
-    if(l === 'en') document.documentElement.classList.add('ax-pre');
-  }catch(e){}
-  setTimeout(function(){ document.documentElement.classList.remove('ax-pre'); }, 1500);
-})();
-</script>
-<style>html.ax-pre body{visibility:hidden}</style>
+<script>window.__axlang='hi';</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Career Mein Breakthrough Kab? — Student Success Report | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
-<link rel="canonical" href="https://www.axtroshastra.com/padhai">
+<link rel="canonical" href="https://www.axtroshastra.com/hinglish/career">
+<link rel="alternate" hreflang="en-IN" href="https://www.axtroshastra.com/career">
+<link rel="alternate" hreflang="hi-IN" href="https://www.axtroshastra.com/hinglish/career">
+<link rel="alternate" hreflang="x-default" href="https://www.axtroshastra.com/career">
 <meta property="og:title" content="Career Mein Breakthrough Kab? — Student Success Report ₹499">
 <meta property="og:description" content="Aapki kundli se exact career &amp; academic timing windows. NASA-grade precision, 2 minute mein.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
-<meta property="og:url" content="https://www.axtroshastra.com/padhai">
+<meta property="og:url" content="https://www.axtroshastra.com/hinglish/career">
 <meta property="og:type" content="website">
 
 <meta name="description" content="Aapki kundli se exact career aur academic success timing windows — years aur months, guesswork nahi. NASA-grade precision. Report ₹499, 2 minute mein.">
@@ -503,7 +497,7 @@ fbq('track', 'PageView');
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
-var REPORT_ID = null;
+window.REPORT_ID = null; window.__renderTeaser = renderTeaser;
 
 // populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
@@ -648,7 +642,7 @@ function renderTeaser(t){
   });
   var el = document.getElementById('teaser');
   el.classList.add('show');
-  el.scrollIntoView({behavior:'smooth'});
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
   sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
   sb.setAttribute('href', 'javascript:void(0)');
@@ -769,7 +763,8 @@ window.addEventListener('scroll', function(){
     }).join('');
     list.classList.add('open');
   }
-  function pick(c){selected=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  function pick(c){selected=c;window.__axCity=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();}
+  window.__axApplyCity=function(c){selected=c;window.__axCity=c;inp.value=c.label;hint.textContent='';items=[];active=-1;render();};
   inp.addEventListener('input',function(){
     hint.textContent='';var q=inp.value.trim();if(selected&&q===selected.label){items=[];render();clearTimeout(timer);return;}
     clearTimeout(timer);
@@ -792,13 +787,14 @@ window.addEventListener('scroll', function(){
   document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
   var form=inp.closest('form');
   if(form)form.addEventListener('submit',function(e){
-    if(!selected||inp.value.trim()!==selected.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
+    var __c=selected||window.__axCity; if(!__c||inp.value.trim()!==__c.label){e.preventDefault();e.stopImmediatePropagation();hint.textContent=(window.__axlang==='en'?'Please pick your birth city from the list.':'Apni birth city list se chuniye.');inp.focus();}
   },true);
   var of=window.fetch;
   window.fetch=function(url,opts){
     try{
-      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&selected&&inp.value.trim()===selected.label){
-        var b=JSON.parse(opts.body);b.lat=selected.lat;b.lon=selected.lon;b.tz=selected.tz;b.place=selected.label;opts.body=JSON.stringify(b);
+      var __c=selected||window.__axCity;
+      if(typeof url==='string'&&url.indexOf('/api/kundli')>=0&&opts&&opts.body&&__c&&inp.value.trim()===__c.label){
+        var b=JSON.parse(opts.body);b.lat=__c.lat;b.lon=__c.lon;b.tz=__c.tz;b.place=__c.label;opts.body=JSON.stringify(b);
       }
     }catch(_){}
     return of.apply(this,arguments);
@@ -807,142 +803,25 @@ window.addEventListener('scroll', function(){
 </script>
 
 <script>
-/* Language toggle: Hinglish (default) <-> English. Page copy only. Self-contained. */
+/* Language switcher -> navigation only. Same UI as before; clicking routes to the
+   other language's page instead of swapping text in place (prevents content/state leak). */
 (function(){
-  var EN = {
-    "Sirf sheher ya zila kaafi hai — locality (jaise Punjabi Bagh) search mein nahi aayegi.":"Just your city or district is enough — a locality (like Punjabi Bagh) won't appear in search.",
-    "Career mein":"When will my","breakthrough":"career take off?","kab?":"",
-    "Apni details bhariye — jawab 2 minute mein.":"Enter your details below and get the answer in 2 minutes.",
-    "Apni birth details daaliye 👇":"Enter your birth details 👇",
-    "Naam":"Name",
-    "Aap kis stage par hain?":"Which stage are you at?",
-    "Stage chuniye":"Choose your stage",
-    "10th grade — stream choose karna hai":"10th grade — choosing a stream",
-    "12th grade — degree/field choose karna hai":"12th grade — choosing a degree/field",
-    "College/Undergrad — job ya postgrad":"College/Undergrad — job vs postgrad",
-    "Postgrad — business ya job":"Postgrad — business vs job",
-    "Aapka field/stream kya hai?":"What's your field/stream?",
-    "Field chuniye":"Choose your field",
-    "Approximate time":"Approximate time",
-    "Subah (4 AM – 10 AM)":"Morning (4 AM – 10 AM)",
-    "Din (10 AM – 4 PM)":"Day (10 AM – 4 PM)",
-    "Shaam (4 PM – 10 PM)":"Evening (4 PM – 10 PM)",
-    "Raat (10 PM – 4 AM)":"Night (10 PM – 4 AM)",
-    "Bilkul nahi pata":"No idea at all",
-    "Birth time exactly nahi pata?":"Don't know your exact birth time?",
-    "Koi baat nahi — most people don't. Hum approximate time ke saath kaam karte hain.":"No problem — most people don't. We work with an approximate time.",
-    "Hamari specialty hai.":"It's our specialty.",
-    "Meri kundli check karo — FREE":"Check my kundli — FREE",
-    "Kyun alag hai":"Why it's different",
-    "Yeh report alag kyun hai":"Why this report is different",
-    "Koi astrologer opinion nahi. Sirf calculation.":"No astrologer's opinion. Just calculation.",
-    "Traditional astrologers apne experience se batate hain — har astrologer alag jawab deta hai. Hum aapki kundli ko NASA-grade planetary data se compute karte hain — wahi calculations jo professional observatories use karti hain (NASA JPL ephemeris). Same chart, same answer, every time.":"Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart with NASA-grade planetary data — the same calculations professional observatories use (NASA JPL ephemeris). Same chart, same answer, every time.",
-    "Hum guarantee nahi karte. Hum probability batate hain.":"We don't guarantee. We give probabilities.",
-    "Jo bhi aapko \"pakka breakthrough milega\" bole, woh jhooth bol raha hai. Kundli timing windows batati hai — kab yog strong hai, kab weak. Effort aapka hai; hum sirf timing clear karte hain.":"Anyone who tells you \"you're guaranteed a breakthrough\" is lying. Your chart shows timing windows — when the chance is strong, when it's weak. The effort is yours; we just make the timing clear.",
-    "Banaya IIT–IIM engineers ne.":"Built by IIT–IIM engineers.",
-    "Isliye calculation par bharosa hai, kismat-connection par nahi. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.":"That's why we trust calculation, not a fortune-teller's connection. We're not astrologers selling reassurance — we're engineers who encoded classical Vedic dasha–transit principles into software. So the answer comes from your chart, not from someone's mood that day.",
-    "Report ke andar":"Inside the report",
-    "Report mein kya milega":"What you get in the report",
-    "Aapke career breakthrough windows":"Your career breakthrough windows",
-    "Timeline 2026–2036, har window ka strength grade — Strong / Moderate / Building.":"Timeline 2026–2036, each window's strength grade — Strong / Moderate / Building.",
-    "Har window ka reason":"The reason for each window",
-    "Kaunsi dasha, kaunsa transit. Blind belief nahi, logic.":"Which dasha, which transit. Not blind belief — logic.",
-    "Study & exam strength":"Study & exam strength",
-    "4th aur 5th house se — kaunsi study habits, kaunsa exam-pattern aapke liye kaam karta hai.":"From your 4th and 5th house — which study habits and exam pattern work for you.",
-    "Higher education & career direction":"Higher education & career direction",
-    "9th aur 10th house se — kahan luck hai, kaunsa field suit karta hai.":"From your 9th and 10th house — where your luck lies, which field suits you.",
-    "Honest hardship — kya sudhaarna hai":"Being honest — what to fix",
-    "Kaunsi habit progress rok rahi hai, aur classical correction kya hai.":"Which habit is holding back progress, and what the classical correction is.",
-    "Kis window mein push karna hai, kab prepare karna hai.":"Which window to push hard in, and when to prepare.",
-    "Birth time problem?":"Birth time problem?",
-    "Birth time exact nahi pata?":"Don't know your exact birth time?",
-    "Yahi hamari specialty hai.":"This is exactly our specialty.",
-    "logon ko apna exact birth time nahi pata":"of people don't know their exact birth time",
-    "±15 minute ka difference windows ko months tak shift kar sakta hai. Doosri websites 12:00 baje assume karke galat report de deti hain. Hum aapke approximate time ke saath kaam karte hain — aur agar aap chahein toh life events se aapka time":"A ±15-minute difference can shift the windows by months. Other sites just assume 12:00 noon and give you a wrong report. We work with your approximate time — and if you like, from your life events we can",
-    "bhi kar sakte hain.":"your time too.",
-    "Sawaal-jawaab":"Q&A",
-    "Aksar poochhe gaye sawaal":"Frequently asked questions",
-    "Kya yeh accurate hai?":"Is this accurate?",
-    "Planetary positions 100% accurate hain — NASA-grade ephemeris data. Timing windows probability hain, appointment nahi. Hum honestly batate hain kaunsa window strong hai aur kaunsa weak — jo koi bhi \"guarantee\" de, usse door rahiye.":"Planetary positions are 100% accurate — NASA-grade ephemeris data. Timing windows are probabilities, not appointments. We honestly tell you which window is strong and which is weak — stay away from anyone offering a \"guarantee\".",
-    "Mujhe birth time nahi pata. Report ban sakti hai?":"I don't know my birth time. Can I still get a report?",
-    "Haan. Approximate time ke saath hum windows nikaal sakte hain (thodi wider range ke saath), aur rectification option se time narrow bhi ho sakta hai.":"Yes. With an approximate time we can still find the windows (with a slightly wider range), and the rectification option can narrow the time down.",
-    "Report kab milegi?":"When will I get the report?",
-    "Payment ke turant baad, screen par. PDF download aur WhatsApp copy bhi milti hai.":"Right after payment, on screen. You also get a PDF download and a WhatsApp copy.",
-    "Kya yeh computer-generated hai?":"Is this computer-generated?",
-    "Calculations computer karta hai — isliye unbiased hai. Rules wahi classical Vedic principles hain (dasha + transit) jo ek achha astrologer use karta hai. Difference: humara system thakta nahi, bhoolta nahi, aur mood se jawab nahi badalta.":"The computer does the calculations — so it's unbiased. The rules are the same classical Vedic principles (dasha + transit) a good astrologer uses. The difference: our system never tires, never forgets, and never changes its answer with its mood.",
-    "Yeh kaun log hain?":"Who are you?",
-    "IIT–IIM alumni engineers jinhone classical Vedic rules ko software mein encode kiya. Hum astrologer nahi hain — isliye hamara system opinion nahi deta, sirf calculation.":"IIT–IIM alumni engineers who encoded classical Vedic rules into software. We're not astrologers — so our system doesn't give opinions, just calculation.",
-    "100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.":"100% refund, no questions asked, 7 days. Message us on WhatsApp, done.",
-    "Meri details safe hain?":"Are my details safe?",
-    "Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi astrologer ko nahi bechte. (Yeh common industry practice hai; hum nahi karte.)":"Your birth details are used only for your report. No spam calls — we don't sell your number to any astrologer. (It's common industry practice; we don't do it.)",
-    "Apna potential pehchaanne se pehle,":"Before you find your real potential,",
-    "apna timing jaan lo.":"know your timing.",
-    "Aapki":"Your",
-    "kundli ready hai ✅":"kundli is ready ✅",
-    "⭐ Aapka current dasha period directly relevant hai aapke career breakthrough se.":"⭐ Your current dasha period is directly relevant to your career breakthrough.",
-    "Windows calculate ho rahe hain…":"Calculating your windows…",
-    "Windows calculated. Exact years, months aur strength grade report mein.":"Windows calculated. Exact years, months and strength grade in the report.",
-    "Aapke":"Your",
-    "— साल aur months, with strength grade":"— years and months, with strength grade",
-    "Study aur exam-success pattern":"Study and exam-success pattern",
-    "kaunsi habits kaam karengi":"which habits will work for you",
-    "Higher education aur career direction":"Higher education and career direction",
-    "kahan luck hai, kaunsa field suit karta hai":"where your luck lies, which field suits you",
-    "Weak periods explained":"Weak periods explained",
-    "kab mehnat zyada lagti hai, aur kyun":"when effort feels heavier, and why",
-    "Honest hardship + correction":"Honest hardship + correction",
-    "kaunsi habit sudharni hai, aur classical remedy":"which habit to fix, and the classical remedy",
-    "Aapki kundli abhi compute ho rahi hai — templates nahi.":"Your kundli is being computed right now — not templates.",
-    "Full Career & Academic Timing Report":"Full Career & Academic Timing Report",
-    "Career & Academic Timing Report":"Career & Academic Timing Report"
-  };
-  var PH = { "f-name": "Your name" };
-  var TITLE = { hi: document.title, en: "When Will My Career Take Off? — Career & Academic Timing Report | Axtroshastra" };
-
-  function walk(node, fn){
-    for(var i=0;i<node.childNodes.length;i++){
-      var n=node.childNodes[i];
-      if(n.nodeType===3){ fn(n); }
-      else if(n.nodeType===1 && n.tagName!=='SCRIPT' && n.tagName!=='STYLE'
-              && n.id!=='axlang' && !(n.classList && n.classList.contains('city-suggest'))){
-        walk(n, fn);
-      }
-    }
-  }
-  function apply(lang){
-    walk(document.body, function(tn){
-      if(lang!=='en'){ if(tn.__hi!=null) tn.nodeValue = tn.__hi; return; }
-      var raw = tn.nodeValue;
-      var key = raw.replace(/\s+/g,' ').trim();
-      if(!key) return;
-      if(tn.__hi==null) tn.__hi = raw;
-      if(Object.prototype.hasOwnProperty.call(EN, key)){
-        var lead=(raw.match(/^\s*/)||[''])[0], trail=(raw.match(/\s*$/)||[''])[0];
-        tn.nodeValue = lead + EN[key] + trail;
-      }
-    });
-    for(var id in PH){ var el=document.getElementById(id); if(el){ if(el.__phhi==null) el.__phhi=el.getAttribute('placeholder')||''; el.setAttribute('placeholder', lang==='en'? PH[id] : el.__phhi); } }
-    document.documentElement.lang = (lang==='en')?'en':'hi-IN';
-    if(TITLE[lang]) document.title = TITLE[lang];
-    try{ localStorage.setItem('axlang', lang); }catch(e){}
-    var box=document.getElementById('axlang');
-    if(box){ box.querySelector('[data-l=hi]').classList.toggle('on', lang!=='en');
-             box.querySelector('[data-l=en]').classList.toggle('on', lang==='en'); }
-    window.__axlang=lang;
-    document.documentElement.classList.remove('ax-pre');
-    try{ if(window.__teaserData && window.__renderTeaser) window.__renderTeaser(window.__teaserData); }catch(e){}
-  }
-
+  var CURRENT='hi';
+  window.__axlang = CURRENT;
+  var TARGET = { hi:'/hinglish/career', en:'/career' };
   var css=document.createElement('style');
   css.textContent='#axlang{position:fixed;top:10px;right:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang button{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em}#axlang button.on{background:#E4B04A;color:#151C39}';
   document.head.appendChild(css);
   var box=document.createElement('div'); box.id='axlang';
   box.innerHTML='<button data-l="hi">Hinglish</button><button data-l="en">English</button>';
-  box.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) apply(b.getAttribute('data-l')); });
+  var cur=box.querySelector('[data-l="'+CURRENT+'"]'); if(cur) cur.classList.add('on');
+  box.addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var l=b.getAttribute('data-l'); if(l===CURRENT) return;
+    try{ sessionStorage.setItem('axtro_switch','1'); }catch(_){}
+    location.href = TARGET[l] || '/career';
+  });
   document.body.appendChild(box);
-
-  var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}
-  apply(saved);
 })();
 </script>
 
@@ -968,8 +847,16 @@ window.addEventListener('scroll', function(){
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
   function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
-  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
-  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  function checkDate(){
+    var y=(yy.value||"").trim(), cur=new Date().getFullYear(), msg="";
+    if(y.length===4){
+      var n=+y;
+      if(n<1900 || n>cur){ msg=L("Enter a birth year between 1900 and "+cur+".","Birth year 1900 se "+cur+" ke beech daaliye."); }
+      else if(!dateValid()){ msg=L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
+    }
+    dobHint.textContent = msg;
+  }
+  if(dd){ ["input","change"].forEach(function(ev){ dd.addEventListener(ev,checkDate); yy.addEventListener(ev,checkDate); }); mm.addEventListener("change",checkDate); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
@@ -992,13 +879,54 @@ window.addEventListener('scroll', function(){
     brand.addEventListener("click", function(){ location.href="/"; });
     brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
   var ov=document.getElementById("calcOv");
-  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ var g=ov.classList.contains("show"); document.body.style.overflow = g ? "hidden" : ""; var cap=document.getElementById("axlang"); if(cap) cap.style.display = g ? "none" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
   function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return setTimeout(wireCap,200); }
     cap.style.transition="opacity .25s ease"; var t;
     window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
     function full(){ cap.style.opacity=""; clearTimeout(t); }
     cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
   wireCap();
+})();
+</script>
+<script>
+/* Retain what the user typed (and any generated snapshot) across the
+   English <-> Hinglish route switch, so switching pages never loses data. */
+(function(){
+  var KEY='axtro_career_state';
+  var IDS=['f-name','f-stage','f-field','f-dd','f-mm','f-yy','f-hh','f-mm2','f-ap','f-approx','f-place'];
+  function save(){
+    try{
+      var st={};
+      IDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
+      var u=document.getElementById('unknownTime'); if(u) st.unknownTime=u.checked;
+      if(window.__axCity) st.city=window.__axCity;
+      if(window.REPORT_ID) st.reportId=window.REPORT_ID;
+      if(window.__teaserData) st.teaser=window.__teaserData;
+      sessionStorage.setItem(KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+  function fire(el,type){ try{ el.dispatchEvent(new Event(type,{bubbles:true})); }catch(e){} }
+  function restore(){
+    var sw=null; try{ sw=sessionStorage.getItem('axtro_switch'); sessionStorage.removeItem('axtro_switch'); }catch(e){}
+    if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
+    var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
+    if(!st) return;
+    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    var stg=document.getElementById('f-stage'); if(stg && st['f-stage']!=null) fire(stg,'change');
+    var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
+    var hh=document.getElementById('f-hh'); if(hh) fire(hh,'change');
+    if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
+    if(st.reportId && st.teaser){
+      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
+      window.__axNoScroll=true;
+      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
+      window.__axNoScroll=false;
+    }
+  }
+  document.addEventListener('input', save, true);
+  document.addEventListener('change', save, true);
+  window.addEventListener('pagehide', save);
+  if(document.readyState!=='loading') restore(); else document.addEventListener('DOMContentLoaded', restore);
 })();
 </script>
 </body>
