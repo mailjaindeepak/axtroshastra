@@ -22,7 +22,8 @@ import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
-from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
+                               PlainTextResponse, RedirectResponse, Response)
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
@@ -33,6 +34,7 @@ from geocoding import resolve as geocode          # (#1) accurate, cached geocod
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
 import users                 # account layer: create/link a user at payment time
+import auth                  # OTP login + session layer (Twilio Verify)
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -194,6 +196,7 @@ def mark_paid(rid, payment_id=None, phone=None):
 # geocoding lives in geocoding.py: cache -> CITIES_IN -> external -> Delhi fallback (#1)
 payments.ensure_tables(db)   # (#6) webhook_events + refunds tables
 users.ensure_tables(db)      # users + user_mobiles tables + reports.user_id link
+auth.ensure_tables(db)       # sessions + login_otps (OTP login)
 
 # ----------------------------------------------------------------- models
 class KundliIn(BaseModel):
@@ -224,6 +227,73 @@ BAND_MID = {"subah": "07:00", "din": "13:00", "shaam": "19:00", "raat": "01:00"}
 
 # ----------------------------------------------------------------- routes
 PAGES_DIR = os.path.join(BASE, "pages")
+
+# ----------------------------------------------------------------- site nav
+# A self-contained hamburger menu injected into every served HTML page. Classes
+# are `axs-nav-` prefixed and all styles are scoped/inline so it cannot clash with
+# any page's own CSS. Injected right after <body> by _inject_nav().
+NAV_LINKS = [
+    ("Login / My Account", "/account"),
+    ("About Us", "/about"),
+    ("Privacy Policy", "/privacy"),
+    ("Terms of Use", "/terms"),
+    ("Blogs", "/blog"),
+]
+
+def _nav_html() -> str:
+    items = "".join(
+        f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in NAV_LINKS
+    )
+    return (
+        '<div id="axs-nav">'
+        '<button class="axs-nav-btn" aria-label="Menu" '
+        'onclick="document.getElementById(\'axs-nav\').classList.toggle(\'open\')">'
+        '<span></span><span></span><span></span></button>'
+        '<div class="axs-nav-backdrop" '
+        'onclick="document.getElementById(\'axs-nav\').classList.remove(\'open\')"></div>'
+        '<nav class="axs-nav-panel">'
+        '<div class="axs-nav-head">Menu</div>'
+        + items +
+        '</nav></div>'
+        '<style>'
+        '#axs-nav .axs-nav-btn{position:fixed;top:14px;right:14px;z-index:9998;'
+        'width:44px;height:44px;border:0;border-radius:11px;background:rgba(21,28,57,.92);'
+        'display:flex;flex-direction:column;justify-content:center;align-items:center;'
+        'gap:4px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}'
+        '#axs-nav .axs-nav-btn span{width:20px;height:2px;background:#E4B04A;border-radius:2px}'
+        '#axs-nav .axs-nav-backdrop{position:fixed;inset:0;z-index:9998;background:rgba(10,12,24,.5);'
+        'opacity:0;pointer-events:none;transition:opacity .2s}'
+        '#axs-nav.open .axs-nav-backdrop{opacity:1;pointer-events:auto}'
+        '#axs-nav .axs-nav-panel{position:fixed;top:0;right:0;z-index:9999;height:100%;width:270px;'
+        'max-width:82vw;background:#151C39;color:#F3EFE4;transform:translateX(100%);'
+        'transition:transform .22s ease;box-shadow:-8px 0 24px rgba(0,0,0,.25);'
+        'padding:22px 0;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif}'
+        '#axs-nav.open .axs-nav-panel{transform:translateX(0)}'
+        '#axs-nav .axs-nav-head{font-size:12px;letter-spacing:.16em;text-transform:uppercase;'
+        'color:#E4B04A;font-weight:700;padding:6px 24px 14px}'
+        '#axs-nav .axs-nav-item{display:block;padding:14px 24px;color:#F3EFE4;text-decoration:none;'
+        'font-size:15.5px;border-top:1px solid rgba(255,255,255,.07)}'
+        '#axs-nav .axs-nav-item:active{background:rgba(255,255,255,.06)}'
+        '@media print{#axs-nav{display:none}}'
+        '</style>'
+    )
+
+def _inject_nav(html: str) -> str:
+    """Insert the hamburger nav right after the opening <body> tag. If for some
+    reason there's no <body>, return the html unchanged (never break a page)."""
+    import re
+    nav = _nav_html()
+    new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + nav,
+                          html, count=1, flags=re.IGNORECASE)
+    return new_html if n else html
+
+def _serve_page_with_nav(path: str):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return HTMLResponse(_inject_nav(f.read()))
+    except Exception as e:
+        logger.error("[nav] failed to serve %s: %s", path, e)
+        return FileResponse(path)
 
 
 @app.get("/healthz", include_in_schema=False)
@@ -287,7 +357,7 @@ def landing():
     for candidate in ("home.html", "shaadi.html"):
         path = os.path.join(PAGES_DIR, candidate)
         if os.path.exists(path):
-            return FileResponse(path)
+            return _serve_page_with_nav(path)
     return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>Axtroshastra</h3>")
 
 
@@ -624,7 +694,8 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/career", "/blog",
-            "/privacy", "/terms", "/refunds"] + [f"/blog/{s}" for s in BLOG_SLUGS]
+            "/about", "/login", "/privacy", "/terms", "/refunds"
+            ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
                     f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>',
@@ -634,7 +705,7 @@ def sitemap():
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    return PlainTextResponse(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /report/\nSitemap: {base_url}/sitemap.xml")
+    return PlainTextResponse(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /report/\nDisallow: /account\nSitemap: {base_url}/sitemap.xml")
 
 
 @app.get("/api/count")
@@ -693,6 +764,193 @@ def stats(key: str = ""):
                           "revenue_inr": (r[2] or 0) * 499} for r in rows]}
 
 
+# ----------------------------------------------------------------- auth (OTP)
+def _render_account(user: dict, reports: list) -> str:
+    """Server-rendered post-login dashboard: saved account details from the DB +
+    a card per past paid report. Styled inline in the site's design system so it
+    needs no template file and is safe to gate entirely server-side."""
+    import html as _html
+    name = _html.escape(user.get("name") or "there")
+    mobile = _html.escape(_fmt_mobile(user.get("mobile") or ""))
+    email = _html.escape(user.get("email") or "")
+    city = _html.escape(user.get("city") or "")
+
+    def _detail(label, value):
+        if not value:
+            return ""
+        return (f'<div class="row"><span class="k">{label}</span>'
+                f'<span class="v">{value}</span></div>')
+
+    details = (_detail("Name", name if name != "there" else "")
+               + _detail("Mobile", mobile) + _detail("Email", email)
+               + _detail("City", city)) or \
+        '<div class="row"><span class="v" style="color:#8a7d72">No extra details on ' \
+        'file yet.</span></div>'
+
+    if reports:
+        cards = ""
+        for r in reports:
+            label = _html.escape(PRODUCT_LABEL.get(r["product"], "Report"))
+            subject = _html.escape(r.get("subject") or "")
+            date = _html.escape((r.get("created_at") or "")[:10])
+            sub = f'<div class="rp-sub">{subject}</div>' if subject else ""
+            cards += (f'<a class="rp-card" href="/report/{r["id"]}">'
+                      f'<div class="rp-top"><span class="rp-label">{label}</span>'
+                      f'<span class="rp-date">{date}</span></div>{sub}'
+                      f'<span class="rp-cta">View report &rarr;</span></a>')
+        reports_block = f'<div class="rp-list">{cards}</div>'
+    else:
+        reports_block = ('<div class="empty">You have no reports yet. '
+                         '<a href="/">Get your first report &rarr;</a></div>')
+
+    return f"""<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — Axtroshastra</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
+<meta name="robots" content="noindex">
+<style>
+:root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
+--haldi:#E4B04A;--muted:#6B6D82;--line:#E7E0D2;
+--body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}}
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.55}}
+.wrap{{max-width:620px;margin:0 auto;padding:0 20px 60px}}
+.hero{{background:radial-gradient(900px 460px at 50% -10%,#1D2547,var(--midnight) 60%);
+color:#F3EFE4;padding:40px 0 30px}}
+.hero .wrap{{padding-bottom:0}}
+.eyebrow{{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--haldi);
+font-weight:700}}
+.hero h1{{font-size:28px;margin-top:8px;color:#fff}}
+.hero p{{color:#B9BBD0;margin-top:6px;font-size:15px}}
+.card{{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px 14px;
+margin-top:20px;box-shadow:0 2px 10px rgba(70,50,30,.05)}}
+.card h2{{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+margin-bottom:12px;font-weight:700}}
+.row{{display:flex;gap:12px;padding:9px 0;border-top:1px solid #f0eadd;font-size:15px}}
+.row:first-of-type{{border-top:0}}
+.row .k{{color:var(--muted);width:70px;flex:0 0 auto;font-size:13px;padding-top:1px}}
+.row .v{{font-weight:600}}
+.rp-list{{display:grid;gap:12px;margin-top:14px}}
+.rp-card{{display:block;background:#fff;border:1px solid var(--line);border-radius:14px;
+padding:15px 16px;text-decoration:none;color:var(--ink);box-shadow:0 2px 10px rgba(70,50,30,.05)}}
+.rp-card:active{{transform:scale(.995)}}
+.rp-top{{display:flex;justify-content:space-between;align-items:center}}
+.rp-label{{font-weight:700;font-size:15.5px}}
+.rp-date{{color:var(--muted);font-size:12.5px}}
+.rp-sub{{color:var(--muted);font-size:13.5px;margin-top:2px}}
+.rp-cta{{display:inline-block;margin-top:8px;color:var(--sindoor);font-weight:700;font-size:14px}}
+.empty{{margin-top:14px;color:var(--muted);font-size:15px}}
+.empty a,.rp-cta{{color:var(--sindoor)}}
+.section-title{{margin-top:26px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+color:var(--muted);font-weight:700}}
+.logout{{display:inline-block;margin-top:24px;background:none;border:1px solid var(--line);
+color:var(--muted);border-radius:10px;padding:10px 16px;font-size:14px;cursor:pointer;
+font-family:inherit}}
+</style></head><body>
+<div class="hero"><div class="wrap">
+<div class="eyebrow">My Account</div>
+<h1>Namaste, {name} 🙏</h1>
+<p>Your saved details and reports, all in one place.</p>
+</div></div>
+<div class="wrap">
+<div class="card"><h2>Your Details</h2>{details}</div>
+<div class="section-title">Your Reports</div>
+{reports_block}
+<button class="logout" onclick="logout()">Log out</button>
+</div>
+<script>
+async function logout(){{
+  try{{ await fetch('/api/auth/logout',{{method:'POST'}}); }}catch(e){{}}
+  location.href='/';
+}}
+</script>
+</body></html>"""
+
+
+class OtpRequestIn(BaseModel):
+    mobile: str
+    captcha_token: str | None = None
+
+class OtpVerifyIn(BaseModel):
+    mobile: str
+    code: str
+
+
+def _set_session_cookie(resp, token: str):
+    resp.set_cookie(auth.SESSION_COOKIE, token, max_age=auth.SESSION_TTL_DAYS * 86400,
+                    httponly=True, samesite="lax", secure=auth.cookie_secure(), path="/")
+
+
+def _current_user(request: Request):
+    return auth.user_for_session(db, request.cookies.get(auth.SESSION_COOKIE, ""))
+
+
+@app.post("/api/auth/request-otp")
+def auth_request_otp(body: OtpRequestIn, request: Request):
+    """Send a login OTP to the given mobile (WhatsApp via Twilio Verify by default).
+    Always returns ok for a plausible number so we don't leak who has an account;
+    a real delivery failure is the only thing that flips ok to False."""
+    if not captcha_ok(body.captcha_token):
+        raise HTTPException(400, "captcha failed")
+    res = auth.send_otp(db, body.mobile)
+    if not res.get("ok"):
+        raise HTTPException(400 if res.get("error") == "invalid_mobile" else 503,
+                            res.get("error", "send_failed"))
+    out = {"ok": True, "channel": res.get("channel")}
+    if "dev_code" in res:          # only present in DEMO_MODE + dev fallback
+        out["dev_code"] = res["dev_code"]
+    return out
+
+
+@app.post("/api/auth/verify-otp")
+def auth_verify_otp(body: OtpVerifyIn):
+    """Verify the OTP, create/fetch the account, mint a session cookie."""
+    token, user = auth.login(db, body.mobile, body.code)
+    if not token:
+        raise HTTPException(401, "invalid or expired code")
+    resp = JSONResponse({"ok": True, "user": user})
+    _set_session_cookie(resp, token)
+    return resp
+
+
+@app.post("/api/auth/logout")
+def auth_logout(request: Request):
+    auth.destroy_session(db, request.cookies.get(auth.SESSION_COOKIE, ""))
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(auth.SESSION_COOKIE, path="/")
+    return resp
+
+
+@app.get("/api/me")
+def auth_me(request: Request):
+    """Current logged-in user + their paid reports, or 401 if no valid session."""
+    user = _current_user(request)
+    if not user:
+        raise HTTPException(401, "not logged in")
+    return {"user": user, "reports": users.get_user_reports(db, user["id"])}
+
+
+@app.get("/login", include_in_schema=False)
+def login_page(request: Request):
+    if _current_user(request):
+        return RedirectResponse("/account", status_code=302)
+    path = os.path.join(PAGES_DIR, "login.html")
+    if os.path.exists(path):
+        return _serve_page_with_nav(path)
+    raise HTTPException(404, "not found")
+
+
+@app.get("/account", include_in_schema=False)
+def account_page(request: Request):
+    """Post-login dashboard: the user's saved details + their past reports.
+    Redirects to /login when there's no valid session."""
+    user = _current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    reports = users.get_user_reports(db, user["id"])
+    return HTMLResponse(_inject_nav(_render_account(user, reports)))
+
+
 extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoints
     "db": db, "get_report": get_report,
     "render": _render_for, "valid_admin_key": _valid_admin_key,
@@ -715,7 +973,7 @@ def serve_page_hinglish(slug: str):
         raise HTTPException(404, "not found")
     path = os.path.join(PAGES_DIR, f"{slug}.hinglish.html")
     if os.path.exists(path):
-        return FileResponse(path)
+        return _serve_page_with_nav(path)
     raise HTTPException(404, "not found")
 
 
@@ -726,5 +984,5 @@ def serve_page(slug: str):
         raise HTTPException(404, "not found")
     path = os.path.join(PAGES_DIR, f"{slug}.html")
     if os.path.exists(path):
-        return FileResponse(path)
+        return _serve_page_with_nav(path)
     raise HTTPException(404, "not found")

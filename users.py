@@ -142,6 +142,32 @@ def get_user(db, user_id: str):
             "name": row[3], "city": row[4], "created_at": row[5]}
 
 
+def get_user_reports(db, user_id: str, limit: int = 100):
+    """Every paid report owned by this user, newest first, as light dicts for the
+    account dashboard. Product + a display name are pulled out of the stored
+    payload so the page needs no second lookup."""
+    if not user_id:
+        return []
+    with db() as c:
+        rows = c.execute(
+            "SELECT id, payload, created_at FROM reports "
+            "WHERE user_id=? AND paid=1 ORDER BY created_at DESC LIMIT ?",
+            (user_id, limit)).fetchall()
+    out = []
+    for rid, payload, created_at in rows:
+        product, subject = "marriage", ""
+        try:
+            data = json.loads(payload) if payload else {}
+            meta = data.get("meta") or {}
+            product = data.get("product") or meta.get("product") or "marriage"
+            subject = meta.get("name") or meta.get("p1") or ""
+        except Exception:
+            pass
+        out.append({"id": rid, "product": product, "subject": subject,
+                    "created_at": created_at})
+    return out
+
+
 def get_user_for_report(db, rid: str):
     """The account linked to a report, or None. Used by the report page + API to
     show 'aapka account save ho gaya' with the saved mobile/email."""
