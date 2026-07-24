@@ -22,7 +22,7 @@ import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
-from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from pydantic import BaseModel, field_validator
 
 from engine import compute_report
@@ -623,7 +623,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/padhai", "/blog",
+    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/career", "/blog",
             "/privacy", "/terms", "/refunds"] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
@@ -664,7 +664,7 @@ def make_pass(key: str = "", n: int = 5):
                               f"{base}/milan?pass={toks[0]}",
                               f"{base}/match?pass={toks[0]}",
                               f"{base}/jeevan?pass={toks[0]}",
-                              f"{base}/padhai?pass={toks[0]}"],
+                              f"{base}/career?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
 
 
@@ -697,6 +697,26 @@ extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoi
     "db": db, "get_report": get_report,
     "render": _render_for, "valid_admin_key": _valid_admin_key,
 })
+
+
+@app.get("/padhai", include_in_schema=False)
+def padhai_redirect(request: Request):
+    """Legacy /padhai → /career (301 permanent). Preserves query string so
+    already-issued unlock links like /padhai?pass=<token> keep working."""
+    q = request.url.query
+    return RedirectResponse("/career" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/hinglish/{slug}", include_in_schema=False)
+def serve_page_hinglish(slug: str):
+    """Serve the Hinglish variant pages/<slug>.hinglish.html (e.g. /hinglish/career).
+    English is the default at /<slug>; this is the parallel Hinglish route."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    path = os.path.join(PAGES_DIR, f"{slug}.hinglish.html")
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(404, "not found")
 
 
 @app.get("/{slug}", include_in_schema=False)

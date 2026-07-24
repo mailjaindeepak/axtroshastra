@@ -1953,7 +1953,7 @@ Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice 
 
 
 def render_vidyarthi(p: dict) -> str:
-    """/padhai — student career & academic timing report. Unified v3 layout:
+    """/career (formerly /padhai) — student career & academic timing report. Unified v3 layout:
     positive-first ordering (profile -> now -> near-term outlook -> strengths)
     through the middle "what needs work" section (5 factors, strongest first,
     with fix-it dropdowns) to a confidence-boosting close (honest part,
