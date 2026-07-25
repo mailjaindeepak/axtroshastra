@@ -87,8 +87,11 @@ SECTION_SPECS = {
         ("headline", "A short, warm one-line verdict for the couple (max ~10 words)."),
         ("summary", "2-3 sentences on the overall match — what's strong underneath the attraction."),
         ("couple_type", "3-4 vivid sentences describing this couple's dynamic, using their two names."),
+        ("deepdive_strength", "3-4 sentences celebrating their single strongest area and what it means for the relationship."),
+        ("deepdive_growth", "4-5 sentences on their weakest area: the real, chart-based reason it's low, and how to bridge it, using their two names. Warm, specific, never fatalistic."),
+        ("growth", "2-3 sentences framing their one growth area as fixable and normal, not a red flag."),
         ("combined_energy", "2-3 sentences on their element pairing and what it means day to day."),
-        ("closing_note", "A warm 3-4 sentence closing note to the couple, signed feel."),
+        ("closing_note", "A warm 4-5 sentence closing letter to the couple, by name — the emotional payload."),
     ],
     "marriage": [
         ("top_summary", "2-3 warm sentences answering 'when will marriage happen' from their strongest window."),
