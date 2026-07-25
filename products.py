@@ -109,6 +109,26 @@ def _moon_manglik(chart):
     return ((mars_sign - moon_sign) % 12) + 1 in MANGLIK_HOUSES
 
 
+def _western_sun(dob):
+    """Western (tropical) Sun sign from the birth DATE only — the sign users know
+    from horoscope apps. No birth time needed. Returns None on a bad date."""
+    if not dob:
+        return None
+    try:
+        m, d = int(dob[5:7]), int(dob[8:10])
+    except Exception:
+        return None
+    cuts = [(1, 20, "Aquarius"), (2, 19, "Pisces"), (3, 21, "Aries"),
+            (4, 20, "Taurus"), (5, 21, "Gemini"), (6, 21, "Cancer"),
+            (7, 23, "Leo"), (8, 23, "Virgo"), (9, 23, "Libra"),
+            (10, 23, "Scorpio"), (11, 22, "Sagittarius"), (12, 22, "Capricorn")]
+    sign = "Capricorn"                       # Jan 1-19 wraps to Capricorn
+    for sm, sd, nm in cuts:
+        if (m, d) >= (sm, sd):
+            sign = nm
+    return sign
+
+
 # ============================================================ KUNDLI MILAN
 def compute_milan(p1: dict, p2: dict) -> dict:
     """p = {name, dob 'YYYY-MM-DD', tob 'HH:MM', tz, lat, lon, gender?}.
@@ -276,13 +296,18 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     chart_p2 = _chart_payload(charts[1], p2.get("tob"))
 
     # ---- per-person profile facts (for the expanded report sections) ----
+    # sun_western = the Western/tropical Sun sign (the one users recognise from
+    # horoscope apps), from the birth DATE only. Shown alongside the Vedic Moon
+    # sign so the report can bridge "you know your Sun sign; we read your Moon".
     profiles = {
         "p1": {"name": p1["name"], "sign": SIGNS_EN[g["sign"]], "nak": NAKSHATRAS[g["nak"]],
                "pada": g["pada"], "element": e1, "lord": SIGN_LORD[g["sign"]],
+               "sun_western": _western_sun(p1.get("dob")),
                "symbol": NAK_PROFILE[g["nak"]][0], "persona": NAK_PROFILE[g["nak"]][1],
                "love": NAK_PROFILE[g["nak"]][2], "chart": chart_p1},
         "p2": {"name": p2["name"], "sign": SIGNS_EN[b["sign"]], "nak": NAKSHATRAS[b["nak"]],
                "pada": b["pada"], "element": e2, "lord": SIGN_LORD[b["sign"]],
+               "sun_western": _western_sun(p2.get("dob")),
                "symbol": NAK_PROFILE[b["nak"]][0], "persona": NAK_PROFILE[b["nak"]][1],
                "love": NAK_PROFILE[b["nak"]][2], "chart": chart_p2},
     }

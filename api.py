@@ -625,7 +625,7 @@ def _account_banner(rid: str) -> str:
 
 
 @app.get("/report/{rid}", include_in_schema=False)
-def report_page(rid: str):
+def report_page(rid: str, v2: int = 0):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
@@ -633,6 +633,12 @@ def report_page(rid: str):
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
+    if v2 and payload.get("product") == "milan":     # feature-flagged redesigned renderer
+        try:
+            import milan_v2
+            return HTMLResponse(milan_v2.render_milan_v2(payload))
+        except Exception as e:
+            logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
     banner = _account_banner(rid)
     if banner:
