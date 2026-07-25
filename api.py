@@ -669,6 +669,7 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
 class MilanIn(BaseModel):
     p1_name: str; p1_dob: str; p1_tob: str | None = None; p1_place: str
     p2_name: str; p2_dob: str; p2_tob: str | None = None; p2_place: str
+    p1_gender: str | None = None; p2_gender: str | None = None
     variant: str | None = None
     email: str | None = None
     captcha_token: str | None = None
@@ -681,9 +682,9 @@ def create_milan(inp: MilanIn):
     lat2, lon2, tz2 = geocode(inp.p2_place)
     report = compute_milan(
         {"name": inp.p1_name, "dob": inp.p1_dob, "tob": inp.p1_tob,
-         "tz": tz1, "lat": lat1, "lon": lon1},
+         "tz": tz1, "lat": lat1, "lon": lon1, "gender": inp.p1_gender},
         {"name": inp.p2_name, "dob": inp.p2_dob, "tob": inp.p2_tob,
-         "tz": tz2, "lat": lat2, "lon": lon2})
+         "tz": tz2, "lat": lat2, "lon": lon2, "gender": inp.p2_gender})
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)

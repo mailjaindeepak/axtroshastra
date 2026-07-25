@@ -111,9 +111,13 @@ def _moon_manglik(chart):
 
 # ============================================================ KUNDLI MILAN
 def compute_milan(p1: dict, p2: dict) -> dict:
-    """p = {name, dob 'YYYY-MM-DD', tob 'HH:MM', tz, lat, lon, time_known bool}.
-    p1 = groom/partner 1, p2 = bride/partner 2 (classical direction matters
-    for Varna/Tara counting; UI labels them Partner 1/Partner 2)."""
+    """p = {name, dob 'YYYY-MM-DD', tob 'HH:MM', tz, lat, lon, gender?}.
+    Two kootas are direction-sensitive (Varna, Gana): they depend on which
+    partner is the groom (boy) vs bride (girl). If a `gender` is supplied on
+    either person we order those roles correctly regardless of input order;
+    otherwise we fall back to the classical default of p1 = groom. The other
+    six kootas are symmetric, so input order never affects them. UI labels the
+    two people Partner 1 / Partner 2."""
     charts, moons = [], []
     for p in (p1, p2):
         dt = datetime.fromisoformat(f"{p['dob']}T{p.get('tob') or '12:00'}:00") \
@@ -124,9 +128,16 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         moons.append({"sign": m.sign, "nak": m.nak, "pada": m.pada})
 
     g, b = moons[0], moons[1]
+    # Order the groom (boy) and bride (girl) for the direction-sensitive kootas
+    # (Varna, Gana). Default keeps the old behaviour (p1 = groom) so callers
+    # that don't pass gender are unaffected; when gender is given the roles are
+    # correct no matter who was entered first. Symmetric kootas keep g/b order.
+    def _female(p): return (p.get("gender") or "").strip().lower() in ("female", "f", "bride", "girl", "woman")
+    def _male(p):   return (p.get("gender") or "").strip().lower() in ("male", "m", "groom", "boy", "man")
+    groom, bride = (moons[1], moons[0]) if (_male(p2) or _female(p1)) else (moons[0], moons[1])
     kootas = []
 
-    v1, v2 = VARNA[g["sign"]], VARNA[b["sign"]]
+    v1, v2 = VARNA[groom["sign"]], VARNA[bride["sign"]]
     s = 1 if v1 >= v2 else 0
     kootas.append({"name": "Varna", "max": 1, "score": s,
                    "detail": f"{VARNA_NAME[v1]} – {VARNA_NAME[v2]}",
@@ -153,7 +164,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     kootas.append({"name": "Graha Maitri", "max": 5, "score": s,
                    "detail": f"{l1} – {l2}", "meaning": "mental wavelength and friendship"})
 
-    g1, g2 = GANA[g["nak"]], GANA[b["nak"]]
+    g1, g2 = GANA[groom["nak"]], GANA[bride["nak"]]
     kootas.append({"name": "Gana", "max": 6, "score": GANA_SCORE[(g1, g2)],
                    "detail": f"{GANA_NAME[g1]} – {GANA_NAME[g2]}",
                    "meaning": "temperament match"})

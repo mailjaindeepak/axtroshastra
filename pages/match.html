@@ -477,8 +477,8 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
                 t: document.getElementById('p2-tob').value || null, p: document.getElementById('p2-place').value.trim()};
       var boy = document.getElementById('who').value === 'me' ? me : pt;
       var girl = boy === me ? pt : me;
-      var payload = {p1_name: boy.n, p1_dob: boy.d, p1_tob: boy.t, p1_place: boy.p,
-                     p2_name: girl.n, p2_dob: girl.d, p2_tob: girl.t, p2_place: girl.p,
+      var payload = {p1_name: boy.n, p1_dob: boy.d, p1_tob: boy.t, p1_place: boy.p, p1_gender: 'male',
+                     p2_name: girl.n, p2_dob: girl.d, p2_tob: girl.t, p2_place: girl.p, p2_gender: 'female',
                      variant: location.pathname};
       var res = await fetch('/api/milan', {method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)});
