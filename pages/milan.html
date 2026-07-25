@@ -279,15 +279,13 @@ fbq('track', 'PageView');
 
     <form class="form-card" id="milanForm" autocomplete="on">
       <p class="fc-title">Enter both your birth details 👇</p>
-      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">PARTNER 1</p>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin-bottom:8px">LADKA · BOY</p>
       <div class="field"><label for="p2-name">Name</label><input id="p2-name" type="text" required></div>
-      <div class="field"><label for="p2-gender">Gender <span style="color:var(--muted);font-weight:400">(for classical matching)</span></label><select id="p2-gender" required><option value="" disabled selected hidden>Select</option><option value="male">Male</option><option value="female">Female</option></select></div>
       <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p2-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p2-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p2-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p2-tob">Time of birth <span style="color:var(--muted);font-weight:400">(don't know? leave it blank)</span></label><div class="tob3"><select id="p2-hh" aria-label="Hour"></select><select id="p2-mm2" aria-label="Minute"></select><select id="p2-ap" aria-label="AM/PM"></select></div><input id="p2-tob" type="hidden"></div>
       <div class="field"><label for="p2-place">Place of birth</label><div class="place-wrap"><input id="p2-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p2-place-list" class="city-suggest"></div></div><div id="p2-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Just your city or district is enough — a specific locality won't appear in search.</div></div>
-      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">PARTNER 2</p>
+      <p style="font-family:var(--display);font-weight:700;font-size:13px;color:var(--sindoor);margin:16px 0 8px">LADKI · GIRL</p>
       <div class="field"><label for="p1-name">Name</label><input id="p1-name" type="text" required></div>
-      <div class="field"><label for="p1-gender">Gender <span style="color:var(--muted);font-weight:400">(for classical matching)</span></label><select id="p1-gender" required><option value="" disabled selected hidden>Select</option><option value="male">Male</option><option value="female">Female</option></select></div>
       <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p1-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(don't know? leave it blank)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">Place of birth</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Just your city or district is enough — a specific locality won't appear in search.</div></div>
@@ -573,12 +571,12 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
         p1_dob: p1dob,
         p1_tob: document.getElementById('p1-tob').value || null,
         p1_place: document.getElementById('p1-place').value.trim(),
-        p1_gender: document.getElementById('p1-gender').value || null,
+        p1_gender: 'female',   // p1 fields sit under the "LADKI · GIRL" section
         p2_name: document.getElementById('p2-name').value.trim(),
         p2_dob: p2dob,
         p2_tob: document.getElementById('p2-tob').value || null,
         p2_place: document.getElementById('p2-place').value.trim(),
-        p2_gender: document.getElementById('p2-gender').value || null,
+        p2_gender: 'male',     // p2 fields sit under the "LADKA · BOY" section
         variant: location.pathname
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
