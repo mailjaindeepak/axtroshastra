@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timedelta
 from html import escape
 import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
+from narrative import narr   # LLM prose slot (returns None -> use the bank text below)
 
 SIGNS = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
          "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena"]
@@ -1538,9 +1539,11 @@ def render_milan(p: dict) -> str:
     el_html = ""
     if p.get("element"):
         el = p["element"]
+        # LLM prose if present (already html-escaped in narrative.py), else the bank text.
+        el_text = narr(p, "combined_energy") or el["text"]
         el_html = (f"<h2>Your combined energy</h2>"
                    f"<div class='elbox'><b>{m['p1']}: {el['p1']} · {m['p2']}: {el['p2']}</b>"
-                   f"<p>{el['text']}</p></div>")
+                   f"<p>{el_text}</p></div>")
 
     # ---------- Manglik: keep the concern and its reassurance together ----------
     mg = p["manglik"]

@@ -35,6 +35,7 @@ from geocoding import resolve_detailed             # (#1) with resolved/source p
 import payments, delivery, extensions
 import users                 # account layer: create/link a user at payment time
 import auth                  # OTP login + session layer (Twilio Verify)
+import narrative             # optional LLM prose layer (Claude/OpenAI), off by default
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -191,6 +192,32 @@ def mark_paid(rid, payment_id=None, phone=None):
     with _lock, db() as c:
         c.execute("UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=?",
                   (payment_id, phone, rid))
+
+def save_narrative(rid, narr: dict):
+    """Merge the LLM-written prose into the stored report payload so the renderer
+    can read it (payload['narrative']). Re-reads the row under the lock so we don't
+    clobber a concurrent update, and is a no-op for empty output."""
+    if not narr:
+        return
+    with _lock, db() as c:
+        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
+        if not row:
+            return
+        payload = json.loads(row[0])
+        payload["narrative"] = narr
+        c.execute("UPDATE reports SET payload=? WHERE id=?",
+                  (json.dumps(payload), rid))
+
+def _generate_narrative_task(rid):
+    """Background: turn the computed report into creative prose and cache it on the
+    payload. Env-gated inside narrative.generate_narrative (no-op when disabled);
+    never raises, so it can't affect payment/delivery."""
+    try:
+        rec = get_report(rid)
+        if rec:
+            save_narrative(rid, narrative.generate_narrative(rec["payload"]))
+    except Exception as e:
+        logger.error("[narrative] task failed for %s: %s", rid, e)
 
 # ----------------------------------------------------------------- geocode
 # geocoding lives in geocoding.py: cache -> CITIES_IN -> external -> Delhi fallback (#1)
@@ -473,6 +500,10 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     send_whatsapp_report, phone, rid,
                     rec["payload"]["meta"]["name"],
                     rec["payload"].get("product", "marriage"))
+                # Optional creative prose (Claude/OpenAI). No-op unless
+                # NARRATIVE_ENABLED=1; runs before WhatsApp/email are opened by
+                # the user since delivery links point at /report/{id}.
+                background_tasks.add_task(_generate_narrative_task, rid)
                 form_email = rec["payload"]["meta"].get("_email")
                 # Account: create/link a user from the Razorpay payment (mobile +
                 # email). Prefer the email Razorpay collected; fall back to the one
