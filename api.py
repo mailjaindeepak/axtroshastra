@@ -448,7 +448,7 @@ def create_kundli(inp: KundliIn):
 
 
 @app.post("/api/order")
-def create_order(body: dict):
+def create_order(body: dict, background_tasks: BackgroundTasks):
     rid = body.get("report_id")
     rec = get_report(rid)
     if not rec: raise HTTPException(404, "report not found")
@@ -462,6 +462,8 @@ def create_order(body: dict):
                 conn.execute("UPDATE passes SET used=1 WHERE token=?", (tok,))
                 conn.execute("UPDATE reports SET paid=1, payment_id=? WHERE id=?",
                              ("free_pass:" + tok, rid))
+                # free-pass unlock is a real paid report -> generate prose too
+                background_tasks.add_task(_generate_narrative_task, rid)
                 return {"free": True}
         return {"error": "invalid_pass"}
     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
@@ -659,9 +661,10 @@ def report_pdf(rid: str):
 
 if DEMO_MODE:                                    # never set DEMO_MODE=1 in production
     @app.post("/api/_demo_pay/{rid}")
-    def demo_pay(rid: str):
+    def demo_pay(rid: str, background_tasks: BackgroundTasks):
         if not get_report(rid): raise HTTPException(404, "report not found")
         mark_paid(rid, payment_id="demo")
+        background_tasks.add_task(_generate_narrative_task, rid)
         return {"ok": True}
 
 
