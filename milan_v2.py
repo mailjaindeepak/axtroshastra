@@ -114,9 +114,13 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .crow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px}
 .crow .ct{display:flex;justify-content:space-between;align-items:baseline}.crow .cn{font-family:var(--disp);font-size:14px}.crow .cn small{color:var(--muted);font-weight:400;font-size:10px}
 .crow .sc{font-family:var(--disp);font-weight:600;color:var(--amber);font-size:14px}.crow .val{font-size:12px;margin-top:5px;color:#4a4459}.crow .rule{font-size:11px;color:#8a7f99;margin-top:4px;font-style:italic}
+.actbar{max-width:440px;margin:0 auto;padding:18px 30px 34px;background:var(--cream);text-align:center}
+.actbar a{display:inline-block;margin:4px;background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#F3EEE4;text-decoration:none;border-radius:100px;padding:12px 22px;font-weight:700;font-size:14px;font-family:var(--body)}
+.actbar a.wa{background:#25D366;color:#0b2f18}
 @page{size:440px 812px;margin:0}
 @media print{body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.book{max-width:440px}
-.pg{width:440px;height:812px;page-break-after:always;border-bottom:none}.pg:last-child{page-break-after:auto}}
+.pg{width:440px;height:812px;page-break-after:always;border-bottom:none}.pg:last-child{page-break-after:auto}
+.actbar{display:none}}
 """
 
 AX_PRE = ('<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -221,9 +225,14 @@ def render_milan_v2(p: dict) -> str:
     appendix = _appendix(p, pr1, pr2, kootas)
 
     body = cover + scorecard + why + play + will + twoyou + factors + checks + appendix
+    share = ("https://wa.me/?text=" +
+             f"Our%20Kundli%20Milan%3A%20{pct}%25%20-%20{arch['name'].replace(' ','%20')}%20%E2%9C%A8")
+    actbar = (f'<div class="actbar"><a href="#" onclick="window.print();return false;">'
+              f'&#11015; Download PDF</a> <a class="wa" href="{share}" target="_blank" rel="noopener">'
+              f'Share on WhatsApp</a></div>')
     return (f'<!DOCTYPE html><html lang="en"><head>{AX_PRE}<title>{p1n} ✕ {p2n} '
             f'— Love Compatibility</title><style>{CSS}</style></head>'
-            f'<body><div class="book">{body}</div></body></html>')
+            f'<body><div class="book">{body}</div>{actbar}</body></html>')
 
 
 def _playbook_section(p, by):
