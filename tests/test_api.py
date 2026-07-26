@@ -79,3 +79,16 @@ def test_vidyarthi_unlocks_and_renders_after_demo_pay(client):
     assert "Career" in html            # the vidyarthi renderer, not the marriage one
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html
+
+
+def test_resend_wa_admin_gate(client):
+    # forbidden without the admin key
+    r = client.post("/api/resend_wa/some-rid")
+    assert r.status_code == 403
+
+
+def test_resend_wa_unknown_rid(client, monkeypatch):
+    import api as _api
+    monkeypatch.setattr(_api, "STATS_KEY", "k123", raising=False)
+    r = client.post("/api/resend_wa/nonexistent?key=k123")
+    assert r.status_code == 404
