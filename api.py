@@ -125,10 +125,19 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
         # URL; /report/{rid}/pdf serves the cached file (report is paid here).
         media = [f"{PUBLIC_BASE_URL}/report/{rid}/pdf"] if pdfgen.get_cached(rid) else None
         if TWILIO_CONTENT_SID:                       # production: approved template
+            # Approved media template `axtroshastra_wp_msg` (document header):
+            #   {{1}} customer name
+            #   {{2}} login URL
+            #   {{3}} PDF *path only* — the template's media URL is configured
+            #         as https://www.axtroshastra.com/{{3}}, so we must NOT
+            #         pass a full URL here, just everything after the domain.
+            # /report/{rid}/pdf regenerates on a cold cache, so Twilio's media
+            # fetch succeeds even when pregeneration lagged or the box restarted.
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
-                content_variables=json.dumps({"1": name, "2": link}))
+                content_variables=json.dumps(
+                    {"1": name, "2": login, "3": f"report/{rid}/pdf"}))
         else:                                        # sandbox / 24h session freeform
             kwargs = {"media_url": media} if media else {}
             body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
