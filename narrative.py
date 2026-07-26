@@ -277,14 +277,22 @@ def _call_anthropic(system: str, user: str) -> str:
     if not key:
         logger.warning("[narrative] ANTHROPIC_API_KEY not set")
         return ""
+    model = _model()
+    messages = [{"role": "user", "content": user}]
+    # older Claude models support assistant prefill to force JSON
+    prefill = not any(g in model for g in ("sonnet-5", "opus-5", "haiku-4-5"))
+    if prefill:
+        messages.append({"role": "assistant", "content": "{"})
     body = {
-        "model": _model(),
-        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "1500")),
-        "temperature": _float("NARRATIVE_TEMPERATURE", "0.7"),
+        "model": model,
+        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "4096")),
         "system": system,
-        "messages": [{"role": "user", "content": user},
-                     {"role": "assistant", "content": "{"}],   # prefill -> forces JSON
+        "messages": messages,
     }
+    if not prefill:
+        body["thinking"] = {"type": "disabled"}
+    if os.getenv("NARRATIVE_TEMPERATURE"):
+        body["temperature"] = _float("NARRATIVE_TEMPERATURE", "0.7")
     headers = {"x-api-key": key, "anthropic-version": ANTHROPIC_VERSION,
                "content-type": "application/json"}
     try:
@@ -294,7 +302,9 @@ def _call_anthropic(system: str, user: str) -> str:
         return ""
     parts = out.get("content") or []
     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
-    return "{" + text if text else ""      # re-attach the prefilled brace
+    if not text:
+        return ""
+    return "{" + text if prefill else text
 
 
 def _call_openai(system: str, user: str) -> str:
@@ -305,7 +315,7 @@ def _call_openai(system: str, user: str) -> str:
     body = {
         "model": _model(),
         "temperature": _float("NARRATIVE_TEMPERATURE", "0.7"),
-        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "1500")),
+        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "4096")),
         "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": system},
                      {"role": "user", "content": user}],

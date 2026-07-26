@@ -19,6 +19,104 @@ SIGN_GLYPH = {"Aries": "♈", "Taurus": "♉", "Gemini": "♊", "Cancer": "♋",
               "Leo": "♌", "Virgo": "♍", "Libra": "♎", "Scorpio": "♏",
               "Sagittarius": "♐", "Capricorn": "♑", "Aquarius": "♒", "Pisces": "♓"}
 
+NAK_ANIMAL = {
+    "Ashwini": "Horse", "Bharani": "Elephant", "Krittika": "Sheep",
+    "Rohini": "Serpent", "Mrigashira": "Serpent", "Ardra": "Dog",
+    "Punarvasu": "Cat", "Pushya": "Sheep", "Ashlesha": "Cat",
+    "Magha": "Rat", "Purva Phalguni": "Rat", "Uttara Phalguni": "Cow",
+    "Hasta": "Buffalo", "Chitra": "Tiger", "Swati": "Buffalo",
+    "Vishakha": "Tiger", "Anuradha": "Deer", "Jyeshtha": "Deer",
+    "Mula": "Dog", "Purva Ashadha": "Monkey", "Uttara Ashadha": "Mongoose",
+    "Shravana": "Monkey", "Dhanishta": "Lion", "Shatabhisha": "Horse",
+    "Purva Bhadrapada": "Lion", "Uttara Bhadrapada": "Cow", "Revati": "Elephant",
+}
+ANIMAL_EMOJI = {
+    "Horse": "🐎", "Elephant": "🐘", "Sheep": "🐑", "Serpent": "🐍",
+    "Dog": "🐕", "Cat": "🐈", "Rat": "🐀", "Cow": "🐄", "Buffalo": "🦬",
+    "Tiger": "🐅", "Deer": "🦌", "Monkey": "🐒", "Mongoose": "🦡", "Lion": "🦁",
+}
+ANIMAL_ADJ = {
+    "Horse": "free, spirited, independent",
+    "Elephant": "steady, loyal, protective",
+    "Sheep": "gentle, nurturing, patient",
+    "Serpent": "magnetic, subtle, intense",
+    "Dog": "devoted, alert, protective",
+    "Cat": "independent, graceful, selective",
+    "Rat": "clever, resourceful, quick",
+    "Cow": "nurturing, patient, grounded",
+    "Buffalo": "strong, persistent, dependable",
+    "Tiger": "fierce, passionate, dominant",
+    "Deer": "gentle, sensitive, alert",
+    "Monkey": "playful, clever, energetic",
+    "Mongoose": "quick, sharp, fearless",
+    "Lion": "warm, proud, wholehearted",
+}
+
+LORD_SYMBOL = {"Sun": "☉", "Moon": "☽", "Mars": "♂", "Mercury": "☿",
+               "Jupiter": "♃", "Venus": "♀", "Saturn": "♄", "Rahu": "☊", "Ketu": "☋"}
+LORD_SHORT = {
+    "Sun": ("the Sun mind", "authoritative, proud, leading"),
+    "Moon": ("the Moon mind", "nurturing, intuitive, receptive"),
+    "Mars": ("the Mars mind", "action-first, direct, brave"),
+    "Mercury": ("the Mercury mind", "quick, curious, verbal"),
+    "Jupiter": ("the Jupiter mind", "deep, feeling, meaning-led"),
+    "Venus": ("the Venus mind", "harmonious, aesthetic, connecting"),
+    "Saturn": ("the Saturn mind", "structured, patient, enduring"),
+    "Rahu": ("the Rahu mind", "intense, unconventional, boundary-pushing"),
+    "Ketu": ("the Ketu mind", "detached, spiritual, old-soul"),
+}
+LORD_ELEM_CLS = {"Mercury": "air", "Jupiter": "water", "Venus": "rose",
+                 "Mars": "rose", "Saturn": "air", "Sun": "gold",
+                 "Moon": "water", "Rahu": "air", "Ketu": "water"}
+
+LORD_BODY = {
+    "Mercury": "Your Moon is ruled by Mercury — the planet of the fast, logical, talk-it-out mind. You process by speaking, want the why and the what-next, and move on quickly.",
+    "Jupiter": "Your Moon is ruled by Jupiter — the planet of meaning, faith and feeling. You process inwardly, lead with the heart, and go deep before you speak.",
+    "Venus": "Your Moon is ruled by Venus — the planet of harmony, beauty and connection. You lead with warmth, seek balance, and love through care and closeness.",
+    "Mars": "Your Moon is ruled by Mars — the planet of action and drive. You process by doing, lead with courage, and love fiercely and protectively.",
+    "Saturn": "Your Moon is ruled by Saturn — the planet of structure and endurance. You process slowly and deeply, lead with patience, and love through commitment and consistency.",
+    "Sun": "Your Moon is ruled by the Sun — the planet of identity and authority. You process through self-expression, lead naturally, and love with generosity.",
+    "Moon": "Your Moon is self-ruled — intuitive, receptive, emotionally attuned. You process through feeling, lead with empathy, and love by nurturing.",
+    "Rahu": "Your Moon is ruled by Rahu — intense, unconventional, always pushing boundaries. You process through transformation, and love with an all-or-nothing depth.",
+    "Ketu": "Your Moon is ruled by Ketu — detached yet deeply spiritual. You process through intuition, and love with a quiet, old-soul wisdom.",
+}
+
+NAK_GANA = {
+    "Ashwini": "Deva", "Bharani": "Manushya", "Krittika": "Rakshasa",
+    "Rohini": "Manushya", "Mrigashira": "Deva", "Ardra": "Manushya",
+    "Punarvasu": "Deva", "Pushya": "Deva", "Ashlesha": "Rakshasa",
+    "Magha": "Rakshasa", "Purva Phalguni": "Manushya",
+    "Uttara Phalguni": "Manushya", "Hasta": "Deva", "Chitra": "Rakshasa",
+    "Swati": "Deva", "Vishakha": "Rakshasa", "Anuradha": "Deva",
+    "Jyeshtha": "Rakshasa", "Mula": "Rakshasa", "Purva Ashadha": "Manushya",
+    "Uttara Ashadha": "Manushya", "Shravana": "Deva", "Dhanishta": "Rakshasa",
+    "Shatabhisha": "Rakshasa", "Purva Bhadrapada": "Manushya",
+    "Uttara Bhadrapada": "Manushya", "Revati": "Deva",
+}
+GANA_ADJ = {"Deva": "idealist", "Manushya": "grounded, practical", "Rakshasa": "intense, driven"}
+
+NAK_NADI = {
+    "Ashwini": "Adi", "Bharani": "Madhya", "Krittika": "Antya",
+    "Rohini": "Antya", "Mrigashira": "Madhya", "Ardra": "Adi",
+    "Punarvasu": "Adi", "Pushya": "Madhya", "Ashlesha": "Antya",
+    "Magha": "Antya", "Purva Phalguni": "Madhya", "Uttara Phalguni": "Adi",
+    "Hasta": "Adi", "Chitra": "Madhya", "Swati": "Antya",
+    "Vishakha": "Antya", "Anuradha": "Madhya", "Jyeshtha": "Adi",
+    "Mula": "Adi", "Purva Ashadha": "Madhya", "Uttara Ashadha": "Antya",
+    "Shravana": "Antya", "Dhanishta": "Madhya", "Shatabhisha": "Adi",
+    "Purva Bhadrapada": "Adi", "Uttara Bhadrapada": "Madhya", "Revati": "Antya",
+}
+
+THEME_MEASURES = {
+    "Health & Vitality": "The deepest, most durable layer of compatibility — long-term vitality, health, and (whenever, and if, you want it) family. It's the factor classical astrologers weigh the most.",
+    "Love & Long-Term": "Long-term closeness, family life, and shared prosperity — the layer that turns a relationship into a home.",
+    "Everyday Vibe": "Your social batteries, humour, and how your moods land in a shared room — the stuff that decides whether living together feels light or like work.",
+    "Chemistry & Attraction": "Instinctive, physical compatibility — the pull, the closeness, the daily rhythm of how your bodies share space.",
+    "Mind & Values": "How your minds click, how you talk things through, and who leads what — the stuff long conversations and long marriages are made of.",
+}
+
+YONI_SCORE_DESC = {4: "a perfect match", 3: "natural allies", 2: "a neutral pair", 1: "different instincts", 0: "natural opposites"}
+
 CSS = """
 :root{--cream:#FAF6EE;--beige:#DFCCB1;--espresso1:#3a2c18;--espresso2:#241810;
 --gold:#C9A34E;--gold-lt:#E7CE8F;--ink:#2A2338;--muted:#8A8199;--line:#ECE3D3;
@@ -29,6 +127,8 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .book{max-width:440px;margin:0 auto}
 .pg{position:relative;min-height:720px;padding:42px 30px;overflow:hidden;background:var(--cream);border-bottom:1px solid #ded4c2}
 .pn{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.35em;color:var(--muted)}
+.atag{position:absolute;top:20px;right:26px;font-size:9px;letter-spacing:.3em;color:#c9bfa8;text-transform:uppercase}
+.ctag{position:absolute;top:20px;right:26px;font-size:9px;letter-spacing:.3em;color:#b9a97e;text-transform:uppercase}
 .eb{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:var(--amber);text-align:center}
 .h2{font-family:var(--disp);font-weight:400;font-size:26px;text-align:center;margin-top:8px;color:var(--ink);line-height:1.2}
 .sub{color:var(--muted);text-align:center;font-size:12.5px;margin-top:6px;margin-bottom:20px}
@@ -49,6 +149,7 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .aem{font-size:19px}.anm{font-family:var(--disp);font-size:16px;flex:1}.apct{font-family:var(--disp);font-size:15px;color:var(--muted)}
 .bar{height:8px;border-radius:6px;background:#EEE6D6;overflow:hidden}.bar>i{display:block;height:100%;border-radius:6px}
 .fg{background:linear-gradient(90deg,#4E9C72,#3E7D5A)}.fa{background:linear-gradient(90deg,#E0B45C,#C9A34E)}.ft{background:linear-gradient(90deg,#E0A583,#C57E56)}
+.growtag{font-size:11px;color:var(--terra);font-weight:600;margin-top:5px}
 .foot{text-align:center;color:var(--muted);font-size:12.5px;margin-top:4px;font-style:italic;font-family:var(--disp)}
 /* flags/super */
 .flag{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 17px;margin-bottom:12px;box-shadow:0 4px 16px rgba(90,60,20,.05)}
@@ -83,17 +184,20 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .between{text-align:center;font-family:var(--disp);font-style:italic;font-size:15px;color:var(--terra);margin:4px 0 2px}
 .moonwhy{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:12px;padding:9px 14px;margin-top:10px;text-align:center}
 .moonwhy p{font-size:11.6px;color:#7a5a48;font-style:italic;font-family:var(--disp);line-height:1.45}
-.coupleft{background:linear-gradient(135deg,#20264a00,#241810);background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#EDE7DA;border-radius:18px;padding:22px;text-align:center}
-.coupleft .ce{font-size:28px}.coupleft h3{color:#fff;font-family:var(--disp);font-size:21px;margin-top:6px}.coupleft .ct{color:var(--gold-lt);font-style:italic;font-family:var(--disp);font-size:13.5px;margin-top:2px}.coupleft p{color:#CBBFA6;margin-top:12px;font-size:14px}
+/* mind cards (deep-dive) */
+.mind{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 16px rgba(90,60,20,.04)}
+.mind .mh{display:flex;align-items:center;gap:9px}
+.mind .planet{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.mind .planet.air{background:#EAF0F5;color:#5b7791}.mind .planet.water{background:#EAF1F0;color:#3E7D6E}
+.mind .planet.rose{background:#F7ECEF;color:#C06E86}.mind .planet.gold{background:#F6EFDF;color:#B9862E}
+.mind b{font-family:var(--disp);font-size:15.5px}.mind .who{font-size:11px;color:var(--muted)}
+.mind p{font-size:13px;color:#4a4459;margin-top:8px}
+.friction{background:#F6EFDF;border:1px solid #EBDCBB;border-radius:14px;padding:14px 15px;margin-top:6px}
+.friction .t{font-family:var(--disp);font-size:14.5px;color:var(--amber)}.friction p{font-size:13px;color:#6b5f42;margin-top:6px}
 /* area/koota */
 .scorebig{font-family:var(--disp);font-size:42px;text-align:center}.scorebig small{font-size:19px;color:var(--muted)}
 .trophy{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#EAF1EC,#DDEBE1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 4px}
 .trophy.a{background:linear-gradient(135deg,#FBEFE3,#F1DEC8)}
-.koota{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:9px;box-shadow:0 2px 10px rgba(90,60,20,.04)}
-.ktop{display:flex;align-items:center;gap:10px}.kem{font-size:18px}.knm{flex:1}.knm b{font-family:var(--disp);font-size:14.5px;display:block}.ksan{font-size:10px;color:var(--muted)}
-.ks{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--gold)}
-.kbar{height:6px;border-radius:5px;background:#EEE6D6;overflow:hidden;margin:8px 0 0}.kbar>i{display:block;height:100%}
-.kt{margin-top:8px;color:#3b3450;font-size:12.5px}
 .scene{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:13px;padding:14px 15px;margin-bottom:14px}
 .scene .t{font-family:var(--disp);font-size:14px;color:var(--terra);font-style:italic}.scene p{font-size:12.5px;color:#7a5a48;margin-top:5px}
 .why{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:14px}.why .t{font-family:var(--disp);font-size:14.5px;color:var(--green)}.why.a .t{color:var(--terra)}.why p{font-size:13px;color:#4a4459;margin-top:5px}
@@ -103,9 +207,6 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .chk .bd{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
 .chk .bd.ok{background:var(--green)}.chk .bd.mild{background:var(--amber)}.chk .bd.ic{background:transparent;font-size:17px}
 .chk b{font-family:var(--disp);font-size:14.5px}.chk p{font-size:12px;color:var(--muted);margin-top:2px}
-/* elements */
-.elems{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-.elbox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}.elbox .e{font-size:26px}.elbox b{font-family:var(--disp);display:block;margin-top:4px}
 /* letter/cert/ref */
 .letter{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 20px;margin-top:14px;box-shadow:0 6px 22px rgba(90,60,20,.06)}
 .letter p{font-family:var(--disp);font-size:15px;line-height:1.7;color:#3d352b}.letter .sign{font-family:var(--disp);font-style:italic;font-size:14px;color:var(--amber);margin-top:14px;text-align:right}
@@ -118,14 +219,19 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .refbtn{display:inline-block;margin-top:14px;background:var(--gold);color:#2A2015;font-weight:700;border-radius:100px;padding:11px 22px;font-size:13px;text-decoration:none}
 /* dark/method/appendix */
 .dark{background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#E9E3D6}.dark .eb{color:var(--gold-lt)}.dark .h2{color:#fff}
+.dark .pn{color:rgba(201,163,78,.7)}
 .mstep{display:flex;gap:12px;align-items:flex-start;margin-top:15px}.mstep .n{width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);color:var(--gold);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--disp)}
 .mstep b{font-family:var(--disp);font-size:14px;color:#fff}.mstep p{font-size:12px;color:#CBBFA6;margin-top:2px}
 .moons{display:flex;gap:12px;justify-content:center;margin-top:18px}.moonchip{background:rgba(255,255,255,.06);border:1px solid rgba(201,163,78,.3);border-radius:12px;padding:10px 14px;text-align:center}.moonchip .g{font-size:20px;color:var(--gold-lt)}.moonchip .s{font-size:10px;color:#CBBFA6;margin-top:3px}
 .tagline{font-family:var(--disp);font-style:italic;font-size:15px;color:var(--gold-lt);text-align:center;margin-top:20px}
 .gloss{font-size:12px;color:#4a4459;padding:8px 0;border-top:1px solid var(--line)}.gloss:first-of-type{border-top:0}.gloss b{font-family:var(--disp);color:var(--ink)}
+.inbox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 16px;margin-bottom:14px}
+.inrow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 0;border-top:1px solid var(--line)}.inrow:first-child{border-top:0}.inrow .ik{color:var(--muted)}.inrow .iv{font-weight:600;text-align:right}
+.derive{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:10px;padding:11px 13px;font-size:11.5px;color:#6a5f52;margin-top:6px}
 .crow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px}
 .crow .ct{display:flex;justify-content:space-between;align-items:baseline}.crow .cn{font-family:var(--disp);font-size:14px}.crow .cn small{color:var(--muted);font-weight:400;font-size:10px}
-.crow .sc{font-family:var(--disp);font-weight:600;color:var(--amber);font-size:14px}.crow .val{font-size:12px;margin-top:5px;color:#4a4459}.crow .rl{font-size:11px;color:#8a7f99;margin-top:4px;font-style:italic}
+.crow .sc{font-family:var(--disp);font-weight:600;color:var(--amber);font-size:14px}.crow .val{font-size:12px;margin-top:5px;color:#4a4459}.crow .val b{color:var(--ink)}
+.crow .rl{font-size:11px;color:#8a7f99;margin-top:4px;font-style:italic;width:auto;height:auto;background:none;display:block}
 .total{text-align:center;background:var(--espresso2);color:#fff;border-radius:12px;padding:11px;font-family:var(--disp);font-weight:600;margin:12px 0 4px}
 .verify{background:rgba(62,125,90,.14);border:1px solid rgba(62,125,90,.4);border-radius:12px;padding:14px 15px;margin-top:14px}.verify b{font-family:var(--disp);color:#9fe0bd}.verify p{font-size:12px;color:#B9D6C6;margin-top:5px}
 /* actions */
@@ -170,16 +276,8 @@ def _stars(pct):
     return "★ " * n + "☆ " * (5 - n)
 
 
-def _mini_koota(k):
-    pct = (k["score"] / k["max"] * 100) if k["max"] else 0
-    ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"]})
-    fill = "var(--green)" if pct >= 75 else ("var(--amber)" if pct >= 40 else "var(--terra)")
-    sc = int(k["score"]) if float(k["score"]).is_integer() else k["score"]
-    return (f'<div class="koota"><div class="ktop"><span class="kem">{ui["emoji"]}</span>'
-            f'<span class="knm"><b>{escape(ui["label"])}</b><span class="ksan">{escape(k["name"])} koota</span></span>'
-            f'<span class="ks">{sc}/{k["max"]}</span></div>'
-            f'<div class="kbar"><i style="width:{max(pct,4):.0f}%;background:{fill}"></i></div>'
-            f'<p class="kt">{escape(k.get("text",""))}</p></div>')
+def _sc(k):
+    return int(k["score"]) if float(k["score"]).is_integer() else k["score"]
 
 
 # ------------------------------------------------------------------ builders
@@ -190,9 +288,10 @@ def render_milan_v2(p: dict) -> str:
     pct = int(p.get("match_pct") or round((p.get("effective") or p.get("total", 0)) / 36 * 100))
     prof = p.get("profiles") or {}; pr1, pr2 = prof.get("p1", {}), prof.get("p2", {})
     arch = ARCHETYPE.get(frozenset({pr1.get("element"), pr2.get("element")}), ARCHETYPE_DEFAULT)
-    themes = _theme_scores(kootas)                     # strongest first
+    themes = _theme_scores(kootas)
     strong = [t for t in themes if t["pct"] >= 75]
-    S = []                                             # (css_class, inner_html)
+    weakest = themes[-1] if themes else None
+    S = []
 
     # 1 cover
     S.append(("cover",
@@ -207,9 +306,12 @@ def render_milan_v2(p: dict) -> str:
     rows = ""
     for t in themes:
         th = t["theme"]; ap = int(round(t["pct"])); fill, _, _ = _chip(t["pct"])
+        extra = ""
+        if t is weakest and ap < 45:
+            extra = f'<div class="growtag">\U0001F331 Your growth area — the good news: it’s the most fixable one</div>'
         rows += (f'<div class="area"><div class="atop"><span class="aem">{th["emoji"]}</span>'
                  f'<span class="anm">{escape(th["name"])}</span><span class="apct">{ap}%</span></div>'
-                 f'<div class="bar"><i class="{fill}" style="width:{max(ap,6)}%"></i></div></div>')
+                 f'<div class="bar"><i class="{fill}" style="width:{max(ap,6)}%"></i></div>{extra}</div>')
     S.append(("", f'<div class="eb">At a glance</div><div class="h2">How you match, in {len(themes)} areas</div>'
                   f'<div class="sub">Strongest first</div>{rows}'
                   f'<div class="foot">{len(strong)} of your {len(themes)} areas are naturally strong.</div>'))
@@ -240,25 +342,20 @@ def render_milan_v2(p: dict) -> str:
         f'<div class="scard"><div class="n">{p1n} &amp; {p2n}</div><div class="a">{escape(arch["name"])} {arch.get("emoji","")}</div>'
         f'<div class="b">{pct}%</div><div class="st">{_stars(pct)}</div><div class="v">{_verdict_word(pct)}</div></div>'))
 
-    # 6 two of you + 7 couple type
+    # 6 two of you
     S += _two_of_you(p, pr1, pr2)
-    S.append(("", f'<div class="eb">Your couple type</div><div class="h2">The kind of pair you are ✨</div>'
-                  f'<div class="coupleft"><div class="ce">{arch.get("emoji","✨")}</div>'
-                  f'<h3>{escape(arch["name"])}</h3><div class="ct">{escape(arch.get("tagline",""))}</div>'
-                  f'<p>{narr(p,"couple_type") or escape(arch.get("body",""))}</p></div>'))
-
-    # 8..17 area deep-dives (2 pages each)
-    S += _area_pages(themes, by, p)
+    # 7..N area deep-dives: growth area first, then rest by strength
+    S += _area_pages(themes, by, p, pr1, pr2)
     # synthesis
     S += _synthesis(p, themes, strong)
-    # combined energy
-    S += _combined(p, pr1, pr2)
     # checks
     S += _checks(p, by)
     # timing
     S += _timing()
     # toolkit
     S += _toolkit(p, by)
+    # method (standalone dark page)
+    S += _method(pr1, pr2)
     # what score means
     S += _score_means(p, pct)
     # note
@@ -268,15 +365,15 @@ def render_milan_v2(p: dict) -> str:
                   f'<div class="cert"><div class="seal">✦</div><div class="lbl">AXTROSHASTRA</div>'
                   f'<div class="n">{p1n} &amp; {p2n}</div><div class="a">{escape(arch["name"])} {arch.get("emoji","")}</div>'
                   f'<div class="st">{_stars(pct)}</div><div class="b">{pct}% · {_verdict_word(pct)}</div>'
-                  f'<div class="q">"According to Vedic astrology, this relationship holds warm and auspicious potential."</div></div>'))
+                  f'<div class="q">“According to Vedic astrology, this relationship holds warm and auspicious potential.”</div></div>'))
     # referral
     S.append(("", f'<div class="eb">One last thing</div><div class="h2">Know a couple who’d love this?</div>'
                   f'<div class="sub">Every reading is calculated from real charts — no two alike</div>'
                   f'<div class="refbox"><div class="l2">Gift a friend their reading \U0001F49B</div>'
-                  f'<p>If this felt true for you, it’ll mean the world to someone figuring out "is this the one?"</p>'
+                  f'<p>If this felt true for you, it’ll mean the world to someone figuring out “is this the one?”</p>'
                   f'<a class="refbtn" href="/match">Start a reading →</a></div>'))
     # appendix
-    S += _appendix(p, pr1, pr2, kootas)
+    S += _appendix(p, pr1, pr2, kootas, by)
 
     # assemble + auto-number
     pages = "".join(f'<section class="pg {cls}">{inner}<div class="pn">{i:02d}</div></section>'
@@ -300,9 +397,10 @@ def _playbook(p, by):
     if ap.get("try"): acts += f'<div class="act"><div class="k">\U0001F3AF Try this week</div><div class="v">{escape(ap["try"])}</div></div>'
     if ap.get("talk"): acts += f'<div class="act"><div class="k">\U0001F4AC Say this</div><div class="v"><em>{escape(ap["talk"])}</em></div></div>'
     if ap.get("green"): acts += f'<div class="act"><div class="k">✅ Green flag you’ll notice</div><div class="v">{escape(ap["green"])}</div></div>'
+    rit = f'<div class="ritual">Optional ritual: {escape(rem["remedy"])}</div>' if rem.get("remedy") else ""
     return [("", f'<div class="eb">Your playbook</div><div class="h2">One thing worth working on</div>'
                  f'<div class="sub">Small effort, big payoff</div>'
-                 f'<div class="growbox"><div class="t">{ui["emoji"]} {escape(ui["label"])}</div><p>{intro}</p></div>{acts}')]
+                 f'<div class="growbox"><div class="t">{ui["emoji"]} {escape(ui["label"])}</div><p>{intro}</p></div>{acts}{rit}')]
 
 
 def _two_of_you(p, pr1, pr2):
@@ -314,55 +412,247 @@ def _two_of_you(p, pr1, pr2):
         return (f'<div class="prof"><div class="g">{glyph}︎</div><div class="nm">{nm}</div>'
                 f'<div class="brg">{srow}<div class="br m">\U0001F319 <b>{moon} Moon</b> <span>· your love sign</span></div></div>'
                 f'<div class="pmeta">{escape(pr.get("nak",""))} · {escape((pr.get("element") or "").title())} · ruled by {escape(pr.get("lord",""))}</div>'
-                f'<div class="plove">"{escape(pr.get("love",""))}"</div></div>')
+                f'<div class="plove">“{escape(pr.get("love",""))}”</div></div>')
     el = p.get("element") or {}
-    return [("", f'<div class="eb">Where it begins</div><div class="h2">The two of you</div>'
+    return [("", f'<div class="atag">The full reading</div>'
+                 f'<div class="eb">Where it begins</div><div class="h2">The two of you</div>'
                  f'<div class="sub">You know your Sun sign. For love, we read your Moon.</div>'
                  f'{card(pr1)}<div class="between">{escape(el.get("p1",""))} meets {escape(el.get("p2",""))}</div>{card(pr2)}'
                  f'<div class="moonwhy"><p>The Sun is who you are to the world; the Moon is who you are in love — '
                  f'so Vedic matching reads the Moon, not the Sun.</p></div>')]
 
 
-def _area_pages(themes, by, p):
+def _mind_card(pr, sym, title_label, adj):
+    nm = escape(pr.get("name", ""))
+    lord = pr.get("lord", "")
+    elem_cls = LORD_ELEM_CLS.get(lord, "air")
+    body = escape(LORD_BODY.get(lord, ""))
+    return (f'<div class="mind"><div class="mh"><div class="planet {elem_cls}">{sym}</div>'
+            f'<div><b>{nm} — {escape(title_label)}</b><div class="who">{escape(adj)}</div></div></div>'
+            f'<p>{body}</p></div>')
+
+
+def _animal_card(pr):
+    nm = escape(pr.get("name", ""))
+    nak = pr.get("nak", "")
+    animal = NAK_ANIMAL.get(nak, "")
+    emoji = ANIMAL_EMOJI.get(animal, "\U0001F43E")
+    adj = ANIMAL_ADJ.get(animal, "")
+    elem = (pr.get("element") or "").lower()
+    elem_cls = "rose" if elem in ("fire", "water") else "gold"
+    return (f'<div class="mind"><div class="mh"><div class="planet {elem_cls}">{emoji}</div>'
+            f'<div><b>{nm} — the {escape(animal)} instinct</b><div class="who">{escape(adj)}</div></div></div>'
+            f'<p>Your nakshatra’s animal is the {escape(animal)} — {escape(ANIMAL_ADJ.get(animal, ""))}.</p></div>')
+
+
+def _area_pages(themes, by, p, pr1, pr2):
     secs = []
-    strongest = themes[0]["theme"]["name"] if themes else None
-    weakest = themes[-1]["theme"]["name"] if themes else None
-    for t in themes:
-        th = t["theme"]; pct = int(round(t["pct"])); ks = [by[n] for n in th["kootas"] if n in by]
-        strong = pct >= 55; _, col, _ = _chip(t["pct"])
-        # reading page
-        sd = narr(p, "deepdive_strength") if th["name"] == strongest else None
-        if not sd and strong and THEME_DEEP.get(th["name"]):
-            sd = escape(THEME_DEEP[th["name"]])
-        lead = f'<p class="lead">{sd}</p>' if sd else ""
-        reading = (f'<div class="eb">{"Your strength" if strong else "Worth a look"}</div>'
-                   f'<div class="h2">{escape(th["name"])}</div>'
-                   f'<div class="scorebig" style="color:{col}">{pct}<small>%</small></div>{lead}'
-                   f'<p class="sub" style="margin-top:8px">{escape(th["blurb"]).capitalize()}.</p>'
-                   + "".join(_mini_koota(k) for k in ks))
-        secs.append(("", reading))
-        # second page
-        if strong:
-            secs.append(("", f'<div class="eb">Keep the good thing good</div><div class="h2">How to protect it</div>'
-                             f'<div class="sub">Even strengths need light care</div>'
-                             f'<div class="scene"><div class="t">The only risk with an easy strength…</div>'
-                             f'<p>is taking it for granted. When this comes naturally, couples stop being intentional. Keep choosing it.</p></div>'
-                             f'<p class="payoff">You don’t need to fix this one — just don’t sleepwalk through how good it is.</p>'))
+    if not themes:
+        return secs
+    weakest_name = themes[-1]["theme"]["name"]
+    strongest_name = themes[0]["theme"]["name"]
+    is_chem = lambda th: th["name"] == "Chemistry & Attraction"
+
+    # growth area first, then rest strongest-to-weakest
+    ordered = [themes[-1]] + [t for t in themes[:-1]]
+
+    for idx, t in enumerate(ordered):
+        th = t["theme"]; tpct = int(round(t["pct"])); ks = [by[n] for n in th["kootas"] if n in by]
+        is_strong = tpct >= 55
+        is_growth = th["name"] == weakest_name
+        is_strongest = th["name"] == strongest_name
+
+        if is_growth:
+            secs += _growth_pages(t, ks, p, pr1, pr2)
+        elif is_chem(th):
+            secs += _chemistry_pages(t, ks, p, pr1, pr2)
+        elif is_strong:
+            secs += _strong_pages(t, ks, p, pr1, pr2, is_strongest)
         else:
-            wk = min(ks, key=lambda k: (k["score"] / k["max"]) if k["max"] else 1)
-            rem = REMEDIES.get(wk["name"], {}); ap = ACTION_PLAN.get(wk["name"], {})
-            gd = narr(p, "deepdive_growth") if th["name"] == weakest else None
-            if not gd:
-                gd = escape(wk.get("text", ""))
-            growp = (f'<div class="scene"><div class="t">Why this is your growth edge</div><p>{gd}</p></div>'
-                     if gd else "")
-            acts = ""
-            if ap.get("try"): acts += f'<div class="act"><div class="k">\U0001F3AF Try this week</div><div class="v">{escape(ap["try"])}</div></div>'
-            if ap.get("talk"): acts += f'<div class="act"><div class="k">\U0001F4AC Say this</div><div class="v"><em>{escape(ap["talk"])}</em></div></div>'
-            if rem.get("remedy"): acts += f'<div class="ritual">Optional ritual: {escape(rem["remedy"])}</div>'
-            secs.append(("", f'<div class="eb">The play</div><div class="h2">You don’t need to match. Just translate.</div>'
-                             f'<div class="sub">The same difference, turned into a strength</div>{growp}{acts}'))
+            secs += _weak_pages(t, ks, p, pr1, pr2)
     return secs
+
+
+def _growth_pages(t, ks, p, pr1, pr2):
+    th = t["theme"]; tpct = int(round(t["pct"]))
+    n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
+    l1 = pr1.get("lord", ""); l2 = pr2.get("lord", "")
+    s1 = LORD_SYMBOL.get(l1, "☆"); s2 = LORD_SYMBOL.get(l2, "☆")
+    ls1 = LORD_SHORT.get(l1, ("the mind", "")); ls2 = LORD_SHORT.get(l2, ("the mind", ""))
+    e1 = (pr1.get("element") or "").title(); e2 = (pr2.get("element") or "").title()
+
+    lead_text = narr(p, "deepdive_growth") or (
+        f"Your report flagged {escape(th['name'])} as your growth area. "
+        f"Here’s the real, computed reason — and it’s more interesting than it sounds.")
+
+    friction_body = (f"{escape(l1)} and {escape(l2)} aren’t natural friends in the classical system — "
+                     f"that’s the actual, calculated reason your {escape(th['name'])} score is low. "
+                     f"You connect deeply; you just run different operating systems.")
+
+    page1 = (f'<div class="atag">{escape(th["name"])} · 1 of 2</div>'
+             f'<div class="eb">Your growth area, decoded</div>'
+             f'<div class="h2">Two minds, two languages</div><div class="rule"></div>'
+             f'<p class="lead">{lead_text}</p>'
+             f'{_mind_card(pr1, s1, ls1[0], e1 + " · " + ls1[1])}'
+             f'{_mind_card(pr2, s2, ls2[0], e2 + " · " + ls2[1])}'
+             f'<div class="friction"><div class="t">Why the friction is real (not imagined)</div>'
+             f'<p>{friction_body}</p></div>')
+
+    wk = min(ks, key=lambda k: (k["score"] / k["max"]) if k["max"] else 1) if ks else {}
+    ap = ACTION_PLAN.get(wk.get("name", ""), {})
+    rem = REMEDIES.get(wk.get("name", ""), {})
+    acts = ""
+    if ap.get("try"): acts += f'<div class="act"><div class="k">\U0001F3AF Try this week</div><div class="v">{escape(ap["try"])}</div></div>'
+    if ap.get("talk"): acts += f'<div class="act"><div class="k">\U0001F4AC Say this</div><div class="v"><em>{escape(ap["talk"])}</em></div></div>'
+    if ap.get("green"): acts += f'<div class="act"><div class="k">✅ Green flag you’ll notice</div><div class="v">{escape(ap["green"])}</div></div>'
+    payoff = (f'{e1} + {e2}, bridged, is poetry. Once {n1} learns not everything is logic, '
+              f'and {n2} learns not everything needs saying — you don’t just communicate. You complete each other.')
+    page2 = (f'<div class="atag">{escape(th["name"])} · 2 of 2</div>'
+             f'<div class="eb">The play</div><div class="h2">You don’t need to match. Just translate.</div>'
+             f'<div class="sub">The same difference, turned into a strength</div>'
+             f'<div class="scene"><div class="t">When something’s wrong…</div>'
+             f'<p>{n1}’s instinct is to analyse and solve. {n2}’s is to sit with the feeling first. '
+             f'Neither is wrong — they just need to meet in the middle, on purpose.</p></div>'
+             f'{acts}<p class="payoff">{payoff}</p>')
+    return [("", page1), ("", page2)]
+
+
+def _chemistry_pages(t, ks, p, pr1, pr2):
+    th = t["theme"]; tpct = int(round(t["pct"]))
+    a1 = NAK_ANIMAL.get(pr1.get("nak", ""), ""); a2 = NAK_ANIMAL.get(pr2.get("nak", ""), "")
+    yoni_k = next((k for k in ks if k["name"] == "Yoni"), None)
+    yoni_sc = int(yoni_k["score"]) if yoni_k else 2
+    pair_desc = YONI_SCORE_DESC.get(yoni_sc, "a unique pair")
+    _, col, _ = _chip(t["pct"])
+
+    lead = f"A pull built on respect and effort — which, honestly, outlasts fireworks." if tpct < 60 else f"The spark is real and mutual."
+
+    page1 = (f'<div class="atag">Chemistry · 1 of 2</div>'
+             f'<div class="eb">Chemistry &amp; Attraction</div>'
+             f'<div class="h2">The spark — {"real, but not on autopilot" if tpct < 60 else "alive and well"}</div>'
+             f'<div class="scorebig" style="color:{col}">{tpct}<small>%</small></div>'
+             f'<p class="lead" style="margin-top:8px">{lead}</p>'
+             f'{_animal_card(pr1)}{_animal_card(pr2)}'
+             f'<div class="friction"><div class="t">{escape(a1)} &amp; {escape(a2)} — {escape(pair_desc)}</div>'
+             f'<p>{"Not natural allies, not enemies. Your chemistry is real, but it’s built on attraction you nurture, not pure gravity. The upside — that kind deepens with time instead of fading." if yoni_sc == 2 else "Your instinctive styles have a natural pull — the chemistry is already there to build on."}</p></div>')
+
+    wk = min(ks, key=lambda k: (k["score"] / k["max"]) if k["max"] else 1) if ks else {}
+    rem = REMEDIES.get(wk.get("name", ""), {})
+    ap = ACTION_PLAN.get(wk.get("name", ""), {})
+    acts = ""
+    if ap.get("try"): acts += f'<div class="act"><div class="k">\U0001F3AF Try this fortnight</div><div class="v">{escape(ap["try"])}</div></div>'
+    if ap.get("talk"): acts += f'<div class="act"><div class="k">\U0001F4AC Say this</div><div class="v"><em>{escape(ap["talk"])}</em></div></div>'
+    if ap.get("green"): acts += f'<div class="act"><div class="k">✅ Green flag you’ll notice</div><div class="v">{escape(ap["green"])}</div></div>'
+    rit = f'<div class="ritual">Optional: Fridays are Venus’s day — warm tones, unhurried evenings, a little more touch.</div>' if rem.get("remedy") else ""
+    page2 = (f'<div class="atag">Chemistry · 2 of 2</div>'
+             f'<div class="eb">The play</div><div class="h2">Keep the spark deliberate</div>'
+             f'<div class="sub">Chemistry you tend to, stays</div>'
+             f'<div class="scene"><div class="t">The trap to avoid…</div>'
+             f'<p>A respect-based pull can quietly slide into “comfortable.” The fix isn’t more heat — '
+             f'it’s more intention: closeness you choose, not leave to chance.</p></div>'
+             f'{acts}{rit}')
+    return [("", page1), ("", page2)]
+
+
+def _strong_pages(t, ks, p, pr1, pr2, is_strongest):
+    th = t["theme"]; tpct = int(round(t["pct"]))
+    n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
+    top_k = max(ks, key=lambda k: (k["score"] / k["max"]) if k["max"] else 0) if ks else {}
+    score_disp = f'{_sc(top_k)}<small>/{top_k.get("max","")}</small>' if top_k else f'{tpct}<small>%</small>'
+
+    kicker = "Your strongest factor" if is_strongest else "A quiet superpower"
+    measures = THEME_MEASURES.get(th["name"], f"How strong you are in {th['name'].lower()}.")
+    deep = narr(p, "deepdive_strength") if is_strongest else None
+    if not deep:
+        deep = THEME_DEEP.get(th["name"], "")
+
+    why_aced = _why_aced(th, ks, pr1, pr2)
+
+    page1 = (f'<div class="atag">{escape(th["name"])}</div>'
+             f'<div class="trophy">{th["emoji"]}</div>'
+             f'<div class="eb" style="text-align:center">{kicker}</div>'
+             f'<div class="h2">{escape(th["name"])}</div>'
+             f'<div class="scorebig">{score_disp}</div>'
+             f'<p class="lead" style="margin-top:8px">{escape(deep) if deep else ""}</p>'
+             f'<div class="why"><div class="t">What it measures</div><p>{escape(measures)}</p></div>'
+             f'<div class="why"><div class="t">Why you aced it</div><p>{why_aced}</p></div>'
+             f'<p class="payoff" style="margin-top:18px">The unglamorous, foundational fit a lot of couples never have — you begin with it built in.</p>')
+
+    nak1 = pr1.get("nak", ""); nak2 = pr2.get("nak", "")
+    g1 = NAK_GANA.get(nak1, ""); g2 = NAK_GANA.get(nak2, "")
+    ga1 = GANA_ADJ.get(g1, ""); ga2 = GANA_ADJ.get(g2, "")
+    scene_body = (f"is taking it for granted. When this comes naturally, couples stop being intentional — "
+                  f"and let routine quietly replace connection.")
+    act1_label = "\U0001F33F Honour both roles"
+    act1_body = f"{n1} brings one energy, {n2} brings another. Let each lead where they’re natural instead of competing."
+    if th["name"] == "Everyday Vibe" and g1 and g2:
+        act1_body = (f"{n1} carries a {g1} ({ga1}) temperament, {n2} a {g2} ({ga2}) one. "
+                     f"Let each lead where they’re natural instead of competing.")
+
+    page2 = (f'<div class="atag">{escape(th["name"])} · protect it</div>'
+             f'<div class="eb">Keep the good thing good</div><div class="h2">How to protect it</div>'
+             f'<div class="sub">Even strengths need light care</div>'
+             f'<div class="scene"><div class="t">The only risk with easy harmony…</div>'
+             f'<p>{scene_body}</p></div>'
+             f'<div class="act"><div class="k">{act1_label}</div><div class="v">{act1_body}</div></div>'
+             f'<div class="act"><div class="k">✅ Green flag you’ll notice</div>'
+             f'<div class="v">You laugh off the small stuff — and neither keeps score.</div></div>'
+             f'<p class="payoff" style="margin-top:18px">You don’t need to fix this one. Just don’t sleepwalk through how good it is.</p>')
+    return [("", page1), ("", page2)]
+
+
+def _weak_pages(t, ks, p, pr1, pr2):
+    th = t["theme"]; tpct = int(round(t["pct"]))
+    _, col, _ = _chip(t["pct"])
+    wk = min(ks, key=lambda k: (k["score"] / k["max"]) if k["max"] else 1) if ks else {}
+    rem = REMEDIES.get(wk.get("name", ""), {}); ap = ACTION_PLAN.get(wk.get("name", ""), {})
+
+    page1 = (f'<div class="atag">{escape(th["name"])}</div>'
+             f'<div class="trophy a">{th["emoji"]}</div>'
+             f'<div class="eb" style="text-align:center">Worth a look</div>'
+             f'<div class="h2">{escape(th["name"])}</div>'
+             f'<div class="scorebig" style="color:{col}">{tpct}<small>%</small></div>'
+             f'<p class="lead" style="margin-top:8px">{escape(th["blurb"]).capitalize()}.</p>'
+             f'<div class="why a"><div class="t">What it measures</div><p>{escape(THEME_MEASURES.get(th["name"], ""))}</p></div>'
+             f'<div class="why a"><div class="t">What it means for you</div><p>{escape(wk.get("text", ""))}</p></div>')
+
+    acts = ""
+    if ap.get("try"): acts += f'<div class="act"><div class="k">\U0001F3AF Try this week</div><div class="v">{escape(ap["try"])}</div></div>'
+    if ap.get("talk"): acts += f'<div class="act"><div class="k">\U0001F4AC Say this</div><div class="v"><em>{escape(ap["talk"])}</em></div></div>'
+    rit = f'<div class="ritual">Optional ritual: {escape(rem["remedy"])}</div>' if rem.get("remedy") else ""
+    page2 = (f'<div class="atag">{escape(th["name"])} · the play</div>'
+             f'<div class="eb">The play</div><div class="h2">You don’t need to match. Just translate.</div>'
+             f'<div class="sub">The same difference, turned into a strength</div>'
+             f'<div class="scene"><div class="t">Why this is your growth edge</div><p>{escape(rem.get("work_on", ""))}</p></div>'
+             f'{acts}{rit}')
+    return [("", page1), ("", page2)]
+
+
+def _why_aced(th, ks, pr1, pr2):
+    nak1 = pr1.get("nak", ""); nak2 = pr2.get("nak", "")
+    if th["name"] == "Health & Vitality":
+        n1 = NAK_NADI.get(nak1, ""); n2 = NAK_NADI.get(nak2, "")
+        if n1 and n2 and n1 != n2:
+            return (f'Your two “Nadis” are different ({escape(n1)} &amp; {escape(n2)}) — '
+                    f'the ideal, complementary result. The single hardest factor to build if it’s missing, '
+                    f'and you start with it fully intact.')
+        return "Your Nadi factor is strong — a positive classical sign."
+    if th["name"] == "Everyday Vibe":
+        g1 = NAK_GANA.get(nak1, ""); g2 = NAK_GANA.get(nak2, "")
+        ga1 = GANA_ADJ.get(g1, ""); ga2 = GANA_ADJ.get(g2, "")
+        return (f'{escape(pr1.get("name",""))} carries a {escape(g1)} ({escape(ga1)}) temperament, '
+                f'{escape(pr2.get("name",""))} a {escape(g2)} ({escape(ga2)}) one — '
+                f'a pairing that reads the same emotional weather. No walking on eggshells.')
+    if th["name"] == "Love & Long-Term":
+        return ("Your Moon signs sit in a mutually supportive position — the classical “green signal” "
+                "for emotional closeness, family life, and shared prosperity.")
+    if th["name"] == "Mind & Values":
+        return ("Your Moon-lords are naturally friendly — you think in the same language. "
+                "Even your disagreements make sense to each other.")
+    if th["name"] == "Chemistry & Attraction":
+        return ("Your instinctive styles have a natural pull — the chemistry is real "
+                "and doesn’t need forcing.")
+    return "Your scores here are strong — a solid classical foundation."
 
 
 def _synthesis(p, themes, strong):
@@ -375,16 +665,6 @@ def _synthesis(p, themes, strong):
                  f'<p class="story" style="margin-top:14px">The rare part — the deep, hard-to-build compatibility — you already <b>have</b>. '
                  f'The workable part is exactly the kind couples <b>grow into</b>.</p>'
                  f'<p class="payoff" style="margin-top:20px">That’s not a fragile match. It’s a strong one, with a clear path.</p>')]
-
-
-def _combined(p, pr1, pr2):
-    el = p.get("element") or {}
-    txt = narr(p, "combined_energy") or escape(el.get("text", ""))
-    e1 = escape((pr1.get("element") or "").title()); e2 = escape((pr2.get("element") or "").title())
-    return [("", f'<div class="eb">Your elements</div><div class="h2">Your combined energy</div>'
-                 f'<div class="elems"><div class="elbox"><div class="e">\U0001F4A7</div><b>{escape(pr1.get("name",""))} · {e1}</b></div>'
-                 f'<div class="elbox"><div class="e">\U0001F33F</div><b>{escape(pr2.get("name",""))} · {e2}</b></div></div>'
-                 f'<p class="payoff" style="margin-top:16px">{txt}</p>')]
 
 
 def _checks(p, by):
@@ -402,7 +682,8 @@ def _checks(p, by):
     ch += row("ok" if bhak_ok else "mild", "✓" if bhak_ok else "!", "Bhakoot Dosha",
               "Your Moon signs sit in a favourable position — long-term harmony supported." if bhak_ok
               else "A Bhakoot placement is present — check whether friendly moon-lords cancel it.")
-    return [("", f'<div class="eb">The three big ones</div><div class="h2">The traditional checks</div>'
+    return [("", f'<div class="atag">The traditional checks</div>'
+                 f'<div class="eb">The three big ones</div><div class="h2">The traditional checks</div>'
                  f'<div class="sub">Demystified — no fear, just facts</div>{ch}'
                  f'<p class="payoff" style="margin-top:16px">Read them as information to understand, not verdicts to fear.</p>')]
 
@@ -412,7 +693,8 @@ def _timing():
             ("\U0001F3E1", "For a new beginning", "Start something together on a rising-moon fortnight for a settled, growing start."),
             ("✈️", "For travel together", "Shared journeys deepen your bond — try to plan one each season.")]
     body = "".join(f'<div class="chk"><div class="bd ic">{e}</div><div><b>{t}</b><p>{d}</p></div></div>' for e, t, d in rows)
-    return [("", f'<div class="eb">Good moments</div><div class="h2">Auspicious timing</div>'
+    return [("", f'<div class="atag">Auspicious timing</div>'
+                 f'<div class="eb">Good moments</div><div class="h2">Auspicious timing</div>'
                  f'<div class="sub">General guidance — not chart-specific dates</div>{body}')]
 
 
@@ -422,21 +704,47 @@ def _toolkit(p, by):
     for k in weak[:4]:
         ui = KOOTA_UI.get(k["name"], {"emoji": "•", "label": k["name"]}); ap = ACTION_PLAN.get(k["name"], {})
         if ap.get("try"):
-            acts += f'<div class="act"><div class="k">{ui["emoji"]} {escape(ui["label"])}</div><div class="v">{escape(ap["try"])}</div></div>'
+            acts += f'<div class="act"><div class="k">{ui["emoji"]} For {escape(ui["label"]).lower()}</div><div class="v">{escape(ap["try"])}</div></div>'
     if not acts:
-        acts = '<div class="act"><div class="k">💛 You’re in great shape</div><div class="v">No major work needed — just keep choosing each other.</div></div>'
+        acts = '<div class="act"><div class="k">\U0001F49B You’re in great shape</div><div class="v">No major work needed — just keep choosing each other.</div></div>'
     rits = ""
     for k in weak[:3]:
         rem = REMEDIES.get(k["name"], {})
         if rem.get("remedy"):
-            rits += f'<div class="chk"><div class="bd ic">🪔</div><div><b>{escape(KOOTA_UI.get(k["name"],{}).get("label",k["name"]))}</b><p>{escape(rem["remedy"])}</p></div></div>'
+            rits += f'<div class="chk"><div class="bd ic">\U0001F54E</div><div><b>{escape(KOOTA_UI.get(k["name"],{}).get("label",k["name"]))}</b><p>{escape(rem["remedy"])}</p></div></div>'
     if not rits:
-        rits = '<div class="chk"><div class="bd ic">🪔</div><div><b>A shared calm</b><p>Light a small lamp together at dusk — a grounding ritual for any couple.</p></div></div>'
-    return [("", f'<div class="eb">What to actually do</div><div class="h2">Your toolkit — the actions</div>'
+        rits = '<div class="chk"><div class="bd ic">\U0001F54E</div><div><b>A shared calm</b><p>Light a small lamp together at dusk — a grounding ritual for any couple.</p></div></div>'
+    return [("", f'<div class="atag">Your toolkit · 1 of 2</div>'
+                 f'<div class="eb">What to actually do</div><div class="h2">Your toolkit — the actions</div>'
                  f'<div class="sub">The real levers, in one place</div>{acts}'
                  f'<p class="payoff" style="margin-top:14px">The first remedy is always action. Do one this week.</p>'),
-            ("", f'<div class="eb">Optional · the traditional touch</div><div class="h2">If you like the rituals</div>'
+            ("", f'<div class="atag">Your toolkit · 2 of 2</div>'
+                 f'<div class="eb">Optional · the traditional touch</div><div class="h2">If you like the rituals</div>'
                  f'<div class="sub">A cultural add-on — never a substitute for the actions</div>{rits}')]
+
+
+def _method(pr1, pr2):
+    g1 = SIGN_GLYPH.get(pr1.get("sign"), "✦"); g2 = SIGN_GLYPH.get(pr2.get("sign"), "✦")
+    n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
+    s1 = escape(pr1.get("sign", "")); s2 = escape(pr2.get("sign", ""))
+    nk1 = escape(pr1.get("nak", "")); nk2 = escape(pr2.get("nak", ""))
+    return [("dark",
+        f'<div class="atag" style="color:rgba(201,163,78,.6)">The proof</div>'
+        f'<div class="eb">The proof</div><div class="h2">How this was calculated</div>'
+        f'<div class="sub" style="color:#B3A488">Not guessed. Computed.</div>'
+        f'<div class="mstep"><div class="n">1</div><div><b>Your real sky, at birth</b>'
+        f'<p>We computed the true positions of the Moon and planets from your two birth details — '
+        f'NASA-grade astronomy (Swiss Ephemeris), sidereal zodiac, Lahiri ayanamsa.</p></div></div>'
+        f'<div class="mstep"><div class="n">2</div><div><b>The 1000-year-old method</b>'
+        f'<p>Your match runs on the classical Ashtakoota (36-guna) system — your two Moon positions '
+        f'across 8 factors, dosha rules applied exactly.</p></div></div>'
+        f'<div class="mstep"><div class="n">3</div><div><b>No opinions, only calculation</b>'
+        f'<p>Every number here traces to your charts — not a horoscope generality or an astrologer’s mood.</p></div></div>'
+        f'<div class="moons"><div class="moonchip"><div class="g">{g1}︎</div>'
+        f'<div class="s">{n1}<br>{s1} · {nk1}</div></div>'
+        f'<div class="moonchip"><div class="g">{g2}︎</div>'
+        f'<div class="s">{n2}<br>{s2} · {nk2}</div></div></div>'
+        f'<div class="tagline">Jyotish, calculated — no opinion, only calculation.</div>')]
 
 
 def _score_means(p, pct):
@@ -455,49 +763,109 @@ def _note(p, p1n, p2n):
                f"Where you differ isn’t a crack — it’s the one place a little patience turns difference into depth. "
                f"You already have the rare thing. Tend the rest gently, and you have the makings of a beautiful life together.")
     note = narr(p, "closing_note") or default
-    return [("", f'<div class="eb">From us to you</div><div class="h2">A note to the couple</div><div class="rule"></div>'
+    return [("", f'<div class="atag">A note for you</div>'
+                 f'<div class="eb">From us to you</div><div class="h2">A note to the couple</div><div class="rule"></div>'
                  f'<div class="letter"><p>{note}</p><div class="sign">— Your astrologer, Axtroshastra</div></div>')]
 
 
-def _appendix(p, pr1, pr2, kootas):
-    def crow(k):
-        sc = int(k["score"]) if float(k["score"]).is_integer() else k["score"]
+def _appendix(p, pr1, pr2, kootas, by):
+    def crow(k, rule=""):
+        sc = _sc(k)
+        rl = f'<div class="rl">{escape(rule)}</div>' if rule else ""
         return (f'<div class="crow"><div class="ct"><div class="cn">{escape(k["name"])} '
                 f'<small>· {escape(k.get("meaning",""))}</small></div><div class="sc">{sc}/{k["max"]}</div></div>'
-                f'<div class="val">{escape(k.get("detail",""))}</div></div>')
+                f'<div class="val">{escape(k.get("detail",""))}</div>{rl}</div>')
+
     g1 = SIGN_GLYPH.get(pr1.get("sign"), "✦"); g2 = SIGN_GLYPH.get(pr2.get("sign"), "✦")
-    total = p.get("total"); eff = p.get("effective"); pct = p.get("match_pct")
-    p1charts = (f'<div class="moons"><div class="moonchip"><div class="g">{g1}︎</div>'
-                f'<div class="s">{escape(pr1.get("name",""))}<br>{escape(pr1.get("sign",""))} · {escape(pr1.get("nak",""))}</div></div>'
-                f'<div class="moonchip"><div class="g">{g2}︎</div>'
-                f'<div class="s">{escape(pr2.get("name",""))}<br>{escape(pr2.get("sign",""))} · {escape(pr2.get("nak",""))}</div></div></div>')
+    n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
+    s1 = escape(pr1.get("sign", "")); s2 = escape(pr2.get("sign", ""))
+    nk1 = escape(pr1.get("nak", "")); nk2 = escape(pr2.get("nak", ""))
+    total = p.get("total"); eff = p.get("effective"); pct_val = p.get("match_pct")
+
     secs = []
-    # A charts
-    secs.append(("", f'<div class="eb">Appendix · the receipts</div><div class="h2">The Calculations</div>'
-                     f'<div class="sub">Every number, shown its working</div>'
-                     f'<p class="lead">It starts with your two exact birth details — turned into the real position of the Moon.</p>'
-                     f'{p1charts}<p class="payoff" style="margin-top:16px;font-size:12.5px">Kundli Milan is Moon-based — these two Moon positions drive every score.</p>'))
+    # A charts computed (with birth details)
+    p1charts = (f'<div class="moons"><div class="moonchip"><div class="g">{g1}︎</div>'
+                f'<div class="s">{n1}<br>{s1} · {nk1}</div></div>'
+                f'<div class="moonchip"><div class="g">{g2}︎</div>'
+                f'<div class="s">{n2}<br>{s2} · {nk2}</div></div></div>')
+    meta = p.get("meta") or {}
+    secs.append(("", f'<div class="ctag">Appendix · The receipts</div>'
+                     f'<div class="eb">Nothing hidden</div><div class="h2">The Calculations</div>'
+                     f'<div class="sub">Every number in this report, shown its working</div>'
+                     f'<p class="lead" style="font-size:15px">It starts with your exact birth details — turned into the real position of the Moon.</p>'
+                     f'{p1charts}'
+                     f'<div class="derive">longitude ÷ 30° = Rashi (sign) · ÷ 13°20′ = Nakshatra · ÷ 3°20′ = Pada</div>'
+                     f'<p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:10px">'
+                     f'Kundli Milan is Moon-based — these two Moon positions drive every score.</p>'))
     # B scores 1-4
-    secs.append(("", f'<div class="eb">Appendix · the 8 scores</div><div class="h2">How each score was made</div>'
+    secs.append(("", f'<div class="ctag">Appendix · The 8 scores</div>'
+                     f'<div class="eb">Shown, one by one</div><div class="h2">How each score was made</div>'
                      f'<div class="sub">Factors 1–4 · every score is a rule, not an opinion</div>'
                      + "".join(crow(k) for k in kootas[:4])))
     # C scores 5-8 + total
-    secs.append(("", f'<div class="eb">Appendix · the 8 scores</div><div class="h2">…and factors 5–8</div>'
+    score_sum = " + ".join(str(_sc(k)) for k in kootas[:8])
+    secs.append(("", f'<div class="ctag">Appendix · The 8 scores</div>'
+                     f'<div class="eb">Shown, one by one</div><div class="h2">…and factors 5–8</div>'
                      f'<div class="sub">Then simply added up</div>'
                      + "".join(crow(k) for k in kootas[4:8])
-                     + f'<div class="total">total {total}/36 → effective {eff}/36 → {pct}%</div>'))
-    # D method + glossary (dark)
+                     + f'<div class="total">{score_sum} = {total}/36 → {pct_val}%</div>'))
+    # D dosha checks calculated
+    secs += _dosha_appendix(p, pr1, pr2, by)
+    # E method + glossary (dark)
     gloss = [("Rashi", "your Moon’s zodiac sign (÷30° of the sky)"),
              ("Nakshatra", "the lunar mansion (÷13°20′), pinned to real stars"),
              ("Guna", "a compatibility point; 36 is the maximum"),
              ("Dosha", "a classical caution flag (Manglik, Nadi, Bhakoot)"),
              ("Ayanamsa", "the star-based correction (Lahiri) making it sidereal")]
-    glossary = "".join(f'<div class="gloss" style="color:#D7D1E2;border-color:rgba(255,255,255,.08)">'
+    glossary = "".join(f'<div class="gloss" style="color:#D8CBB4;border-color:rgba(255,255,255,.08)">'
                        f'<b style="color:#fff">{n}</b> — {d}</div>' for n, d in gloss)
-    secs.append(("dark", f'<div class="eb">Appendix · the method</div><div class="h2">Method &amp; glossary</div>'
+    secs.append(("dark", f'<div class="ctag" style="color:rgba(201,163,78,.6)">Appendix · The method</div>'
+                         f'<div class="eb">The fine print, in plain words</div><div class="h2">Method &amp; glossary</div>'
                          f'<div class="sub" style="color:#B3A488">So you can check it yourself</div>'
                          f'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(201,163,78,.2);border-radius:14px;padding:6px 16px;margin-bottom:12px">{glossary}</div>'
                          f'<div class="verify"><b>Verify it yourself</b><p>Put these birth details into any Lahiri-based panchang — '
                          f'the Moon positions will match, exactly. That’s the point: no opinion, only calculation.</p></div>'
-                         f'<div class="tagline">Jyotish, calculated — no opinion, only calculation.</div>'))
+                         f'<div class="tagline">The math is yours. The stars did the rest.</div>'))
     return secs
+
+
+def _dosha_appendix(p, pr1, pr2, by):
+    mg = p.get("manglik") or {}
+    mgy_p1 = mg.get("p1"); mgy_p2 = mg.get("p2")
+    n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
+    nadi = by.get("Nadi", {}); bhak = by.get("Bhakoot", {})
+    nak1 = pr1.get("nak", ""); nak2 = pr2.get("nak", "")
+    nd1 = NAK_NADI.get(nak1, ""); nd2 = NAK_NADI.get(nak2, "")
+    nadi_ok = nadi.get("score", 0) > 0
+    bhak_ok = bhak.get("score", 0) > 0
+
+    mg_status = "One-sided" if (mgy_p1 or mgy_p2) and not (mgy_p1 and mgy_p2) else ("Both" if mgy_p1 and mgy_p2 else "Clear ✓")
+    mg_color = "var(--amber)" if mgy_p1 or mgy_p2 else "var(--green)"
+    mg_detail = escape(mg.get("note", ""))
+
+    nadi_status = "Clear ✓" if nadi_ok else "Shared"
+    nadi_color = "var(--green)" if nadi_ok else "var(--amber)"
+    nadi_detail = f"Nadis differ ({escape(nd1)} vs {escape(nd2)})." if nadi_ok else f"Nadis are the same ({escape(nd1)})."
+
+    bhak_detail_text = escape(bhak.get("detail", ""))
+    bhak_status = "Clear ✓" if bhak_ok else "Present"
+    bhak_color = "var(--green)" if bhak_ok else "var(--amber)"
+
+    rows = (f'<div class="crow"><div class="ct"><div class="cn">Manglik</div>'
+            f'<div class="sc" style="color:{mg_color}">{mg_status}</div></div>'
+            f'<div class="val">{mg_detail}</div>'
+            f'<div class="rl">Manglik if Mars ∈ houses {{1,2,4,7,8,12}} from Moon.</div></div>'
+            f'<div class="crow"><div class="ct"><div class="cn">Nadi Dosha</div>'
+            f'<div class="sc" style="color:{nadi_color}">{nadi_status}</div></div>'
+            f'<div class="val">{nadi_detail}</div>'
+            f'<div class="rl">Dosha only if identical → {"cleared" if nadi_ok else "flagged"}.</div></div>'
+            f'<div class="crow"><div class="ct"><div class="cn">Bhakoot Dosha</div>'
+            f'<div class="sc" style="color:{bhak_color}">{bhak_status}</div></div>'
+            f'<div class="val">{bhak_detail_text}</div>'
+            f'<div class="rl">Dosha only on a 2/12, 5/9, or 6/8 axis.</div></div>')
+
+    return [("", f'<div class="ctag">Appendix · The dosha checks</div>'
+                 f'<div class="eb">The three big ones, shown</div><div class="h2">The dosha checks, calculated</div>'
+                 f'<div class="sub">How each verdict was reached</div>{rows}'
+                 f'<p style="text-align:center;margin-top:16px;font-family:var(--disp);font-style:italic;color:var(--muted);font-size:12.5px">'
+                 f'Same rules, applied the same way, for every couple.</p>')]
