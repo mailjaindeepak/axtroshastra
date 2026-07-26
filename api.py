@@ -672,7 +672,7 @@ def _account_banner(rid: str) -> str:
 
 
 @app.get("/report/{rid}", include_in_schema=False)
-def report_page(rid: str, v2: int = 0):
+def report_page(rid: str, v2: int = 1):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
@@ -680,7 +680,7 @@ def report_page(rid: str, v2: int = 0):
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
-    if v2 and payload.get("product") == "milan":     # feature-flagged redesigned renderer
+    if payload.get("product") == "milan" and v2 != 0:
         try:
             import milan_v2
             return HTMLResponse(milan_v2.render_milan_v2(payload))
