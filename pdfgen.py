@@ -45,10 +45,26 @@ _lock = threading.Lock()          # one Chrome at a time (1 GB RAM box)
 
 
 def chrome_bin() -> str:
-    """First existing Chrome binary, or '' when none is installed."""
+    """First existing Chrome binary, or '' when none is installed.
+
+    Also probes Playwright's browser store (PLAYWRIGHT_BROWSERS_PATH,
+    default /opt/pw-browsers): the production box is Graviton/aarch64 where
+    no system chromium package exists, so .ebextensions installs Playwright's
+    prebuilt chrome-headless-shell there instead."""
+    import glob as _glob
     for c in _CHROME_CANDIDATES:
         if c and os.path.exists(c):
             return c
+    roots = [os.getenv("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers"),
+             os.path.expanduser("~/.cache/ms-playwright")]
+    for root in roots:
+        for pat in ("chromium_headless_shell-*/chrome-headless-shell-linux*/chrome-headless-shell",
+                    "chromium_headless_shell-*/chrome-headless-shell-mac*/chrome-headless-shell",
+                    "chromium_headless_shell-*/chrome-linux/headless_shell",
+                    "chromium-*/chrome-linux/chrome"):
+            hits = sorted(_glob.glob(os.path.join(root, pat)))
+            if hits:
+                return hits[-1]                  # newest build wins
     return ""
 
 
@@ -67,14 +83,19 @@ def generate(html: str) -> bytes | None:
                 f.write(html)
             fd, tmp_pdf = tempfile.mkstemp(suffix=".pdf")
             os.close(fd)
-            args = [chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
-                    "--disable-dev-shm-usage", "--no-pdf-header-footer",
-                    "--virtual-time-budget=10000",
-                    f"--print-to-pdf={tmp_pdf}", f"file://{tmp_html}"]
-            r = subprocess.run(args, capture_output=True, timeout=_TIMEOUT_S)
-            if r.returncode != 0:                 # older Chrome: no --headless=new
-                args[1] = "--headless"
+            common = ["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage",
+                      "--no-pdf-header-footer", "--virtual-time-budget=10000",
+                      f"--print-to-pdf={tmp_pdf}", f"file://{tmp_html}"]
+            if "headless" in os.path.basename(chrome).replace("-", "_"):
+                # chrome-headless-shell is headless by construction — no flag
+                r = subprocess.run([chrome] + common, capture_output=True,
+                                   timeout=_TIMEOUT_S)
+            else:
+                args = [chrome, "--headless=new"] + common
                 r = subprocess.run(args, capture_output=True, timeout=_TIMEOUT_S)
+                if r.returncode != 0:             # older Chrome: no --headless=new
+                    args[1] = "--headless"
+                    r = subprocess.run(args, capture_output=True, timeout=_TIMEOUT_S)
             if r.returncode != 0:
                 logger.error("[pdf] chrome exit %s: %s", r.returncode,
                              r.stderr.decode(errors="replace")[-400:])

@@ -87,7 +87,8 @@ PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")   # e.g. https://
 TWILIO_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")     # 'whatsapp:+14155238886' (sandbox) or your sender
-TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved template SID for production
+TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved MEDIA template (PDF attached)
+TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved TEXT template — fallback when the PDF isn't ready
 
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Kundli Milan",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing"}
@@ -124,7 +125,16 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
         # Attach the pre-generated PDF when it exists. Twilio fetches media by
         # URL; /report/{rid}/pdf serves the cached file (report is paid here).
         media = [f"{PUBLIC_BASE_URL}/report/{rid}/pdf"] if pdfgen.get_cached(rid) else None
-        if TWILIO_CONTENT_SID:                       # production: approved template
+        if TWILIO_CONTENT_SID and not media and TWILIO_CONTENT_SID_TEXT:
+            # PDF not ready (e.g. Chrome unavailable): the media template would
+            # DIE at Twilio's media fetch and the customer would get NOTHING.
+            # Send the approved TEXT template instead — report link + name —
+            # so delivery is guaranteed; the PDF stays available on-site.
+            client.messages.create(
+                from_=TWILIO_FROM, to=f"whatsapp:{to}",
+                content_sid=TWILIO_CONTENT_SID_TEXT,
+                content_variables=json.dumps({"1": name, "2": link}))
+        elif TWILIO_CONTENT_SID:                     # production: approved template
             # Approved media template `axtroshastra_wp_msg` (document header):
             #   {{1}} customer name
             #   {{2}} login URL
@@ -1018,6 +1028,26 @@ def backfill_users(key: str = "", limit: int = 5000):
     if not _valid_admin_key(key):
         raise HTTPException(403, "forbidden")
     return users.backfill(db, limit)
+
+
+@app.post("/api/resend_wa/{rid}")
+def resend_whatsapp(rid: str, key: str = ""):
+    """Admin: re-deliver the post-payment WhatsApp for an already-paid report
+    (used when the original send failed — e.g. the missing-Chromium window or
+    the milan webhook crash). Re-runs PDF pre-generation first so the message
+    can attach the file. Gated by STATS_KEY."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    rec = get_report(rid)
+    if not rec or not rec["paid"]:
+        raise HTTPException(404, "report not found or unpaid")
+    phone = rec.get("phone") or ""
+    if not phone:
+        return {"ok": False, "error": "no_phone_on_report"}
+    _pregenerate_pdf_task(rid)                     # sync: admin call, fine to wait
+    send_whatsapp_report(phone, rid, _display_name(rec["payload"]),
+                         rec["payload"].get("product", "marriage"))
+    return {"ok": True, "pdf_cached": bool(pdfgen.get_cached(rid))}
 
 
 @app.get("/api/stats")
