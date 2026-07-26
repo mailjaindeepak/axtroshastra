@@ -44,7 +44,8 @@ def test_account_page_requires_session(client):
     client.post("/api/auth/logout")            # ensure logged out
     r = client.get("/account", follow_redirects=False)
     assert r.status_code == 302
-    assert r.headers["location"] == "/login"
+    # carries the destination so login can bounce straight back
+    assert r.headers["location"] == "/login?next=%2Faccount"
 
 
 def test_account_page_shows_details_when_logged_in(client):

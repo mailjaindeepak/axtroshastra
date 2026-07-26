@@ -145,7 +145,11 @@ async function verifyOtp(e){
       btn.disabled = false; btn.textContent = "Verify & log in";
     } else {
       setMsg("Logged in! Redirecting…", "ok");
-      location.href = '/account';
+      // honor ?next= (same-origin path only) so login bounces back to where
+      // the user was headed — e.g. /account from a report's back button
+      var nx = new URLSearchParams(location.search).get('next') || '/account';
+      if (!/^\/[^\/\\]/.test(nx)) nx = '/account';
+      location.href = nx;
     }
   } catch(err){
     setMsg("Network error. Please try again.", "err");
