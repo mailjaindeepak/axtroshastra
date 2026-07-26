@@ -391,6 +391,28 @@ fbq('track', 'PageView');
   </div>
 </section>
 
+<section class="proof">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">Loved by students &amp; parents</p>
+      <h2>You're in good company</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+    </div>
+    <div class="revs" id="revsTrack">
+      <div class="rev"><div class="stars">★★★★★</div><p>"Was stuck between taking a job or dropping a year for UPSC. It didn't tell me what to do, but breaking down my strengths made the choice a lot less scary."</p><div class="who">— Aditya, 22</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Bought it for my younger brother, confused about stream after 10th. Honestly the parents' section was the useful part — dad finally stopped comparing him to cousins."</p><div class="who">— Priya, 25</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"The two career fields it flagged are literally what I keep drifting toward. Felt seen, not sold to."</p><div class="who">— Meera, 27</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Kept blaming myself for slow results. The phase explanation reframed it — I'm in a build-up period, not failing. Needed to hear that."</p><div class="who">— Sahil, 23</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Every point had a reason — which dasha, which house. Took a few lines to the astrologer my family visits and he agreed. Felt legit, not vague."</p><div class="who">— Faizan, 31</div></div>
+    </div>
+    <p class="revs-hint">← swipe, or hover to pause →</p>
+  </div>
+</section>
+
 <!-- ============ WHY DIFFERENT ============ -->
 <section class="why">
   <div class="wrap">
@@ -446,29 +468,7 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-
 <!-- ============ FAQ ============ -->
-<section class="proof">
-  <div class="wrap">
-    <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Loved by students &amp; parents</p>
-      <h2>You're in good company</h2>
-    </div>
-    <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
-    </div>
-    <div class="revs" id="revsTrack">
-      <div class="rev"><div class="stars">★★★★★</div><p>"Was stuck between taking a job or dropping a year for UPSC. It didn't tell me what to do, but breaking down my strengths made the choice a lot less scary."</p><div class="who">— Aditya, 22</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Bought it for my younger brother, confused about stream after 10th. Honestly the parents' section was the useful part — dad finally stopped comparing him to cousins."</p><div class="who">— Priya, 25</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"The two career fields it flagged are literally what I keep drifting toward. Felt seen, not sold to."</p><div class="who">— Meera, 27</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Kept blaming myself for slow results. The phase explanation reframed it — I'm in a build-up period, not failing. Needed to hear that."</p><div class="who">— Sahil, 23</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Every point had a reason — which dasha, which house. Took a few lines to the astrologer my family visits and he agreed. Felt legit, not vague."</p><div class="who">— Faizan, 31</div></div>
-    </div>
-    <p class="revs-hint">← swipe, or hover to pause →</p>
-  </div>
-</section>
 
 <section class="faq">
   <div class="wrap">
@@ -739,7 +739,6 @@ async function awaitReport(){
   btn.innerHTML = 'Unlock my report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; btn.disabled = false;
   alert('Payment is processing — refresh the page in a minute. Your report will be ready.');
 }
-
 
 // honest live counter (hidden until real volume crosses threshold)
 (function(){

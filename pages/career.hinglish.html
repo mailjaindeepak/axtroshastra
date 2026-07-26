@@ -391,6 +391,28 @@ fbq('track', 'PageView');
   </div>
 </section>
 
+<section class="proof">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">Students aur parents ka bharosa</p>
+      <h2>Aap sahi jagah aaye ho</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports ban chuki</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">result 2 min mein</div></div>
+    </div>
+    <div class="revs" id="revsTrack">
+      <div class="rev"><div class="stars">★★★★★</div><p>"Job lu ya ek saal UPSC ke liye aur du — isi mein atka tha. Report ne decide nahi kiya, par meri strengths aise todi ki choice itni daraavni nahi lagi."</p><div class="who">— Aditya, 22</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Chhote bhai ke liye liya tha, 10th ke baad stream confuse tha. Sach mein parents wala section kaam ka nikla — papa ne cousins se compare karna band kiya."</p><div class="who">— Priya, 25</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Jo do career fields flag kiye, wahi hai jidhar main baar baar khichta hoon. Bina bike hue, samajh aaya."</p><div class="who">— Meera, 27</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Slow results ke liye khud ko blame karta tha. Phase wali baat ne cheez badal di — main build-up period mein hoon, fail nahi ho raha."</p><div class="who">— Sahil, 23</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Har point ke saath reason tha — kaunsi dasha, kaunsa ghar. Do lines apne family astrologer ko dikhayi, usne bhi agree kiya. Legit laga, vague nahi."</p><div class="who">— Faizan, 31</div></div>
+    </div>
+    <p class="revs-hint">← swipe kijiye, ya hover karke rokiye →</p>
+  </div>
+</section>
+
 <!-- ============ WHY DIFFERENT ============ -->
 <section class="why">
   <div class="wrap">
@@ -446,29 +468,7 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-
 <!-- ============ FAQ ============ -->
-<section class="proof">
-  <div class="wrap">
-    <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Students aur parents ka bharosa</p>
-      <h2>Aap sahi jagah aaye ho</h2>
-    </div>
-    <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports ban chuki</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">result 2 min mein</div></div>
-    </div>
-    <div class="revs" id="revsTrack">
-      <div class="rev"><div class="stars">★★★★★</div><p>"Job lu ya ek saal UPSC ke liye aur du — isi mein atka tha. Report ne decide nahi kiya, par meri strengths aise todi ki choice itni daraavni nahi lagi."</p><div class="who">— Aditya, 22</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Chhote bhai ke liye liya tha, 10th ke baad stream confuse tha. Sach mein parents wala section kaam ka nikla — papa ne cousins se compare karna band kiya."</p><div class="who">— Priya, 25</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Jo do career fields flag kiye, wahi hai jidhar main baar baar khichta hoon. Bina bike hue, samajh aaya."</p><div class="who">— Meera, 27</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Slow results ke liye khud ko blame karta tha. Phase wali baat ne cheez badal di — main build-up period mein hoon, fail nahi ho raha."</p><div class="who">— Sahil, 23</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Har point ke saath reason tha — kaunsi dasha, kaunsa ghar. Do lines apne family astrologer ko dikhayi, usne bhi agree kiya. Legit laga, vague nahi."</p><div class="who">— Faizan, 31</div></div>
-    </div>
-    <p class="revs-hint">← swipe kijiye, ya hover karke rokiye →</p>
-  </div>
-</section>
 
 <section class="faq">
   <div class="wrap">
@@ -739,7 +739,6 @@ async function awaitReport(){
   btn.innerHTML = 'Unlock my report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; btn.disabled = false;
   alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
-
 
 // honest live counter (hidden until real volume crosses threshold)
 (function(){

@@ -98,3 +98,25 @@ def test_nav_injected_on_marketing_pages(client):
         html = client.get(path).text
         assert "axs-nav" in html, f"nav missing on {path}"
         assert 'href="/account"' in html and 'href="/blog"' in html
+
+
+def test_login_page_serves_without_params(client):
+    """Regression: the /login decorator once got attached to a helper with a
+    required query param, 422-ing the whole login page. GET /login must serve
+    the page with no params, and ?next= must be accepted."""
+    client.post("/api/auth/logout")
+    r = client.get("/login")
+    assert r.status_code == 200
+    assert "Send OTP" in r.text
+    r = client.get("/login?next=%2Faccount")
+    assert r.status_code == 200
+
+
+def test_login_redirects_when_already_logged_in(client):
+    _login(client, "9876500044")
+    r = client.get("/login?next=%2Freport%2Fabc", follow_redirects=False)
+    assert r.status_code == 302
+    assert r.headers["location"] == "/report/abc"
+    r = client.get("/login?next=//evil.com", follow_redirects=False)
+    assert r.status_code == 302
+    assert r.headers["location"] == "/account"

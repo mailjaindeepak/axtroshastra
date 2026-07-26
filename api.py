@@ -1201,7 +1201,6 @@ def auth_me(request: Request):
     return {"user": user, "reports": users.get_user_reports(db, user["id"])}
 
 
-@app.get("/login", include_in_schema=False)
 def _safe_next(nxt: str) -> str:
     """Allowlist for post-login redirects: same-origin path only. Anything
     else (full URLs, protocol-relative //evil.com, backslash tricks) falls
@@ -1212,6 +1211,7 @@ def _safe_next(nxt: str) -> str:
     return "/account"
 
 
+@app.get("/login", include_in_schema=False)
 def login_page(request: Request):
     if _current_user(request):
         return RedirectResponse(_safe_next(request.query_params.get("next", "")),
