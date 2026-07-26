@@ -177,6 +177,20 @@ footer b{color:#B9BBD0}
   .kundli-bg{width:520px;right:-60px;opacity:.6}
   .hero{padding:48px 0 72px}
 }
+
+/* ---------- ANALYZING OVERLAY (square kundli — consistent across forms) ---------- */
+.ax-analyzing{position:fixed;inset:0;z-index:9998;background:radial-gradient(1200px 600px at 50% 0%, var(--midnight-2), var(--midnight) 70%);color:#F3EFE4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.ax-analyzing.show{display:flex}
+.ax-analyzing .ksq{width:100px;height:100px;margin:0 auto 26px;animation:axspin 7s linear infinite}
+@keyframes axspin{to{transform:rotate(360deg)}}
+.ax-analyzing h3{font-family:var(--display);font-weight:800;font-size:22px;color:#fff;margin-bottom:10px}
+.ax-analyzing .step{font-family:var(--display);font-weight:700;font-size:15px;color:#D9D4C3;min-height:22px}
+.ax-analyzing .bar{width:220px;height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:22px}
+.ax-analyzing .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--haldi),var(--sindoor))}
+.ax-analyzing.show .bar>i{animation:axbar 7s ease-in-out forwards}
+@keyframes axbar{0%{width:0}90%{width:92%}100%{width:100%}}
+.ax-analyzing .cap{font-size:12.5px;color:#8F92AB;margin-top:18px;max-width:34ch}
+@media (prefers-reduced-motion: reduce){.ax-analyzing .ksq{animation:none} .ax-analyzing.show .bar>i{animation:none;width:100%}}
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -314,6 +328,28 @@ fbq('track', 'PageView');
   </div>
 </section>
 
+<section class="proof">
+  <div class="wrap">
+        <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">Loved by couples</p>
+      <h2>You're in good company</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+    </div>
+        <div class="revs" id="revsTrack">
+      <div class="rev"><div class="stars">★★★★★</div><p>"Did this with my boyfriend as a fun thing 😭 and it was scary accurate — literally called out the one thing we keep fighting about. Worth ₹299."</p><div class="who">— Ananya, 24</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me an actual answer instead of spiralling at 2am."</p><div class="who">— Rohan, 26</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"We took it together on a date night lol. Instead of a vague yes/no it gave us real stuff to work on as a couple."</p><div class="who">— Sneha &amp; Karan</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Parents had a rishta lined up and I wanted a second opinion that wasn't the family pandit. The Nadi dosha part actually had a cancellation — didn't know that."</p><div class="who">— Ishita, 27</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Skeptical husband here. Did it to humour my wife and ngl the communication bit was bang on. Fine, it's legit."</p><div class="who">— Vikram, 33</div></div>
+    </div>
+    <p class="revs-hint">← swipe, or hover to pause →</p>
+  </div>
+</section>
+
 <!-- ============ WHY DIFFERENT ============ -->
 <section class="why">
   <div class="wrap">
@@ -367,27 +403,6 @@ fbq('track', 'PageView');
 </section>
 
 <!-- ============ SOCIAL PROOF ============ -->
-<section class="proof">
-  <div class="wrap">
-        <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Loved by couples</p>
-      <h2>You're in good company</h2>
-    </div>
-    <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
-    </div>
-        <div class="revs" id="revsTrack">
-      <div class="rev"><div class="stars">★★★★★</div><p>"Did this with my boyfriend as a fun thing 😭 and it was scary accurate — literally called out the one thing we keep fighting about. Worth ₹299."</p><div class="who">— Ananya, 24</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me an actual answer instead of spiralling at 2am."</p><div class="who">— Rohan, 26</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"We took it together on a date night lol. Instead of a vague yes/no it gave us real stuff to work on as a couple."</p><div class="who">— Sneha &amp; Karan</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Parents had a rishta lined up and I wanted a second opinion that wasn't the family pandit. The Nadi dosha part actually had a cancellation — didn't know that."</p><div class="who">— Ishita, 27</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Skeptical husband here. Did it to humour my wife and ngl the communication bit was bang on. Fine, it's legit."</p><div class="who">— Vikram, 33</div></div>
-    </div>
-    <p class="revs-hint">← swipe, or hover to pause →</p>
-  </div>
-</section>
 
 <!-- ============ FAQ ============ -->
 <section class="faq">
@@ -442,6 +457,43 @@ fbq('track', 'PageView');
   <a class="btn" href="#milanForm" id="stickyBtn">Match FREE</a>
 </div>
 
+
+<!-- ============ ANALYZING OVERLAY (square kundli, consistent with other forms) ============ -->
+<div class="ax-analyzing" id="axAnalyzing" role="status" aria-live="polite" aria-hidden="true">
+  <svg class="ksq" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect x="6" y="6" width="88" height="88" stroke="#E4B04A" stroke-width="2"/><path d="M6 6 L94 94 M94 6 L6 94" stroke="#E4B04A" stroke-width="1.5"/><path d="M50 6 L94 50 L50 94 L6 50 Z" stroke="#E4B04A" stroke-width="2"/></svg>
+  <h3>Reading the two charts…</h3>
+  <p class="step" id="axStep"></p>
+  <div class="bar"><i></i></div>
+  <p class="cap">NASA-grade ephemeris · classical Ashtakoota · Lahiri ayanamsa</p>
+</div>
+
+<script>
+// Analyzing overlay: cycles "work happening" steps; min display 6s so the
+// compute feels substantial even when the API returns fast.
+var AX_STEPS = ['Calculating Moon positions…','Mapping both nakshatras…','Matching all 36 gunas…','Checking Manglik & doshas…','Applying cancellation rules…','Preparing your snapshot…'];
+var __axStepTimer = null, __axShownAt = 0;
+function showAnalyzing(){
+  var ov = document.getElementById('axAnalyzing'); if(!ov) return;
+  var bar = ov.querySelector('.bar > i');
+  if(bar){ bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+  ov.classList.add('show'); ov.setAttribute('aria-hidden','false');
+  try{ document.body.style.overflow = 'hidden'; }catch(e){}
+  var stepEl = document.getElementById('axStep'); var i = 0;
+  if(stepEl) stepEl.textContent = AX_STEPS[0];
+  clearInterval(__axStepTimer);
+  __axStepTimer = setInterval(function(){ i = (i + 1) % AX_STEPS.length; if(stepEl) stepEl.textContent = AX_STEPS[i]; }, 1150);
+  __axShownAt = Date.now();
+}
+function hideAnalyzing(){
+  var ov = document.getElementById('axAnalyzing'); if(!ov) return;
+  var wait = Math.max(0, 6000 - (Date.now() - __axShownAt));
+  setTimeout(function(){
+    ov.classList.remove('show'); ov.setAttribute('aria-hidden','true');
+    try{ document.body.style.overflow = ''; }catch(e){}
+    clearInterval(__axStepTimer);
+  }, wait);
+}
+</script>
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
@@ -453,7 +505,6 @@ document.getElementById('milanForm').addEventListener('focusin', function(){
   if(_formStarted) return; _formStarted = true;
   if(window.gtag) gtag('event', 'form_start');
 });
-
 
 // map form state -> time_quality tier
 function timeQuality(){
@@ -470,6 +521,7 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
   e.preventDefault();
   var btn = this.querySelector('.btn');
   btn.textContent = 'Milan ho raha hai…'; btn.disabled = true;
+  showAnalyzing();
   try{
       var me = {n: document.getElementById('p1-name').value.trim(), d: document.getElementById('p1-dob').value,
                 t: document.getElementById('p1-tob').value || null, p: document.getElementById('p1-place').value.trim()};
@@ -501,6 +553,7 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
   }catch(err){
     alert(err.message + ' — dobara try kijiye.');
   }finally{
+    hideAnalyzing();
     btn.textContent = 'Guna milan karo — FREE preview'; btn.disabled = false;
   }
 });
@@ -556,7 +609,6 @@ async function awaitReport(){
   btn.textContent = 'Unlock my report — ₹299'; btn.disabled = false;
   alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
-
 
 // honest live counter (hidden until real volume crosses threshold)
 (function(){

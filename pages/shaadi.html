@@ -371,6 +371,28 @@ fbq('track', 'PageView');
   </div>
 </section>
 
+<section class="proof">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">Loved by singles &amp; families</p>
+      <h2>You're in good company</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+    </div>
+    <div class="revs" id="revsTrack">
+      <div class="rev"><div class="stars">★★★★★</div><p>"My mum had been asking 'shaadi kab hogi' for two years. The report gave an actual window with reasons — I showed it to her and even she calmed down."</p><div class="who">— Sneha, 28</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"It didn't promise a date, which is exactly why I trusted it. It said which years look stronger and why — matched what a family astrologer told me, minus the ₹2000 fee."</p><div class="who">— Karthik, 30</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Was low-key panicking after 29 with everyone getting married. Seeing the actual timing windows made me stop spiralling and just breathe."</p><div class="who">— Divya, 29</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"The Manglik bit had worried me for years. It explained the cancellation clearly instead of just scaring me. Honestly a relief."</p><div class="who">— Aarav, 27</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"Liked that it showed the reasoning — which dasha, which house. Took it to a pandit ji we trust and he said the logic was sound."</p><div class="who">— Rahul, 32</div></div>
+    </div>
+    <p class="revs-hint">← swipe, or hover to pause →</p>
+  </div>
+</section>
+
 <!-- ============ WHY DIFFERENT ============ -->
 <section class="why">
   <div class="wrap">
@@ -426,29 +448,7 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-
 <!-- ============ FAQ ============ -->
-<section class="proof">
-  <div class="wrap">
-    <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Loved by singles &amp; families</p>
-      <h2>You're in good company</h2>
-    </div>
-    <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
-    </div>
-    <div class="revs" id="revsTrack">
-      <div class="rev"><div class="stars">★★★★★</div><p>"My mum had been asking 'shaadi kab hogi' for two years. The report gave an actual window with reasons — I showed it to her and even she calmed down."</p><div class="who">— Sneha, 28</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"It didn't promise a date, which is exactly why I trusted it. It said which years look stronger and why — matched what a family astrologer told me, minus the ₹2000 fee."</p><div class="who">— Karthik, 30</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Was low-key panicking after 29 with everyone getting married. Seeing the actual timing windows made me stop spiralling and just breathe."</p><div class="who">— Divya, 29</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"The Manglik bit had worried me for years. It explained the cancellation clearly instead of just scaring me. Honestly a relief."</p><div class="who">— Aarav, 27</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Liked that it showed the reasoning — which dasha, which house. Took it to a pandit ji we trust and he said the logic was sound."</p><div class="who">— Rahul, 32</div></div>
-    </div>
-    <p class="revs-hint">← swipe, or hover to pause →</p>
-  </div>
-</section>
 
 <section class="faq">
   <div class="wrap">
@@ -703,7 +703,6 @@ async function awaitReport(){
   btn.innerHTML = 'Unlock my report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; btn.disabled = false;
   alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
-
 
 // honest live counter (hidden until real volume crosses threshold)
 (function(){
