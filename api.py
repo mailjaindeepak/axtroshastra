@@ -4,6 +4,7 @@ Axtroshastra API — production wiring.
 POST /api/kundli      : compute FULL report server-side, store, return TEASER only
 POST /api/order       : create LIVE Razorpay order bound to report_id
 POST /api/webhook     : payment.captured -> mark paid (HMAC-verified, source of truth)
+POST /api/verify      : client-side fallback — verify Razorpay signature & mark paid
 GET  /api/report/{id} : full JSON only if paid
 GET  /                : landing page ; GET /report/{id} : report view
 
@@ -523,6 +524,52 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     background_tasks.add_task(email_report, form_email, rid, rec["payload"])
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
+
+
+@app.post("/api/verify")
+def verify_payment(body: dict, background_tasks: BackgroundTasks):
+    """Client-side fallback: after Razorpay checkout succeeds, the handler sends
+    payment_id + order_id + signature here. We verify the HMAC and mark paid.
+    The webhook remains the primary path, but this ensures payment goes through
+    even if the webhook is delayed or misconfigured."""
+    pid = (body.get("razorpay_payment_id") or "").strip()
+    oid = (body.get("razorpay_order_id") or "").strip()
+    sig = (body.get("razorpay_signature") or "").strip()
+    if not (pid and oid and sig):
+        raise HTTPException(400, "missing payment fields")
+    if not RZP_SECRET:
+        raise HTTPException(503, "payment not configured")
+    expected = hmac.new(RZP_SECRET.encode(),
+                        f"{oid}|{pid}".encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        raise HTTPException(400, "invalid signature")
+    with db() as c:
+        row = c.execute("SELECT id FROM reports WHERE order_id=?", (oid,)).fetchone()
+    if not row:
+        raise HTTPException(404, "order not found")
+    rid = row[0]
+    rec = get_report(rid)
+    if rec and not rec["paid"]:
+        phone = body.get("phone") or ""
+        mark_paid(rid, payment_id=pid, phone=phone)
+        background_tasks.add_task(_generate_narrative_task, rid)
+        if phone:
+            background_tasks.add_task(
+                send_whatsapp_report, phone, rid,
+                rec["payload"]["meta"]["name"],
+                rec["payload"].get("product", "marriage"))
+        form_email = rec["payload"]["meta"].get("_email")
+        try:
+            uid = users.upsert_user_from_payment(
+                db, mobile=phone, email=form_email or "",
+                name=rec["payload"]["meta"].get("name"))
+            if uid:
+                users.link_report(db, rid, uid)
+        except Exception as e:
+            logger.error("[users] account upsert failed for %s: %s", rid, e)
+        if form_email:
+            background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+    return {"ok": True, "report_id": rid}
 
 
 def _refresh_current_period(payload: dict) -> dict:

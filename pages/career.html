@@ -707,7 +707,15 @@ async function startPayment(){
     amount: order.amount, currency: order.currency,
     name: 'Axtroshastra', description: 'Career & Academic Timing Report',
     theme: {color: '#C93B2E'},
-    handler: function(){ awaitReport(); }          // webhook is truth; this just starts polling
+    handler: function(resp){
+      fetch('/api/verify', {method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({razorpay_payment_id: resp.razorpay_payment_id,
+          razorpay_order_id: resp.razorpay_order_id,
+          razorpay_signature: resp.razorpay_signature})
+      }).catch(function(){});
+      awaitReport();
+    }
   });
   rzp.open();
 }
