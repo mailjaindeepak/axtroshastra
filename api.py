@@ -316,6 +316,7 @@ PAGES_DIR = os.path.join(BASE, "pages")
 # are `axs-nav-` prefixed and all styles are scoped/inline so it cannot clash with
 # any page's own CSS. Injected right after <body> by _inject_nav().
 NAV_LINKS = [
+    ("Home", "/"),
     ("Login / My Account", "/account"),
     ("About Us", "/about"),
     ("Privacy Policy", "/privacy"),
@@ -608,8 +609,21 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
     rid = row[0]
     rec = get_report(rid)
     if rec and not rec["paid"]:
+        # The funnel pages never send a phone, so when the webhook is lost this
+        # path used to create NO user and send NO WhatsApp (silent gap). Fix:
+        # fetch the payment entity from Razorpay server-side — it carries the
+        # contact + email the customer typed into checkout.
         phone = body.get("phone") or ""
+        pay_email = ""
+        try:
+            ent = rzp_client().payment.fetch(pid)
+            phone = ent.get("contact") or phone
+            pay_email = ent.get("email") or ""
+        except Exception as e:
+            logger.error("[verify] payment fetch failed for %s: %s", pid, e)
         mark_paid(rid, payment_id=pid, phone=phone)
+        # Mirror the webhook: PDF first so the WhatsApp message can attach it.
+        background_tasks.add_task(_pregenerate_pdf_task, rid)
         background_tasks.add_task(_generate_narrative_task, rid)
         if phone:
             background_tasks.add_task(
@@ -619,7 +633,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         form_email = rec["payload"]["meta"].get("_email")
         try:
             uid = users.upsert_user_from_payment(
-                db, mobile=phone, email=form_email or "",
+                db, mobile=phone, email=pay_email or form_email or "",
                 name=_display_name(rec["payload"]))
             if uid:
                 users.link_report(db, rid, uid)
@@ -720,12 +734,12 @@ def _account_banner(rid: str) -> str:
         '<div style="border-top:1px solid #ece3d6;padding-top:11px;display:grid;gap:8px">'
         + rows +
         '</div>'
-        '<div style="margin-top:12px;font-size:11.5px;color:#8a7d72;display:flex;'
-        'align-items:center;gap:6px;flex-wrap:wrap">'
-        '<span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;'
-        'background:#fbeeeb;color:#c93b2e;border-radius:20px;padding:3px 8px;'
-        'font-weight:700">Coming soon</span> Log in with your mobile to see all your '
-        'reports.</div>'
+        '<div style="margin-top:12px;font-size:12px;color:#8a7d72;display:flex;'
+        'align-items:center;gap:10px;flex-wrap:wrap">'
+        '<a href="/login?next=%2Faccount" style="background:#151C39;color:#E4B04A;'
+        'text-decoration:none;font-weight:700;font-size:12.5px;border-radius:20px;'
+        'padding:7px 14px;letter-spacing:.02em">Log in &rarr;</a>'
+        '<span>Use this mobile number &mdash; OTP aayega, no password.</span></div>'
         '</div></div>')
 
 
@@ -772,6 +786,61 @@ def _wire_pdf_download(html: str) -> str:
         return html
 
 
+# Account-created toast (once per report, localStorage-guarded) + best-effort
+# back-button redirect to /account (once per tab session, no loops — the
+# visible hamburger nav is the primary navigation; this is a supplement).
+_REPORT_NAV_SNIPPET = """<script>
+(function(){
+  var rid="__RID__", hasAcct=("__HASACCT__"==="1");
+  try{
+    if(hasAcct && !localStorage.getItem('axs_acct_toast_'+rid)){
+      localStorage.setItem('axs_acct_toast_'+rid,'1');
+      var t=document.createElement('div');t.setAttribute('role','status');
+      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+      t.innerHTML='\\u2705 Account created \\u2014 login anytime with your mobile number. <a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;text-decoration:none">Log in \\u2192</a>';
+      document.body.appendChild(t);
+      setTimeout(function(){t.style.transition='opacity .5s';t.style.opacity='0';
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},600);},8000);
+    }
+  }catch(e){}
+  try{
+    if(!sessionStorage.getItem('axs_back_'+rid)){
+      sessionStorage.setItem('axs_back_'+rid,'1');
+      history.pushState({axs:1},'',location.href);
+      window.addEventListener('popstate',function h(){
+        window.removeEventListener('popstate',h);
+        location.replace('/account');
+      });
+    }
+  }catch(e){}
+})();
+</script>"""
+
+
+def _wire_report_chrome(html: str, rid: str) -> str:
+    """Everything a served report page gets on top of the raw template:
+    one-tap PDF button, account banner, hamburger nav, account toast and the
+    back-button supplement. Never raises — worst case the raw page ships."""
+    try:
+        html = _wire_pdf_download(html)
+        banner = _account_banner(rid)
+        if banner:
+            import re as _re
+            html, n = _re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + banner,
+                               html, count=1, flags=_re.IGNORECASE)
+        html = _inject_nav(html)
+        snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
+                .replace("__HASACCT__", "1" if banner else "0"))
+        if "</body>" in html:
+            html = html.replace("</body>", snip + "</body>", 1)
+        else:
+            html += snip
+        return html
+    except Exception as e:
+        logger.error("[report] chrome wiring failed for %s: %s", rid, e)
+        return html
+
+
 @app.get("/report/{rid}", include_in_schema=False)
 def report_page(rid: str, v2: int = 1):
     rec = get_report(rid)
@@ -784,14 +853,11 @@ def report_page(rid: str, v2: int = 1):
     if payload.get("product") == "milan" and v2 != 0:
         try:
             import milan_v2
-            return HTMLResponse(_wire_pdf_download(milan_v2.render_milan_v2(payload)))
+            return HTMLResponse(_wire_report_chrome(milan_v2.render_milan_v2(payload), rid))
         except Exception as e:
             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
-    banner = _account_banner(rid)
-    if banner:
-        html = html.replace("</head><body>", "</head><body>" + banner, 1)
-    return HTMLResponse(_wire_pdf_download(html))
+    return HTMLResponse(_wire_report_chrome(html, rid))
 
 
 @app.get("/report/{rid}/pdf", include_in_schema=False)
@@ -868,7 +934,8 @@ def static_file(fname: str):
 
 @app.get("/blog", include_in_schema=False)
 def blog_index():
-    return FileResponse(os.path.join(BASE, "pages", "blog", "index.html"))
+    # served through the nav injector so the hamburger shows on blog pages too
+    return _serve_page_with_nav(os.path.join(BASE, "pages", "blog", "index.html"))
 
 
 @app.get("/blog/{slug}", include_in_schema=False)
@@ -877,7 +944,7 @@ def blog_post(slug: str):
         raise HTTPException(404, "not found")
     path = os.path.join(BASE, "pages", "blog", f"{slug}.html")
     if os.path.exists(path):
-        return FileResponse(path)
+        return _serve_page_with_nav(path)
     raise HTTPException(404, "not found")
 
 
@@ -1126,9 +1193,20 @@ def auth_me(request: Request):
 
 
 @app.get("/login", include_in_schema=False)
+def _safe_next(nxt: str) -> str:
+    """Allowlist for post-login redirects: same-origin path only. Anything
+    else (full URLs, protocol-relative //evil.com, backslash tricks) falls
+    back to /account."""
+    nxt = (nxt or "").strip()
+    if nxt.startswith("/") and not nxt.startswith("//") and "\\" not in nxt:
+        return nxt
+    return "/account"
+
+
 def login_page(request: Request):
     if _current_user(request):
-        return RedirectResponse("/account", status_code=302)
+        return RedirectResponse(_safe_next(request.query_params.get("next", "")),
+                                status_code=302)
     path = os.path.join(PAGES_DIR, "login.html")
     if os.path.exists(path):
         return _serve_page_with_nav(path)
@@ -1141,7 +1219,8 @@ def account_page(request: Request):
     Redirects to /login when there's no valid session."""
     user = _current_user(request)
     if not user:
-        return RedirectResponse("/login", status_code=302)
+        # carry the destination so the OTP page can bounce straight back here
+        return RedirectResponse("/login?next=%2Faccount", status_code=302)
     reports = users.get_user_reports(db, user["id"])
     return HTMLResponse(_inject_nav(_render_account(user, reports)))
 
