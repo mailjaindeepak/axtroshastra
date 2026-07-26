@@ -34,6 +34,7 @@ from vidyarthi import compute_vidyarthi_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
+import pdfgen                # browser-quality PDF: pre-generated at payment, cached
 import users                 # account layer: create/link a user at payment time
 import auth                  # OTP login + session layer (Twilio Verify)
 import narrative             # optional LLM prose layer (Claude/OpenAI), off by default
@@ -91,8 +92,26 @@ TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved template SI
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Kundli Milan",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing"}
 
+def _display_name(payload: dict) -> str:
+    """Safe display name for any product. Milan reports have meta.p1/p2 and NO
+    meta.name — indexing meta['name'] crashed the webhook mid-way for every
+    milan payment (paid got marked, but user creation / WhatsApp / email never
+    ran). Always use this instead of meta['name']."""
+    meta = (payload or {}).get("meta") or {}
+    if meta.get("name"):
+        return meta["name"]
+    if meta.get("p1") and meta.get("p2"):
+        return f"{meta['p1']} & {meta['p2']}"
+    return "ji"
+
+
 def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marriage"):
-    """Fire-and-forget WhatsApp delivery after payment. Never raises."""
+    """Fire-and-forget WhatsApp delivery after payment. Never raises.
+
+    One message, three things (owner spec): the report PDF attached (when the
+    pre-generated file exists — see _pregenerate_pdf_task), account-created
+    confirmation, and the login URL. Falls back to the report link when the
+    PDF isn't ready so account info always reaches the user."""
     if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_FROM and phone and PUBLIC_BASE_URL):
         return
     try:
@@ -100,20 +119,56 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
         to = phone if phone.startswith("+") else "+91" + phone[-10:]
         client = Client(TWILIO_SID, TWILIO_TOKEN)
         link = f"{PUBLIC_BASE_URL}/report/{rid}"
+        login = f"{PUBLIC_BASE_URL}/login"
         label = PRODUCT_LABEL.get(product, "Marriage Timing")
+        # Attach the pre-generated PDF when it exists. Twilio fetches media by
+        # URL; /report/{rid}/pdf serves the cached file (report is paid here).
+        media = [f"{PUBLIC_BASE_URL}/report/{rid}/pdf"] if pdfgen.get_cached(rid) else None
         if TWILIO_CONTENT_SID:                       # production: approved template
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
                 content_variables=json.dumps({"1": name, "2": link}))
         else:                                        # sandbox / 24h session freeform
-            client.messages.create(
-                from_=TWILIO_FROM, to=f"whatsapp:{to}",
-                body=(f"Namaste {name}! 🙏 Aapki Axtroshastra {label} "
-                      f"Report ready hai:\n{link}\n\nPDF download button report "
-                      f"ke andar hai. Koi bhi sawaal ho — reply kijiye."))
+            kwargs = {"media_url": media} if media else {}
+            body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
+                    + ("attached hai (PDF) 📄" if media else f"ready hai:\n{link}")
+                    + f"\n\n✅ Aapka account ban gaya hai is number par."
+                    + f"\nLogin anytime → {login}"
+                    + "\n\nKoi bhi sawaal ho — bas reply kijiye.")
+            client.messages.create(from_=TWILIO_FROM, to=f"whatsapp:{to}",
+                                   body=body, **kwargs)
     except Exception as e:                            # delivery must never break the webhook
         logger.error("[twilio] send failed for %s: %s", rid, e)
+
+
+def _full_report_html(payload: dict) -> str:
+    """The exact HTML a user sees at /report/{rid} (milan v2 when applicable),
+    WITHOUT the account banner — used for PDF rendering so the print output
+    matches the on-screen report (action bars are print-hidden via CSS)."""
+    if payload.get("product") == "milan":
+        try:
+            import milan_v2
+            return milan_v2.render_milan_v2(payload)
+        except Exception as e:
+            logger.error("[v2] render failed for pdf: %s", e)      # fall through
+    return _render_for(payload.get("product", "marriage"), payload)
+
+
+def _pregenerate_pdf_task(rid: str):
+    """Background task after payment: render the browser-quality PDF once and
+    cache it, so the download button and the WhatsApp attachment are instant.
+    Never raises; on failure the client falls back to the print dialog."""
+    try:
+        rec = get_report(rid)
+        if not rec or not rec["paid"]:
+            return
+        payload = _refresh_current_period(rec["payload"])
+        payload.setdefault("meta", {})["report_id"] = rid
+        data = pdfgen.get_or_generate(rid, _full_report_html(payload))
+        logger.info("[pdf] pregenerate %s -> %s", rid, "ok" if data else "FAILED")
+    except Exception as e:
+        logger.error("[pdf] pregenerate task failed for %s: %s", rid, e)
 
 def _render_for(product, payload):
     if product == "milan":
@@ -499,9 +554,12 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
             if rec:
                 phone = ent.get("contact") or ""
                 mark_paid(rid, payment_id=ent.get("id"), phone=phone)
+                # PDF first, then WhatsApp: background tasks run in order, so
+                # the message can attach the freshly cached PDF.
+                background_tasks.add_task(_pregenerate_pdf_task, rid)
                 background_tasks.add_task(
                     send_whatsapp_report, phone, rid,
-                    rec["payload"]["meta"]["name"],
+                    _display_name(rec["payload"]),
                     rec["payload"].get("product", "marriage"))
                 # Optional creative prose (Claude/OpenAI). No-op unless
                 # NARRATIVE_ENABLED=1; runs before WhatsApp/email are opened by
@@ -515,7 +573,7 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 try:
                     uid = users.upsert_user_from_payment(
                         db, mobile=phone, email=pay_email,
-                        name=rec["payload"]["meta"].get("name"))
+                        name=_display_name(rec["payload"]))
                     if uid:
                         users.link_report(db, rid, uid)
                 except Exception as e:
@@ -556,13 +614,13 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         if phone:
             background_tasks.add_task(
                 send_whatsapp_report, phone, rid,
-                rec["payload"]["meta"]["name"],
+                _display_name(rec["payload"]),
                 rec["payload"].get("product", "marriage"))
         form_email = rec["payload"]["meta"].get("_email")
         try:
             uid = users.upsert_user_from_payment(
                 db, mobile=phone, email=form_email or "",
-                name=rec["payload"]["meta"].get("name"))
+                name=_display_name(rec["payload"]))
             if uid:
                 users.link_report(db, rid, uid)
         except Exception as e:
@@ -671,6 +729,49 @@ def _account_banner(rid: str) -> str:
         '</div></div>')
 
 
+# --- one-tap PDF download wiring (all report templates) -------------------
+# Every report's "Download PDF" anchor is `onclick="window.print();return false;"`.
+# _wire_pdf_download() swaps that for axPdfDl(): fetch /report/{rid}/pdf ->
+# blob -> a[download] (file saves, USER STAYS ON THE PAGE). If the endpoint
+# 503s (Chrome unavailable), a toaster explains and the print dialog opens as
+# the fallback — which still yields the browser-quality PDF (owner-approved).
+_AXDL_SNIPPET = """<script>
+function axToastPdf(msg){var t=document.createElement('div');t.setAttribute('role','status');
+t.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:1';
+t.textContent=msg;document.body.appendChild(t);
+setTimeout(function(){t.style.transition='opacity .4s';t.style.opacity='0';
+setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},6500);}
+function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
+var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
+function done(){if(b)b.style.opacity='';}
+fetch(location.pathname.replace(/\\/+$/,'')+'/pdf').then(function(r){
+if(!r.ok||((r.headers.get('Content-Type')||'').indexOf('pdf')<0))throw 0;
+var m=(r.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/);
+return r.blob().then(function(bl){var u=URL.createObjectURL(bl);
+var a=document.createElement('a');a.href=u;a.download=m?m[1]:'Axtroshastra_Report.pdf';
+document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(u);if(a.parentNode)a.parentNode.removeChild(a);},4000);
+axToastPdf('PDF downloaded \\u2713 check your Downloads / Files app.');done();});
+}).catch(function(){done();
+axToastPdf('Thoda backend issue hai abhi \\u2014 print box mein "Save as PDF" use kijiye, ya WhatsApp check kijiye: report wahan bhi bheji hai.');
+setTimeout(function(){window.print();},1700);});
+return false;}
+</script>"""
+
+
+def _wire_pdf_download(html: str) -> str:
+    """Swap print-dialog PDF buttons for the one-tap download (never raises)."""
+    try:
+        if "window.print();return false;" not in html:
+            return html
+        html = html.replace("window.print();return false;", "return axPdfDl(event);")
+        if "</body>" in html:
+            return html.replace("</body>", _AXDL_SNIPPET + "</body>", 1)
+        return html + _AXDL_SNIPPET
+    except Exception:
+        return html
+
+
 @app.get("/report/{rid}", include_in_schema=False)
 def report_page(rid: str, v2: int = 1):
     rec = get_report(rid)
@@ -683,33 +784,39 @@ def report_page(rid: str, v2: int = 1):
     if payload.get("product") == "milan" and v2 != 0:
         try:
             import milan_v2
-            return HTMLResponse(milan_v2.render_milan_v2(payload))
+            return HTMLResponse(_wire_pdf_download(milan_v2.render_milan_v2(payload)))
         except Exception as e:
             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
     banner = _account_banner(rid)
     if banner:
         html = html.replace("</head><body>", "</head><body>" + banner, 1)
-    return HTMLResponse(html)
+    return HTMLResponse(_wire_pdf_download(html))
 
 
 @app.get("/report/{rid}/pdf", include_in_schema=False)
 def report_pdf(rid: str):
+    """Browser-quality PDF download. Serves the pre-generated cached file
+    (created at payment); regenerates on demand if the cache is cold (fresh
+    deploy). On failure returns 503 JSON — the report page's download button
+    then shows a toaster and falls back to the print dialog (owner-approved:
+    the print dialog still yields the beautiful PDF)."""
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         raise HTTPException(404, "report not found")
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
-    html = _render_for(payload.get("product", "marriage"), payload)
-    pdf = delivery.html_to_pdf(html)
+    pdf = pdfgen.get_or_generate(rid, _full_report_html(payload))
     if not pdf:
-        return HTMLResponse(
-            f"<p style='font-family:sans-serif;padding:40px'>PDF banane ke liye report "
-            f"kholiye aur 'Download PDF' (print) dabaiye. <a href='/report/{rid}'>Report</a></p>")
-    name = (payload.get("meta", {}).get("name") or "report").replace(" ", "_")[:40]
+        return JSONResponse({"error": "pdf_unavailable"}, status_code=503)
+    meta = payload.get("meta", {})
+    name = meta.get("name") or (f"{meta['p1']}_{meta['p2']}" if meta.get("p1") and meta.get("p2")
+                                else "report")
+    name = name.replace(" ", "_")[:40]
     return Response(content=pdf, media_type="application/pdf",
                     headers={"Content-Disposition":
-                             f'attachment; filename="Axtroshastra_{name}.pdf"'})
+                             f'attachment; filename="Axtroshastra_{name}.pdf"',
+                             "Cache-Control": "private, max-age=3600"})
 
 
 if DEMO_MODE:                                    # never set DEMO_MODE=1 in production
