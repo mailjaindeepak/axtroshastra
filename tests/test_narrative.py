@@ -36,8 +36,11 @@ def _fake_http(monkeypatch, captured, payload_obj):
         captured["body"] = body
         text = json.dumps(payload_obj)
         if "anthropic" in url:
-            # our anthropic path prefills "{", so return the object WITHOUT it
-            return {"content": [{"type": "text", "text": text[1:]}]}
+            model = body.get("model", "")
+            uses_prefill = not any(g in model for g in ("sonnet-5", "opus-5", "haiku-4-5"))
+            if uses_prefill:
+                return {"content": [{"type": "text", "text": text[1:]}]}
+            return {"content": [{"type": "text", "text": text}]}
         return {"choices": [{"message": {"content": text}}]}
     monkeypatch.setattr(narrative, "_http_post_json", fake)
 
