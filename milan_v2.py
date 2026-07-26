@@ -123,23 +123,23 @@ CSS = """
 --green:#3E7D5A;--amber:#B9862E;--terra:#B4674A;--bronze:#6E4F2E;
 --disp:'Fraunces',Georgia,serif;--body:'Jost',-apple-system,Segoe UI,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.62;-webkit-font-smoothing:antialiased}
 .book{max-width:440px;margin:0 auto}
-.pg{position:relative;min-height:720px;padding:42px 30px;overflow:hidden;background:var(--cream);border-bottom:1px solid #ded4c2}
-.pn{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.35em;color:var(--muted)}
+.pg{position:relative;min-height:720px;padding:46px 30px;overflow:hidden;background:var(--cream);border-bottom:1px solid #ded4c2}
+.pn{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .atag{position:absolute;top:20px;right:26px;font-size:9px;letter-spacing:.3em;color:#c9bfa8;text-transform:uppercase}
 .ctag{position:absolute;top:20px;right:26px;font-size:9px;letter-spacing:.3em;color:#b9a97e;text-transform:uppercase}
-.eb{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:var(--amber);text-align:center}
-.h2{font-family:var(--disp);font-weight:400;font-size:26px;text-align:center;margin-top:8px;color:var(--ink);line-height:1.2}
-.sub{color:var(--muted);text-align:center;font-size:12.5px;margin-top:6px;margin-bottom:20px}
-.lead{font-family:var(--disp);font-size:16px;line-height:1.5;color:#3d352b;text-align:center;margin-bottom:8px}
-.payoff{font-family:var(--disp);font-style:italic;font-size:15px;color:#3d352b;text-align:center;margin-top:18px;line-height:1.5}
-.rule{width:34px;height:1px;background:var(--gold);margin:12px auto}
+.eb{font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;font-weight:600;color:var(--amber);text-align:center}
+.h2{font-family:var(--disp);font-weight:400;font-size:28px;text-align:center;margin-top:8px;color:var(--ink);line-height:1.2}
+.sub{color:var(--muted);text-align:center;font-size:12.5px;margin-top:7px;margin-bottom:24px}
+.lead{font-family:var(--disp);font-size:16.5px;line-height:1.55;color:#3d352b;text-align:center;margin-bottom:8px}
+.payoff{font-family:var(--disp);font-style:italic;font-size:15.5px;color:#3d352b;text-align:center;margin-top:18px;line-height:1.5}
+.rule{width:34px;height:1px;background:var(--gold);margin:14px auto}
 /* cover */
 .cover{background:#DFCCB1;background-image:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.32),rgba(255,255,255,0));color:#3A2E1F;text-align:center}
 .brand{font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A5A24;margin:6px 0 30px}
-.cover h1{font-family:var(--disp);font-weight:400;font-size:40px;color:#2A2015}
-.cover h1 .amp{color:#7A5A24;font-style:italic;font-size:30px;margin:0 4px}
+.cover h1{font-family:var(--disp);font-weight:400;font-size:44px;color:#2A2015}
+.cover h1 .amp{color:#7A5A24;font-style:italic;font-size:34px;margin:0 4px}
 .ringn{font-family:var(--disp);font-size:38px;fill:#2A2015}.ringl{font-size:9px;letter-spacing:.3em;fill:rgba(58,46,31,.6)}
 .arch{font-family:var(--disp);font-style:italic;font-size:21px;color:#6E4F2E;margin-top:6px}
 .tag{font-family:var(--disp);font-style:italic;font-size:15px;color:rgba(58,46,31,.74);max-width:290px;margin:14px auto 0}
@@ -152,13 +152,13 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .growtag{font-size:11px;color:var(--terra);font-weight:600;margin-top:5px}
 .foot{text-align:center;color:var(--muted);font-size:12.5px;margin-top:4px;font-style:italic;font-family:var(--disp)}
 /* flags/super */
-.flag{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 17px;margin-bottom:12px;box-shadow:0 4px 16px rgba(90,60,20,.05)}
+.flag{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:13px;box-shadow:0 4px 18px rgba(90,60,20,.05)}
 .flag .ic{width:36px;height:36px;flex:0 0 auto;border-radius:50%;background:#E7F1EA;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px}
 .flag b{font-family:var(--disp);font-size:15.5px;display:block}.flag p{font-size:12.5px;color:var(--muted);margin-top:2px}
 .super{background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#F3EEE4;border-radius:18px;padding:20px;margin-top:18px;text-align:center}
 .super .l{color:var(--gold);letter-spacing:.26em;font-size:10px;font-weight:700}.super p{font-family:var(--disp);font-size:17px;line-height:1.5;margin-top:9px;color:#EDE7DA}
 /* playbook/acts */
-.growbox{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:16px;padding:17px;margin-bottom:16px}
+.growbox{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:16px;padding:18px;margin-bottom:18px}
 .growbox .t{font-family:var(--disp);font-size:18px;color:var(--terra)}.growbox p{font-size:13px;color:#7a5a48;margin-top:6px}
 .act{background:#fff;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;padding:12px 15px;margin-bottom:10px;box-shadow:0 3px 12px rgba(90,60,20,.04)}
 .act .k{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);font-weight:700}.act .v{font-size:13.5px;margin-top:3px}.act .v em{font-family:var(--disp);font-style:italic;color:#6a5a48}
@@ -173,7 +173,7 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .scard .n{font-family:var(--disp);font-size:22px}.scard .a{color:var(--amber);font-style:italic;font-family:var(--disp);font-size:13px;margin-top:2px}
 .scard .b{font-family:var(--disp);font-size:36px;color:var(--gold);margin-top:8px}.scard .st{color:var(--gold);letter-spacing:4px;margin-top:3px}.scard .v{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 /* profiles */
-.prof{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 18px;margin-bottom:10px;box-shadow:0 5px 18px rgba(90,60,20,.05);text-align:center}
+.prof{background:#fff;border:1px solid var(--line);border-radius:18px;padding:11px 18px;margin-bottom:8px;box-shadow:0 5px 20px rgba(90,60,20,.05);text-align:center}
 .prof .g{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#FFF9F3;border:1px solid #F1E7D6;color:var(--amber);font-size:20px;font-family:var(--body)}
 .prof .nm{font-family:var(--disp);font-size:19px;margin-top:5px}
 .brg{margin:6px 0 2px}.br{display:flex;gap:7px;justify-content:center;align-items:baseline;padding:2px 0;flex-wrap:wrap}
@@ -185,7 +185,7 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .moonwhy{background:#FBEFE3;border:1px solid #EFD9C4;border-radius:12px;padding:9px 14px;margin-top:10px;text-align:center}
 .moonwhy p{font-size:11.6px;color:#7a5a48;font-style:italic;font-family:var(--disp);line-height:1.45}
 /* mind cards (deep-dive) */
-.mind{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 16px rgba(90,60,20,.04)}
+.mind{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:13px;box-shadow:0 4px 16px rgba(90,60,20,.04)}
 .mind .mh{display:flex;align-items:center;gap:9px}
 .mind .planet{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
 .mind .planet.air{background:#EAF0F5;color:#5b7791}.mind .planet.water{background:#EAF1F0;color:#3E7D6E}
@@ -780,7 +780,8 @@ def _appendix(p, pr1, pr2, kootas, by):
     n1 = escape(pr1.get("name", "")); n2 = escape(pr2.get("name", ""))
     s1 = escape(pr1.get("sign", "")); s2 = escape(pr2.get("sign", ""))
     nk1 = escape(pr1.get("nak", "")); nk2 = escape(pr2.get("nak", ""))
-    total = p.get("total"); eff = p.get("effective"); pct_val = p.get("match_pct")
+    total = p.get("total") or 0; eff = p.get("effective")
+    pct_val = p.get("match_pct") or (round((eff or total) / 36 * 100) if total else 0)
 
     secs = []
     # A charts computed (with birth details)
