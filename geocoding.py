@@ -102,7 +102,7 @@ def _geocode_external(place):
                 return float(loc["lat"]), float(loc["lng"]), "google"
             return None
         # default: Nominatim (OpenStreetMap)
-        ua = os.getenv("GEOCODER_USER_AGENT", "axtroshastra/1.0 (contact: axtroshastra@gmail.com)")
+        ua = os.getenv("GEOCODER_USER_AGENT", "axtroshastra/1.0 (contact: support@axtroshastra.com)")
         url = ("https://nominatim.openstreetmap.org/search?"
                + urllib.parse.urlencode({"q": place, "format": "json", "limit": 1}))
         req = urllib.request.Request(url, headers={"User-Agent": ua})
