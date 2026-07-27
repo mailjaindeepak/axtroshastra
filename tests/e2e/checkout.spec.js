@@ -42,6 +42,17 @@ async function stubRazorpay(page) {
   });
 }
 
+
+// The pre-payment contact popup (T1-CONTACT) now intercepts the first Unlock
+// click: fill the WhatsApp number and continue. Cached in sessionStorage, so
+// it appears once per browser context.
+async function completeContactModal(page) {
+  const phone = page.locator('#axcPhone');
+  await phone.waitFor({ timeout: 10_000 });
+  await phone.fill('9812345678');
+  await page.locator('.axc-go').click();
+}
+
 async function fillValidForm(page) {
   await page.fill('#f-name', 'Checkout Tester');
   await page.fill('#f-dd', '15');
@@ -75,6 +86,7 @@ test('Checkout happy path: unlock -> Razorpay -> paid report page', async ({ pag
   await fillValidForm(page);
 
   await page.locator('#unlockBtn').click();
+  await completeContactModal(page);
 
   // The site must have sent the report_id to /api/order (bound to the created report).
   await expect.poll(() => orderCalledWith && orderCalledWith.report_id).toBeTruthy();
@@ -114,6 +126,7 @@ test('Checkout aborts gracefully when order creation fails (503)', async ({ page
   await unlock.scrollIntoViewIfNeeded();
   await expect(unlock).toBeEnabled();
   await unlock.click();
+  await completeContactModal(page);
 
   // The site must alert ("Payment setup issue…") and stay put — never navigate to a report.
   await expect.poll(() => dialogMessage, { timeout: 15_000 }).toMatch(/payment setup issue/i);
