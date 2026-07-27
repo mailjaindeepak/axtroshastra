@@ -778,7 +778,7 @@ def get_report_api(rid: str):
 
 
 def _fmt_mobile(m: str) -> str:
-    """Display '+919650973345' as '+91 96509 73345'; raw fallback for anything else."""
+    """Display '+919599827297' as '+91 95998 27297'; raw fallback for anything else."""
     if m and m.startswith("+91") and len(m) == 13 and m[3:].isdigit():
         d = m[3:]
         return f"+91 {d[:5]} {d[5:]}"
