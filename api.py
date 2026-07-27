@@ -216,7 +216,7 @@ RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
-MILAN_PRICE_PAISE = 29900                 # ₹299 — milan landing price (/milan and /match funnels)
+MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
 
 
 def _valid_admin_key(key: str) -> bool:
