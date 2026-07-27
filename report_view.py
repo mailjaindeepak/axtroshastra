@@ -864,7 +864,7 @@ actively dhoondhna. Yeh support hai, substitute nahi.</p></section>"""
     if meta["time_quality"] in ("T1", "T2", "T3"):
         rectify_hook = """<div class="upsell"><b>Birth time approximate tha?</b>
 <p>Rectification analysis aapke life events se exact time narrow karta hai —
-windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919650973345?text=RECTIFY' style='color:#C93B2E;font-weight:700'>WhatsApp par RECTIFY bhejiye →</a></p></div>"""
+windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919599827297?text=RECTIFY' style='color:#C93B2E;font-weight:700'>WhatsApp par RECTIFY bhejiye →</a></p></div>"""
 
     facts = p["chart"]["planets"]
     sl = sig["seventh_lord"]
@@ -1045,14 +1045,14 @@ Strong window mein bhi rishtey dhoondhne padte hain — bas conversion rate bett
 </div>
 {rectify_hook}
 <div class="upsell"><b>Ek aur sawaal, usi chart se: career kab lift hoga?</b>
-<p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919650973345?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
+<p>Career Timing Report — same precision, ₹299 for report holders. <a href='https://wa.me/919599827297?text=CAREER' style='color:#C93B2E;font-weight:700'>WhatsApp par CAREER bhejiye →</a></p></div>
 <div class="btnrow">
   <a class="btn p" id="ax-pdf" href="#" onclick="window.print();return false;">Download PDF</a> <button class="ax-share" onclick="axShare()">Share on WhatsApp</button>
-  <a class="btn s" href="https://wa.me/919650973345?text=Hi%20Axtroshastra">WhatsApp Support</a>
+  <a class="btn s" href="https://wa.me/919599827297?text=Hi%20Axtroshastra">WhatsApp Support</a>
 </div></section>
 
 <footer>Windows are probability estimates from classical dasha–transit principles,
-not guarantees. <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · axtroshastra@gmail.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
+not guarantees. <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · axtroshastra@gmail.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
         <div class="ax-wm" aria-hidden="true"><b>AXTROSHASTRA</b><span>axtroshastra.com</span></div>
 <section class="pg"><div class="ax-disc"><b>Disclaimer:</b> Yeh report classical Vedic Jyotish (dasha-transit) principles par computed hai — guidance ke liye, guarantee nahi. Timing windows probability hain, fixed dates nahi. Yeh legal, medical ya financial advice nahi hai. Apne life decisions aap apni samajh se lijiye; Axtroshastra kisi outcome ki zimmedari nahi leta.</div><div class="ax-endcard"><b>Axtroshastra</b><br>Yeh report Axtroshastra ne banayi — apna report paayein: <a href="https://www.axtroshastra.com/shaadi">axtroshastra.com</a></div></section>
 {REPORT_I18N}
@@ -1810,7 +1810,7 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 {low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
 This compatibility score is one classical input to a marriage decision, not the whole decision.
-<a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+<a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 {share_js}
 <script>window.addEventListener('beforeprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{d.__wo=d.open;d.open=true;}});}});window.addEventListener('afterprint',function(){{document.querySelectorAll('details.acc').forEach(function(d){{if(d.__wo===false)d.open=false;}});}});</script>
 {sticky_bar}
@@ -1951,7 +1951,7 @@ mein sabse achha kaam karte hain.</p></div>
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
-<a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+<a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 </body></html>"""
 
 
@@ -2299,7 +2299,7 @@ border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effort is yours.<br>
-100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+<a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 
 <script>
 window.axShare=function(){{var url=location.href;var t=(window.__axlang==='en'?'Check out my career timing report from Axtroshastra':'Meri career timing report Axtroshastra se');if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};

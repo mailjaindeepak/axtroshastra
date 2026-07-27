@@ -11,12 +11,12 @@
 <link rel="alternate" hreflang="hi-IN" href="https://www.axtroshastra.com/hinglish/career">
 <link rel="alternate" hreflang="x-default" href="https://www.axtroshastra.com/career">
 <meta property="og:title" content="Career Mein Breakthrough Kab? — Student Success Report ₹499">
-<meta property="og:description" content="Aapki kundli se exact career &amp; academic timing windows. NASA-grade precision, 2 minute mein.">
+<meta property="og:description" content="Aapki kundli se career &amp; academic timing windows, plus stream aur field fit — 2 minute mein.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/hinglish/career">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Aapki kundli se exact career aur academic success timing windows — years aur months, guesswork nahi. NASA-grade precision. Report ₹499, 2 minute mein.">
+<meta name="description" content="Aapki kundli se exact career aur academic timing windows, plus kaunsa stream aur field aapko suit karta hai. Students ke liye. ₹499, 2 minute mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -339,7 +339,6 @@ fbq('track', 'PageView');
     <ul>
       <li><span class="dot"></span><b>NASA-grade</b> planetary data</li>
       <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
-      <li><span class="dot"></span><b>100% refund</b>, no questions</li>
       <li><span class="dot"></span>Report in <b>2 minutes</b></li>
     </ul>
   </div>
@@ -386,7 +385,7 @@ fbq('track', 'PageView');
         <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>Honest hardship + correction</b> — kaunsi habit sudharni hai, aur classical remedy</span></li>
       </ul>
       <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499</button>
-      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery &nbsp;|&nbsp; 100% refund, no questions</p>
+      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery</p>
     </div>
   </div>
 </section>
@@ -499,10 +498,6 @@ fbq('track', 'PageView');
       <div class="a">IIT–IIM alumni engineers jinhone classical Vedic rules ko software mein encode kiya. Hum astrologer nahi hain — isliye hamara system opinion nahi deta, sirf calculation.</div>
     </details>
     <details>
-      <summary>Refund policy?</summary>
-      <div class="a">100% refund, no questions asked, 7 days. WhatsApp par message kijiye, done.</div>
-    </details>
-    <details>
       <summary>Meri details safe hain?</summary>
       <div class="a">Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi astrologer ko nahi bechte. (Yeh common industry practice hai; hum nahi karte.)</div>
     </details>
@@ -519,17 +514,16 @@ fbq('track', 'PageView');
 
 <footer>
   <b>Axtroshastra</b> · Computational Vedic Astrology · by Cultnuts<br>
-  <a href="https://wa.me/919650973345" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 96509 73345</a> · <a href="mailto:axtroshastra@gmail.com" style="color:#E4B04A;text-decoration:none">axtroshastra@gmail.com</a><br>
+  <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> · <a href="mailto:axtroshastra@gmail.com" style="color:#E4B04A;text-decoration:none">axtroshastra@gmail.com</a><br>
   <a href="/about" style="color:#B9BBD0">About Us</a> · <a href="/privacy" style="color:#B9BBD0">Privacy</a> · <a href="/terms" style="color:#B9BBD0">Terms</a> · <a href="/blog" style="color:#B9BBD0">Blog</a><br>
-  Reports are probability estimates from classical Jyotish principles, not guarantees.<br>
-  100% refund within 7 days, no questions asked.
+  Reports are probability estimates from classical Jyotish principles, not guarantees.
 </footer>
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career &amp; Academic Timing Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · Instant Delivery · No-Questions Refund</p>
+    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · Instant Delivery</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn" onclick="var f=document.getElementById('kundliForm');if(f&&f.requestSubmit){event.preventDefault();f.requestSubmit();}">Check FREE</a>
 </div>
@@ -688,12 +682,92 @@ function renderTeaser(t){
   sb.onclick = function(ev){ ev.preventDefault(); startPayment(); };
 }
 
+// --- Pre-payment contact capture (T1): WhatsApp number (required) + email (optional).
+// Kept in sessionStorage under 'axtro_contact' (separate from any form-state keys)
+// and sent with /api/order, so the account + WhatsApp delivery use the number the
+// buyer actually types here even if they pay from a different number.
+var AX_CONTACT = null;
+try{ AX_CONTACT = JSON.parse(sessionStorage.getItem('axtro_contact') || 'null'); }catch(e){}
+if(AX_CONTACT && !AX_CONTACT.phone){ AX_CONTACT = null; }
+function axNormPhone(v){
+  var d = String(v || '').replace(/\D/g, '');
+  if(d.length === 12 && d.slice(0,2) === '91') d = d.slice(2);
+  if(d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
+  return (d.length === 10 && '6789'.indexOf(d.charAt(0)) >= 0) ? ('+91' + d) : null;
+}
+function axContactModal(onDone){
+  var old = document.getElementById('axContactModal');
+  if(old && old.parentNode) old.parentNode.removeChild(old);
+  var wrap = document.createElement('div');
+  wrap.id = 'axContactModal';
+  wrap.innerHTML = [
+    '<style>',
+    '@media print{#axContactModal{display:none!important}}',
+    '#axContactModal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;font-family:inherit}',
+    '#axContactModal .axc-bg{position:absolute;inset:0;background:rgba(10,12,24,.58)}',
+    '#axContactModal .axc-card{position:relative;width:100%;max-width:392px;background:#FAF6ED;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:22px 20px 20px;color:#151C39}',
+    '#axContactModal .axc-x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:24px;color:#8a7d72;cursor:pointer;line-height:1;padding:4px}',
+    '#axContactModal h3{margin:0 26px 4px 0;font-size:19px;font-weight:800;color:#151C39}',
+    '#axContactModal .axc-sub{font-size:13px;color:#5c554a;margin:0 0 12px}',
+    '#axContactModal label{display:block;font-size:12.5px;font-weight:700;color:#151C39;margin:12px 0 5px}',
+    '#axContactModal .axc-in{display:flex;align-items:center;background:#fff;border:1.5px solid #d9d0bf;border-radius:11px}',
+    '#axContactModal .axc-in:focus-within{border-color:#E4B04A}',
+    '#axContactModal .axc-in span{padding-left:12px;color:#5c554a;font-size:15px;font-weight:600}',
+    '#axContactModal .axc-in input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px;font-size:16px;color:#151C39;font-family:inherit}',
+    '#axContactModal .axc-note{font-size:12px;color:#7a5417;background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);border-radius:9px;padding:8px 10px;margin-top:7px;line-height:1.45}',
+    '#axContactModal .axc-err{display:none;font-size:12.5px;color:#C93B2E;font-weight:700;margin-top:9px}',
+    '#axContactModal .axc-go{width:100%;margin-top:15px;border:0;border-radius:12px;background:#C93B2E;color:#fff;font-size:16.5px;font-weight:800;padding:14px;cursor:pointer;font-family:inherit}',
+    '</style>',
+    '<div class="axc-bg"></div>',
+    '<div class="axc-card" role="dialog" aria-modal="true" aria-label="Your contact details">',
+    '<button type="button" class="axc-x" aria-label="Close">&times;</button>',
+    '<h3>Where should we send your report?</h3>',
+    '<p class="axc-sub">Takes 5 seconds — then you go straight to payment.</p>',
+    '<label for="axcPhone">Mobile number (WhatsApp wala)</label>',
+    '<div class="axc-in"><span>+91</span><input id="axcPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210"></div>',
+    '<div class="axc-note">Aapki report, OTP aur account isi number par banega — apna WhatsApp wala number hi daaliye.</div>',
+    '<label for="axcEmail">Email (optional) — PDF copy ke liye</label>',
+    '<div class="axc-in"><input id="axcEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>',
+    '<div class="axc-err" id="axcErr"></div>',
+    '<button type="button" class="axc-go">Payment ke liye aage badhein →</button>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(wrap);
+  var phone = wrap.querySelector('#axcPhone'), email = wrap.querySelector('#axcEmail'), err = wrap.querySelector('#axcErr');
+  if(AX_CONTACT){ phone.value = (AX_CONTACT.phone || '').replace('+91', ''); email.value = AX_CONTACT.email || ''; }
+  var prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+  function close(){
+    document.body.style.overflow = prevOverflow;
+    document.removeEventListener('keydown', onEsc);
+    if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
+  }
+  function onEsc(e){ if(e.key === 'Escape') close(); }
+  document.addEventListener('keydown', onEsc);
+  wrap.querySelector('.axc-bg').addEventListener('click', close);
+  wrap.querySelector('.axc-x').addEventListener('click', close);
+  function fail(msg, el){ err.textContent = msg; err.style.display = 'block'; try{ el.focus(); }catch(e){} }
+  wrap.querySelector('.axc-go').addEventListener('click', function(){
+    var p = axNormPhone(phone.value);
+    if(!p){ fail('Please enter a valid 10-digit mobile number.', phone); return; }
+    var em = (email.value || '').trim();
+    if(em && !/^\S+@\S+\.\S+$/.test(em)){ fail('That email doesn\'t look right — fix it or leave it blank.', email); return; }
+    AX_CONTACT = {phone: p, email: em};
+    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
+    close();
+    onDone();
+  });
+  setTimeout(function(){ try{ phone.focus(); }catch(e){} }, 60);
+}
+
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
+  if(!AX_CONTACT){ axContactModal(startPayment); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null})});
+    body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
+      phone: AX_CONTACT.phone, email: AX_CONTACT.email || null})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
@@ -707,6 +781,7 @@ async function startPayment(){
     amount: order.amount, currency: order.currency,
     name: 'Axtroshastra', description: 'Career & Academic Timing Report',
     theme: {color: '#C93B2E'},
+    prefill: {contact: AX_CONTACT.phone, email: AX_CONTACT.email || ''},
     handler: function(resp){
       fetch('/api/verify', {method:'POST',
         headers:{'Content-Type':'application/json'},

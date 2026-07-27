@@ -57,12 +57,18 @@ def _column_exists(c, table: str, column: str) -> bool:
     return any(r[1] == column for r in rows)
 
 
-def _ensure_user_id_column(c):
-    """Add reports.user_id once, idempotently, on either backend. A plain `TEXT`
-    in an ALTER is left untranslated by dbcompat and is a valid column type on
-    both SQLite and MySQL, so no CREATE-TABLE type mapping is needed here."""
-    if not _column_exists(c, "reports", "user_id"):
-        c.execute("ALTER TABLE reports ADD COLUMN user_id TEXT")
+def _ensure_report_columns(c):
+    """Add reports.user_id / reports.user_phone once, idempotently, on either
+    backend. A plain `TEXT` in an ALTER is left untranslated by dbcompat and is
+    a valid column type on both SQLite and MySQL, so no CREATE-TABLE type
+    mapping is needed here.
+
+    user_phone is the number the buyer TYPED into the pre-payment contact popup
+    (their WhatsApp/account number). It is distinct from reports.phone, which
+    stays the contact Razorpay reported for the payment itself."""
+    for col in ("user_id", "user_phone"):
+        if not _column_exists(c, "reports", col):
+            c.execute("ALTER TABLE reports ADD COLUMN %s TEXT" % col)
 
 
 def ensure_tables(db):
@@ -78,7 +84,7 @@ def ensure_tables(db):
             status TEXT, created_at TEXT, updated_at TEXT)""")
         c.execute("""CREATE TABLE IF NOT EXISTS user_mobiles(
             mobile TEXT PRIMARY KEY, user_id TEXT, created_at TEXT)""")
-        _ensure_user_id_column(c)
+        _ensure_report_columns(c)
 
 
 # --------------------------------------------------------------------------- #
