@@ -51,3 +51,4 @@ Thumbs.db
 !.elasticbeanstalk/*.global.yml
 # config.yml (app name / env / region) is needed by the CI deploy job — no secrets in it
 !.elasticbeanstalk/config.yml
+.claude/

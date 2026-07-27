@@ -2299,7 +2299,7 @@ border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center
 
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — the chart shows direction, the effort is yours.<br>
-100% refund within 7 days — <a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+<a href='https://wa.me/919650973345' style='color:inherit'>WhatsApp +91 96509 73345</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
 
 <script>
 window.axShare=function(){{var url=location.href;var t=(window.__axlang==='en'?'Check out my career timing report from Axtroshastra':'Meri career timing report Axtroshastra se');if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
