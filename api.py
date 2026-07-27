@@ -786,7 +786,7 @@ document.body.appendChild(a);a.click();
 setTimeout(function(){URL.revokeObjectURL(u);if(a.parentNode)a.parentNode.removeChild(a);},4000);
 axToastPdf('PDF downloaded \\u2713 check your Downloads / Files app.');done();});
 }).catch(function(){done();
-axToastPdf('Thoda backend issue hai abhi \\u2014 print box mein "Save as PDF" use kijiye, ya WhatsApp check kijiye: report wahan bhi bheji hai.');
+axToastPdf('Preparing your PDF \\u2014 choose "Save as PDF" in the window that opens, or grab it from WhatsApp: we\\u2019ve sent it there too.');
 setTimeout(function(){window.print();},1700);});
 return false;}
 </script>"""
