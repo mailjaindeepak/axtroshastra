@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
                                PlainTextResponse, RedirectResponse, Response)
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint, render_vidyarthi, north_chart_svg
@@ -254,10 +254,12 @@ def save_report(rid, payload):
 
 def get_report(rid):
     with db() as c:
-        row = c.execute("SELECT payload,paid,order_id FROM reports WHERE id=?",
-                        (rid,)).fetchone()
+        row = c.execute(
+            "SELECT payload,paid,order_id,phone,user_phone FROM reports WHERE id=?",
+            (rid,)).fetchone()
     if not row: return None
-    return {"payload": json.loads(row[0]), "paid": bool(row[1]), "order_id": row[2]}
+    return {"payload": json.loads(row[0]), "paid": bool(row[1]), "order_id": row[2],
+            "phone": row[3] or "", "user_phone": row[4] or ""}
 
 def set_order(rid, order_id):
     with _lock, db() as c:
@@ -267,6 +269,33 @@ def mark_paid(rid, payment_id=None, phone=None):
     with _lock, db() as c:
         c.execute("UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=?",
                   (payment_id, phone, rid))
+
+def store_user_contact(rid, phone=None, email=None):
+    """Persist the contact typed into the pre-payment popup.
+
+    * reports.user_phone <- normalised popup mobile: this is the user's
+      WhatsApp/account number, used for report delivery + OTP login. It is
+      deliberately SEPARATE from reports.phone, which stays whatever contact
+      Razorpay reports for the payment (mark_paid, unchanged).
+    * meta._email <- popup email, only when the report doesn't already carry
+      one (that key is what email delivery reads)."""
+    user_phone = users._norm_mobile(phone or "")
+    email = (email or "").strip()
+    with _lock, db() as c:
+        if user_phone:
+            c.execute("UPDATE reports SET user_phone=? WHERE id=?",
+                      (user_phone, rid))
+        if email:
+            row = c.execute("SELECT payload FROM reports WHERE id=?",
+                            (rid,)).fetchone()
+            if row:
+                payload = json.loads(row[0])
+                meta = payload.setdefault("meta", {})
+                if not meta.get("_email"):
+                    meta["_email"] = email
+                    c.execute("UPDATE reports SET payload=? WHERE id=?",
+                              (json.dumps(payload), rid))
+    return user_phone
 
 def save_narrative(rid, narr: dict):
     """Merge the LLM-written prose into the stored report payload so the renderer
@@ -523,24 +552,62 @@ def create_kundli(inp: KundliIn):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
+class OrderIn(BaseModel):
+    """Body of POST /api/order. `phone`/`email` come from the pre-payment
+    contact popup: phone is the buyer's WhatsApp/account number (stored in
+    reports.user_phone), email feeds meta._email for the PDF copy."""
+    report_id: str | None = None
+    pass_token: str | None = Field(default=None, alias="pass")
+    phone: str | None = None
+    email: str | None = None
+    model_config = {"populate_by_name": True, "extra": "ignore"}
+
+
 @app.post("/api/order")
-def create_order(body: dict, background_tasks: BackgroundTasks):
-    rid = body.get("report_id")
+def create_order(body: OrderIn, background_tasks: BackgroundTasks):
+    rid = body.report_id
     rec = get_report(rid)
     if not rec: raise HTTPException(404, "report not found")
+    # Persist the popup contact FIRST — even for retries/free passes — so the
+    # webhook/verify can prefer the typed WhatsApp number over the Razorpay
+    # payment contact. Never let it break order creation.
+    user_phone = rec.get("user_phone") or ""
+    if body.phone or body.email:
+        try:
+            user_phone = store_user_contact(rid, body.phone, body.email) or user_phone
+        except Exception as e:
+            logger.error("[contact] persist failed for %s: %s", rid, e)
     if rec["paid"]:                              # already paid -> skip checkout
         return {"already_paid": True}
-    tok = (body.get("pass") or "").strip()
+    tok = (body.pass_token or "").strip()
     if tok:
+        freed = False
         with _lock, db() as conn:
             row = conn.execute("SELECT used FROM passes WHERE token=?", (tok,)).fetchone()
             if row and row[0] == 0:
                 conn.execute("UPDATE passes SET used=1 WHERE token=?", (tok,))
                 conn.execute("UPDATE reports SET paid=1, payment_id=? WHERE id=?",
                              ("free_pass:" + tok, rid))
-                # free-pass unlock is a real paid report -> generate prose too
-                background_tasks.add_task(_generate_narrative_task, rid)
-                return {"free": True}
+                freed = True
+        if freed:
+            # free-pass unlock is a real paid report -> generate prose too
+            background_tasks.add_task(_generate_narrative_task, rid)
+            # The popup collected the buyer's number before this unlock, so a
+            # free pass still creates the account (no Razorpay webhook will
+            # ever fire for it). Runs AFTER the unlock transaction closed —
+            # never let it break the unlock.
+            if user_phone:
+                try:
+                    uid = users.upsert_user_from_payment(
+                        db, mobile=user_phone,
+                        email=(body.email or "").strip(),
+                        name=_display_name(rec["payload"]))
+                    if uid:
+                        users.link_report(db, rid, uid)
+                except Exception as e:
+                    logger.error("[users] free-pass account upsert failed "
+                                 "for %s: %s", rid, e)
+            return {"free": True}
         return {"error": "invalid_pass"}
     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
     amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match") else PRICE_PAISE
@@ -572,8 +639,14 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         if rid:
             rec = get_report(rid)
             if rec:
-                phone = ent.get("contact") or ""
-                mark_paid(rid, payment_id=ent.get("id"), phone=phone)
+                # TWO numbers: reports.phone keeps whatever contact Razorpay
+                # reports for the PAYMENT (mark_paid, unchanged), while the
+                # account + WhatsApp delivery PREFER user_phone — the number
+                # the buyer typed into the pre-payment popup ("your report,
+                # OTP & account will be created on this number").
+                pay_phone = ent.get("contact") or ""
+                phone = rec.get("user_phone") or pay_phone
+                mark_paid(rid, payment_id=ent.get("id"), phone=pay_phone)
                 # PDF first, then WhatsApp: background tasks run in order, so
                 # the message can attach the freshly cached PDF.
                 background_tasks.add_task(_pregenerate_pdf_task, rid)
@@ -586,9 +659,10 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 # the user since delivery links point at /report/{id}.
                 background_tasks.add_task(_generate_narrative_task, rid)
                 form_email = rec["payload"]["meta"].get("_email")
-                # Account: create/link a user from the Razorpay payment (mobile +
-                # email). Prefer the email Razorpay collected; fall back to the one
-                # typed into the form. Never let account creation break the webhook.
+                # Account: create/link a user on the popup number (fallback:
+                # Razorpay contact). Prefer the email Razorpay collected; fall
+                # back to the one typed into the form/popup. Never let account
+                # creation break the webhook.
                 pay_email = ent.get("email") or form_email or ""
                 try:
                     uid = users.upsert_user_from_payment(
@@ -628,19 +702,20 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
     rid = row[0]
     rec = get_report(rid)
     if rec and not rec["paid"]:
-        # The funnel pages never send a phone, so when the webhook is lost this
-        # path used to create NO user and send NO WhatsApp (silent gap). Fix:
-        # fetch the payment entity from Razorpay server-side — it carries the
-        # contact + email the customer typed into checkout.
-        phone = body.get("phone") or ""
+        # Fetch the payment entity from Razorpay server-side — it carries the
+        # contact + email the customer typed into checkout. That contact stays
+        # the PAYMENT number (reports.phone via mark_paid); the account and
+        # WhatsApp delivery prefer user_phone from the pre-payment popup.
+        pay_phone = body.get("phone") or ""
         pay_email = ""
         try:
             ent = rzp_client().payment.fetch(pid)
-            phone = ent.get("contact") or phone
+            pay_phone = ent.get("contact") or pay_phone
             pay_email = ent.get("email") or ""
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
-        mark_paid(rid, payment_id=pid, phone=phone)
+        phone = rec.get("user_phone") or pay_phone
+        mark_paid(rid, payment_id=pid, phone=pay_phone)
         # Mirror the webhook: PDF first so the WhatsApp message can attach it.
         background_tasks.add_task(_pregenerate_pdf_task, rid)
         background_tasks.add_task(_generate_narrative_task, rid)
@@ -736,6 +811,20 @@ def _account_banner(rid: str) -> str:
         rows += _row("Mobile", _html.escape(_fmt_mobile(u["mobile"])))
     if u.get("email"):
         rows += _row("Email", _html.escape(u["email"]))
+    # Two-number case: the account lives on the popup (WhatsApp) number, but the
+    # payment came from a different contact — show it as a muted second row so
+    # "why does Razorpay show another number?" support tickets answer themselves.
+    try:
+        rec = get_report(rid) or {}
+        pay = users._norm_mobile(rec.get("phone") or "")
+        acct = users._norm_mobile(u.get("mobile") or "")
+        if pay and acct and pay != acct:
+            rows += ('<div style="display:flex;align-items:center;gap:10px;'
+                     'font-size:12px;color:#8a7d72">'
+                     '<span style="width:58px;font-size:12px">Payment</span>'
+                     f'<span>via {_html.escape(_fmt_mobile(pay))}</span></div>')
+    except Exception as e:
+        logger.error("[users] banner payment-row failed for %s: %s", rid, e)
 
     return (
         '<div style="background:#f3ece0;padding:14px;font-family:system-ui,'
@@ -1041,7 +1130,9 @@ def resend_whatsapp(rid: str, key: str = ""):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         raise HTTPException(404, "report not found or unpaid")
-    phone = rec.get("phone") or ""
+    # Prefer the WhatsApp number typed in the pre-payment popup; fall back to
+    # the Razorpay payment contact.
+    phone = rec.get("user_phone") or rec.get("phone") or ""
     if not phone:
         return {"ok": False, "error": "no_phone_on_report"}
     _pregenerate_pdf_task(rid)                     # sync: admin call, fine to wait
