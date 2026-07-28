@@ -70,6 +70,21 @@ def _model() -> str:
 def _lang() -> str:
     return (os.getenv("NARRATIVE_LANG") or "hinglish").strip().lower()
 
+def _resolve_lang(payload: dict) -> str:
+    """Per-report locale wins over the global NARRATIVE_LANG env, so a Hindi buyer
+    always gets Devanagari prose regardless of the server default. Reads the report's
+    stored locale (meta.lang, set from the /hi/ vs /en/ funnel); falls back to _lang().
+    Returns one of: 'hi' (Devanagari) | 'english' | 'hinglish'."""
+    meta = (payload or {}).get("meta") or {}
+    loc = str(meta.get("lang") or (payload or {}).get("lang") or "").strip().lower()
+    if loc in ("hi", "hindi", "devanagari"):
+        return "hi"
+    if loc in ("en", "english"):
+        return "english"
+    if loc in ("hinglish", "hi-latn"):
+        return "hinglish"
+    return _lang()
+
 def _float(name, default):
     try:
         return float(os.getenv(name, default))
@@ -127,7 +142,7 @@ def generate_narrative(payload: dict) -> dict:
         return {}
     try:
         facts = _facts_for_llm(payload, product)
-        system = _system_prompt(product, spec)
+        system = _system_prompt(product, spec, _resolve_lang(payload))
         user = _user_prompt(facts, spec)
         raw = _call(system, user)
         if not raw:
@@ -149,6 +164,8 @@ def generate_narrative(payload: dict) -> dict:
                 logger.warning("[narrative] section %r dropped: unknown figure", key)
                 continue
             out[key] = html.escape(val)
+        logger.info("[narrative] %s/%s lang=%s model=%s -> %d/%d sections generated",
+                    _provider(), product, _resolve_lang(payload), _model(), len(out), len(spec))
         return out
     except Exception as e:
         logger.error("[narrative] generation failed (%s/%s): %s",
@@ -195,11 +212,24 @@ def _facts_for_llm(payload: dict, product: str) -> dict:
     return facts
 
 
-def _system_prompt(product: str, spec) -> str:
-    lang = ("Write in warm, natural Hinglish (Hindi-English mix, Roman script), the "
-            "way a caring Indian astrologer speaks."
-            if _lang() == "hinglish" else
-            "Write in warm, natural English.")
+def _system_prompt(product: str, spec, lang_code: str = "") -> str:
+    lang_code = (lang_code or _lang()).strip().lower()
+    if lang_code == "hi":
+        lang = ("Write in warm, natural, conversational Hindi in the Devanagari script "
+                "(हिंदी, देवनागरी लिपि) — the way a caring, well-spoken Indian astrologer "
+                "speaks to a young couple. Address them respectfully as 'आप'. Use everyday "
+                "spoken Hindi, not heavy or over-Sanskritised textbook Hindi; the few "
+                "familiar loan-words couples actually use (रिश्ता, कम्पैटिबिलिटी, बैलेंस) are "
+                "fine where they read naturally. Do NOT transliterate Hindi into Roman/Latin "
+                "letters. Keep proper nouns, brand names and the Vedic terms in the Devanagari "
+                "form given in the facts; write digits and scores as Western numerals (e.g. 36, "
+                "18/36, 85%). Sound like a real person who has actually read this couple's "
+                "chart, never like a translation.")
+    elif lang_code == "hinglish":
+        lang = ("Write in warm, natural Hinglish (Hindi-English mix, Roman script), the "
+                "way a caring Indian astrologer speaks.")
+    else:
+        lang = "Write in warm, natural English."
     tone = os.getenv("NARRATIVE_TONE", "").strip()
     keys = ", ".join(k for k, _ in spec)
     return (
@@ -298,7 +328,7 @@ def _call_anthropic(system: str, user: str) -> str:
     try:
         out = _http_post_json(ANTHROPIC_URL, headers, body)
     except urllib.error.HTTPError as e:
-        logger.error("[narrative] anthropic HTTP %s: %s", e.code, e.read()[:300])
+        logger.error("[narrative] anthropic HTTP %s (model=%s): %s", e.code, _model(), e.read()[:300])
         return ""
     parts = out.get("content") or []
     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")

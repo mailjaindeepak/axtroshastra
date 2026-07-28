@@ -168,7 +168,11 @@ def _full_report_html(payload: dict) -> str:
     if payload.get("product") == "milan":
         try:
             import milan_v2
-            return milan_v2.render_milan_v2(payload)
+            html = milan_v2.render_milan_v2(payload)
+            if (payload.get("meta") or {}).get("lang") == "hi":
+                import milan_hi
+                html = milan_hi.localize(html)
+            return html
         except Exception as e:
             logger.error("[v2] render failed for pdf: %s", e)      # fall through
     return _render_for(payload.get("product", "marriage"), payload)
@@ -610,7 +614,7 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
             return {"free": True}
         return {"error": "invalid_pass"}
     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
-    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match") else PRICE_PAISE
+    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match", "/en/compatibility", "/hi/compatibility") else PRICE_PAISE
     order = rzp_client().order.create({
         "amount": amount_paise, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
@@ -973,7 +977,11 @@ def report_page(rid: str, v2: int = 1):
     if payload.get("product") == "milan" and v2 != 0:
         try:
             import milan_v2
-            return HTMLResponse(_wire_report_chrome(milan_v2.render_milan_v2(payload), rid))
+            html = milan_v2.render_milan_v2(payload)
+            if (payload.get("meta") or {}).get("lang") == "hi":
+                import milan_hi
+                html = milan_hi.localize(html)
+            return HTMLResponse(_wire_report_chrome(html, rid))
         except Exception as e:
             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
@@ -1035,6 +1043,7 @@ def create_milan(inp: MilanIn):
         {"name": inp.p2_name, "dob": inp.p2_dob, "tob": inp.p2_tob,
          "tz": tz2, "lat": lat2, "lon": lon2, "gender": inp.p2_gender})
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "en"
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
@@ -1075,7 +1084,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/career", "/blog",
+    urls = ["/", "/shaadi", "/en/compatibility", "/hi/compatibility", "/jeevan", "/match", "/career", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -1391,6 +1400,50 @@ def serve_page_hinglish(slug: str):
     if os.path.exists(path):
         return _serve_page_with_nav(path)
     raise HTTPException(404, "not found")
+
+
+@app.get("/api/narrative_preview/{rid}", include_in_schema=False)
+def narrative_preview(rid: str, key: str = ""):
+    """Admin: preview the LLM narrative for an existing report without paying.
+    Returns the config being used + the generated prose (or {} if the layer is
+    off / the model call failed). Gate: ?key=<STATS_KEY>. Create a report via
+    /hi/compatibility, take its report_id, then GET this with your admin key."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    rec = get_report(rid)
+    if not rec:
+        raise HTTPException(404, "report not found")
+    payload = rec["payload"]
+    return {
+        "report_id": rid,
+        "product": payload.get("product"),
+        "meta_lang": (payload.get("meta") or {}).get("lang"),
+        "enabled": narrative.enabled(),
+        "provider": narrative._provider(),
+        "model": narrative._model(),
+        "resolved_lang": narrative._resolve_lang(payload),
+        "narrative": narrative.generate_narrative(payload),
+    }
+
+
+@app.get("/en/compatibility", include_in_schema=False)
+def compatibility_en():
+    """English love-compatibility (milan) landing at /en/compatibility."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.html"))
+
+
+@app.get("/hi/compatibility", include_in_schema=False)
+def compatibility_hi():
+    """Hindi (Devanagari) love-compatibility landing at /hi/compatibility."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"))
+
+
+@app.get("/milan", include_in_schema=False)
+def milan_redirect(request: Request):
+    """Legacy /milan → /en/compatibility (301 permanent). Preserves query string
+    so already-issued unlock links like /milan?pass=<token> keep working."""
+    q = request.url.query
+    return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/{slug}", include_in_schema=False)

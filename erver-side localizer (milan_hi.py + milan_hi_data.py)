@@ -1,0 +1,211 @@
+[1mdiff --git a/api.py b/api.py[m
+[1mindex d5ddd12..4b23342 100644[m
+[1m--- a/api.py[m
+[1m+++ b/api.py[m
+[36m@@ -168,7 +168,11 @@[m [mdef _full_report_html(payload: dict) -> str:[m
+     if payload.get("product") == "milan":[m
+         try:[m
+             import milan_v2[m
+[31m-            return milan_v2.render_milan_v2(payload)[m
+[32m+[m[32m            html = milan_v2.render_milan_v2(payload)[m
+[32m+[m[32m            if (payload.get("meta") or {}).get("lang") == "hi":[m
+[32m+[m[32m                import milan_hi[m
+[32m+[m[32m                html = milan_hi.localize(html)[m
+[32m+[m[32m            return html[m
+         except Exception as e:[m
+             logger.error("[v2] render failed for pdf: %s", e)      # fall through[m
+     return _render_for(payload.get("product", "marriage"), payload)[m
+[36m@@ -610,7 +614,7 @@[m [mdef create_order(body: OrderIn, background_tasks: BackgroundTasks):[m
+             return {"free": True}[m
+         return {"error": "invalid_pass"}[m
+     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""[m
+[31m-    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match") else PRICE_PAISE[m
+[32m+[m[32m    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match", "/en/compatibility", "/hi/compatibility") else PRICE_PAISE[m
+     order = rzp_client().order.create({[m
+         "amount": amount_paise, "currency": "INR",[m
+         "receipt": rid, "notes": {"report_id": rid}})[m
+[36m@@ -961,7 +965,11 @@[m [mdef report_page(rid: str, v2: int = 1):[m
+     if payload.get("product") == "milan" and v2 != 0:[m
+         try:[m
+             import milan_v2[m
+[31m-            return HTMLResponse(_wire_report_chrome(milan_v2.render_milan_v2(payload), rid))[m
+[32m+[m[32m            html = milan_v2.render_milan_v2(payload)[m
+[32m+[m[32m            if (payload.get("meta") or {}).get("lang") == "hi":[m
+[32m+[m[32m                import milan_hi[m
+[32m+[m[32m                html = milan_hi.localize(html)[m
+[32m+[m[32m            return HTMLResponse(_wire_report_chrome(html, rid))[m
+         except Exception as e:[m
+             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1[m
+     html = _render_for(payload.get("product", "marriage"), payload)[m
+[36m@@ -1023,6 +1031,7 @@[m [mdef create_milan(inp: MilanIn):[m
+         {"name": inp.p2_name, "dob": inp.p2_dob, "tob": inp.p2_tob,[m
+          "tz": tz2, "lat": lat2, "lon": lon2, "gender": inp.p2_gender})[m
+     report["meta"]["variant"] = (inp.variant or "direct")[:64][m
+[32m+[m[32m    report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "en"[m
+     if inp.email:[m
+         report["meta"]["_email"] = inp.email             # (#7)[m
+     rid = secrets.token_urlsafe(12)[m
+[36m@@ -1063,7 +1072,7 @@[m [mBLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",[m
+ @app.get("/sitemap.xml", include_in_schema=False)[m
+ def sitemap():[m
+     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"[m
+[31m-    urls = ["/", "/shaadi", "/milan", "/jeevan", "/match", "/career", "/blog",[m
+[32m+[m[32m    urls = ["/", "/shaadi", "/en/compatibility", "/hi/compatibility", "/jeevan", "/match", "/career", "/blog",[m
+             "/about", "/login", "/privacy", "/terms", "/refunds"[m
+             ] + [f"/blog/{s}" for s in BLOG_SLUGS][m
+     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)[m
+[36m@@ -1381,6 +1390,50 @@[m [mdef serve_page_hinglish(slug: str):[m
+     raise HTTPException(404, "not found")[m
+ [m
+ [m
+[32m+[m[32m@app.get("/api/narrative_preview/{rid}", include_in_schema=False)[m
+[32m+[m[32mdef narrative_preview(rid: str, key: str = ""):[m
+[32m+[m[32m    """Admin: preview the LLM narrative for an existing report without paying.[m
+[32m+[m[32m    Returns the config being used + the generated prose (or {} if the layer is[m
+[32m+[m[32m    off / the model call failed). Gate: ?key=<STATS_KEY>. Create a report via[m
+[32m+[m[32m    /hi/compatibility, take its report_id, then GET this with your admin key."""[m
+[32m+[m[32m    if not _valid_admin_key(key):[m
+[32m+[m[32m        raise HTTPException(403, "forbidden")[m
+[32m+[m[32m    rec = get_report(rid)[m
+[32m+[m[32m    if not rec:[m
+[32m+[m[32m        raise HTTPException(404, "report not found")[m
+[32m+[m[32m    payload = rec["payload"][m
+[32m+[m[32m    return {[m
+[32m+[m[32m        "report_id": rid,[m
+[32m+[m[32m        "product": payload.get("product"),[m
+[32m+[m[32m        "meta_lang": (payload.get("meta") or {}).get("lang"),[m
+[32m+[m[32m        "enabled": narrative.enabled(),[m
+[32m+[m[32m        "provider": narrative._provider(),[m
+[32m+[m[32m        "model": narrative._model(),[m
+[32m+[m[32m        "resolved_lang": narrative._resolve_lang(payload),[m
+[32m+[m[32m        "narrative": narrative.generate_narrative(payload),[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@app.get("/en/compatibility", include_in_schema=False)[m
+[32m+[m[32mdef compatibility_en():[m
+[32m+[m[32m    """English love-compatibility (milan) landing at /en/compatibility."""[m
+[32m+[m[32m    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.html"))[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@app.get("/hi/compatibility", include_in_schema=False)[m
+[32m+[m[32mdef compatibility_hi():[m
+[32m+[m[32m    """Hindi (Devanagari) love-compatibility landing at /hi/compatibility."""[m
+[32m+[m[32m    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"))[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@app.get("/milan", include_in_schema=False)[m
+[32m+[m[32mdef milan_redirect(request: Request):[m
+[32m+[m[32m    """Legacy /milan → /en/compatibility (301 permanent). Preserves query string[m
+[32m+[m[32m    so already-issued unlock links like /milan?pass=<token> keep working."""[m
+[32m+[m[32m    q = request.url.query[m
+[32m+[m[32m    return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)[m
+[32m+[m
+[32m+[m
+ @app.get("/{slug}", include_in_schema=False)[m
+ def serve_page(slug: str):[m
+     """Serve pages/<slug>.html — every file in pages/ becomes a landing page."""[m
+[1mdiff --git a/narrative.py b/narrative.py[m
+[1mindex 19908f2..8bccf19 100644[m
+[1m--- a/narrative.py[m
+[1m+++ b/narrative.py[m
+[36m@@ -70,6 +70,21 @@[m [mdef _model() -> str:[m
+ def _lang() -> str:[m
+     return (os.getenv("NARRATIVE_LANG") or "hinglish").strip().lower()[m
+ [m
+[32m+[m[32mdef _resolve_lang(payload: dict) -> str:[m
+[32m+[m[32m    """Per-report locale wins over the global NARRATIVE_LANG env, so a Hindi buyer[m
+[32m+[m[32m    always gets Devanagari prose regardless of the server default. Reads the report's[m
+[32m+[m[32m    stored locale (meta.lang, set from the /hi/ vs /en/ funnel); falls back to _lang().[m
+[32m+[m[32m    Returns one of: 'hi' (Devanagari) | 'english' | 'hinglish'."""[m
+[32m+[m[32m    meta = (payload or {}).get("meta") or {}[m
+[32m+[m[32m    loc = str(meta.get("lang") or (payload or {}).get("lang") or "").strip().lower()[m
+[32m+[m[32m    if loc in ("hi", "hindi", "devanagari"):[m
+[32m+[m[32m        return "hi"[m
+[32m+[m[32m    if loc in ("en", "english"):[m
+[32m+[m[32m        return "english"[m
+[32m+[m[32m    if loc in ("hinglish", "hi-latn"):[m
+[32m+[m[32m        return "hinglish"[m
+[32m+[m[32m    return _lang()[m
+[32m+[m
+ def _float(name, default):[m
+     try:[m
+         return float(os.getenv(name, default))[m
+[36m@@ -127,7 +142,7 @@[m [mdef generate_narrative(payload: dict) -> dict:[m
+         return {}[m
+     try:[m
+         facts = _facts_for_llm(payload, product)[m
+[31m-        system = _system_prompt(product, spec)[m
+[32m+[m[32m        system = _system_prompt(product, spec, _resolve_lang(payload))[m
+         user = _user_prompt(facts, spec)[m
+         raw = _call(system, user)[m
+         if not raw:[m
+[36m@@ -149,6 +164,8 @@[m [mdef generate_narrative(payload: dict) -> dict:[m
+                 logger.warning("[narrative] section %r dropped: unknown figure", key)[m
+                 continue[m
+             out[key] = html.escape(val)[m
+[32m+[m[32m        logger.info("[narrative] %s/%s lang=%s model=%s -> %d/%d sections generated",[m
+[32m+[m[32m                    _provider(), product, _resolve_lang(payload), _model(), len(out), len(spec))[m
+         return out[m
+     except Exception as e:[m
+         logger.error("[narrative] generation failed (%s/%s): %s",[m
+[36m@@ -195,11 +212,24 @@[m [mdef _facts_for_llm(payload: dict, product: str) -> dict:[m
+     return facts[m
+ [m
+ [m
+[31m-def _system_prompt(product: str, spec) -> str:[m
+[31m-    lang = ("Write in warm, natural Hinglish (Hindi-English mix, Roman script), the "[m
+[31m-            "way a caring Indian astrologer speaks."[m
+[31m-            if _lang() == "hinglish" else[m
+[31m-            "Write in warm, natural English.")[m
+[32m+[m[32mdef _system_prompt(product: str, spec, lang_code: str = "") -> str:[m
+[32m+[m[32m    lang_code = (lang_code or _lang()).strip().lower()[m
+[32m+[m[32m    if lang_code == "hi":[m
+[32m+[m[32m        lang = ("Write in warm, natural, conversational Hindi in the Devanagari script "[m
+[32m+[m[32m                "(हिंदी, देवनागरी लिपि) — the way a caring, well-spoken Indian astrologer "[m
+[32m+[m[32m                "speaks to a young couple. Address them respectfully as 'आप'. Use everyday "[m
+[32m+[m[32m                "spoken Hindi, not heavy or over-Sanskritised textbook Hindi; the few "[m
+[32m+[m[32m                "familiar loan-words couples actually use (रिश्ता, कम्पैटिबिलिटी, बैलेंस) are "[m
+[32m+[m[32m                "fine where they read naturally. Do NOT transliterate Hindi into Roman/Latin "[m
+[32m+[m[32m                "letters. Keep proper nouns, brand names and the Vedic terms in the Devanagari "[m
+[32m+[m[32m                "form given in the facts; write digits and scores as Western numerals (e.g. 36, "[m
+[32m+[m[32m                "18/36, 85%). Sound like a real person who has actually read this couple's "[m
+[32m+[m[32m                "chart, never like a translation.")[m
+[32m+[m[32m    elif lang_code == "hinglish":[m
+[32m+[m[32m        lang = ("Write in warm, natural Hinglish (Hindi-English mix, Roman script), the "[m
+[32m+[m[32m                "way a caring Indian astrologer speaks.")[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        lang = "Write in warm, natural English."[m
+     tone = os.getenv("NARRATIVE_TONE", "").strip()[m
+     keys = ", ".join(k for k, _ in spec)[m
+     return ([m
+[36m@@ -298,7 +328,7 @@[m [mdef _call_anthropic(system: str, user: str) -> str:[m
+     try:[m
+         out = _http_post_json(ANTHROPIC_URL, headers, body)[m
+     except urllib.error.HTTPError as e:[m
+[31m-        logger.error("[narrative] anthropic HTTP %s: %s", e.code, e.read()[:300])[m
+[32m+[m[32m        logger.error("[narrative] anthropic HTTP %s (model=%s): %s", e.code, _model(), e.read()[:300])[m
+         return ""[m
+     parts = out.get("content") or [][m
+     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")[m
+[1mdiff --git a/pages/milan.html b/pages/milan.html[m
+[1mindex 26c9b31..e0093ff 100644[m
+[1m--- a/pages/milan.html[m
+[1m+++ b/pages/milan.html[m
+[36m@@ -5,11 +5,14 @@[m
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">[m
+ <title>How Compatible Are You Two, Really? — Love Compatibility Report | Axtroshastra</title>[m
+ <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">[m
+[31m-<link rel="canonical" href="https://www.axtroshastra.com/milan">[m
+[32m+[m[32m<link rel="canonical" href="https://www.axtroshastra.com/en/compatibility">[m
+[32m+[m[32m<link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/compatibility">[m
+[32m+[m[32m<link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/compatibility">[m
+[32m+[m[32m<link rel="alternate" hreflang="x-default" href="https://www.axtroshastra.com/en/compatibility">[m
+ <meta property="og:title" content="Love Compatibility Report ₹499 — How Compatible Are You Two, Really?">[m
+ <meta property="og:description" content="Your couple score, strengths, frictions and an action plan — calculated honestly from both kundlis.">[m
+ <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">[m
+[31m-<meta property="og:url" content="https://www.axtroshastra.com/milan">[m
+[32m+[m[32m<meta property="og:url" content="https://www.axtroshastra.com/en/compatibility">[m
+ <meta property="og:type" content="website">[m
+ [m
+ <meta name="description" content="See your real compatibility as a couple — a 36-guna score, where you match, where friction shows up, and an action plan to grow stronger. ₹499, in 2 minutes.">[m
