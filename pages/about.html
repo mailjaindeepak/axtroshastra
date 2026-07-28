@@ -78,17 +78,31 @@ color:#F3EFE4;padding:46px 0 52px;position:relative;overflow:hidden}
 .mission .quote{font-family:var(--display);font-weight:700;font-size:clamp(20px,5vw,26px);line-height:1.3;color:var(--ink)}
 .mission .quote em{font-style:normal;color:var(--sindoor)}
 .mission p{margin-top:16px;font-size:15px;color:#4A4C63}
-/* team */
-.team .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
-.team .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:20px 16px;text-align:center}
-.team .av{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;
-font-family:var(--display);font-weight:800;font-size:22px;color:#fff;background:radial-gradient(120% 120% at 30% 20%,var(--midnight-2),var(--midnight))}
-.team .card:nth-child(2) .av{background:radial-gradient(120% 120% at 30% 20%,#D9A23F,var(--sindoor))}
-.team .card:nth-child(3) .av{background:radial-gradient(120% 120% at 30% 20%,#2C6E6A,#194845)}
-.team .card:nth-child(4) .av{background:radial-gradient(120% 120% at 30% 20%,#5A4B8A,#332A55)}
-.team .nm{font-family:var(--display);font-weight:800;font-size:16px}
-.team .rl{font-size:12.5px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
-.team .note{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:#4A4C63}
+/* team — one acharya per row: portrait column + bio column */
+.team .roster{margin-top:20px}
+.team .row{display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:center;
+padding:22px 0;border-top:1px solid var(--line)}
+.team .row:first-child{border-top:0;padding-top:6px}
+.team .portrait{width:132px;aspect-ratio:1/1;border-radius:12px;overflow:hidden;display:block;
+border:1px solid rgba(21,28,57,.14);background:var(--midnight)}
+.team .portrait img{width:100%;height:100%;object-fit:cover;object-position:var(--pos,50% 30%);display:block}
+.team .nm{font-family:var(--display);font-weight:800;font-size:18px;line-height:1.2}
+.team .rl{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--sindoor);
+font-family:var(--display);font-weight:700;margin-top:5px}
+.team .bio{font-size:14.5px;color:#4A4C63;margin:9px 0 0;line-height:1.62;
+text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
+.team .note{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:#4A4C63}
+/* phone: section head centred, portrait centred with name/role beneath, bio still justified */
+@media(max-width:600px){
+.team .sec-head .eyebrow,.team .sec-head h2,.team .sec-head .lead{text-align:center}
+.team .sec-head .lead{font-size:15px;margin-top:10px;text-wrap:balance}
+.team .lead-more{display:none}
+.team .row{grid-template-columns:1fr;gap:13px;justify-items:center}
+.team .portrait{width:168px;justify-self:center}
+.team .who{text-align:center;width:100%}
+.team .nm{font-size:19px}
+.team .bio{text-align:justify;margin-top:11px}
+}
 /* trust */
 .trust .item{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
 .trust .item b{font-family:var(--display);display:block;margin-bottom:4px;font-size:15.5px}
@@ -187,13 +201,46 @@ footer b{color:#B9BBD0}
     <div class="sec-head">
       <p class="eyebrow dark">The people</p>
       <h2>Who is behind Axtroshastra</h2>
-      <p class="lead">We're not astrologers selling reassurance — we're a small team of builders who encoded classical Vedic principles into software. Real people, accountable for what the engine says.</p>
+      <p class="lead">Real people, accountable for the engine.<span class="lead-more"> Classical Jyotish scholarship on one side, the engineering and reach that carry it on the other.</span></p>
     </div>
-    <div class="grid">
-      <div class="card"><div class="av">AP</div><div class="nm">Anshu Prasad</div></div>
-      <div class="card"><div class="av">DJ</div><div class="nm">Deepak Jain</div></div>
-      <div class="card"><div class="av">SJ</div><div class="nm">Sanjeev Jangra</div></div>
-      <div class="card"><div class="av">M</div><div class="nm">Muzammil</div></div>
+    <div class="roster">
+
+      <div class="row">
+        <div class="portrait"><img src="/static/acharya-ansh.jpg" alt="Acharya Ansh" width="460" height="460" decoding="async" style="--pos:50% 30%"></div>
+        <div class="who">
+          <div class="nm">Acharya Ansh</div>
+          <div class="rl">Vedic astrology &amp; scriptures</div>
+          <p class="bio">Acharya Ansh has spent over two decades studying Vedic astrology, spiritual philosophy, and ancient Hindu scriptures. At AxtroShastra, he combines traditional Jyotish principles with a thoughtful, research-driven approach to deliver practical, personalized guidance. Every report is rooted in authentic Kundali analysis, helping individuals and families make informed life and marriage decisions with greater clarity and confidence.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="portrait"><img src="/static/acharya-deep.jpg" alt="Acharya Deep" width="336" height="460" loading="lazy" decoding="async" style="--pos:50% 34%"></div>
+        <div class="who">
+          <div class="nm">Acharya Deep</div>
+          <div class="rl">Jyotish systems &amp; computation</div>
+          <p class="bio">Acharya Deep brings deep astrological understanding together with a strong grasp of the technology behind it. At AxtroShastra, he focuses on the systems that power precise Kundali calculations and predictions, ensuring every report is scientifically consistent and reliable. His work makes sure tradition and technical accuracy meet in every answer delivered.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="portrait"><img src="/static/acharya-manav.jpg" alt="Acharya Manav" width="306" height="460" loading="lazy" decoding="async" style="--pos:52% 44%"></div>
+        <div class="who">
+          <div class="nm">Acharya Manav</div>
+          <div class="rl">Outreach &amp; user growth</div>
+          <p class="bio">Acharya Manav is a marketer with a deep interest in astrology. At AxtroShastra, he ensures every user seeking astrological guidance gets connected to the right insights and outcomes. His focus blends an understanding of what people need in pivotal life moments with the mission of making genuine guidance accessible to all.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="portrait"><img src="/static/acharya-sanjeev.jpg" alt="Acharya Sanjeev" width="258" height="460" loading="lazy" decoding="async" style="--pos:44% 20%"></div>
+        <div class="who">
+          <div class="nm">Acharya Sanjeev</div>
+          <div class="rl">Content &amp; community</div>
+          <p class="bio">Acharya Sanjeev blends content creation, social media, and astrology seamlessly. At AxtroShastra, he leads the content and social media presence, making Jyotish wisdom engaging and approachable for a modern audience. His work ensures the brand's knowledge reaches people where they are, in a voice that resonates and builds community.</p>
+        </div>
+      </div>
+
     </div>
     <div class="note">⚙️ <b style="font-family:var(--display)">Built by IIT–IIM alumni.</b> The engine reflects years of classical study translated into code — so the answer comes from your chart and the shastra, not from a stranger's judgment on the day.</div>
   </div>
