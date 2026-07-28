@@ -82,7 +82,7 @@ test('Checkout happy path: unlock -> Razorpay -> paid report page', async ({ pag
         currency: 'INR', key_id: 'rzp_test_dummy' }) });
   });
 
-  await page.goto('/shaadi');
+  await page.goto('/en/marriage');
   await fillValidForm(page);
 
   await page.locator('#unlockBtn').click();
@@ -108,7 +108,7 @@ test('Checkout aborts gracefully when order creation fails (503)', async ({ page
   await page.route('**/api/order', (route) =>
     route.fulfill({ status: 503, contentType: 'text/plain', body: 'Payment not configured' }));
 
-  await page.goto('/shaadi');
+  await page.goto('/en/marriage');
   await fillValidForm(page);
 
   // Capture any dialog with a persistent handler registered BEFORE the click. This
@@ -130,5 +130,5 @@ test('Checkout aborts gracefully when order creation fails (503)', async ({ page
 
   // The site must alert ("Payment setup issue…") and stay put — never navigate to a report.
   await expect.poll(() => dialogMessage, { timeout: 15_000 }).toMatch(/payment setup issue/i);
-  expect(new URL(page.url()).pathname).toBe('/shaadi');
+  expect(new URL(page.url()).pathname).toBe('/en/marriage');
 });

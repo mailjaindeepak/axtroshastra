@@ -5,7 +5,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/shaadi');
+  await page.goto('/en/marriage');
 });
 
 test('DOB row: Month is the widest field and keeps its label; no horizontal overflow', async ({ page }) => {
@@ -60,12 +60,29 @@ test('City autosuggest: opens directly under the input, above the helper, no loc
   expect(Math.abs(listBox.y - (inpBox.y + inpBox.height))).toBeLessThan(6);
 });
 
-test('Language: English by default, toggles to Hinglish and back', async ({ page }) => {
+test('Language: /en/marriage by default; toggle links to the Hindi page and back', async ({ page }) => {
+  // English landing by default, with EN marked active in the URL toggle.
   await expect(page.locator('h1')).toContainText(/married/i);
-  await page.locator('#axlang button[data-l="hi"]').click();
-  await expect(page.locator('h1')).toContainText(/kab hogi|shaadi/i);
-  await page.locator('#axlang button[data-l="en"]').click();
+  await expect(page.locator('#axlang a.on')).toHaveText('EN');
+  // The हिंदी control is a link to the Devanagari page (not a client-side text swap).
+  const hiLink = page.locator('#axlang a', { hasText: 'हिंदी' });
+  await expect(hiLink).toHaveAttribute('href', '/hi/marriage');
+  await hiLink.click();
+  await page.waitForURL(/\/hi\/marriage$/);
+  await expect(page.locator('h1')).toContainText(/शादी|होगी/);
+  await expect(page.locator('#axlang a.on')).toHaveText('हिंदी');
+  // And EN links back to the English page.
+  const enLink = page.locator('#axlang a', { hasText: 'EN' });
+  await expect(enLink).toHaveAttribute('href', '/en/marriage');
+  await enLink.click();
+  await page.waitForURL(/\/en\/marriage$/);
   await expect(page.locator('h1')).toContainText(/married/i);
+});
+
+test('/shaadi redirects (301) to /en/marriage', async ({ page }) => {
+  const resp = await page.goto('/shaadi');
+  expect(new URL(page.url()).pathname).toBe('/en/marriage');
+  expect(resp.status()).toBeLessThan(400);
 });
 
 test('Happy path: a valid submission renders the free teaser snapshot', async ({ page }) => {
