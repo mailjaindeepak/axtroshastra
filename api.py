@@ -949,6 +949,18 @@ def _wire_report_chrome(html: str, rid: str) -> str:
         return html
 
 
+@app.get("/report/{rid}.pdf", include_in_schema=False)
+def report_pdf_dotext(rid: str):
+    """Same file as /report/{rid}/pdf, reachable at a dot-extension address.
+    WhatsApp template media fields must end in a recognised file extension
+    (Twilio rejects a bare path segment like '/pdf' at submission time), so
+    the approved delivery template points here instead of the folder-style
+    route. Must be registered before /report/{rid} below — that route's
+    plain {rid} converter matches any slash-free string including
+    "xyz.pdf", so if it came first it would swallow this one and 404."""
+    return report_pdf(rid)
+
+
 @app.get("/report/{rid}", include_in_schema=False)
 def report_page(rid: str, v2: int = 1):
     rec = get_report(rid)
