@@ -560,7 +560,23 @@ def localize(html: str) -> str:
     # to Devanagari-capable webfonts (Mukta for display, Noto Sans Devanagari for body).
     tmp = tmp.replace('<html lang="en"', '<html lang="hi"', 1)
     tmp = tmp.replace("</head>", _HEAD_HI + "</head>", 1)
+    tmp = _flip_lang_toggle(tmp)
     return tmp
+
+
+def _flip_lang_toggle(html: str) -> str:
+    """On the Devanagari compatibility landing, make the हिंदी control active.
+    The English source (milan.html) ships the URL toggle EN-active; regenerating
+    the Hindi page must flip it so हिंदी is the current locale — automatically,
+    with no manual re-edit. No-op anywhere the compatibility toggle isn't present
+    (e.g. reports), so it's safe to run on every localize()."""
+    m = re.search(r'<div id="axlang"[^>]*>.*?</div>', html, re.S)
+    if not m or '/en/compatibility' not in m.group(0):
+        return html
+    new = ('<div id="axlang" data-axlang="hi">'
+           '<a href="/en/compatibility" hreflang="en">EN</a>'
+           '<a class="on" href="/hi/compatibility" aria-current="page">हिंदी</a></div>')
+    return html[:m.start()] + new + html[m.end():]
 
 
 _HEAD_HI = (
