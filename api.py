@@ -200,7 +200,15 @@ def _render_for(product, payload):
         return render_blueprint(payload)
     if product == "vidyarthi":
         return render_vidyarthi(payload)
-    return render_report(payload)
+    html = render_report(payload)
+    # Devanagari marriage report for the /hi/marriage funnel (deterministic localizer)
+    if (payload.get("meta") or {}).get("lang") == "hi":
+        try:
+            import shaadi_hi
+            html = shaadi_hi.localize(html)
+        except Exception as e:
+            logger.error("[shaadi_hi] localize failed: %s", e)
+    return html
 
 
 def email_report(to_addr, rid, payload):        # (#7) fire-and-forget; never raises
@@ -540,6 +548,8 @@ def create_kundli(inp: KundliIn):
                                 female=(inp.gender == "female"),
                                 time_quality=inp.time_quality)
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
+    report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
     report["meta"]["geo_source"] = geo_source
     try:
         if report.get("chart"):
@@ -953,18 +963,6 @@ def _wire_report_chrome(html: str, rid: str) -> str:
         return html
 
 
-@app.get("/report/{rid}.pdf", include_in_schema=False)
-def report_pdf_dotext(rid: str):
-    """Same file as /report/{rid}/pdf, reachable at a dot-extension address.
-    WhatsApp template media fields must end in a recognised file extension
-    (Twilio rejects a bare path segment like '/pdf' at submission time), so
-    the approved delivery template points here instead of the folder-style
-    route. Must be registered before /report/{rid} below — that route's
-    plain {rid} converter matches any slash-free string including
-    "xyz.pdf", so if it came first it would swallow this one and 404."""
-    return report_pdf(rid)
-
-
 @app.get("/report/{rid}", include_in_schema=False)
 def report_page(rid: str, v2: int = 1):
     rec = get_report(rid)
@@ -1084,7 +1082,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/shaadi", "/en/compatibility", "/hi/compatibility", "/jeevan", "/match", "/career", "/blog",
+    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/match", "/career", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -1436,6 +1434,26 @@ def compatibility_en():
 def compatibility_hi():
     """Hindi (Devanagari) love-compatibility landing at /hi/compatibility."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"))
+
+
+@app.get("/en/marriage", include_in_schema=False)
+def marriage_en():
+    """English marriage-timing (shaadi) landing at /en/marriage."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.html"))
+
+
+@app.get("/hi/marriage", include_in_schema=False)
+def marriage_hi():
+    """Hindi (Devanagari) marriage-timing landing at /hi/marriage."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"))
+
+
+@app.get("/shaadi", include_in_schema=False)
+def shaadi_redirect(request: Request):
+    """Legacy /shaadi → /en/marriage (301 permanent). Preserves query string
+    so already-issued unlock links like /shaadi?pass=<token> keep working."""
+    q = request.url.query
+    return RedirectResponse("/en/marriage" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/milan", include_in_schema=False)
