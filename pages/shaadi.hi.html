@@ -285,11 +285,11 @@ fbq('track', 'PageView');
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">अनुमानित समय</label>
         <select id="f-approx">
-          <option>सुबह (4 AM – 10 AM)</option>
-          <option>दिन (10 AM – 4 PM)</option>
-          <option>शाम (4 PM – 10 PM)</option>
-          <option>रात (10 PM – 4 AM)</option>
-          <option>बिल्कुल नहीं पता</option>
+          <option value="subah">सुबह (4 AM – 10 AM)</option>
+          <option value="din">दिन (10 AM – 4 PM)</option>
+          <option value="shaam">शाम (4 PM – 10 PM)</option>
+          <option value="raat">रात (10 PM – 4 AM)</option>
+          <option value="unknown">बिल्कुल नहीं पता</option>
         </select>
       </div>
       <label class="tob-toggle">
@@ -540,11 +540,11 @@ unknown.addEventListener('change', function(){
 // map form state -> time_quality tier
 function timeQuality(){
   if(!unknown.checked) return {tq:'T0', tob: document.getElementById('f-tob').value};
+  // Option .value is a stable, script-independent band key (subah/din/shaam/raat/unknown)
+  // so this works identically on the English and Devanagari pages regardless of label text.
   var band = document.getElementById('f-approx').value;
-  if(band.indexOf('nahi pata') !== -1) return {tq:'T3', band:null};
-  var key = band.indexOf('Subah')===0 ? 'subah' : band.indexOf('Din')===0 ? 'din'
-          : band.indexOf('Shaam')===0 ? 'shaam' : 'raat';
-  return {tq:'T2', band:key};
+  if(band === 'unknown') return {tq:'T3', band:null};
+  return {tq:'T2', band:band};
 }
 
 // form submit -> POST /api/kundli -> render teaser
