@@ -126,7 +126,7 @@ footer b{color:#B9BBD0}
 })(window, document, "clarity", "script", "xkbm56cwzh");
 </script>
 </head>
-<body>
+<body><div id="axlang" data-axlang="en"><a class="on" href="/" aria-current="page">EN</a><a href="/hi" hreflang="hi">हिंदी</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
 
 <header class="hero">
   <svg class="kbg" viewBox="0 0 400 400" fill="none" aria-hidden="true">
@@ -150,10 +150,10 @@ footer b{color:#B9BBD0}
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow dark">What we do</p>
-      <h2>Four questions. Four reports.</h2>
+      <h2>Two questions. Two reports.</h2>
     </div>
 
-    <a class="card" href="/shaadi">
+    <a class="card" href="/en/marriage">
       <span class="arrow">→</span>
       <p class="tag">Most popular</p>
       <h3>When will I get married?</h3>
@@ -161,28 +161,12 @@ footer b{color:#B9BBD0}
       <p class="price">Marriage Timing Report · ₹499</p>
     </a>
 
-    <a class="card" href="/milan">
+    <a class="card" href="/en/compatibility">
       <span class="arrow">→</span>
       <p class="tag">Considering a match?</p>
       <h3>Does this match work?</h3>
       <p>A 36-guna Ashtakoota milan of both kundlis — a breakdown of all eight kootas, with Nadi/Bhakoot dosha checks and cancellation rules.</p>
       <p class="price">Kundli Milan Report · ₹499</p>
-    </a>
-
-    <a class="card" href="/jeevan">
-      <span class="arrow">→</span>
-      <p class="tag">The full picture</p>
-      <h3>What does your kundli say?</h3>
-      <p>Personality, career direction, strengths, growth lessons — and a roadmap of your coming life phases, year by year.</p>
-      <p class="price">Life Blueprint Report · ₹499</p>
-    </a>
-
-    <a class="card" href="/career">
-      <span class="arrow">→</span>
-      <p class="tag">For students &amp; early careers</p>
-      <h3>When will your career break through?</h3>
-      <p>Exact career and academic timing windows from your chart — years and months, with strength grades. Stream and field guidance from Class 10 to postgrad and beyond.</p>
-      <p class="price">Career &amp; Academic Timing Report · ₹499</p>
     </a>
   </div>
 </section>
@@ -203,10 +187,6 @@ footer b{color:#B9BBD0}
       <div class="rev"><div class="tag">Kundli Milan</div><div class="stars">★★★★★</div><p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me an actual answer instead of spiralling at 2am."</p><div class="who">— Rohan, 26</div></div>
       <div class="rev"><div class="tag">Marriage Timing</div><div class="stars">★★★★★</div><p>"My mum had been asking 'shaadi kab hogi' for two years straight. The report gave an actual window, with reasons — I showed it to her and even she calmed down."</p><div class="who">— Sneha, 28</div></div>
       <div class="rev"><div class="tag">Marriage Timing</div><div class="stars">★★★★★</div><p>"What I liked is it didn't promise a fixed date. It said which years look stronger and why — matched what a family astrologer once told me, minus the ₹2000 sitting fee."</p><div class="who">— Karthik, 30</div></div>
-      <div class="rev"><div class="tag">Career &amp; Academic</div><div class="stars">★★★★★</div><p>"Was stuck between taking a job or dropping a year for UPSC. It didn't tell me what to do, but breaking down my strengths made the choice a lot less scary."</p><div class="who">— Aditya, 22</div></div>
-      <div class="rev"><div class="tag">Career &amp; Academic</div><div class="stars">★★★★★</div><p>"Bought it for my younger brother, confused about stream after 10th. Honestly the parents' section was the useful part — dad finally stopped comparing him to our cousins."</p><div class="who">— Priya, 25</div></div>
-      <div class="rev"><div class="tag">Life Blueprint</div><div class="stars">★★★★★</div><p>"Bought it half-expecting generic gyaan. The career-direction part was oddly specific — the two fields it flagged are exactly what I keep drifting toward."</p><div class="who">— Meera, 27</div></div>
-      <div class="rev"><div class="tag">Life Blueprint</div><div class="stars">★★★★★</div><p>"Every point had a reason attached — which dasha, which house. I took a few lines to the astrologer my family visits and he agreed. Felt legit, not vague."</p><div class="who">— Faizan, 31</div></div>
     </div>
     <p class="revs-hint">← swipe, or hover to pause →</p>
   </div>
@@ -274,7 +254,6 @@ footer b{color:#B9BBD0}
 (function(){
   var track = document.getElementById('revsTrack');
   if(!track) return;
-  // duplicate the cards once so the loop is seamless (no jump at the end)
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var paused = reduce, speed = 0.5, dir = 1;
   // No cloning: a manual swipe shows only the real reviews, once. The ambient

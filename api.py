@@ -388,10 +388,23 @@ NAV_LINKS = [
     ("Terms of Use", "/terms"),
     ("Blogs", "/blog"),
 ]
+# Devanagari nav for /hi/* pages. Only "Home" changes destination (-> /hi, the
+# Hindi homepage) so navigation stays in-language; the support pages are
+# English-only for now, so their links still point at the English versions.
+NAV_LINKS_HI = [
+    ("होम", "/hi"),
+    ("लॉगिन / मेरा अकाउंट", "/account"),
+    ("हमारे बारे में", "/about"),
+    ("प्राइवेसी पॉलिसी", "/privacy"),
+    ("नियम व शर्तें", "/terms"),
+    ("ब्लॉग", "/blog"),
+]
 
-def _nav_html() -> str:
+def _nav_html(lang: str = "en") -> str:
+    links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
+    menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
-        f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in NAV_LINKS
+        f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links
     )
     return (
         '<div id="axs-nav">'
@@ -401,7 +414,7 @@ def _nav_html() -> str:
         '<div class="axs-nav-backdrop" '
         'onclick="document.getElementById(\'axs-nav\').classList.remove(\'open\')"></div>'
         '<nav class="axs-nav-panel">'
-        '<div class="axs-nav-head">Menu</div>'
+        f'<div class="axs-nav-head">{menu}</div>'
         + items +
         '</nav></div>'
         '<style>'
@@ -427,19 +440,19 @@ def _nav_html() -> str:
         '</style>'
     )
 
-def _inject_nav(html: str) -> str:
+def _inject_nav(html: str, lang: str = "en") -> str:
     """Insert the hamburger nav right after the opening <body> tag. If for some
     reason there's no <body>, return the html unchanged (never break a page)."""
     import re
-    nav = _nav_html()
+    nav = _nav_html(lang)
     new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + nav,
                           html, count=1, flags=re.IGNORECASE)
     return new_html if n else html
 
-def _serve_page_with_nav(path: str):
+def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_nav(f.read()))
+            return HTMLResponse(_inject_nav(f.read(), lang))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -502,12 +515,21 @@ def healthz_db():
 
 @app.get("/", include_in_schema=False)
 def landing():
-    """Homepage serves the main funnel page (pages/home.html overrides if present)."""
+    """English homepage."""
     for candidate in ("home.html", "shaadi.html"):
         path = os.path.join(PAGES_DIR, candidate)
         if os.path.exists(path):
-            return _serve_page_with_nav(path)
+            return _serve_page_with_nav(path, lang="en")
     return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>Axtroshastra</h3>")
+
+
+@app.get("/hi", include_in_schema=False)
+def landing_hi():
+    """Hindi (Devanagari) homepage — nav Home points back here to stay in-language."""
+    path = os.path.join(PAGES_DIR, "home.hi.html")
+    if os.path.exists(path):
+        return _serve_page_with_nav(path, lang="hi")
+    return RedirectResponse("/", status_code=302)
 
 
 @app.get("/api/city-suggest", include_in_schema=False)
@@ -1447,7 +1469,7 @@ def compatibility_en():
 @app.get("/hi/compatibility", include_in_schema=False)
 def compatibility_hi():
     """Hindi (Devanagari) love-compatibility landing at /hi/compatibility."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"))
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"), lang="hi")
 
 
 @app.get("/en/marriage", include_in_schema=False)
@@ -1459,7 +1481,7 @@ def marriage_en():
 @app.get("/hi/marriage", include_in_schema=False)
 def marriage_hi():
     """Hindi (Devanagari) marriage-timing landing at /hi/marriage."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"))
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"), lang="hi")
 
 
 @app.get("/shaadi", include_in_schema=False)

@@ -510,6 +510,7 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+window.__renderTeaser = renderTeaser;   // expose at init (hoisted) so a restored teaser can re-render on load
 
 // populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
@@ -594,7 +595,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     var res = results[0];
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
     var data = await res.json();
-    REPORT_ID = data.report_id;
+    REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
     window.__teaserData = data.teaser; window.__renderTeaser = renderTeaser; renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
@@ -644,7 +645,7 @@ function renderTeaser(t){
   });
   var el = document.getElementById('teaser');
   el.classList.add('show');
-  el.scrollIntoView({behavior:'smooth'});
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
   sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
   sb.setAttribute('href', 'javascript:void(0)');
@@ -952,13 +953,60 @@ window.addEventListener('scroll', function(){
     brand.addEventListener("click", function(){ location.href="/"; });
     brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
   var ov=document.getElementById("calcOv");
-  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ var g=ov.classList.contains("show"); document.body.style.overflow = g ? "hidden" : ""; var cap=document.getElementById("axlang"); if(cap) cap.style.display = g ? "none" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
   function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return; }
     cap.style.transition="opacity .25s ease"; var t;
     window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
     function full(){ cap.style.opacity=""; clearTimeout(t); }
     cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
   wireCap();
+})();
+</script>
+<script>
+/* Retain what the user typed (and any generated snapshot) across the
+   English <-> Hindi route switch, so switching pages never loses data. */
+(function(){
+  var KEY='axtro_shaadi_state';
+  var IDS=['f-name','f-gender','f-dd','f-mm','f-yy','f-hh','f-mm2','f-ap','f-approx','f-place','f-tob'];
+  function save(){
+    try{
+      var st={};
+      IDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
+      var u=document.getElementById('unknownTime'); if(u) st.unknownTime=u.checked;
+      if(window.__axCity) st.city=window.__axCity;
+      if(window.REPORT_ID) st.reportId=window.REPORT_ID;
+      if(window.__teaserData) st.teaser=window.__teaserData;
+      sessionStorage.setItem(KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+  function fire(el,type){ try{ el.dispatchEvent(new Event(type,{bubbles:true})); }catch(e){} }
+  function restore(){
+    var sw=null; try{ sw=sessionStorage.getItem('axtro_switch'); sessionStorage.removeItem('axtro_switch'); }catch(e){}
+    if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
+    var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
+    if(!st) return;
+    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    var g=document.getElementById('f-gender'); if(g && st['f-gender']!=null) fire(g,'change');
+    var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
+    var hh=document.getElementById('f-hh'); if(hh) fire(hh,'change');
+    if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
+    if(st.reportId && st.teaser){
+      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
+      window.__axNoScroll=true;
+      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
+      window.__axNoScroll=false;
+    }
+  }
+  document.addEventListener('input', save, true);
+  document.addEventListener('change', save, true);
+  window.addEventListener('pagehide', save);
+  if(document.readyState!=='loading') restore(); else document.addEventListener('DOMContentLoaded', restore);
+  /* Set the switch flag before the toggle navigates, so the destination
+     page restores (a plain refresh / normal nav clears instead). */
+  (function(){ var cap=document.getElementById('axlang'); if(!cap) return;
+    var links=cap.querySelectorAll('a');
+    for(var i=0;i<links.length;i++){ links[i].addEventListener('click', function(){ try{ sessionStorage.setItem('axtro_switch','1'); }catch(e){} }); }
+  })();
 })();
 </script>
 

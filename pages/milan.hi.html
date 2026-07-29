@@ -504,6 +504,22 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+// Reusable teaser renderer so the preview can be re-shown after a language
+// toggle; __axNoScroll suppresses scroll-into-view on restore (not fresh gen).
+function renderTeaser(t){
+  document.getElementById('t-name').textContent = 'मैच';
+  document.getElementById('m1-name').textContent = document.getElementById('p2-name').value.trim();
+  document.getElementById('m2-name').textContent = document.getElementById('p1-name').value.trim();
+  document.getElementById('m1-moon').textContent = t.p2_moon + ' · ' + t.p2_nak;
+  document.getElementById('m2-moon').textContent = t.p1_moon + ' · ' + t.p1_nak;
+  document.getElementById('m-gana').textContent = t.gana_preview.replace('Gana: ','');
+  var el = document.getElementById('teaser');
+  el.classList.add('show');
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
+  var sb = document.getElementById('stickyBtn');
+  if(sb){ sb.textContent = 'अनलॉक ₹499'; sb.setAttribute('href', '#teaser'); }
+}
+window.__renderTeaser = renderTeaser;
 window.__axlang = 'hi';   // Hindi (Devanagari) build
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
@@ -584,22 +600,13 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'कुछ गड़बड़ हो गई'); }
     var data = await res.json();
-    REPORT_ID = data.report_id;
-    var t = data.teaser;
-    document.getElementById('t-name').textContent = 'मैच';
-    document.getElementById('m1-name').textContent = document.getElementById('p2-name').value.trim();
-    document.getElementById('m2-name').textContent = document.getElementById('p1-name').value.trim();
-    document.getElementById('m1-moon').textContent = t.p2_moon + ' · ' + t.p2_nak;
-    document.getElementById('m2-moon').textContent = t.p1_moon + ' · ' + t.p1_nak;
-    document.getElementById('m-gana').textContent = t.gana_preview.replace('Gana: ','');
+    REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
+    var t = data.teaser; window.__teaserData = t;
     // keep the "background work" animation visible for ~7s even if the API responds faster
     var __waited = Date.now() - __t0;
     if(__waited < __MINMS){ await new Promise(function(r){ setTimeout(r, __MINMS - __waited); }); }
     hideAnalyzing();
-    var el = document.getElementById('teaser');
-    el.classList.add('show'); el.scrollIntoView({behavior:'smooth'});
-    var sb = document.getElementById('stickyBtn');
-    sb.textContent = 'अनलॉक ₹499'; sb.setAttribute('href', '#teaser');
+    renderTeaser(t);
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'milan_preview'});
   }catch(err){
@@ -950,14 +957,59 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
 (function(){
   var brand=document.querySelector(".brand");
   if(brand){ brand.style.cursor="pointer"; brand.setAttribute("role","link"); brand.setAttribute("tabindex","0"); brand.setAttribute("aria-label","Axtroshastra home");
-    brand.addEventListener("click", function(){ location.href="/"; });
-    brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
+    brand.addEventListener("click", function(){ location.href="/hi"; });
+    brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/hi"; } }); }
+  var ov=document.getElementById('axAnalyzing');
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ var g=ov.classList.contains("show"); var cap=document.getElementById("axlang"); if(cap) cap.style.display = g ? "none" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
   function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return; }
     cap.style.transition="opacity .25s ease"; var t;
     window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
     function full(){ cap.style.opacity=""; clearTimeout(t); }
     cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
   wireCap();
+})();
+</script>
+
+<!-- STATE RETENTION across the EN <-> हिंदी capsule switch (shared KEY + field ids with the mirror page). -->
+<script>
+(function(){
+  var KEY='axtro_milan_state';
+  var IDS=['p1-name','p1-dd','p1-mm','p1-yy','p1-hh','p1-mm2','p1-ap','p1-place','p1-tob',
+           'p2-name','p2-dd','p2-mm','p2-yy','p2-hh','p2-mm2','p2-ap','p2-place','p2-tob'];
+  function save(){
+    try{
+      var st={};
+      IDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
+      if(window.__axCity) st.city=window.__axCity;
+      if(window.REPORT_ID) st.reportId=window.REPORT_ID;
+      if(window.__teaserData) st.teaser=window.__teaserData;
+      sessionStorage.setItem(KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+  function fire(el,type){ try{ el.dispatchEvent(new Event(type,{bubbles:true})); }catch(e){} }
+  function restore(){
+    var sw=null; try{ sw=sessionStorage.getItem('axtro_switch'); sessionStorage.removeItem('axtro_switch'); }catch(e){}
+    if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
+    var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
+    if(!st) return;
+    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    var h1=document.getElementById('p1-hh'); if(h1) fire(h1,'change');
+    var h2=document.getElementById('p2-hh'); if(h2) fire(h2,'change');
+    if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
+    if(st.reportId && st.teaser){
+      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
+      window.__axNoScroll=true;
+      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
+      window.__axNoScroll=false;
+    }
+  }
+  document.addEventListener('input', save, true);
+  document.addEventListener('change', save, true);
+  window.addEventListener('pagehide', save);
+  // The capsule links are plain <a href>; flag the switch BEFORE navigation so restore() fires on arrival (do not preventDefault).
+  function wireLinks(){ var cap=document.getElementById('axlang'); if(!cap) return; var as=cap.querySelectorAll('a'); for(var i=0;i<as.length;i++){ as[i].addEventListener('click', function(){ try{ sessionStorage.setItem('axtro_switch','1'); }catch(e){} }); } }
+  function init(){ wireLinks(); restore(); }
+  if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
 
