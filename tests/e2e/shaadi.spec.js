@@ -31,6 +31,7 @@ test('DOB uses typed DD / YYYY inputs (no long day/year scroll)', async ({ page 
 
 test('Date validation blocks an impossible date (31 Feb)', async ({ page }) => {
   await page.fill('#f-name', 'QA');
+  await page.selectOption('#f-gender', 'male');
   await page.fill('#f-dd', '31');
   await page.selectOption('#f-mm', '02');
   await page.fill('#f-yy', '2000');
@@ -87,6 +88,7 @@ test('/shaadi redirects (301) to /en/marriage', async ({ page }) => {
 
 test('Happy path: a valid submission renders the free teaser snapshot', async ({ page }) => {
   await page.fill('#f-name', 'QA Tester');
+  await page.selectOption('#f-gender', 'male');
   await page.fill('#f-dd', '15');
   await page.selectOption('#f-mm', '06');
   await page.fill('#f-yy', '1992');

@@ -271,6 +271,10 @@ fbq('track', 'PageView');
         <input id="f-name" type="text" placeholder="आपका नाम" required>
       </div>
       <div class="field">
+        <label for="f-gender">आप हैं</label>
+        <select id="f-gender" required aria-label="आप हैं"><option value="" disabled selected hidden>चुनिए…</option><option value="male">पुरुष</option><option value="female">महिला</option></select>
+      </div>
+      <div class="field">
         <label>जन्म तिथि</label>
         <div class="dob-row">
           <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
@@ -577,6 +581,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
+        gender: document.getElementById('f-gender').value || null,
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
@@ -901,6 +906,7 @@ window.addEventListener('scroll', function(){
   function L(en,hi){ return (window.__axlang==="en")?en:hi; }
   function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
   var nameHint=mkHint(document.getElementById("f-name"));
+  var genderHint=mkHint(document.getElementById("f-gender"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
   function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
@@ -912,6 +918,7 @@ window.addEventListener('scroll', function(){
     var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
     nm.value=clean;
     if(!clean){ nameHint.textContent=L("Please enter your name.","अपना नाम लिखिए।"); stop(); return; } nameHint.textContent="";
+    if(!document.getElementById("f-gender").value){ genderHint.textContent=L("Please select whether you are male or female.","कृपया चुनिए कि आप पुरुष हैं या महिला।"); stop(); return; } genderHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","अपना जन्म-समय चुनिए, या अगर पता नहीं है तो नीचे वाला बॉक्स टिक कीजिए।"); stop(); return; } tobHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
