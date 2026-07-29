@@ -135,19 +135,24 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
                 content_sid=TWILIO_CONTENT_SID_TEXT,
                 content_variables=json.dumps({"1": name, "2": link}))
         elif TWILIO_CONTENT_SID:                     # production: approved template
-            # Approved media template `axtroshastra_wp_msg` (document header):
+            # Approved media template (document header):
             #   {{1}} customer name
             #   {{2}} login URL
-            #   {{3}} PDF *path only* — the template's media URL is configured
-            #         as https://www.axtroshastra.com/{{3}}, so we must NOT
-            #         pass a full URL here, just everything after the domain.
-            # /report/{rid}/pdf regenerates on a cold cache, so Twilio's media
-            # fetch succeeds even when pregeneration lagged or the box restarted.
+            #   {{3}} report id ONLY — the resubmitted template's media URL is
+            #         https://www.axtroshastra.com/report/{{3}}.pdf (the trailing
+            #         .pdf is required: Twilio rejects a media URL with no file
+            #         extension, and Meta rejects a variable at the very end).
+            #         So pass ONLY the rid here, never a path. /report/{rid}.pdf
+            #         serves the same file as /report/{rid}/pdf and regenerates
+            #         on a cold cache, so Twilio's media fetch always succeeds.
+            #   NOTE: TWILIO_CONTENT_SID must point at this .pdf-shaped template.
+            #         Setting it to the older /{{3}} template will build a broken
+            #         URL — the env SID and this line are a matched pair.
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
                 content_variables=json.dumps(
-                    {"1": name, "2": login, "3": f"report/{rid}/pdf"}))
+                    {"1": name, "2": login, "3": rid}))
         else:                                        # sandbox / 24h session freeform
             kwargs = {"media_url": media} if media else {}
             body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
