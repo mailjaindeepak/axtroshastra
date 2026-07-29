@@ -886,24 +886,24 @@ windows 6 months tak refine ho sakte hain. <a href='https://wa.me/919599827297?t
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6;font-size:15.5px}}
 .pg{{max-width:640px;margin:0 auto;padding:40px 22px;border-bottom:1.5px dashed var(--line)}}
-.plabel{{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.16em;
+.plabel{{font-family:var(--display);font-weight:700;font-size:11px;
 text-transform:uppercase;color:var(--sindoor);margin-bottom:10px}}
 h1,h2{{font-family:var(--display);line-height:1.15}}
 h2{{font-size:24px;font-weight:800;margin-bottom:14px}}
-.soft{{color:var(--muted);font-size:13.5px;margin-top:14px}}
+.soft{{color:var(--muted);font-size:14px;margin-top:14px}}
 /* cover */
 .cover{{background:radial-gradient(900px 500px at 50% -10%,#1D2547,var(--midnight));
 color:#F3EFE4;text-align:center;border:none}}
 .cover .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);
 letter-spacing:.06em;font-size:14px;margin-bottom:26px}}
 .cover h1{{font-size:30px;font-weight:800;color:#fff}}
-.cover .bd{{color:#A9ABC0;font-size:13.5px;margin:8px 0 24px}}
+.cover .bd{{color:#A9ABC0;font-size:14px;margin:8px 0 24px}}
 .kchart{{max-width:320px;margin:0 auto}}
 .cover .method{{font-size:11.5px;color:#8F92AB;margin-top:20px}}
 /* snapshot */
 .facts{{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:6px 18px}}
 .facts .row{{display:flex;justify-content:space-between;gap:14px;padding:11px 0;
-border-bottom:1px dashed var(--line);font-size:14.5px}}
+border-bottom:1px dashed var(--line);font-size:15px}}
 .facts .row:last-child{{border:none}}
 .facts .k{{color:var(--muted)}}.facts .v{{font-weight:700;text-align:right}}
 /* timeline + windows */
@@ -914,21 +914,21 @@ border-bottom:1px dashed var(--line);font-size:14.5px}}
 .wcard{{background:#fff;border:1.5px solid var(--line);border-left:6px solid;
 border-radius:14px;padding:18px;margin-bottom:14px}}
 .wtop{{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}}
-.wnum{{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.1em;
+.wnum{{font-family:var(--display);font-weight:700;font-size:12px;
 text-transform:uppercase;color:var(--muted)}}
 .wgrade{{color:#fff;font-family:var(--display);font-weight:800;font-size:11px;
-letter-spacing:.08em;border-radius:20px;padding:4px 12px}}
+border-radius:20px;padding:4px 12px}}
 .wdates{{font-family:var(--display);font-weight:800;font-size:22px}}
-.core{{font-size:13px;color:var(--muted);margin-top:2px}}
-.peak{{font-size:13.5px;color:#2E7D53;font-weight:600;margin-top:6px}}
-.wdasha{{font-size:12.5px;color:var(--muted);margin-top:6px}}
-.wwhy{{margin:10px 0 0 18px;font-size:13.5px}}.wwhy li{{margin-bottom:4px}}
+.core{{font-size:14px;color:var(--muted);margin-top:2px}}
+.peak{{font-size:14px;color:#2E7D53;font-weight:600;margin-top:6px}}
+.wdasha{{font-size:13.5px;color:var(--muted);margin-top:6px}}
+.wwhy{{margin:10px 0 0 18px;font-size:14px}}.wwhy li{{margin-bottom:4px}}
 /* manglik */
 .mgcard{{background:var(--haldi-soft);border-radius:14px;padding:20px}}
 .mgcard b.h{{font-family:var(--display);font-size:17px;display:block;margin-bottom:8px}}
 /* quiet + actions */
 .quiet,.act{{background:#fff;border:1.5px solid var(--line);border-radius:12px;
-padding:14px 16px;margin-bottom:10px;font-size:14.5px}}
+padding:14px 16px;margin-bottom:10px;font-size:15px}}
 .quiet b,.act b{{font-family:var(--display)}}
 /* summary */
 .sumcard{{background:var(--midnight);color:#F3EFE4;border-radius:16px;padding:24px;text-align:center}}
@@ -936,24 +936,24 @@ padding:14px 16px;margin-bottom:10px;font-size:14.5px}}
 .sline{{margin-top:10px;font-size:15px}}
 .sumcard .sline b{{color:var(--haldi)}}
 .past{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
-.pl{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.08em;border-radius:16px;padding:3px 10px;margin-right:10px}}
-.pd{{font-size:12.5px;color:var(--muted);margin-top:5px}}.pw{{font-size:13.5px;margin-top:4px}}
+.pl{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;border-radius:16px;padding:3px 10px;margin-right:10px}}
+.pd{{font-size:13.5px;color:var(--muted);margin-top:5px}}.pw{{font-size:14px;margin-top:4px}}
 .ycard{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px}}
 .ytop{{display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-size:19px;margin-bottom:6px}}
-.ygrade{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.06em;border-radius:16px;padding:4px 10px}}
-.yd{{font-size:12.5px;color:var(--muted);margin-bottom:5px}}.ycard p{{font-size:14px}}
-.yfav{{color:#2E7D53;font-weight:600;font-size:13.5px;margin-top:5px}}
+.ygrade{{color:#fff;font-family:var(--display);font-weight:800;font-size:10.5px;border-radius:16px;padding:4px 10px}}
+.yd{{font-size:13.5px;color:var(--muted);margin-bottom:5px}}.ycard p{{font-size:15px}}
+.yfav{{color:#2E7D53;font-weight:600;font-size:14px;margin-top:5px}}
 .card2{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px}}
-.card2 b{{font-family:var(--display);display:block;margin-bottom:6px}}.card2 p{{font-size:14.5px}}
+.card2 b{{font-family:var(--display);display:block;margin-bottom:6px}}.card2 p{{font-size:15px}}
 .chk{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}}
 .cy,.cn{{flex:none;color:#fff;font-family:var(--display);font-weight:800;font-size:11px;border-radius:16px;padding:4px 11px;margin-top:2px}}
-.cy{{background:#2E7D53}}.cn{{background:#8F92AB}}.chk p{{font-size:14px}}
-.ss{{background:var(--haldi-soft);border-radius:12px;padding:15px;font-size:14px;margin-top:14px}}
-.rem{{margin:12px 0 0 20px}}.rem li{{margin-bottom:8px;font-size:14.5px}}
+.cy{{background:#2E7D53}}.cn{{background:#8F92AB}}.chk p{{font-size:15px}}
+.ss{{background:var(--haldi-soft);border-radius:12px;padding:15px;font-size:15px;margin-top:14px}}
+.rem{{margin:12px 0 0 20px}}.rem li{{margin-bottom:8px;font-size:15px}}
 .upsell{{background:#fff;border:2px solid var(--haldi);border-radius:14px;
-padding:16px;margin-top:16px;font-size:14px}}
+padding:16px;margin-top:16px;font-size:15px}}
 .btnrow{{display:flex;gap:10px;margin-top:20px}}
-.btn{{flex:1;font-family:var(--display);font-weight:800;font-size:14px;text-align:center;
+.btn{{flex:1;font-family:var(--display);font-weight:800;font-size:15px;text-align:center;
 padding:13px;border-radius:11px;border:0;cursor:pointer;text-decoration:none}}
 .btn.p{{background:var(--sindoor);color:#fff}}.btn.s{{background:#fff;border:1.5px solid var(--line);color:var(--ink)}}
 footer{{text-align:center;font-size:11.5px;color:var(--muted);padding:26px 20px 44px;max-width:640px;margin:0 auto}}
@@ -1637,88 +1637,88 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .koota{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
 .ktop{{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--display)}}
 .ks{{font-weight:800;flex:none;font-size:17px}}
-.lead{{color:var(--muted);font-size:14px;margin:-8px 0 14px}}
+.lead{{color:var(--muted);font-size:15px;margin:-8px 0 14px}}
 .theme{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
 .ttop{{display:flex;align-items:center;gap:9px;font-family:var(--display)}}
 .temoji{{font-size:20px;line-height:1;flex:none}}
 .ttop b{{font-size:16px;flex:1;min-width:0}}
 .tchip{{color:#fff;font-family:var(--display);font-weight:800;font-size:11px;border-radius:20px;padding:4px 10px;white-space:nowrap;flex:none}}
-.tblurb{{font-size:13.5px;color:#3A3C55;margin-top:9px}}
+.tblurb{{font-size:14px;color:#3A3C55;margin-top:9px}}
 .klabel{{display:flex;align-items:center;gap:10px;min-width:0}}
 .kemoji{{font-size:20px;line-height:1;flex:none}}
 .kname{{display:flex;flex-direction:column;line-height:1.2;min-width:0}}
 .kname b{{font-size:16px}}
-.ksan{{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-top:2px}}
-.work{{background:#fff;border:1.5px solid var(--line);border-left:4px solid var(--sindoor);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px}}
+.ksan{{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px}}
+.work{{background:#fff;border:1.5px solid var(--line);border-left:4px solid var(--sindoor);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:15px}}
 .work.good{{border-left-color:#2E7D53}}
 .work.good b{{font-family:var(--display);font-size:15.5px}}.work.good p{{margin-top:7px}}
 .wtop{{display:flex;align-items:center;gap:9px;font-family:var(--display)}}
 .wemoji{{font-size:19px;line-height:1;flex:none}}
 .wtop b{{font-size:15.5px;flex:1;min-width:0}}
-.wtag{{font-family:var(--display);font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--sindoor);background:#FBE7E3;border-radius:20px;padding:3px 9px;flex:none}}
-.wcanc{{display:inline-block;font-size:12px;color:#2E7D53;font-weight:600;margin-top:6px}}
+.wtag{{font-family:var(--display);font-weight:800;font-size:10.5px;text-transform:uppercase;color:var(--sindoor);background:#FBE7E3;border-radius:20px;padding:3px 9px;flex:none}}
+.wcanc{{display:inline-block;font-size:13.5px;color:#2E7D53;font-weight:600;margin-top:6px}}
 .wdo{{margin-top:9px}}
-.wrem{{margin-top:7px;color:var(--muted);font-size:13.5px}}
+.wrem{{margin-top:7px;color:var(--muted);font-size:14px}}
 .wdo b,.wrem b{{font-family:var(--display)}}
 .kbar{{height:7px;background:#EFE8D8;border-radius:4px;margin:8px 0;overflow:hidden}}
 .kbar div{{height:100%;border-radius:4px}}
-.kd{{font-size:13px;color:var(--muted)}}
-.mg,.note{{background:#F6E7C6;border-radius:12px;padding:15px;font-size:14px;margin:10px 0}}
+.kd{{font-size:14px;color:var(--muted)}}
+.mg,.note{{background:#F6E7C6;border-radius:12px;padding:15px;font-size:15px;margin:10px 0}}
 .note{{background:#fff;border:1.5px solid var(--haldi)}}
-.tn{{font-size:12px;color:var(--muted);margin-top:24px}}
-.kt{{font-size:14px;margin-top:8px;color:#33355000;color:#3A3C55}}
+.tn{{font-size:13.5px;color:var(--muted);margin-top:24px}}
+.kt{{font-size:15px;margin-top:8px;color:#33355000;color:#3A3C55}}
 .kfix{{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}}
 .kfix .wdo{{margin-top:0}}
-.mgfix{{margin-top:10px;font-size:13.5px}}
+.mgfix{{margin-top:10px;font-size:14px}}
 .mgfix b{{font-family:var(--display)}}
-.canc{{background:#fff;border:2px solid #2E7D53;border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px}}
+.canc{{background:#fff;border:2px solid #2E7D53;border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:15px}}
 .canc p{{margin-top:5px}}
 .effbox{{background:var(--midnight);color:#F3EFE4;border-radius:12px;padding:16px;font-size:15px;text-align:center}}
 .effbox b{{color:var(--haldi);font-family:var(--display);font-size:20px}}
 .swh{{font-family:var(--display);font-weight:800;font-size:14px;margin:14px 0 6px}}
-.swl{{margin-left:20px}}.swl li{{font-size:14px;margin-bottom:8px}}
-.elbox,.nlbox,.lowbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px;font-size:14px}}
+.swl{{margin-left:20px}}.swl li{{font-size:15px;margin-bottom:8px}}
+.elbox,.nlbox,.lowbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px;font-size:15px}}
 .elbox b{{font-family:var(--display)}}.elbox p{{margin-top:6px}}
 .lowbox p{{margin-bottom:10px}}
 /* ---- Phase-1 expanded sections ---- */
 .matchpct{{display:inline-block;margin-top:12px;font-family:var(--display);font-weight:800;font-size:15px;color:#151C39;background:var(--haldi);border-radius:20px;padding:7px 16px}}
 .opennote{{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:18px;margin-top:22px;font-size:15px}}
 .opennote p{{margin-bottom:9px}}.opennote p:last-child{{margin-bottom:0}}
-.onsub{{color:var(--muted);font-size:13.5px;font-style:italic}}
+.onsub{{color:var(--muted);font-size:14px;font-style:italic}}
 .sharecard{{background:radial-gradient(1200px 500px at 50% -30%, #23305C, var(--midnight) 70%);color:#F3EFE4;border-radius:18px;padding:26px 22px 24px;text-align:center;box-shadow:0 14px 40px rgba(21,28,57,.28)}}
 .scbrand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
 .scnames{{font-family:var(--display);font-weight:800;font-size:24px;color:#fff;margin-top:12px}}
 .scnames span{{color:var(--haldi);margin:0 6px}}
 .scarch{{font-family:var(--display);font-weight:700;font-size:15px;color:#E9E4D5;margin-top:6px}}
 .scpct{{font-family:var(--display);font-weight:800;font-size:52px;color:var(--haldi);margin:14px 0 0;line-height:1}}
-.scpct small{{display:block;font-size:12px;color:#B9BBD0;font-weight:700;letter-spacing:.02em;margin-top:6px}}
+.scpct small{{display:block;font-size:12px;color:#B9BBD0;font-weight:700;margin-top:6px}}
 .scchips{{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:16px}}
 .scchip{{background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);color:#F1E4C4;font-size:11.5px;font-weight:700;border-radius:20px;padding:5px 11px}}
-.sctag{{color:#D9D4C3;font-style:italic;font-size:13.5px;margin-top:16px}}
-.sctag2{{font-size:14px;color:#3A3C55;margin:12px 2px 0}}
+.sctag{{color:#D9D4C3;font-style:italic;font-size:14px;margin-top:16px}}
+.sctag2{{font-size:15px;color:#3A3C55;margin:12px 2px 0}}
 .sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:16px;padding:14px;margin-top:14px;cursor:pointer}}
 .sharebtns{{display:flex;gap:10px}}.sharebtns .sharebtn{{flex:1}}
 .sharebtn.ghost{{background:transparent;color:var(--sindoor);border:2px solid var(--sindoor);padding:12px}}
-.friendnote{{background:#F6E7C6;border-radius:12px;padding:14px 15px;margin-top:14px;font-size:13.5px}}
+.friendnote{{background:#F6E7C6;border-radius:12px;padding:14px 15px;margin-top:14px;font-size:14px}}
 .friendnote b{{font-family:var(--display)}}.friendnote p{{margin-top:6px;margin-bottom:0}}
 .cert{{background:linear-gradient(#FFFDF7,#F7EFDD);border:2px solid var(--haldi);border-radius:16px;padding:8px;box-shadow:0 12px 34px rgba(35,37,59,.12)}}
 .certin{{border:1.5px dashed #CDA43E;border-radius:12px;padding:24px 18px;text-align:center}}
 .certseal{{font-size:30px;color:var(--haldi);line-height:1}}
-.certk{{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}}
+.certk{{font-family:var(--display);font-weight:700;font-size:12px;text-transform:uppercase;color:var(--muted);margin-top:8px}}
 .certnames{{font-family:var(--display);font-weight:800;font-size:24px;color:var(--ink);margin-top:12px}}
 .certnames span{{color:var(--haldi);margin:0 5px;font-weight:700}}
-.certarch{{font-size:14px;color:#4A4C63;margin-top:10px;line-height:1.5}}
+.certarch{{font-size:15px;color:#4A4C63;margin-top:10px;line-height:1.5}}
 .certarch b{{font-family:var(--display);font-size:18px;color:var(--ink)}}
 .certpct{{display:inline-block;font-family:var(--display);font-weight:800;font-size:14px;color:#151C39;background:var(--haldi);border-radius:20px;padding:6px 15px;margin-top:14px}}
-.certfoot{{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5;letter-spacing:.02em}}
+.certfoot{{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5}}
 .profwrap{{display:flex;flex-direction:column;gap:10px}}
 .prof{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px}}
 .prtop{{display:flex;align-items:center;gap:11px;margin-bottom:6px}}
 .prel{{font-size:26px;line-height:1;flex:none}}
 .prname{{display:flex;flex-direction:column;line-height:1.25}}
 .prname b{{font-family:var(--display);font-size:17px}}
-.prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-top:3px;line-height:1.5}}
-.prline{{font-size:14px;margin-top:6px}}.prline b{{font-family:var(--display)}}
+.prsign{{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:3px;line-height:1.5}}
+.prline{{font-size:15px;margin-top:6px}}.prline b{{font-family:var(--display)}}
 @media(min-width:560px){{.profwrap{{flex-direction:row}}.prof{{flex:1}}}}
 .kchartwrap{{background:var(--midnight);border-radius:12px;padding:12px 12px 8px;margin-top:12px}}
 .kchart{{width:100%;max-width:290px;height:auto;display:block;margin:0 auto}}
@@ -1728,25 +1728,25 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .deep{{background:#F3F8F3;border:1.5px solid #CDE4D3;border-radius:12px;padding:14px 16px;margin-bottom:10px}}
 .dtop{{display:flex;align-items:center;gap:9px;font-family:var(--display);margin-bottom:6px}}
 .dtop b{{font-size:16px}}.demoji{{font-size:19px;flex:none}}
-.deep p{{font-size:14px}}
-.wplan{{background:#FBF4E6;border-radius:10px;padding:11px 12px;margin-top:10px;font-size:13.5px}}
+.deep p{{font-size:15px}}
+.wplan{{background:#FBF4E6;border-radius:10px;padding:11px 12px;margin-top:10px;font-size:14px}}
 .wplan p{{margin:5px 0}}
-.wpk{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:6px}}
-.wsplit{{background:#FBF4E6;border-radius:10px;padding:9px 12px;margin-top:9px;font-size:13.5px}}
+.wpk{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10px;text-transform:uppercase;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:6px}}
+.wsplit{{background:#FBF4E6;border-radius:10px;padding:9px 12px;margin-top:9px;font-size:14px}}
 .wsplit p{{margin:5px 0}}
-.wtalk{{margin-top:8px;font-size:13.5px}}
+.wtalk{{margin-top:8px;font-size:14px}}
 .besties{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:18px}}
-.besties p{{font-size:14.5px;margin-bottom:10px}}
+.besties p{{font-size:15px;margin-bottom:10px}}
 .bnote{{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}}
-.methbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:14px}}
+.methbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:15px}}
 .methbox p{{margin-bottom:9px}}
-.meth{{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px}}
+.meth{{width:100%;border-collapse:collapse;margin:6px 0;font-size:14px}}
 .meth th,.meth td{{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}}
-.meth th{{font-family:var(--display);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}}
-.methsub{{font-size:12.5px;color:var(--muted);margin-top:4px}}
+.meth th{{font-family:var(--display);font-size:11px;text-transform:uppercase;color:var(--muted)}}
+.methsub{{font-size:13.5px;color:var(--muted);margin-top:4px}}
 .glossh{{font-family:var(--display);font-size:17px;margin:22px 0 10px}}
 .gloss{{list-style:none}}
-.gloss li{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13.5px}}
+.gloss li{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:14px}}
 .gloss b{{font-family:var(--display)}}
 .gsan{{color:var(--muted);font-size:11.5px;font-weight:600}}
 /* ---- scannable TL;DR summary (directly under hero) ---- */
@@ -1757,19 +1757,19 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .sx-card.watch{{border-top:4px solid var(--sindoor)}}
 .sx-card.plan{{border:1.5px solid var(--haldi);background:#FBF4E6}}
 @media(min-width:560px){{.sx-card.plan{{grid-column:1/-1}}}}
-.sx-h{{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}}
+.sx-h{{font-family:var(--display);font-weight:800;font-size:13px;text-transform:uppercase}}
 .sx-card.good .sx-h{{color:#2E7D53}}.sx-card.watch .sx-h{{color:var(--sindoor)}}.sx-card.plan .sx-h{{color:#8A6410}}
 .sx-chips{{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}}
 .sx-chip{{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-weight:700;font-size:13px;padding:6px 11px;border-radius:20px}}
 .sx-chip.good,.sx-chip.ok{{background:#E3F0E8;color:#1E5A3C}}
 .sx-chip.warn{{background:#FBE9E6;color:var(--sindoor-dark,#A82F24)}}
-.sx-note{{margin-top:10px;font-size:12.5px;color:var(--muted)}}
+.sx-note{{margin-top:10px;font-size:13.5px;color:var(--muted)}}
 .sx-note b{{color:var(--ink)}}
 .sx-moves{{list-style:none;margin:11px 0 0;display:grid;gap:8px}}
-.sx-moves li{{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px 12px;font-size:13.5px}}
+.sx-moves li{{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px 12px;font-size:14px}}
 .sx-n{{font-family:var(--display);font-weight:800;color:var(--sindoor);flex:none;line-height:1.5}}
-.sx-tag{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:.02em;text-transform:uppercase;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:7px;white-space:nowrap}}
-.sx-cue{{text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px}}
+.sx-tag{{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;text-transform:uppercase;color:#8a6a1f;background:#F6E7C6;border-radius:6px;padding:2px 7px;margin-right:7px;white-space:nowrap}}
+.sx-cue{{text-align:center;color:var(--muted);font-size:13.5px;margin-top:14px}}
 /* ---- tap-to-open detail sections ---- */
 details.acc{{background:#fff;border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}}
 details.acc>summary{{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:15px 16px;font-family:var(--display);font-weight:800;font-size:18px}}
@@ -1789,7 +1789,7 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 <p class="score">{p['total']}<small>/36</small></p>
 <span class="verdict">{p['verdict'].upper()}</span>
 {matchpct_html}
-{("<p style='margin-top:10px;font-size:14px;color:#B9BBD0'>After dosha cancellation: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
+{("<p style='margin-top:10px;font-size:15px;color:#B9BBD0'>After dosha cancellation: <b style='color:#E4B04A'>" + str(p['effective']) + "/36</b></p>") if p.get('cancellations') else ""}</div>
 {tldr_html}
 {opening_html}
 {couple_html}
@@ -1904,17 +1904,17 @@ line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60
 .hero{{background:var(--midnight);color:#F3EFE4;margin:0 -20px;padding:36px 22px;text-align:center}}
 .hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:13px;letter-spacing:.08em}}
 .hero h1{{font-family:var(--display);font-size:26px;margin-top:14px;color:#fff}}
-.hero p{{color:#A9ABC0;font-size:13px;margin-top:6px}}
+.hero p{{color:#A9ABC0;font-size:14px;margin-top:6px}}
 h2{{font-family:var(--display);font-size:21px;margin:34px 0 12px}}
 .card{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
 .ph{{background:#fff;border-left:5px solid var(--haldi);border:1.5px solid var(--line);
 border-left:5px solid var(--haldi);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
-.ph .yrs{{color:var(--muted);font-size:13px;margin-left:8px}}
-.ph p{{font-size:14px;margin-top:5px}}
-ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:14.5px}}
-.soft{{color:var(--muted);font-size:13px;margin-top:10px}}
-.tn{{font-size:12px;color:var(--muted);margin-top:24px}}
-.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:14.5px}}
+.ph .yrs{{color:var(--muted);font-size:14px;margin-left:8px}}
+.ph p{{font-size:15px;margin-top:5px}}
+ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:15px}}
+.soft{{color:var(--muted);font-size:14px;margin-top:10px}}
+.tn{{font-size:13.5px;color:var(--muted);margin-top:24px}}
+.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:15px}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · LIFE BLUEPRINT</p>
 <h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
@@ -2018,31 +2018,31 @@ def render_vidyarthi(p: dict) -> str:
 body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
 line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60px}}
 h2{{font-family:var(--display);font-size:20px;margin:32px 0 8px}}
-.lead{{color:var(--muted);font-size:13.5px;margin:0 0 12px}}
+.lead{{color:var(--muted);font-size:14px;margin:0 0 12px}}
 .hero{{background:radial-gradient(1000px 460px at 50% -25%, var(--midnight2), var(--midnight) 68%);
 color:#F3EFE4;margin-top:16px;padding:32px 24px 26px;text-align:center;border-radius:26px;
 box-shadow:0 14px 34px rgba(21,28,57,.18)}}
 .hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:11px;letter-spacing:.14em}}
 .hero h1{{font-family:var(--display);font-size:25px;color:#fff;margin-top:12px}}
-.hero .meta{{color:#8F92AB;font-size:12.5px;margin-top:10px}}
+.hero .meta{{color:#8F92AB;font-size:13.5px;margin-top:10px}}
 .hero .fitscore{{font-family:var(--display);font-weight:800;font-size:44px;color:var(--haldi);margin-top:10px;line-height:1}}
-.hero .fitscore small{{font-size:13px;color:#B9BBD0;display:block;font-weight:600;margin-top:4px}}
+.hero .fitscore small{{font-size:14px;color:#B9BBD0;display:block;font-weight:600;margin-top:4px}}
 .hero .arche{{display:inline-block;background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);
 color:#F1E4C4;font-family:var(--display);font-weight:700;font-size:13px;border-radius:20px;padding:6px 16px;margin-top:12px}}
 .profile{{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}}
 .profile .ptop{{display:flex;align-items:center;gap:12px}}
 .profile .pemoji{{font-size:28px}}
 .profile .pname{{font-family:var(--display);font-weight:800;font-size:17px}}
-.profile .psign{{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:2px}}
+.profile .psign{{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-top:2px}}
 .profile .pline{{font-size:14px;margin-top:10px}}
 .kchart-wrap{{background:var(--midnight);border-radius:14px;padding:14px;margin-top:12px;text-align:center}}
-.kchart-wrap .kcap{{font-size:11px;color:#8F92AB;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}}
+.kchart-wrap .kcap{{font-size:11px;color:#8F92AB;text-transform:uppercase;margin-top:8px}}
 .kchart{{width:100%;max-width:280px;margin:0 auto;display:block}}
 .nowcard{{background:linear-gradient(180deg,#26325E,var(--midnight));color:#F3EFE4;border-radius:16px;
 padding:20px;margin-top:20px;text-align:center}}
-.nowcard .k{{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--haldi)}}
+.nowcard .k{{font-family:var(--display);font-weight:800;font-size:11px;text-transform:uppercase;color:var(--haldi)}}
 .nowcard .big{{font-family:var(--display);font-weight:800;font-size:18px;color:#fff;margin:8px 0 6px}}
-.nowcard p{{font-size:13.5px;color:#CFCBBB}}
+.nowcard p{{font-size:14px;color:#CFCBBB}}
 .nowcard .verdict{{display:inline-block;background:var(--green);color:#fff;font-family:var(--display);font-weight:800;
 font-size:12px;border-radius:20px;padding:5px 14px;margin-top:10px}}
 .near{{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}}
@@ -2051,18 +2051,18 @@ font-size:12px;border-radius:20px;padding:5px 14px;margin-top:10px}}
 font:800 11px/1 var(--display);color:#fff;padding:0 6px;overflow:hidden;white-space:nowrap}}
 .near .peak{{position:absolute;top:-4px;bottom:-4px;border:2px dashed rgba(255,255,255,.7);border-radius:8px}}
 .near .yrs{{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:6px}}
-.near .note{{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}}
+.near .note{{font-size:13.5px;color:var(--muted);margin-top:10px;line-height:1.55}}
 .near .note b{{color:var(--ink)}}
 .split{{display:flex;gap:10px;margin-top:20px}}
 .splitcol{{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px}}
 .splitcol.good{{border-color:var(--green)}}
 .splitcol.watch{{border-color:var(--rose)}}
-.splitcol .st{{font-family:var(--display);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em}}
+.splitcol .st{{font-family:var(--display);font-weight:800;font-size:12px;text-transform:uppercase}}
 .splitcol.good .st{{color:var(--green)}}
 .splitcol.watch .st{{color:var(--rose)}}
 .splitcol ul{{list-style:none;margin-top:8px}}
-.splitcol li{{font-size:13.5px;margin-bottom:6px}}
-.glossary{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;margin-top:18px;font-size:13px}}
+.splitcol li{{font-size:14px;margin-bottom:6px}}
+.glossary{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;margin-top:18px;font-size:14px}}
 .glossary b{{font-family:var(--display)}}
 .glossary .row{{display:flex;gap:8px;margin-top:6px}}
 .qa{{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:6px 18px;margin-top:14px}}
@@ -2070,21 +2070,21 @@ font:800 11px/1 var(--display);color:#fff;padding:0 6px;overflow:hidden;white-sp
 .qa .item:last-child{{border-bottom:0}}
 .qa .q{{font-family:var(--display);font-weight:800;font-size:14.5px;display:flex;gap:8px;align-items:baseline}}
 .qa .q .em{{font-size:16px}}
-.qa .a{{font-size:13.5px;color:#3A3C55;margin-top:5px;padding-left:24px}}
+.qa .a{{font-size:14px;color:#3A3C55;margin-top:5px;padding-left:24px}}
 .careerbar-wrap{{margin-top:14px}}
 .careerrow{{display:flex;align-items:center;gap:10px;margin-bottom:12px}}
-.careerrow .cr-label{{width:150px;flex:none;font-size:13px;font-weight:700;font-family:var(--display)}}
+.careerrow .cr-label{{width:150px;flex:none;font-size:14px;font-weight:700;font-family:var(--display)}}
 .careerrow .cr-track{{flex:1;height:20px;background:#EFE8D8;border-radius:6px;overflow:hidden}}
 .careerrow .cr-fill{{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}}
 .careerrow .cr-fill span{{font:800 11px/1 var(--display);color:#fff}}
-.career-desc{{font-size:13px;color:var(--muted);margin:2px 0 12px 160px}}
+.career-desc{{font-size:14px;color:var(--muted);margin:2px 0 12px 160px}}
 .pair{{display:flex;gap:10px;margin-top:14px}}
 .pcard{{flex:1;border-radius:14px;padding:16px;color:#fff}}
 .pcard.up{{background:linear-gradient(160deg,#2E7D53,#1F5E3D)}}
 .pcard.lesson{{background:linear-gradient(160deg,#C2185B,#8E1044)}}
-.pcard .pk{{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;opacity:.85}}
+.pcard .pk{{font-size:11px;font-weight:800;text-transform:uppercase;opacity:.85}}
 .pcard .pv{{font-family:var(--display);font-weight:800;font-size:16px;margin-top:6px}}
-.pcard .pd{{font-size:12.5px;margin-top:6px;opacity:.92}}
+.pcard .pd{{font-size:13.5px;margin-top:6px;opacity:.92}}
 .factor{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:10px}}
 .factor .ftop{{display:flex;justify-content:space-between;align-items:center}}
 .factor .fname{{font-family:var(--display);font-weight:800;font-size:15.5px}}
@@ -2093,29 +2093,29 @@ font:800 11px/1 var(--display);color:#fff;padding:0 6px;overflow:hidden;white-sp
 .factor .fstatus.watch{{background:var(--rose-soft);color:var(--rose)}}
 .factor .meter{{height:6px;background:#EFE8D8;border-radius:4px;margin:10px 0 8px;overflow:hidden}}
 .factor .meter div{{height:100%;border-radius:4px}}
-.factor .fplain{{font-family:var(--display);font-weight:700;font-size:13.5px}}
+.factor .fplain{{font-family:var(--display);font-weight:700;font-size:14px}}
 .factor .fplain.strong{{color:var(--green)}}
 .factor .fplain.watch{{color:var(--rose)}}
-.factor .fexpl{{font-size:13.5px;color:#3A3C55;margin-top:5px}}
+.factor .fexpl{{font-size:14px;color:#3A3C55;margin-top:5px}}
 .factor details{{margin-top:10px;background:var(--paper);border-radius:8px;padding:2px 12px}}
 .factor summary{{font-family:var(--display);font-weight:700;font-size:12.5px;color:var(--sindoor);cursor:pointer;
 list-style:none;padding:9px 0}}
 .factor summary::-webkit-details-marker{{display:none}}
 .factor summary::before{{content:"› ";font-weight:800}}
 .factor details[open] summary::before{{content:"⌄ "}}
-.factor details p{{font-size:13px;color:#3A3C55;padding-bottom:10px}}
-.fieldfit{{background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:14px}}
+.factor details p{{font-size:14px;color:#3A3C55;padding-bottom:10px}}
+.fieldfit{{background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:15px}}
 .fieldfit b{{font-family:var(--display);color:var(--violet)}}
 .actionbox{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}}
-.actionbox .ak{{font-family:var(--display);font-weight:800;color:var(--sindoor);font-size:12px;text-transform:uppercase;letter-spacing:.03em}}
-.actionbox ol{{margin:8px 0 0 18px;font-size:14px}}
+.actionbox .ak{{font-family:var(--display);font-weight:800;color:var(--sindoor);font-size:12px;text-transform:uppercase}}
+.actionbox ol{{margin:8px 0 0 18px;font-size:15px}}
 .actionbox li{{margin-bottom:10px}}
 .actionbox li b{{font-family:var(--display)}}
-.hold{{background:#FFF6E9;border:1.5px solid var(--haldi);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:13.5px}}
+.hold{{background:#FFF6E9;border:1.5px solid var(--haldi);border-radius:12px;padding:15px 16px;margin-top:14px;font-size:14px}}
 .hold b{{font-family:var(--display)}}
-.reassure{{background:var(--green-soft);border:2px solid var(--green);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:14px}}
+.reassure{{background:var(--green-soft);border:2px solid var(--green);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:15px}}
 .reassure b{{font-family:var(--display)}}
-.ssb{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;font-size:13.5px;margin-top:12px}}
+.ssb{{background:var(--haldi-soft);border-radius:12px;padding:14px 16px;font-size:14px;margin-top:12px}}
 .card{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
 .cert-toggle{{display:flex;gap:8px;margin-top:6px}}
 .cert-toggle button{{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);
@@ -2128,10 +2128,10 @@ background:linear-gradient(135deg,#E4B04A,#F6E7C6 45%,#E4B04A);box-shadow:0 16px
 .certwrap[data-skin="dark"] .cert-card{{background:radial-gradient(600px 300px at 50% -10%,#26325E,#0F1226 72%);color:#F3EFE4}}
 .cert-brand{{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--display);
 font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--haldi)}}
-.cert-tagline{{font-size:9.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}}
+.cert-tagline{{font-size:9.5px;color:var(--muted);text-transform:uppercase;margin-top:2px}}
 .certwrap[data-skin="dark"] .cert-tagline{{color:#9C9FC4}}
 .cert-inner{{border-radius:16px;padding:20px 16px;margin-top:16px}}
-.cert-eyebrow{{font-family:var(--display);font-weight:700;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}}
+.cert-eyebrow{{font-family:var(--display);font-weight:700;font-size:10.5px;text-transform:uppercase;color:var(--muted)}}
 .certwrap[data-skin="dark"] .cert-eyebrow{{color:#9C9FC4}}
 .cert-name{{font-family:var(--display);font-weight:800;font-size:23px;margin-top:8px;
 background:linear-gradient(90deg,#C9922E,#E4B04A 40%,#C9922E);-webkit-background-clip:text;background-clip:text;color:transparent}}
@@ -2148,34 +2148,34 @@ display:flex;justify-content:space-between;align-items:center;font-size:10.5px;c
 .tagpicker{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 14px;margin-top:12px}}
 .tp-row{{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}}
 .tp-row:last-child{{border-bottom:0}}
-.tp-check{{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer}}
+.tp-check{{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer}}
 .tp-check input{{width:16px;height:16px;accent-color:var(--sindoor)}}
 .tp-pct{{font-family:var(--display);font-weight:800;font-size:11.5px;border-radius:20px;padding:5px 11px;cursor:pointer;
 border:1.5px solid var(--haldi);background:var(--haldi-soft);color:#8A6413}}
 .tp-pct.off{{background:transparent;border-color:var(--line);color:var(--muted)}}
 .certactions{{display:flex;gap:10px;margin-top:12px}}
-.certbtn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:13px;padding:11px 10px;
+.certbtn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:14px;padding:11px 10px;
 border-radius:11px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;display:flex;
 align-items:center;justify-content:center;gap:6px;color:var(--ink)}}
 .certbtn.primary{{background:var(--midnight);color:#fff;border-color:var(--midnight)}}
-.share{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:16px 18px;margin-top:14px;font-size:14px}}
+.share{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:16px 18px;margin-top:14px;font-size:15px}}
 .stillconfused{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 16px;margin-top:14px}}
 .stillconfused details{{padding:12px 0;border-bottom:1px solid var(--line)}}
 .stillconfused details:last-child{{border-bottom:0}}
 .stillconfused summary{{font-family:var(--display);font-weight:700;font-size:14px;cursor:pointer;list-style:none}}
 .stillconfused summary::-webkit-details-marker{{display:none}}
 .stillconfused summary::before{{content:"› ";color:var(--sindoor)}}
-.stillconfused p{{font-size:13px;color:#3A3C55;margin-top:8px;padding-left:14px}}
-.method{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:13.5px;margin-top:14px}}
-.method table{{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}}
+.stillconfused p{{font-size:14px;color:#3A3C55;margin-top:8px;padding-left:14px}}
+.method{{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:14px;margin-top:14px}}
+.method table{{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}}
 .method th,.method td{{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}}
 .method th{{font-family:var(--display);font-size:10.5px;text-transform:uppercase;color:var(--muted)}}
 .sectionnote{{background:#F3ECDD;border-left:3px solid var(--violet);padding:8px 12px;border-radius:6px;font-size:11.5px;color:var(--muted);margin-top:8px}}
 .gloss{{list-style:none;margin-top:8px}}
-.gloss li{{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13px}}
+.gloss li{{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:14px}}
 .gloss b{{font-family:var(--display)}}
 .actions{{display:flex;gap:10px;margin-top:24px}}
-.btn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:14px;padding:12px 10px;
+.btn{{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:15px;padding:12px 10px;
 border-radius:12px;border:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}}
 .btn.pdf{{background:var(--midnight);color:#fff}}
 .btn.share{{background:#25D366;color:#fff}}
