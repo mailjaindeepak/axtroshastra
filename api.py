@@ -135,19 +135,24 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
                 content_sid=TWILIO_CONTENT_SID_TEXT,
                 content_variables=json.dumps({"1": name, "2": link}))
         elif TWILIO_CONTENT_SID:                     # production: approved template
-            # Approved media template `axtroshastra_wp_msg` (document header):
+            # Approved media template (document header):
             #   {{1}} customer name
             #   {{2}} login URL
-            #   {{3}} PDF *path only* — the template's media URL is configured
-            #         as https://www.axtroshastra.com/{{3}}, so we must NOT
-            #         pass a full URL here, just everything after the domain.
-            # /report/{rid}/pdf regenerates on a cold cache, so Twilio's media
-            # fetch succeeds even when pregeneration lagged or the box restarted.
+            #   {{3}} report id ONLY — the resubmitted template's media URL is
+            #         https://www.axtroshastra.com/report/{{3}}.pdf (the trailing
+            #         .pdf is required: Twilio rejects a media URL with no file
+            #         extension, and Meta rejects a variable at the very end).
+            #         So pass ONLY the rid here, never a path. /report/{rid}.pdf
+            #         serves the same file as /report/{rid}/pdf and regenerates
+            #         on a cold cache, so Twilio's media fetch always succeeds.
+            #   NOTE: TWILIO_CONTENT_SID must point at this .pdf-shaped template.
+            #         Setting it to the older /{{3}} template will build a broken
+            #         URL — the env SID and this line are a matched pair.
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
                 content_variables=json.dumps(
-                    {"1": name, "2": login, "3": f"report/{rid}/pdf"}))
+                    {"1": name, "2": login, "3": rid}))
         else:                                        # sandbox / 24h session freeform
             kwargs = {"media_url": media} if media else {}
             body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
@@ -841,7 +846,10 @@ def _account_banner(rid: str) -> str:
         logger.error("[users] banner payment-row failed for %s: %s", rid, e)
 
     return (
-        '<div style="background:#f3ece0;padding:14px;font-family:system-ui,'
+        # id lets @media print hide this card so a browser Print-to-PDF of the
+        # on-screen report matches the clean /report/{rid}/pdf output (which
+        # never includes the banner). See print rule injected in _wire_report_chrome.
+        '<div id="acct-banner" style="background:#f3ece0;padding:14px;font-family:system-ui,'
         "-apple-system,'Segoe UI',Roboto,sans-serif\">"
         '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid '
         '#ece3d6;border-radius:14px;box-shadow:0 2px 10px rgba(70,50,30,.05);'
@@ -873,10 +881,11 @@ def _account_banner(rid: str) -> str:
 # the fallback — which still yields the browser-quality PDF (owner-approved).
 _AXDL_SNIPPET = """<style>@media print{.ax-toast{display:none!important}}</style><script>
 function axToastPdf(msg){var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-t.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:1';
+t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
 t.textContent=msg;document.body.appendChild(t);
-setTimeout(function(){t.style.transition='opacity .4s';t.style.opacity='0';
-setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},6500);}
+requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3200);}
 function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
 var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
 function done(){if(b)b.style.opacity='';}
@@ -918,11 +927,12 @@ _REPORT_NAV_SNIPPET = """<script>
     if(hasAcct && !localStorage.getItem('axs_acct_toast_'+rid)){
       localStorage.setItem('axs_acct_toast_'+rid,'1');
       var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
       t.innerHTML='\\u2705 Account created \\u2014 login anytime with your mobile number. <a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;text-decoration:none">Log in \\u2192</a>';
       document.body.appendChild(t);
-      setTimeout(function(){t.style.transition='opacity .5s';t.style.opacity='0';
-        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},600);},8000);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3500);
     }
   }catch(e){}
   try{
@@ -948,6 +958,10 @@ def _wire_report_chrome(html: str, rid: str) -> str:
         banner = _account_banner(rid)
         if banner:
             import re as _re
+            # Hide the account card in print so browser Print-to-PDF of /report
+            # matches the banner-free /report/{rid}/pdf output.
+            banner = ('<style>@media print{#acct-banner{display:none!important}}</style>'
+                      + banner)
             html, n = _re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + banner,
                                html, count=1, flags=_re.IGNORECASE)
         html = _inject_nav(html)

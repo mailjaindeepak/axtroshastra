@@ -271,6 +271,10 @@ fbq('track', 'PageView');
         <input id="f-name" type="text" placeholder="आपका नाम" required>
       </div>
       <div class="field">
+        <label for="f-gender">आप हैं</label>
+        <select id="f-gender" required aria-label="आप हैं"><option value="" disabled selected hidden>चुनिए…</option><option value="male">पुरुष</option><option value="female">महिला</option></select>
+      </div>
+      <div class="field">
         <label>जन्म तिथि</label>
         <div class="dob-row">
           <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
@@ -577,6 +581,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
+        gender: document.getElementById('f-gender').value || null,
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
@@ -901,18 +906,32 @@ window.addEventListener('scroll', function(){
   function L(en,hi){ return (window.__axlang==="en")?en:hi; }
   function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
   var nameHint=mkHint(document.getElementById("f-name"));
+  var genderHint=mkHint(document.getElementById("f-gender"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
-  function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
-  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","यह तारीख़ मौजूद नहीं है। दोबारा जाँच लीजिए।"); }
+  function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+    var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
+    if(+y<1900||+y>cy) return L("Please enter a birth year between 1900 and "+cy+".","1900 और "+cy+" के बीच का जन्म-वर्ष भरिए।");
+    var dt=new Date(+y,+m-1,+d);
+    if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return L("This date does not exist. Please re-check.","यह तारीख़ मौजूद नहीं है। दोबारा जाँच लीजिए।");
+    if(dt>t) return L("Birth date can't be in the future.","जन्म तिथि भविष्य में नहीं हो सकती।");
+    return ""; }
+  function dateValid(){ return dateMsg()===""; }
+  function checkDate(){ dobHint.textContent = dateMsg(); }
   if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  var thh=document.getElementById("f-hh"),tmn=document.getElementById("f-mm2"),tap=document.getElementById("f-ap");
+  function tobPartial(){ if(document.getElementById("unknownTime").checked) return false; var n=(thh&&thh.value?1:0)+(tmn&&tmn.value?1:0)+(tap&&tap.value?1:0); return n>0&&n<3; }
+  function checkTob(){ tobHint.textContent = tobPartial()? L("Please enter the full time (hour, minute, AM/PM), or clear it.","पूरा समय भरिए (घंटा, मिनट, AM/PM), या इसे खाली छोड़ दीजिए।") : ""; }
+  if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
     var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
     nm.value=clean;
     if(!clean){ nameHint.textContent=L("Please enter your name.","अपना नाम लिखिए।"); stop(); return; } nameHint.textContent="";
+    if(!document.getElementById("f-gender").value){ genderHint.textContent=L("Please select whether you are male or female.","कृपया चुनिए कि आप पुरुष हैं या महिला।"); stop(); return; } genderHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(tobPartial()){ checkTob(); stop(); if(thh)thh.focus(); return; }
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","अपना जन्म-समय चुनिए, या अगर पता नहीं है तो नीचे वाला बॉक्स टिक कीजिए।"); stop(); return; } tobHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
     var teaser=document.getElementById("teaser");
@@ -941,14 +960,19 @@ window.addEventListener('scroll', function(){
 (function(){
   var track = document.getElementById('revsTrack');
   if(!track) return;
-  Array.prototype.slice.call(track.children).forEach(function(n){ track.appendChild(n.cloneNode(true)); });
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5;
-  function half(){ return track.scrollWidth / 2; }
+  var paused = reduce, speed = 0.5, dir = 1;
+  // No cloning: a manual swipe shows only the real reviews, once. The ambient
+  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
+  // no jarring jump from the last review back to the first.
   function tick(){
-    if(!paused && half() > 0){
-      track.scrollLeft += speed;
-      if(track.scrollLeft >= half()) track.scrollLeft -= half();
+    if(!paused){
+      var mx = track.scrollWidth - track.clientWidth;
+      if(mx > 0){
+        track.scrollLeft += speed * dir;
+        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
+        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
+      }
     }
     requestAnimationFrame(tick);
   }
@@ -958,6 +982,16 @@ window.addEventListener('scroll', function(){
   track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
   window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
   requestAnimationFrame(tick);
+})();
+</script>
+<script>
+/* जन्म-समय के selects को साफ़ करने का बटन (placeholder छिपा है, इसलिए बिना इसके घंटा unpick नहीं होता) */
+(function(){
+  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
+  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='मिटाएँ'; b.setAttribute('aria-label','जन्म-समय साफ़ करें');
+  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
+  hh.parentElement.appendChild(b);
+  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 })();
 </script>
 </body>

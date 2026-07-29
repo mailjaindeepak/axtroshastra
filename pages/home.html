@@ -275,14 +275,19 @@ footer b{color:#B9BBD0}
   var track = document.getElementById('revsTrack');
   if(!track) return;
   // duplicate the cards once so the loop is seamless (no jump at the end)
-  Array.prototype.slice.call(track.children).forEach(function(n){ track.appendChild(n.cloneNode(true)); });
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5;
-  function half(){ return track.scrollWidth / 2; }
+  var paused = reduce, speed = 0.5, dir = 1;
+  // No cloning: a manual swipe shows only the real reviews, once. The ambient
+  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
+  // no jarring jump from the last review back to the first.
   function tick(){
-    if(!paused && half() > 0){
-      track.scrollLeft += speed;
-      if(track.scrollLeft >= half()) track.scrollLeft -= half();
+    if(!paused){
+      var mx = track.scrollWidth - track.clientWidth;
+      if(mx > 0){
+        track.scrollLeft += speed * dir;
+        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
+        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
+      }
     }
     requestAnimationFrame(tick);
   }
