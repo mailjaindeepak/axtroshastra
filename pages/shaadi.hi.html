@@ -910,9 +910,11 @@ window.addEventListener('scroll', function(){
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
   function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+    var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
+    if(+y<1900||+y>cy) return L("Please enter a birth year between 1900 and "+cy+".","1900 और "+cy+" के बीच का जन्म-वर्ष भरिए।");
     var dt=new Date(+y,+m-1,+d);
     if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return L("This date does not exist. Please re-check.","यह तारीख़ मौजूद नहीं है। दोबारा जाँच लीजिए।");
-    var t=new Date(); t.setHours(0,0,0,0); if(dt>t) return L("Birth date can't be in the future.","जन्म तिथि भविष्य में नहीं हो सकती।");
+    if(dt>t) return L("Birth date can't be in the future.","जन्म तिथि भविष्य में नहीं हो सकती।");
     return ""; }
   function dateValid(){ return dateMsg()===""; }
   function checkDate(){ dobHint.textContent = dateMsg(); }
@@ -958,14 +960,19 @@ window.addEventListener('scroll', function(){
 (function(){
   var track = document.getElementById('revsTrack');
   if(!track) return;
-  Array.prototype.slice.call(track.children).forEach(function(n){ track.appendChild(n.cloneNode(true)); });
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5;
-  function half(){ return track.scrollWidth / 2; }
+  var paused = reduce, speed = 0.5, dir = 1;
+  // No cloning: a manual swipe shows only the real reviews, once. The ambient
+  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
+  // no jarring jump from the last review back to the first.
   function tick(){
-    if(!paused && half() > 0){
-      track.scrollLeft += speed;
-      if(track.scrollLeft >= half()) track.scrollLeft -= half();
+    if(!paused){
+      var mx = track.scrollWidth - track.clientWidth;
+      if(mx > 0){
+        track.scrollLeft += speed * dir;
+        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
+        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
+      }
     }
     requestAnimationFrame(tick);
   }
@@ -975,6 +982,16 @@ window.addEventListener('scroll', function(){
   track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
   window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
   requestAnimationFrame(tick);
+})();
+</script>
+<script>
+/* जन्म-समय के selects को साफ़ करने का बटन (placeholder छिपा है, इसलिए बिना इसके घंटा unpick नहीं होता) */
+(function(){
+  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
+  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='मिटाएँ'; b.setAttribute('aria-label','जन्म-समय साफ़ करें');
+  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
+  hh.parentElement.appendChild(b);
+  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 })();
 </script>
 </body>
