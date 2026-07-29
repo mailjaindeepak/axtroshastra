@@ -909,9 +909,18 @@ window.addEventListener('scroll', function(){
   var genderHint=mkHint(document.getElementById("f-gender"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
-  function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
-  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","यह तारीख़ मौजूद नहीं है। दोबारा जाँच लीजिए।"); }
+  function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+    var dt=new Date(+y,+m-1,+d);
+    if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return L("This date does not exist. Please re-check.","यह तारीख़ मौजूद नहीं है। दोबारा जाँच लीजिए।");
+    var t=new Date(); t.setHours(0,0,0,0); if(dt>t) return L("Birth date can't be in the future.","जन्म तिथि भविष्य में नहीं हो सकती।");
+    return ""; }
+  function dateValid(){ return dateMsg()===""; }
+  function checkDate(){ dobHint.textContent = dateMsg(); }
   if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  var thh=document.getElementById("f-hh"),tmn=document.getElementById("f-mm2"),tap=document.getElementById("f-ap");
+  function tobPartial(){ if(document.getElementById("unknownTime").checked) return false; var n=(thh&&thh.value?1:0)+(tmn&&tmn.value?1:0)+(tap&&tap.value?1:0); return n>0&&n<3; }
+  function checkTob(){ tobHint.textContent = tobPartial()? L("Please enter the full time (hour, minute, AM/PM), or clear it.","पूरा समय भरिए (घंटा, मिनट, AM/PM), या इसे खाली छोड़ दीजिए।") : ""; }
+  if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
@@ -920,6 +929,7 @@ window.addEventListener('scroll', function(){
     if(!clean){ nameHint.textContent=L("Please enter your name.","अपना नाम लिखिए।"); stop(); return; } nameHint.textContent="";
     if(!document.getElementById("f-gender").value){ genderHint.textContent=L("Please select whether you are male or female.","कृपया चुनिए कि आप पुरुष हैं या महिला।"); stop(); return; } genderHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(tobPartial()){ checkTob(); stop(); if(thh)thh.focus(); return; }
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","अपना जन्म-समय चुनिए, या अगर पता नहीं है तो नीचे वाला बॉक्स टिक कीजिए।"); stop(); return; } tobHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
     var teaser=document.getElementById("teaser");

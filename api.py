@@ -881,10 +881,11 @@ def _account_banner(rid: str) -> str:
 # the fallback — which still yields the browser-quality PDF (owner-approved).
 _AXDL_SNIPPET = """<style>@media print{.ax-toast{display:none!important}}</style><script>
 function axToastPdf(msg){var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-t.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:1';
+t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
 t.textContent=msg;document.body.appendChild(t);
-setTimeout(function(){t.style.transition='opacity .4s';t.style.opacity='0';
-setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},6500);}
+requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3200);}
 function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
 var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
 function done(){if(b)b.style.opacity='';}
@@ -926,11 +927,12 @@ _REPORT_NAV_SNIPPET = """<script>
     if(hasAcct && !localStorage.getItem('axs_acct_toast_'+rid)){
       localStorage.setItem('axs_acct_toast_'+rid,'1');
       var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
       t.innerHTML='\\u2705 Account created \\u2014 login anytime with your mobile number. <a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;text-decoration:none">Log in \\u2192</a>';
       document.body.appendChild(t);
-      setTimeout(function(){t.style.transition='opacity .5s';t.style.opacity='0';
-        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},600);},8000);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3500);
     }
   }catch(e){}
   try{

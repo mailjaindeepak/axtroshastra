@@ -909,9 +909,20 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     var o={dd:dd,mm:mm,yy:yy,nm:nm};
     o.nameHint=mkHint(nm);
     o.dobHint=mkHint(dd?dd.closest(".dob-row"):null);
-    o.dateValid=function(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; };
-    o.checkDate=function(){ o.dobHint.textContent = o.dateValid()? "" : "This date does not exist. Please re-check."; };
+    o.dateMsg=function(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+      var dt=new Date(+y,+m-1,+d);
+      if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return "This date does not exist. Please re-check.";
+      var t=new Date(); t.setHours(0,0,0,0); if(dt>t) return "Birth date can't be in the future.";
+      return ""; };
+    o.dateValid=function(){ return o.dateMsg()===""; };
+    o.checkDate=function(){ o.dobHint.textContent = o.dateMsg(); };
     if(dd){ dd.addEventListener("change",o.checkDate); mm.addEventListener("change",o.checkDate); yy.addEventListener("change",o.checkDate); }
+    var hh=document.getElementById(pre+"-hh"),mn=document.getElementById(pre+"-mm2"),ap=document.getElementById(pre+"-ap");
+    o.hh=hh;
+    o.tobHint=mkHint(hh?hh.closest(".tob3"):null);
+    o.tobPartial=function(){ var n=(hh&&hh.value?1:0)+(mn&&mn.value?1:0)+(ap&&ap.value?1:0); return n>0&&n<3; };
+    o.checkTob=function(){ o.tobHint.textContent = o.tobPartial()? "Please enter the full time (hour, minute, AM/PM), or clear it to leave it blank." : ""; };
+    if(hh){ hh.addEventListener("change",o.checkTob); mn.addEventListener("change",o.checkTob); ap.addEventListener("change",o.checkTob); }
     P[pre]=o;
   });
   form.addEventListener("submit", function(e){
@@ -923,6 +934,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
       o.nm.value=clean;
       if(!clean){ o.nameHint.textContent="Please enter the name."; stop(); o.nm.focus(); return; } o.nameHint.textContent="";
       if(!o.dateValid()){ o.checkDate(); stop(); return; } o.dobHint.textContent="";
+      if(o.tobPartial()){ o.checkTob(); stop(); if(o.hh)o.hh.focus(); return; } o.tobHint.textContent="";
     }
     var h=parts.map(function(pre){var o=P[pre];return [o.nm.value,o.dd.value,o.mm.value,o.yy.value,document.getElementById(pre+"-tob").value,(document.getElementById(pre+"-place").value||"")].join("~");}).join("|");
     var teaser=document.getElementById("teaser");
