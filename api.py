@@ -841,7 +841,10 @@ def _account_banner(rid: str) -> str:
         logger.error("[users] banner payment-row failed for %s: %s", rid, e)
 
     return (
-        '<div style="background:#f3ece0;padding:14px;font-family:system-ui,'
+        # id lets @media print hide this card so a browser Print-to-PDF of the
+        # on-screen report matches the clean /report/{rid}/pdf output (which
+        # never includes the banner). See print rule injected in _wire_report_chrome.
+        '<div id="acct-banner" style="background:#f3ece0;padding:14px;font-family:system-ui,'
         "-apple-system,'Segoe UI',Roboto,sans-serif\">"
         '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid '
         '#ece3d6;border-radius:14px;box-shadow:0 2px 10px rgba(70,50,30,.05);'
@@ -948,6 +951,10 @@ def _wire_report_chrome(html: str, rid: str) -> str:
         banner = _account_banner(rid)
         if banner:
             import re as _re
+            # Hide the account card in print so browser Print-to-PDF of /report
+            # matches the banner-free /report/{rid}/pdf output.
+            banner = ('<style>@media print{#acct-banner{display:none!important}}</style>'
+                      + banner)
             html, n = _re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + banner,
                                html, count=1, flags=_re.IGNORECASE)
         html = _inject_nav(html)

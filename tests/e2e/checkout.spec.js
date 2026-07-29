@@ -55,6 +55,7 @@ async function completeContactModal(page) {
 
 async function fillValidForm(page) {
   await page.fill('#f-name', 'Checkout Tester');
+  await page.selectOption('#f-gender', 'male');
   await page.fill('#f-dd', '15');
   await page.selectOption('#f-mm', '06');
   await page.fill('#f-yy', '1992');
