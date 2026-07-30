@@ -39,6 +39,23 @@ def test_pdf_route_is_gated(client):
     assert client.get(f"/report/{rid}/pdf").status_code in (200, 503)
 
 
+def test_pdf_dotext_route_matches_folder_route(client):
+    # WhatsApp's approved media template points at /report/{rid}.pdf (Twilio
+    # rejects a bare extensionless path segment like '/pdf' at template
+    # submission time). This dot-extension address must be gated the same
+    # way and return byte-identical content to /report/{rid}/pdf — a past
+    # regression silently dropped this route while both test suites stayed
+    # green, since nothing exercised this exact URL.
+    rid = client.post("/api/kundli", json=KUNDLI).json()["report_id"]
+    assert client.get(f"/report/{rid}.pdf").status_code == 404
+    client.post(f"/api/_demo_pay/{rid}")
+    folder = client.get(f"/report/{rid}/pdf")
+    dotext = client.get(f"/report/{rid}.pdf")
+    assert dotext.status_code == folder.status_code
+    if folder.status_code == 200:
+        assert dotext.content == folder.content
+
+
 def test_admin_reconcile_requires_key(client):
     assert client.post("/api/reconcile").status_code == 403
     assert client.post("/api/reconcile?key=test-stats-key").status_code == 200
