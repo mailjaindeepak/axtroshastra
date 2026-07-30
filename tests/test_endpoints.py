@@ -42,3 +42,32 @@ def test_pdf_route_is_gated(client):
 def test_admin_reconcile_requires_key(client):
     assert client.post("/api/reconcile").status_code == 403
     assert client.post("/api/reconcile?key=test-stats-key").status_code == 200
+
+
+# --- Analytics coverage: the report page, /login and static marketing pages all
+# carry GA + Meta Pixel + Clarity, and pages that embed the block by hand are not
+# double-injected. Guards the gap where server-rendered pages had zero tracking.
+_TRACKERS = ("G-NKRQM1HJ97", "718516041517482", "clarity.ms/tag")
+
+
+def test_report_page_has_all_trackers(client):
+    rid = _paid_report(client)
+    html = client.get(f"/report/{rid}").text
+    for t in _TRACKERS:
+        assert t in html, f"report page missing tracker {t}"
+    # Injected exactly once — the Clarity tag must not appear twice.
+    assert html.count("clarity.ms/tag") == 1
+
+
+def test_login_page_has_all_trackers(client):
+    html = client.get("/login").text
+    for t in _TRACKERS:
+        assert t in html, f"login page missing tracker {t}"
+
+
+def test_static_page_not_double_injected(client):
+    # A marketing page already embeds the block by hand; the injector must skip
+    # it so page_view / PageView fire once, not twice.
+    html = client.get("/en/marriage").text
+    assert html.count("clarity.ms/tag") == 1
+    assert html.count("fbq('init'") == 1
