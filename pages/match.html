@@ -504,6 +504,7 @@ var _formStarted = false;
 document.getElementById('milanForm').addEventListener('focusin', function(){
   if(_formStarted) return; _formStarted = true;
   if(window.gtag) gtag('event', 'form_start');
+  if(window.fbq) fbq('trackCustom', 'FormStart');
 });
 
 // map form state -> time_quality tier
@@ -679,7 +680,7 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
         if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);

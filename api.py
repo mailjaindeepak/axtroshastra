@@ -38,6 +38,7 @@ import pdfgen                # browser-quality PDF: pre-generated at payment, ca
 import users                 # account layer: create/link a user at payment time
 import auth                  # OTP login + session layer (Twilio Verify)
 import narrative             # optional LLM prose layer (Claude/OpenAI), off by default
+import tracking              # server-side Purchase -> Meta CAPI + GA4 MP, env-gated OFF
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -234,6 +235,14 @@ DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
+_MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
+
+
+def _order_amount_paise(rec: dict) -> int:
+    """The price actually charged for a report, by funnel variant. Single source
+    for both order creation and the server-side purchase-tracking value."""
+    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
+    return MILAN_PRICE_PAISE if variant in _MILAN_VARIANTS else PRICE_PAISE
 
 
 def _valid_admin_key(key: str) -> bool:
@@ -449,10 +458,67 @@ def _inject_nav(html: str, lang: str = "en") -> str:
                           html, count=1, flags=re.IGNORECASE)
     return new_html if n else html
 
+
+# Single source for the GA4 + Meta Pixel + Microsoft Clarity <head> block. The
+# static marketing pages under pages/*.html embed this exact snippet by hand;
+# the pages we build/serve in Python (the report page, /account, /login) never
+# had it, so those were invisible to all three trackers. _inject_tracking below
+# adds it to those — idempotently, so a page that already carries it is skipped
+# and never double-fires. Keep the three IDs in sync with the pages/*.html copy.
+_TRACKING_HEAD = """
+<!-- Analytics (injected server-side for pages without the hardcoded block) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NKRQM1HJ97"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NKRQM1HJ97');
+</script>
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '718516041517482');
+fbq('track', 'PageView');
+</script>
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "xkbm56cwzh");
+</script>
+"""
+
+
+def _inject_tracking(html: str) -> str:
+    """Add GA4 + Meta Pixel + Clarity to a page's <head> when it isn't already
+    there. Idempotent: skips any page already loading the Clarity tag, so the
+    hardcoded pages/*.html copies are left untouched (no double page_view /
+    PageView). Inserts before </head>; if a page somehow has no </head>, falls
+    back to just after <body> so tracking still loads. Never raises."""
+    try:
+        if not html or "clarity.ms/tag" in html:
+            return html
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: _TRACKING_HEAD + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + _TRACKING_HEAD,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[tracking] injection failed: %s", e)
+        return html
+
+
 def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_nav(f.read(), lang))
+            return HTMLResponse(_inject_tracking(_inject_nav(f.read(), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -650,8 +716,7 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
                                  "for %s: %s", rid, e)
             return {"free": True}
         return {"error": "invalid_pass"}
-    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
-    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match", "/en/compatibility", "/hi/compatibility") else PRICE_PAISE
+    amount_paise = _order_amount_paise(rec)
     order = rzp_client().order.create({
         "amount": amount_paise, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
@@ -715,6 +780,13 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     logger.error("[users] account upsert failed for %s: %s", rid, e)
                 if form_email:                   # (#7) email + PDF delivery
                     background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+                # Server-side Purchase -> Meta CAPI + GA4 MP (dormant unless the
+                # keys are set). The reliable backstop for the browser Pixel/gtag
+                # fire, which is lost to ad-blockers / closed tabs. event_id/
+                # transaction_id = rid dedups it against the client fire.
+                background_tasks.add_task(
+                    tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+                    "INR", phone, pay_email)
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -776,6 +848,10 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             logger.error("[users] account upsert failed for %s: %s", rid, e)
         if form_email:
             background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+        # Mirror the webhook: server-side Purchase backstop (env-gated OFF).
+        background_tasks.add_task(
+            tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+            "INR", phone, pay_email or form_email or "")
     return {"ok": True, "report_id": rid}
 
 
@@ -976,6 +1052,7 @@ def _wire_report_chrome(html: str, rid: str) -> str:
     one-tap PDF button, account banner, hamburger nav, account toast and the
     back-button supplement. Never raises — worst case the raw page ships."""
     try:
+        html = _inject_tracking(html)
         html = _wire_pdf_download(html)
         banner = _account_banner(rid)
         if banner:
@@ -1419,7 +1496,7 @@ def account_page(request: Request):
         # carry the destination so the OTP page can bounce straight back here
         return RedirectResponse("/login?next=%2Faccount", status_code=302)
     reports = users.get_user_reports(db, user["id"])
-    return HTMLResponse(_inject_nav(_render_account(user, reports)))
+    return HTMLResponse(_inject_tracking(_inject_nav(_render_account(user, reports))))
 
 
 extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoints
