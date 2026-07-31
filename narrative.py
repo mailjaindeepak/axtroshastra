@@ -30,7 +30,7 @@ Env:
   NARRATIVE_ENABLED   "1" to turn the layer on (default off -> banks only)
   NARRATIVE_PROVIDER  "claude" (default) | "openai"
   NARRATIVE_MODEL     override model id (else per-provider default below)
-  NARRATIVE_LANG      "hinglish" (default) | "english"
+  NARRATIVE_LANG      "english" (default) | "hi" (Devanagari); per-report meta.lang wins
   NARRATIVE_TONE      one extra voice line appended to the system prompt
   NARRATIVE_TEMPERATURE  default "0.7"
   NARRATIVE_MAX_TOKENS   default "1500"
@@ -68,21 +68,21 @@ def _model() -> str:
     return os.getenv("NARRATIVE_MODEL") or DEFAULT_MODEL[_provider()]
 
 def _lang() -> str:
-    return (os.getenv("NARRATIVE_LANG") or "hinglish").strip().lower()
+    # Only two output languages are supported: 'hi' (Devanagari) and 'english'.
+    v = (os.getenv("NARRATIVE_LANG") or "english").strip().lower()
+    return "hi" if v in ("hi", "hindi", "devanagari") else "english"
 
 def _resolve_lang(payload: dict) -> str:
     """Per-report locale wins over the global NARRATIVE_LANG env, so a Hindi buyer
     always gets Devanagari prose regardless of the server default. Reads the report's
     stored locale (meta.lang, set from the /hi/ vs /en/ funnel); falls back to _lang().
-    Returns one of: 'hi' (Devanagari) | 'english' | 'hinglish'."""
+    Returns one of: 'hi' (Devanagari) | 'english'. (Hinglish is not an output language.)"""
     meta = (payload or {}).get("meta") or {}
     loc = str(meta.get("lang") or (payload or {}).get("lang") or "").strip().lower()
     if loc in ("hi", "hindi", "devanagari"):
         return "hi"
     if loc in ("en", "english"):
         return "english"
-    if loc in ("hinglish", "hi-latn"):
-        return "hinglish"
     return _lang()
 
 def _float(name, default):
@@ -153,6 +153,7 @@ def generate_narrative(payload: dict) -> dict:
             return {}
         out = {}
         allowed = _allowed_numbers(facts)
+        truth = _planet_truth(facts)
         for key, _brief in spec:
             val = data.get(key)
             if not isinstance(val, str):
@@ -162,6 +163,9 @@ def generate_narrative(payload: dict) -> dict:
                 continue
             if not _numbers_ok(val, allowed):
                 logger.warning("[narrative] section %r dropped: unknown figure", key)
+                continue
+            if not _claims_ok(val, truth):
+                logger.warning("[narrative] section %r dropped: chart-contradicting placement", key)
                 continue
             out[key] = html.escape(val)
         logger.info("[narrative] %s/%s lang=%s model=%s -> %d/%d sections generated",
@@ -206,7 +210,7 @@ def _facts_for_llm(payload: dict, product: str) -> dict:
     for k in ("teaser", "significators", "windows", "manglik", "current_period",
               "kootas", "total", "max_total", "verdict", "effective",
               "effective_verdict", "element", "match_pct", "cancellations",
-              "persona", "career", "roadmap", "extras", "chart"):
+              "persona", "career", "roadmap", "extras", "chart", "navamsa"):
         if k in payload:
             facts[k] = payload[k]
     return facts
@@ -217,37 +221,49 @@ def _system_prompt(product: str, spec, lang_code: str = "") -> str:
     if lang_code == "hi":
         lang = ("Write in warm, natural, conversational Hindi in the Devanagari script "
                 "(हिंदी, देवनागरी लिपि) — the way a caring, well-spoken Indian astrologer "
-                "speaks to a young couple. Address them respectfully as 'आप'. Use everyday "
-                "spoken Hindi, not heavy or over-Sanskritised textbook Hindi; the few "
-                "familiar loan-words couples actually use (रिश्ता, कम्पैटिबिलिटी, बैलेंस) are "
-                "fine where they read naturally. Do NOT transliterate Hindi into Roman/Latin "
-                "letters. Keep proper nouns, brand names and the Vedic terms in the Devanagari "
-                "form given in the facts; write digits and scores as Western numerals (e.g. 36, "
-                "18/36, 85%). Sound like a real person who has actually read this couple's "
-                "chart, never like a translation.")
-    elif lang_code == "hinglish":
-        lang = ("Write in warm, natural Hinglish (Hindi-English mix, Roman script), the "
-                "way a caring Indian astrologer speaks.")
+                "speaks. Address the reader respectfully as 'आप'. Use everyday spoken Hindi, "
+                "not heavy or over-Sanskritised textbook Hindi; a few familiar loan-words "
+                "(रिश्ता, कम्पैटिबिलिटी, बैलेंस) are fine where they read naturally. Do NOT "
+                "transliterate Hindi into Roman/Latin letters. Keep proper nouns and the "
+                "Vedic terms in the Devanagari form given in the facts; write digits and "
+                "scores as Western numerals (e.g. 36, 18/36, 85%). Sound like a real person "
+                "who has actually read this chart, never like a translation.")
     else:
-        lang = "Write in warm, natural English."
+        lang = ("Write in warm, natural, conversational English — the way a caring, "
+                "well-spoken astrologer speaks to someone they genuinely want to help. "
+                "Clear, human and encouraging, never stiff or textbook-like.")
     tone = os.getenv("NARRATIVE_TONE", "").strip()
     keys = ", ".join(k for k, _ in spec)
     return (
-        "You are the narrative writer for Axtroshastra, a computational Vedic "
-        "astrology product. You are given the EXACT results already computed by a "
-        "deterministic engine. Your ONLY job is to turn them into vivid, warm, "
-        "personal prose.\n\n"
-        f"{lang}\n"
+        "You are a warm, compassionate, and knowledgeable Vedic astrologer (Jyotish "
+        "Shastri) writing the personal-prose layer of Axtroshastra. A deterministic "
+        "engine has ALREADY computed every fact — dates, scores, signs, placements, "
+        "verdicts — and the report template prints them. Your ONLY job is to turn those "
+        "facts into engaging, warm, conversational prose the reader loves to read.\n\n"
+        f"{lang}\n\n"
+        "How to write:\n"
+        "- Speak directly and warmly to the reader. Sound like a caring astrologer who "
+        "has actually read this chart, not a textbook.\n"
+        "- Explain any technical idea (dasha, transit, yoga, nakshatra) with a simple, "
+        "everyday analogy or example. Keep sentences short and easy to follow.\n"
+        "- Avoid heavy, archaic, over-technical phrasing. Be clear and human.\n\n"
         "Hard rules:\n"
-        "1. NEVER invent, change, or contradict any number, score, date, grade, "
-        "percentage, sign, or verdict. Describe meaning; do not restate the raw "
-        "scores (the report prints those itself).\n"
-        "2. Be reassuring and non-fatalistic — never predict doom, death, divorce, "
-        "or medical/financial outcomes. Astrology here is guidance, not certainty.\n"
-        "3. No markdown, no HTML, no emojis, no headings — plain sentences only.\n"
-        f"4. Return ONLY a JSON object with exactly these string keys: {keys}. "
-        "Each value is the prose for that section.\n"
-        + (f"5. Voice: {tone}\n" if tone else "")
+        "1. NEVER invent, change, or contradict any fact you were given — no number, "
+        "score, date, grade, percentage, sign, planet, house, dignity, or verdict may "
+        "differ from the input. Describe what a fact MEANS; do not restate the raw "
+        "scores (the template prints those itself).\n"
+        "2. Do not state any placement or claim that is not in the facts. If unsure, "
+        "speak to the meaning generally rather than naming a specific position.\n"
+        "3. Stay reassuring and non-fatalistic — never predict doom, death, divorce, "
+        "disease, or financial ruin, and avoid overly negative language. This is warm, "
+        "supportive guidance, not a warning.\n"
+        "4. Plain sentences only — the template owns all headings, bullets, callout "
+        "boxes and layout, so do not output markdown or HTML. You may use a few tasteful, "
+        "relevant emojis where they add warmth (e.g. 💖 ✨ 🌟), but sparingly — never a "
+        "cluster, and at most one or two per section.\n"
+        f"5. Return ONLY a JSON object with exactly these string keys: {keys}. Each value "
+        "is the prose for that section.\n"
+        + (f"6. Voice: {tone}\n" if tone else "")
     )
 
 
@@ -255,7 +271,10 @@ def _user_prompt(facts: dict, spec) -> str:
     briefs = "\n".join(f"- {k}: {brief}" for k, brief in spec)
     return ("Here are the computed facts for this report (JSON):\n\n"
             + json.dumps(facts, ensure_ascii=False, default=str)
-            + "\n\nWrite these sections:\n" + briefs
+            + "\n\nWrite the sections below. They appear in the report in this order and "
+              "together form one flowing, cohesive report — keep the voice consistent, let "
+              "earlier sections set up later ones, and do not repeat the same point across "
+              "sections.\n\nSections:\n" + briefs
             + "\n\nReturn only the JSON object.")
 
 
@@ -283,6 +302,85 @@ def _allowed_numbers(facts: dict) -> set:
 def _numbers_ok(text: str, allowed: set) -> bool:
     for m in _NUM_TOKEN.finditer(text):
         if m.group(0).replace(" ", "") not in allowed:
+            return False
+    return True
+
+
+# --------------------------------------------------------------------------- #
+# qualitative fact-preservation guardrail
+# --------------------------------------------------------------------------- #
+# The numeric guard above only catches altered scores/percentages/years. This
+# second guard catches altered *placements*: if the prose says a planet is in a
+# sign, or is exalted/debilitated, that claim must agree with the computed chart
+# (D1 rashi OR D9 navamsa). A contradiction drops the section back to the bank.
+# It is deliberately conservative — it only fires on an explicit "<planet> in
+# <sign>" / "<planet> ... exalted|debilitated" assertion, so warm prose that
+# never names a placement (the desired style) is never touched.
+_SIGNS_SA = ["mesha", "vrishabha", "mithuna", "karka", "simha", "kanya",
+             "tula", "vrishchika", "dhanu", "makara", "kumbha", "meena"]
+_SIGNS_EN = ["aries", "taurus", "gemini", "cancer", "leo", "virgo",
+             "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"]
+_PLANETS = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"]
+
+def _sign_index(name: str) -> int:
+    n = (name or "").strip().lower()
+    if n in _SIGNS_SA:
+        return _SIGNS_SA.index(n)
+    if n in _SIGNS_EN:
+        return _SIGNS_EN.index(n)
+    return -1
+
+_PLANET_ALT = "|".join(_PLANETS)
+_SIGN_ALT = "|".join(_SIGNS_SA + _SIGNS_EN)
+# "<planet> [up to 30 non-sentence chars] in [the] <sign>"
+_PLACEMENT_RE = re.compile(
+    r"\b(%s)\b[^.?!]{0,30}?\bin\s+(?:the\s+)?(%s)\b" % (_PLANET_ALT, _SIGN_ALT), re.I)
+_PLANET_RE = re.compile(r"\b(%s)\b" % _PLANET_ALT, re.I)
+# a dignity adjective in the window just after a planet name
+_DIGNITY_RE = re.compile(r"\b(exalted|debilitat\w*|debilited|own\s+sign)\b", re.I)
+# "fallen" is intentionally excluded — too collision-prone in love prose ("fallen for…")
+_ASTRO_CTX_RE = re.compile(r"\b(%s|sign|rashi|navamsa|d9|house|chart)\b" % _SIGN_ALT, re.I)
+
+def _planet_truth(facts: dict) -> dict:
+    """planet(lower) -> {'signs': {valid sign indices, D1+D9}, 'dignities': {valid dignity words}}."""
+    truth = {}
+    for name, info in ((facts.get("chart") or {}).get("planets") or {}).items():
+        t = truth.setdefault(name.lower(), {"signs": set(), "dignities": set()})
+        si = _sign_index(info.get("sign", ""))
+        if si >= 0:
+            t["signs"].add(si)
+        t["dignities"].add((info.get("dignity") or "neutral").lower())
+    for name, info in ((facts.get("navamsa") or {}).get("planets") or {}).items():
+        t = truth.setdefault(name.lower(), {"signs": set(), "dignities": set()})
+        si = _sign_index(info.get("sign", ""))
+        if si >= 0:
+            t["signs"].add(si)
+        t["dignities"].add((info.get("dignity") or "neutral").lower())
+    return truth
+
+def _claims_ok(text: str, truth: dict) -> bool:
+    """False if the prose asserts a planet placement or dignity that the chart contradicts."""
+    if not truth:
+        return True
+    for m in _PLACEMENT_RE.finditer(text):
+        t = truth.get(m.group(1).lower())
+        si = _sign_index(m.group(2))
+        if t and si >= 0 and t["signs"] and si not in t["signs"]:
+            return False
+    # dignity: scan a short window after each planet; only a claim if a dignity
+    # word AND an astrological context (sign / 'sign' / 'navamsa' / …) co-occur,
+    # so a metaphorical "exalted sense of duty" is not treated as a chart claim.
+    for m in _PLANET_RE.finditer(text):
+        t = truth.get(m.group(1).lower())
+        if not t or not t["dignities"]:
+            continue
+        window = text[m.end():m.end() + 45]
+        dm = _DIGNITY_RE.search(window)
+        if not dm or not _ASTRO_CTX_RE.search(window):
+            continue
+        word = dm.group(1).lower()
+        claimed = "debilitated" if word.startswith("debili") else "own" if "own" in word else "exalted"
+        if claimed not in t["dignities"]:
             return False
     return True
 
