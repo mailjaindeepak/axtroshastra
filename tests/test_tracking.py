@@ -5,32 +5,24 @@ is: with no keys configured, track_purchase does absolutely nothing and never
 raises (it runs inside a payment background task and must never break checkout).
 """
 import hashlib
-import hmac
-import json
 
-import api
 import tracking
 
-WEBHOOK_SECRET = b"test-webhook-secret"   # matches conftest's RAZORPAY_WEBHOOK_SECRET
+# The signed-webhook helper now lives in tests/conftest.py as the `pay_webhook`
+# fixture (shared with test_users / test_contact_capture).
+
 KUNDLI = {"name": "Track Buyer", "dob": "1991-06-10", "tob": "09:20",
           "time_quality": "T0", "place": "Delhi", "gender": "female"}
 
 
-def test_webhook_fires_server_side_purchase(client, monkeypatch):
+def test_webhook_fires_server_side_purchase(client, monkeypatch, pay_webhook):
     """A captured payment must hand the Purchase to tracking.track_purchase with
     the report id (dedup key), value, currency and the buyer contact."""
     calls = []
     monkeypatch.setattr(tracking, "track_purchase",
                         lambda *a, **k: calls.append((a, k)))
     rid = client.post("/api/kundli", json=KUNDLI).json()["report_id"]
-    ent = {"id": "pay_trk_1", "contact": "+919812345678",
-           "email": "buyer@example.com", "notes": {"report_id": rid}}
-    body = json.dumps({"event": "payment.captured",
-                       "payload": {"payment": {"entity": ent}}}).encode()
-    sig = hmac.new(WEBHOOK_SECRET, body, hashlib.sha256).hexdigest()
-    r = client.post("/api/webhook", content=body,
-                    headers={"X-Razorpay-Signature": sig})
-    assert r.status_code == 200, r.text
+    pay_webhook(client, rid, "pay_trk_1", "+919812345678", "buyer@example.com")
     assert len(calls) == 1, "track_purchase should fire exactly once per capture"
     args, _ = calls[0]
     assert args[0] == rid                 # event_id / transaction_id dedup key
