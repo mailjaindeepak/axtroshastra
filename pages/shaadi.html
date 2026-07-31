@@ -273,6 +273,10 @@ fbq('track', 'PageView');
         <input id="f-name" type="text" placeholder="Your name" required>
       </div>
       <div class="field">
+        <label for="f-gender">You are</label>
+        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
+      </div>
+      <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
           <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
@@ -506,6 +510,7 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var REPORT_ID = null;
+window.__renderTeaser = renderTeaser;   // expose at init (hoisted) so a restored teaser can re-render on load
 
 // populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
@@ -527,10 +532,11 @@ function buildDob(){
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
 // funnel event: fires once when user starts filling the form
-var _formStarted = false;
+window._formStarted = false;   // reset per page load; restore() re-sets it from saved state so a language toggle can't re-fire form_start
 document.getElementById('kundliForm').addEventListener('focusin', function(){
-  if(_formStarted) return; _formStarted = true;
+  if(window._formStarted) return; window._formStarted = true;
   if(window.gtag) gtag('event', 'form_start');
+  if(window.fbq) fbq('trackCustom', 'FormStart');
 });
 
 // unknown birth-time toggle
@@ -580,6 +586,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
+        gender: document.getElementById('f-gender').value || null,
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
@@ -589,7 +596,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     var res = results[0];
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
     var data = await res.json();
-    REPORT_ID = data.report_id;
+    REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
     window.__teaserData = data.teaser; window.__renderTeaser = renderTeaser; renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead');
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
@@ -639,7 +646,7 @@ function renderTeaser(t){
   });
   var el = document.getElementById('teaser');
   el.classList.add('show');
-  el.scrollIntoView({behavior:'smooth'});
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
   sb.innerHTML = 'Unlock <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
   sb.setAttribute('href', 'javascript:void(0)');
@@ -767,7 +774,7 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'});
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
         if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
@@ -906,18 +913,32 @@ window.addEventListener('scroll', function(){
   function L(en,hi){ return (window.__axlang==="en")?en:hi; }
   function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
   var nameHint=mkHint(document.getElementById("f-name"));
+  var genderHint=mkHint(document.getElementById("f-gender"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
-  function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
-  function checkDate(){ dobHint.textContent = dateValid()? "" : L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye."); }
+  function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+    var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
+    if(+y<1900||+y>cy) return L("Please enter a birth year between 1900 and "+cy+".","1900 aur "+cy+" ke beech ka birth year likhiye.");
+    var dt=new Date(+y,+m-1,+d);
+    if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return L("This date does not exist. Please re-check.","Yeh date exist nahi karti. Dobara check kijiye.");
+    if(dt>t) return L("Birth date can't be in the future.","Birth date future mein nahi ho sakti.");
+    return ""; }
+  function dateValid(){ return dateMsg()===""; }
+  function checkDate(){ dobHint.textContent = dateMsg(); }
   if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  var thh=document.getElementById("f-hh"),tmn=document.getElementById("f-mm2"),tap=document.getElementById("f-ap");
+  function tobPartial(){ if(document.getElementById("unknownTime").checked) return false; var n=(thh&&thh.value?1:0)+(tmn&&tmn.value?1:0)+(tap&&tap.value?1:0); return n>0&&n<3; }
+  function checkTob(){ tobHint.textContent = tobPartial()? L("Please enter the full time (hour, minute, AM/PM), or clear it.","Poora time bhariye (ghanta, minute, AM/PM), ya khaali chhod dijiye.") : ""; }
+  if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
     var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
     nm.value=clean;
     if(!clean){ nameHint.textContent=L("Please enter your name.","Apna naam likhiye."); stop(); return; } nameHint.textContent="";
+    if(!document.getElementById("f-gender").value){ genderHint.textContent=L("Please select whether you are male or female.","Kripya chuniye ki aap purush hain ya mahila."); stop(); return; } genderHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(tobPartial()){ checkTob(); stop(); if(thh)thh.focus(); return; }
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","Apna birth time chuniye, ya neeche wala box tick kijiye agar nahi pata."); stop(); return; } tobHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
     var teaser=document.getElementById("teaser");
@@ -933,13 +954,62 @@ window.addEventListener('scroll', function(){
     brand.addEventListener("click", function(){ location.href="/"; });
     brand.addEventListener("keydown", function(e){ if(e.key==="Enter"){ location.href="/"; } }); }
   var ov=document.getElementById("calcOv");
-  if(ov && window.MutationObserver){ new MutationObserver(function(){ document.body.style.overflow = ov.classList.contains("show") ? "hidden" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
+  if(ov && window.MutationObserver){ new MutationObserver(function(){ var g=ov.classList.contains("show"); document.body.style.overflow = g ? "hidden" : ""; var cap=document.getElementById("axlang"); if(cap) cap.style.display = g ? "none" : ""; }).observe(ov,{attributes:true,attributeFilter:["class"]}); }
   function wireCap(){ var cap=document.getElementById("axlang"); if(!cap){ return; }
     cap.style.transition="opacity .25s ease"; var t;
     window.addEventListener("scroll", function(){ cap.style.opacity=".2"; clearTimeout(t); t=setTimeout(function(){ cap.style.opacity=""; },600); }, {passive:true});
     function full(){ cap.style.opacity=""; clearTimeout(t); }
     cap.addEventListener("mouseenter",full); cap.addEventListener("touchstart",full,{passive:true}); }
   wireCap();
+})();
+</script>
+<script>
+/* Retain what the user typed (and any generated snapshot) across the
+   English <-> Hindi route switch, so switching pages never loses data. */
+(function(){
+  var KEY='axtro_shaadi_state';
+  var IDS=['f-name','f-gender','f-dd','f-mm','f-yy','f-hh','f-mm2','f-ap','f-approx','f-place','f-tob'];
+  function save(){
+    try{
+      var st={};
+      IDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
+      var u=document.getElementById('unknownTime'); if(u) st.unknownTime=u.checked;
+      if(window.__axCity) st.city=window.__axCity;
+      if(window.REPORT_ID) st.reportId=window.REPORT_ID;
+      if(window.__teaserData) st.teaser=window.__teaserData;
+      st.formStarted = !!window._formStarted;   // remember the form was already started
+      sessionStorage.setItem(KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+  function fire(el,type){ try{ el.dispatchEvent(new Event(type,{bubbles:true})); }catch(e){} }
+  function restore(){
+    var sw=null; try{ sw=sessionStorage.getItem('axtro_switch'); sessionStorage.removeItem('axtro_switch'); }catch(e){}
+    if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
+    var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
+    if(!st) return;
+    window._formStarted = !!st.formStarted;   // form already started before the toggle -> don't let restore focus events re-fire form_start
+    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    var g=document.getElementById('f-gender'); if(g && st['f-gender']!=null) fire(g,'change');
+    var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
+    var hh=document.getElementById('f-hh'); if(hh) fire(hh,'change');
+    if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
+    if(st.reportId && st.teaser){
+      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
+      window.__axNoScroll=true;
+      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
+      window.__axNoScroll=false;
+    }
+  }
+  document.addEventListener('input', save, true);
+  document.addEventListener('change', save, true);
+  window.addEventListener('pagehide', save);
+  if(document.readyState!=='loading') restore(); else document.addEventListener('DOMContentLoaded', restore);
+  /* Set the switch flag before the toggle navigates, so the destination
+     page restores (a plain refresh / normal nav clears instead). */
+  (function(){ var cap=document.getElementById('axlang'); if(!cap) return;
+    var links=cap.querySelectorAll('a');
+    for(var i=0;i<links.length;i++){ links[i].addEventListener('click', function(){ try{ sessionStorage.setItem('axtro_switch','1'); }catch(e){} }); }
+  })();
 })();
 </script>
 
@@ -949,14 +1019,19 @@ window.addEventListener('scroll', function(){
 (function(){
   var track = document.getElementById('revsTrack');
   if(!track) return;
-  Array.prototype.slice.call(track.children).forEach(function(n){ track.appendChild(n.cloneNode(true)); });
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5;
-  function half(){ return track.scrollWidth / 2; }
+  var paused = reduce, speed = 0.5, dir = 1;
+  // No cloning: a manual swipe shows only the real reviews, once. The ambient
+  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
+  // no jarring jump from the last review back to the first.
   function tick(){
-    if(!paused && half() > 0){
-      track.scrollLeft += speed;
-      if(track.scrollLeft >= half()) track.scrollLeft -= half();
+    if(!paused){
+      var mx = track.scrollWidth - track.clientWidth;
+      if(mx > 0){
+        track.scrollLeft += speed * dir;
+        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
+        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
+      }
     }
     requestAnimationFrame(tick);
   }
@@ -966,6 +1041,17 @@ window.addEventListener('scroll', function(){
   track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
   window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
   requestAnimationFrame(tick);
+})();
+</script>
+<script>
+/* Clear for the time-of-birth selects: their placeholder option is hidden, so a
+   picked hour otherwise can't be un-picked. Resets all three + the hidden value. */
+(function(){
+  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
+  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='Clear'; b.setAttribute('aria-label','Clear time of birth');
+  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
+  hh.parentElement.appendChild(b);
+  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 })();
 </script>
 </body>

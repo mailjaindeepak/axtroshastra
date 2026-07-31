@@ -12,13 +12,12 @@ POST /api/order now carries `phone` (the buyer's WhatsApp/account number) and
 
 Razorpay creds are absent in tests, so order creation stubs api.rzp_client.
 """
-import hashlib
-import hmac
 import json
 
 import api
 
-WEBHOOK_SECRET = b"test-webhook-secret"   # matches conftest's RAZORPAY_WEBHOOK_SECRET
+# The signed-webhook helper now lives in tests/conftest.py as the `pay_webhook`
+# fixture (shared with test_users / test_tracking).
 
 KUNDLI = {"name": "Popup Tester", "dob": "1992-03-15", "tob": "11:40",
           "time_quality": "T0", "place": "Delhi", "gender": "female"}
@@ -28,20 +27,6 @@ def _new_report(client, **overrides):
     r = client.post("/api/kundli", json={**KUNDLI, **overrides})
     assert r.status_code == 200, r.text
     return r.json()["report_id"]
-
-
-def _pay_webhook(client, rid, payment_id, contact, email=None):
-    ent = {"id": payment_id, "contact": contact, "notes": {"report_id": rid}}
-    if email is not None:
-        ent["email"] = email
-    event = {"event": "payment.captured",
-             "payload": {"payment": {"entity": ent}}}
-    body = json.dumps(event).encode()
-    sig = hmac.new(WEBHOOK_SECRET, body, hashlib.sha256).hexdigest()
-    r = client.post("/api/webhook", content=body,
-                    headers={"X-Razorpay-Signature": sig})
-    assert r.status_code == 200, r.text
-    return r.json()
 
 
 class _StubOrders:
@@ -98,12 +83,12 @@ def test_order_without_contact_still_works(client, monkeypatch):
 
 
 # --------------------------------------- webhook prefers the popup number
-def test_webhook_prefers_popup_number_over_payment_contact(client, monkeypatch):
+def test_webhook_prefers_popup_number_over_payment_contact(client, monkeypatch, pay_webhook):
     rid = _new_report(client)
     _stub_rzp(monkeypatch)
     client.post("/api/order", json={"report_id": rid, "phone": "9876500002"})
     # The customer pays from a DIFFERENT number — expected and fine.
-    _pay_webhook(client, rid, "pay_t1_1", "+911112223334")
+    pay_webhook(client, rid, "pay_t1_1", "+911112223334")
 
     body = client.get(f"/api/report/{rid}").json()
     assert body["paid"] is True
@@ -122,13 +107,40 @@ def test_webhook_prefers_popup_number_over_payment_contact(client, monkeypatch):
     assert "Payment" in html and "+91 11122 23334" in html
 
 
-def test_webhook_falls_back_to_payment_contact(client):
+def test_webhook_falls_back_to_payment_contact(client, pay_webhook):
     """No popup number on file -> the Razorpay contact still creates the
     account (pre-popup behaviour, and the safety net if the popup is skipped)."""
     rid = _new_report(client)
-    _pay_webhook(client, rid, "pay_t1_2", "+919444455556")
+    pay_webhook(client, rid, "pay_t1_2", "+919444455556")
     acct = client.get(f"/api/report/{rid}").json()["account"]
     assert acct["mobile"] == "+919444455556"
+
+
+# -------------------------------------- milan report with no name (past crash)
+def test_milan_webhook_without_name_does_not_crash(client, monkeypatch, pay_webhook):
+    """A milan report's meta has p1/p2 but NO `name`. Indexing meta['name']
+    crashed the webhook mid-way for every milan payment (paid got marked, but
+    account creation / WhatsApp never ran). _display_name must yield 'P1 & P2'
+    and the webhook must complete: paid + account created, no 500/KeyError."""
+    monkeypatch.setattr(api, "_pregenerate_pdf_task", lambda rid: None)
+    monkeypatch.setattr(api, "send_whatsapp_report", lambda *a, **k: None)
+
+    rid = "r_milan_noname_1"
+    api.save_report(rid, {"product": "milan",
+                          "teaser": {"verdict": "ok"},
+                          "meta": {"p1": "Asha", "p2": "Vikram"}})
+
+    pay_webhook(client, rid, "pay_milan_1", "+919812300000", "couple@example.com")
+
+    body = client.get(f"/api/report/{rid}").json()
+    assert body["paid"] is True
+    acct = body["account"]
+    assert acct is not None                       # account created despite no name
+    assert acct["mobile"] == "+919812300000"
+
+    # the display name is the couple, not a crash
+    assert api._display_name(
+        {"product": "milan", "meta": {"p1": "Asha", "p2": "Vikram"}}) == "Asha & Vikram"
 
 
 # --------------------------------------------------- free-pass unlock

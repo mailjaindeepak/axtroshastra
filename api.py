@@ -38,6 +38,7 @@ import pdfgen                # browser-quality PDF: pre-generated at payment, ca
 import users                 # account layer: create/link a user at payment time
 import auth                  # OTP login + session layer (Twilio Verify)
 import narrative             # optional LLM prose layer (Claude/OpenAI), off by default
+import tracking              # server-side Purchase -> Meta CAPI + GA4 MP, env-gated OFF
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
@@ -135,19 +136,24 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
                 content_sid=TWILIO_CONTENT_SID_TEXT,
                 content_variables=json.dumps({"1": name, "2": link}))
         elif TWILIO_CONTENT_SID:                     # production: approved template
-            # Approved media template `axtroshastra_wp_msg` (document header):
+            # Approved media template (document header):
             #   {{1}} customer name
             #   {{2}} login URL
-            #   {{3}} PDF *path only* — the template's media URL is configured
-            #         as https://www.axtroshastra.com/{{3}}, so we must NOT
-            #         pass a full URL here, just everything after the domain.
-            # /report/{rid}/pdf regenerates on a cold cache, so Twilio's media
-            # fetch succeeds even when pregeneration lagged or the box restarted.
+            #   {{3}} report id ONLY — the resubmitted template's media URL is
+            #         https://www.axtroshastra.com/report/{{3}}.pdf (the trailing
+            #         .pdf is required: Twilio rejects a media URL with no file
+            #         extension, and Meta rejects a variable at the very end).
+            #         So pass ONLY the rid here, never a path. /report/{rid}.pdf
+            #         serves the same file as /report/{rid}/pdf and regenerates
+            #         on a cold cache, so Twilio's media fetch always succeeds.
+            #   NOTE: TWILIO_CONTENT_SID must point at this .pdf-shaped template.
+            #         Setting it to the older /{{3}} template will build a broken
+            #         URL — the env SID and this line are a matched pair.
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
                 content_variables=json.dumps(
-                    {"1": name, "2": login, "3": f"report/{rid}/pdf"}))
+                    {"1": name, "2": login, "3": rid}))
         else:                                        # sandbox / 24h session freeform
             kwargs = {"media_url": media} if media else {}
             body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
@@ -229,6 +235,14 @@ DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
+_MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
+
+
+def _order_amount_paise(rec: dict) -> int:
+    """The price actually charged for a report, by funnel variant. Single source
+    for both order creation and the server-side purchase-tracking value."""
+    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
+    return MILAN_PRICE_PAISE if variant in _MILAN_VARIANTS else PRICE_PAISE
 
 
 def _valid_admin_key(key: str) -> bool:
@@ -383,10 +397,23 @@ NAV_LINKS = [
     ("Terms of Use", "/terms"),
     ("Blogs", "/blog"),
 ]
+# Devanagari nav for /hi/* pages. Only "Home" changes destination (-> /hi, the
+# Hindi homepage) so navigation stays in-language; the support pages are
+# English-only for now, so their links still point at the English versions.
+NAV_LINKS_HI = [
+    ("होम", "/hi"),
+    ("लॉगिन / मेरा अकाउंट", "/account"),
+    ("हमारे बारे में", "/about"),
+    ("प्राइवेसी पॉलिसी", "/privacy"),
+    ("नियम व शर्तें", "/terms"),
+    ("ब्लॉग", "/blog"),
+]
 
-def _nav_html() -> str:
+def _nav_html(lang: str = "en") -> str:
+    links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
+    menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
-        f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in NAV_LINKS
+        f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links
     )
     return (
         '<div id="axs-nav">'
@@ -396,7 +423,7 @@ def _nav_html() -> str:
         '<div class="axs-nav-backdrop" '
         'onclick="document.getElementById(\'axs-nav\').classList.remove(\'open\')"></div>'
         '<nav class="axs-nav-panel">'
-        '<div class="axs-nav-head">Menu</div>'
+        f'<div class="axs-nav-head">{menu}</div>'
         + items +
         '</nav></div>'
         '<style>'
@@ -422,19 +449,76 @@ def _nav_html() -> str:
         '</style>'
     )
 
-def _inject_nav(html: str) -> str:
+def _inject_nav(html: str, lang: str = "en") -> str:
     """Insert the hamburger nav right after the opening <body> tag. If for some
     reason there's no <body>, return the html unchanged (never break a page)."""
     import re
-    nav = _nav_html()
+    nav = _nav_html(lang)
     new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + nav,
                           html, count=1, flags=re.IGNORECASE)
     return new_html if n else html
 
-def _serve_page_with_nav(path: str):
+
+# Single source for the GA4 + Meta Pixel + Microsoft Clarity <head> block. The
+# static marketing pages under pages/*.html embed this exact snippet by hand;
+# the pages we build/serve in Python (the report page, /account, /login) never
+# had it, so those were invisible to all three trackers. _inject_tracking below
+# adds it to those — idempotently, so a page that already carries it is skipped
+# and never double-fires. Keep the three IDs in sync with the pages/*.html copy.
+_TRACKING_HEAD = """
+<!-- Analytics (injected server-side for pages without the hardcoded block) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NKRQM1HJ97"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NKRQM1HJ97');
+</script>
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '718516041517482');
+fbq('track', 'PageView');
+</script>
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "xkbm56cwzh");
+</script>
+"""
+
+
+def _inject_tracking(html: str) -> str:
+    """Add GA4 + Meta Pixel + Clarity to a page's <head> when it isn't already
+    there. Idempotent: skips any page already loading the Clarity tag, so the
+    hardcoded pages/*.html copies are left untouched (no double page_view /
+    PageView). Inserts before </head>; if a page somehow has no </head>, falls
+    back to just after <body> so tracking still loads. Never raises."""
+    try:
+        if not html or "clarity.ms/tag" in html:
+            return html
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: _TRACKING_HEAD + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + _TRACKING_HEAD,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[tracking] injection failed: %s", e)
+        return html
+
+
+def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_nav(f.read()))
+            return HTMLResponse(_inject_tracking(_inject_nav(f.read(), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -497,12 +581,21 @@ def healthz_db():
 
 @app.get("/", include_in_schema=False)
 def landing():
-    """Homepage serves the main funnel page (pages/home.html overrides if present)."""
+    """English homepage."""
     for candidate in ("home.html", "shaadi.html"):
         path = os.path.join(PAGES_DIR, candidate)
         if os.path.exists(path):
-            return _serve_page_with_nav(path)
+            return _serve_page_with_nav(path, lang="en")
     return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>Axtroshastra</h3>")
+
+
+@app.get("/hi", include_in_schema=False)
+def landing_hi():
+    """Hindi (Devanagari) homepage — nav Home points back here to stay in-language."""
+    path = os.path.join(PAGES_DIR, "home.hi.html")
+    if os.path.exists(path):
+        return _serve_page_with_nav(path, lang="hi")
+    return RedirectResponse("/", status_code=302)
 
 
 @app.get("/api/city-suggest", include_in_schema=False)
@@ -623,8 +716,7 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
                                  "for %s: %s", rid, e)
             return {"free": True}
         return {"error": "invalid_pass"}
-    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
-    amount_paise = MILAN_PRICE_PAISE if variant in ("/milan", "/match", "/en/compatibility", "/hi/compatibility") else PRICE_PAISE
+    amount_paise = _order_amount_paise(rec)
     order = rzp_client().order.create({
         "amount": amount_paise, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
@@ -688,6 +780,13 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     logger.error("[users] account upsert failed for %s: %s", rid, e)
                 if form_email:                   # (#7) email + PDF delivery
                     background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+                # Server-side Purchase -> Meta CAPI + GA4 MP (dormant unless the
+                # keys are set). The reliable backstop for the browser Pixel/gtag
+                # fire, which is lost to ad-blockers / closed tabs. event_id/
+                # transaction_id = rid dedups it against the client fire.
+                background_tasks.add_task(
+                    tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+                    "INR", phone, pay_email)
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -749,6 +848,10 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             logger.error("[users] account upsert failed for %s: %s", rid, e)
         if form_email:
             background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+        # Mirror the webhook: server-side Purchase backstop (env-gated OFF).
+        background_tasks.add_task(
+            tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+            "INR", phone, pay_email or form_email or "")
     return {"ok": True, "report_id": rid}
 
 
@@ -841,7 +944,10 @@ def _account_banner(rid: str) -> str:
         logger.error("[users] banner payment-row failed for %s: %s", rid, e)
 
     return (
-        '<div style="background:#f3ece0;padding:14px;font-family:system-ui,'
+        # id lets @media print hide this card so a browser Print-to-PDF of the
+        # on-screen report matches the clean /report/{rid}/pdf output (which
+        # never includes the banner). See print rule injected in _wire_report_chrome.
+        '<div id="acct-banner" style="background:#f3ece0;padding:14px;font-family:system-ui,'
         "-apple-system,'Segoe UI',Roboto,sans-serif\">"
         '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid '
         '#ece3d6;border-radius:14px;box-shadow:0 2px 10px rgba(70,50,30,.05);'
@@ -873,10 +979,11 @@ def _account_banner(rid: str) -> str:
 # the fallback — which still yields the browser-quality PDF (owner-approved).
 _AXDL_SNIPPET = """<style>@media print{.ax-toast{display:none!important}}</style><script>
 function axToastPdf(msg){var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-t.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:1';
+t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.45 system-ui,sans-serif;max-width:92vw;width:430px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
 t.textContent=msg;document.body.appendChild(t);
-setTimeout(function(){t.style.transition='opacity .4s';t.style.opacity='0';
-setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},6500);}
+requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3200);}
 function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
 var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
 function done(){if(b)b.style.opacity='';}
@@ -918,11 +1025,12 @@ _REPORT_NAV_SNIPPET = """<script>
     if(hasAcct && !localStorage.getItem('axs_acct_toast_'+rid)){
       localStorage.setItem('axs_acct_toast_'+rid,'1');
       var t=document.createElement('div');t.setAttribute('role','status');t.className='ax-toast';
-      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+      t.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);z-index:99999;background:#151C39;color:#F3EFE4;border:1px solid #E4B04A;border-radius:12px;padding:12px 16px;font:600 13.5px/1.5 system-ui,sans-serif;max-width:92vw;width:450px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease,transform .3s ease';
       t.innerHTML='\\u2705 Account created \\u2014 login anytime with your mobile number. <a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;text-decoration:none">Log in \\u2192</a>';
       document.body.appendChild(t);
-      setTimeout(function(){t.style.transition='opacity .5s';t.style.opacity='0';
-        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},600);},8000);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3500);
     }
   }catch(e){}
   try{
@@ -944,10 +1052,15 @@ def _wire_report_chrome(html: str, rid: str) -> str:
     one-tap PDF button, account banner, hamburger nav, account toast and the
     back-button supplement. Never raises — worst case the raw page ships."""
     try:
+        html = _inject_tracking(html)
         html = _wire_pdf_download(html)
         banner = _account_banner(rid)
         if banner:
             import re as _re
+            # Hide the account card in print so browser Print-to-PDF of /report
+            # matches the banner-free /report/{rid}/pdf output.
+            banner = ('<style>@media print{#acct-banner{display:none!important}}</style>'
+                      + banner)
             html, n = _re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + banner,
                                html, count=1, flags=_re.IGNORECASE)
         html = _inject_nav(html)
@@ -961,6 +1074,18 @@ def _wire_report_chrome(html: str, rid: str) -> str:
     except Exception as e:
         logger.error("[report] chrome wiring failed for %s: %s", rid, e)
         return html
+
+
+@app.get("/report/{rid}.pdf", include_in_schema=False)
+def report_pdf_dotext(rid: str):
+    """Same file as /report/{rid}/pdf, reachable at a dot-extension address.
+    WhatsApp template media fields must end in a recognised file extension
+    (Twilio rejects a bare path segment like '/pdf' at submission time), so
+    the approved delivery template points here instead of the folder-style
+    route. Must be registered before /report/{rid} below — that route's
+    plain {rid} converter matches any slash-free string including
+    "xyz.pdf", so if it came first it would swallow this one and 404."""
+    return report_pdf(rid)
 
 
 @app.get("/report/{rid}", include_in_schema=False)
@@ -1371,7 +1496,7 @@ def account_page(request: Request):
         # carry the destination so the OTP page can bounce straight back here
         return RedirectResponse("/login?next=%2Faccount", status_code=302)
     reports = users.get_user_reports(db, user["id"])
-    return HTMLResponse(_inject_nav(_render_account(user, reports)))
+    return HTMLResponse(_inject_tracking(_inject_nav(_render_account(user, reports))))
 
 
 extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoints
@@ -1433,7 +1558,7 @@ def compatibility_en():
 @app.get("/hi/compatibility", include_in_schema=False)
 def compatibility_hi():
     """Hindi (Devanagari) love-compatibility landing at /hi/compatibility."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"))
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "milan.hi.html"), lang="hi")
 
 
 @app.get("/en/marriage", include_in_schema=False)
@@ -1445,7 +1570,7 @@ def marriage_en():
 @app.get("/hi/marriage", include_in_schema=False)
 def marriage_hi():
     """Hindi (Devanagari) marriage-timing landing at /hi/marriage."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"))
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"), lang="hi")
 
 
 @app.get("/shaadi", include_in_schema=False)

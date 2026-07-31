@@ -39,6 +39,52 @@ def test_pdf_route_is_gated(client):
     assert client.get(f"/report/{rid}/pdf").status_code in (200, 503)
 
 
+def test_pdf_dotext_route_matches_folder_route(client):
+    # WhatsApp's approved media template points at /report/{rid}.pdf (Twilio
+    # rejects a bare extensionless path segment like '/pdf' at template
+    # submission time). This dot-extension address must be gated the same
+    # way and return byte-identical content to /report/{rid}/pdf — a past
+    # regression silently dropped this route while both test suites stayed
+    # green, since nothing exercised this exact URL.
+    rid = client.post("/api/kundli", json=KUNDLI).json()["report_id"]
+    assert client.get(f"/report/{rid}.pdf").status_code == 404
+    client.post(f"/api/_demo_pay/{rid}")
+    folder = client.get(f"/report/{rid}/pdf")
+    dotext = client.get(f"/report/{rid}.pdf")
+    assert dotext.status_code == folder.status_code
+    if folder.status_code == 200:
+        assert dotext.content == folder.content
+
+
 def test_admin_reconcile_requires_key(client):
     assert client.post("/api/reconcile").status_code == 403
     assert client.post("/api/reconcile?key=test-stats-key").status_code == 200
+
+
+# --- Analytics coverage: the report page, /login and static marketing pages all
+# carry GA + Meta Pixel + Clarity, and pages that embed the block by hand are not
+# double-injected. Guards the gap where server-rendered pages had zero tracking.
+_TRACKERS = ("G-NKRQM1HJ97", "718516041517482", "clarity.ms/tag")
+
+
+def test_report_page_has_all_trackers(client):
+    rid = _paid_report(client)
+    html = client.get(f"/report/{rid}").text
+    for t in _TRACKERS:
+        assert t in html, f"report page missing tracker {t}"
+    # Injected exactly once — the Clarity tag must not appear twice.
+    assert html.count("clarity.ms/tag") == 1
+
+
+def test_login_page_has_all_trackers(client):
+    html = client.get("/login").text
+    for t in _TRACKERS:
+        assert t in html, f"login page missing tracker {t}"
+
+
+def test_static_page_not_double_injected(client):
+    # A marketing page already embeds the block by hand; the injector must skip
+    # it so page_view / PageView fire once, not twice.
+    html = client.get("/en/marriage").text
+    assert html.count("clarity.ms/tag") == 1
+    assert html.count("fbq('init'") == 1
