@@ -378,9 +378,17 @@ def render_milan_v2(p: dict) -> str:
     # assemble + auto-number
     pages = "".join(f'<section class="pg {cls}">{inner}<div class="pn">{i:02d}</div></section>'
                     for i, (cls, inner) in enumerate(S, 1))
-    share = f"https://wa.me/?text=Our%20Kundli%20Milan%3A%20{pct}%25%20%E2%9C%A8"
+    # Share the LIVE report URL alongside the score — recipients need the link,
+    # not just the number. Uses navigator.share when available, else wa.me with
+    # the current page URL appended (built at click time so it's correct in every
+    # environment). Mirrors report_view.axShare; the old href shared text only.
+    share_text = f"Our Kundli Milan: {pct}% ✨"
     actbar = (f'<div class="actbar"><a href="#" onclick="window.print();return false;">&#11015; Download PDF</a> '
-              f'<a class="wa" href="{share}" target="_blank" rel="noopener">Share on WhatsApp</a></div>')
+              f'<a class="wa" href="#" rel="noopener" onclick="'
+              f"var u=location.href,t='{share_text}';"
+              f"if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:u}}).catch(function(){{}});}}"
+              f"else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+u),'_blank');}}"
+              f'return false;">Share on WhatsApp</a></div>')
     return (f'<!DOCTYPE html><html lang="en"><head>{AX_PRE}<title>{p1n} ✕ {p2n} — Love Compatibility</title>'
             f'<style>{CSS}</style></head><body><div class="book">{pages}</div>{actbar}</body></html>')
 
@@ -805,11 +813,21 @@ def _appendix(p, pr1, pr2, kootas, by):
                      + "".join(crow(k) for k in kootas[:4])))
     # C scores 5-8 + total
     score_sum = " + ".join(str(_sc(k)) for k in kootas[:8])
+    # The headline % is the EFFECTIVE score (after any dosha cancellation), which
+    # can exceed the raw koota sum. Show that step explicitly — the old
+    # "{total}/36 → {pct}%" was mathematically false whenever a dosha was
+    # cancelled (e.g. 18.0/36 shown as 72%, when 72% is really 26/36).
+    if eff is not None and round(eff, 1) != round(total, 1):
+        total_eq = (f'{score_sum} = {total}/36'
+                    f'<span style="font-size:.82em;opacity:.85"> &middot; with dosha '
+                    f'cancellation, {eff}/36 = {pct_val}%</span>')
+    else:
+        total_eq = f'{score_sum} = {total}/36 = {pct_val}%'
     secs.append(("", f'<div class="ctag">Appendix · The 8 scores</div>'
                      f'<div class="eb">Shown, one by one</div><div class="h2">…and factors 5–8</div>'
                      f'<div class="sub">Then simply added up</div>'
                      + "".join(crow(k) for k in kootas[4:8])
-                     + f'<div class="total">{score_sum} = {total}/36 → {pct_val}%</div>'))
+                     + f'<div class="total">{total_eq}</div>'))
     # D dosha checks calculated
     secs += _dosha_appendix(p, pr1, pr2, by)
     # E method + glossary (dark)

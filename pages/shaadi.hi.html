@@ -529,9 +529,9 @@ function buildDob(){
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
 
 // funnel event: fires once when user starts filling the form
-var _formStarted = false;
+window._formStarted = false;   // reset per page load; restore() re-sets it from saved state so a language toggle can't re-fire form_start
 document.getElementById('kundliForm').addEventListener('focusin', function(){
-  if(_formStarted) return; _formStarted = true;
+  if(window._formStarted) return; window._formStarted = true;
   if(window.gtag) gtag('event', 'form_start');
   if(window.fbq) fbq('trackCustom', 'FormStart');
 });
@@ -971,6 +971,7 @@ window.addEventListener('scroll', function(){
       if(window.__axCity) st.city=window.__axCity;
       if(window.REPORT_ID) st.reportId=window.REPORT_ID;
       if(window.__teaserData) st.teaser=window.__teaserData;
+      st.formStarted = !!window._formStarted;   // remember the form was already started
       sessionStorage.setItem(KEY, JSON.stringify(st));
     }catch(e){}
   }
@@ -980,6 +981,7 @@ window.addEventListener('scroll', function(){
     if(sw!=='1') return;   // carry data only across a language switch (not on refresh / normal nav)
     var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
     if(!st) return;
+    window._formStarted = !!st.formStarted;   // form already started before the toggle -> don't let restore focus events re-fire form_start
     IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
     var g=document.getElementById('f-gender'); if(g && st['f-gender']!=null) fire(g,'change');
     var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
