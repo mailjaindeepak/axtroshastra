@@ -3,13 +3,10 @@ create a user from the payment's mobile + email, link the report to that user,
 and surface the saved details back to the buyer. Also guards mobile de-dupe
 (two purchases from one number => one account) and that non-Razorpay unlocks
 (demo/free-pass) create no account."""
-import hashlib
-import hmac
-import json
-
 import users
 
-WEBHOOK_SECRET = b"test-webhook-secret"   # matches conftest's RAZORPAY_WEBHOOK_SECRET
+# The signed-webhook helper now lives in tests/conftest.py as the `pay_webhook`
+# fixture (shared with test_contact_capture / test_tracking).
 
 KUNDLI = {"name": "Login Tester", "dob": "1990-05-10", "tob": "09:20",
           "time_quality": "T0", "place": "Delhi", "gender": "male"}
@@ -21,23 +18,9 @@ def _new_report(client, **overrides):
     return r.json()["report_id"]
 
 
-def _pay_webhook(client, rid, payment_id, contact, email=None):
-    ent = {"id": payment_id, "contact": contact, "notes": {"report_id": rid}}
-    if email is not None:
-        ent["email"] = email
-    event = {"event": "payment.captured",
-             "payload": {"payment": {"entity": ent}}}
-    body = json.dumps(event).encode()
-    sig = hmac.new(WEBHOOK_SECRET, body, hashlib.sha256).hexdigest()
-    r = client.post("/api/webhook", content=body,
-                    headers={"X-Razorpay-Signature": sig})
-    assert r.status_code == 200, r.text
-    return r.json()
-
-
-def test_webhook_creates_and_links_account(client):
+def test_webhook_creates_and_links_account(client, pay_webhook):
     rid = _new_report(client)
-    _pay_webhook(client, rid, "pay_acc_1", "+919812345678", "buyer@example.com")
+    pay_webhook(client, rid, "pay_acc_1", "+919812345678", "buyer@example.com")
 
     body = client.get(f"/api/report/{rid}").json()
     assert body["paid"] is True
@@ -54,18 +37,18 @@ def test_webhook_creates_and_links_account(client):
     assert "account created" in html.lower()
 
 
-def test_bare_ten_digit_mobile_is_normalised(client):
+def test_bare_ten_digit_mobile_is_normalised(client, pay_webhook):
     rid = _new_report(client)
-    _pay_webhook(client, rid, "pay_acc_2", "9800011122", email=None)
+    pay_webhook(client, rid, "pay_acc_2", "9800011122", email=None)
     acct = client.get(f"/api/report/{rid}").json()["account"]
     assert acct["mobile"] == "+919800011122"
 
 
-def test_same_mobile_two_reports_one_account(client):
+def test_same_mobile_two_reports_one_account(client, pay_webhook):
     rid1 = _new_report(client)
     rid2 = _new_report(client)
-    _pay_webhook(client, rid1, "pay_acc_3", "+919900099000", "one@example.com")
-    _pay_webhook(client, rid2, "pay_acc_4", "+919900099000")  # no email this time
+    pay_webhook(client, rid1, "pay_acc_3", "+919900099000", "one@example.com")
+    pay_webhook(client, rid2, "pay_acc_4", "+919900099000")  # no email this time
 
     a1 = client.get(f"/api/report/{rid1}").json()["account"]
     a2 = client.get(f"/api/report/{rid2}").json()["account"]
