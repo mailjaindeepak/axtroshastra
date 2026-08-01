@@ -579,6 +579,18 @@ def healthz_db():
     return {"status": "ok", "db": "write-read-verified"}
 
 
+@app.get("/api/otp/health", include_in_schema=False)
+def otp_health(key: str = ""):
+    """Admin: verify the active OTP provider's credentials WITHOUT sending an SMS.
+    For Message Central this mints (or reuses) an auth token, proving customerId +
+    password/token are accepted; 503 if they aren't. Gated by STATS_KEY. Returns no
+    secrets — safe to hit after a deploy to confirm the login OTP path is live."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    status = auth.provider_health()
+    return JSONResponse(status, status_code=200 if status.get("ok") else 503)
+
+
 @app.get("/", include_in_schema=False)
 def landing():
     """English homepage."""

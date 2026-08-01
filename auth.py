@@ -199,6 +199,40 @@ def check_otp(db, mobile: str, code: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
+# provider readiness (health check — no SMS sent, no secrets returned)
+# --------------------------------------------------------------------------- #
+def provider_health() -> dict:
+    """Non-secret readiness snapshot of the active OTP provider, safe to expose on
+    an admin endpoint. For Message Central it actually mints (or reuses a cached)
+    auth token — proving customerId + password/token are accepted — WITHOUT sending
+    an OTP. Never returns the token, password, or any secret."""
+    provider = _otp_provider()
+    out = {"provider": provider, "ok": False}
+    if provider == "messagecentral":
+        out["customer_id_set"] = bool(_mc_customer_id())
+        out["base_url"] = _mc_base()
+        out["auth_mode"] = ("static_token"
+                            if os.getenv("MESSAGECENTRAL_AUTH_TOKEN", "").strip()
+                            else "password")
+        out["country_code"] = _mc_country()
+        out["otp_length"] = _mc_otp_length()
+        token = _mc_auth_token()          # catches its own errors -> "" on failure
+        out["ok"] = bool(token)
+        if not token:
+            out["error"] = "token_unavailable"  # creds missing or rejected (see logs)
+        return out
+    if provider == "twilio":
+        out["channel"] = _verify_channel()
+        out["ok"] = bool(_twilio_verify_sid() and _twilio_client() is not None)
+        if not out["ok"]:
+            out["error"] = "twilio_not_configured"
+        return out
+    out["ok"] = True
+    out["note"] = "dev fallback — OTP codes are logged to the console, not sent"
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # provider: Message Central (Verify Now) — stdlib HTTP, no SDK
 # --------------------------------------------------------------------------- #
 # auth token is valid ~24h; cache it per-process to avoid a round-trip per OTP
