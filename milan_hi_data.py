@@ -456,7 +456,7 @@ HI_DATA = {
     "Worth a look": "देखने लायक",
     "Worth Understanding": "समझने लायक",
     "One-sided": "एकतरफ़ा",
-    "Shared": "साझा",
+    "Shared": "समान",
 
     # ---- traditional checks (variants) ----
     "One chart carries a Manglik placement (Moon-based check). Cancellation rules usually apply — a full lagna-based check needs exact birth times for both.":

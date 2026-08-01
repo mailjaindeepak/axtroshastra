@@ -315,7 +315,7 @@ def _mc_send_otp(db, mobile: str) -> dict:
         "mobileNumber": national,
         "otpLength": _mc_otp_length(),
     })
-    url = f"{_mc_base()}/verification/v2/verification/send?{params}"
+    url = f"{_mc_base()}/verification/v3/send?{params}"
     try:
         resp = _mc_request("POST", url, {"authToken": token})
     except Exception as e:
@@ -353,7 +353,7 @@ def _mc_check_otp(db, mobile: str, code: str) -> bool:
         "verificationId": vid,
         "code": code,
     })
-    url = f"{_mc_base()}/verification/v2/verification/validateOtp?{params}"
+    url = f"{_mc_base()}/verification/v3/validateOtp?{params}"
     try:
         resp = _mc_request("GET", url, {"authToken": token})
     except Exception as e:
