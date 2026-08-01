@@ -312,6 +312,7 @@ fbq('track', 'PageView');
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
         <select id="f-approx">
+          <option value="" disabled selected hidden>Approximate time chuniye</option>
           <option value="subah">Subah (4 AM – 10 AM)</option>
           <option value="din">Din (10 AM – 4 PM)</option>
           <option value="shaam">Shaam (4 PM – 10 PM)</option>
@@ -968,6 +969,9 @@ window.addEventListener('scroll', function(){
   var nameHint=mkHint(document.getElementById("f-name"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
+  var approxHint=mkHint(document.getElementById("tobApprox"));
+  var approxSel=document.getElementById("f-approx");
+  if(approxSel){ approxSel.addEventListener("change", function(){ approxHint.textContent=""; }); }
   function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
   function checkDate(){
     var y=(yy.value||"").trim(), cur=new Date().getFullYear(), msg="";
@@ -987,6 +991,7 @@ window.addEventListener('scroll', function(){
     if(!clean){ nameHint.textContent=L("Please enter your name.","Apna naam likhiye."); stop(); return; } nameHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","Apna birth time chuniye, ya neeche wala box tick kijiye agar nahi pata."); stop(); return; } tobHint.textContent="";
+    if(document.getElementById("unknownTime").checked && !document.getElementById("f-approx").value){ approxHint.textContent=L("Please pick an approximate time, or select “No idea at all”.","Approximate time chuniye, ya “Bilkul nahi pata” select kijiye."); stop(); if(approxSel)approxSel.focus(); return; } approxHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
     var teaser=document.getElementById("teaser");
     if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }

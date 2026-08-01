@@ -125,6 +125,20 @@ def upsert_user_from_payment(db, mobile: str, email: str = "", name: str = ""):
     return uid
 
 
+def set_user_name(db, user_id: str, name: str) -> bool:
+    """User-editable account name (there is no auto-set name at payment time —
+    a milan report's name is a couple, wrong for a person's account). Trims and
+    caps length; an empty name clears it back to blank. Returns True on write."""
+    if not user_id:
+        return False
+    name = (name or "").strip()[:80]
+    now = datetime.utcnow().isoformat()
+    with db() as c:
+        c.execute("UPDATE users SET name=?, updated_at=? WHERE id=?",
+                  (name, now, user_id))
+    return True
+
+
 def link_report(db, rid: str, user_id: str):
     """Point a paid report at its owner. No-op if either id is missing."""
     if not (rid and user_id):

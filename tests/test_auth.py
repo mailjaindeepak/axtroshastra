@@ -89,8 +89,40 @@ def test_login_surfaces_prior_paid_reports(client):
     me = client.get("/api/me").json()
     ids = [x["id"] for x in me["reports"]]
     assert rid in ids
-    # and it renders on the /account page
-    assert "Kundli Milan" in client.get("/account").text
+    # and it renders on the /account page (milan label is "Compatibility Report")
+    assert "Compatibility Report" in client.get("/account").text
+
+
+def test_account_name_update_requires_session(client):
+    """POST /api/account/name is session-gated — no cookie -> 401, no write."""
+    client.post("/api/auth/logout")
+    r = client.post("/api/account/name", json={"name": "Hacker"})
+    assert r.status_code == 401
+
+
+def test_account_name_update_persists(client):
+    """A logged-in user can set their own name and it persists to the DB and
+    renders on the /account page (name is user-editable, never auto-set)."""
+    mobile = "9876500070"
+    _login(client, mobile)
+    r = client.post("/api/account/name", json={"name": "  Deepak Jain  "})
+    assert r.status_code == 200, r.text
+    assert r.json()["ok"] is True
+    # persisted (trimmed) — visible via /api/me and on the dashboard
+    me = client.get("/api/me").json()
+    assert me["user"]["name"] == "Deepak Jain"
+    acct = client.get("/account").text
+    assert 'value="Deepak Jain"' in acct           # prefilled in the edit form
+    assert "Namaste, Deepak Jain" in acct          # greeting uses the saved name
+
+
+def test_account_page_shows_name_placeholder_when_blank(client):
+    """A user with no name set sees a placeholder prompting them to add one,
+    plus the edit form — not a blank/leftover value."""
+    _login(client, "9876500071")
+    html = client.get("/account").text
+    assert 'placeholder="Your name"' in html
+    assert "Add your name" in html                 # explicit prompt, not empty
 
 
 def test_nav_injected_on_marketing_pages(client):

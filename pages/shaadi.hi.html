@@ -289,6 +289,7 @@ fbq('track', 'PageView');
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">अनुमानित समय</label>
         <select id="f-approx">
+          <option value="" disabled selected hidden>अनुमानित समय चुनिए…</option>
           <option value="subah">सुबह (4 AM – 10 AM)</option>
           <option value="din">दिन (10 AM – 4 PM)</option>
           <option value="shaam">शाम (4 PM – 10 PM)</option>
@@ -911,6 +912,9 @@ window.addEventListener('scroll', function(){
   var genderHint=mkHint(document.getElementById("f-gender"));
   var dobHint=mkHint(dd?dd.closest(".dob-row"):null);
   var tobHint=mkHint(document.getElementById("tobField"));
+  var approxHint=mkHint(document.getElementById("tobApprox"));
+  var approxSel=document.getElementById("f-approx");
+  if(approxSel){ approxSel.addEventListener("change", function(){ approxHint.textContent=""; }); }
   function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
     var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
     if(+y<1900||+y>cy) return L("Please enter a birth year between 1900 and "+cy+".","1900 और "+cy+" के बीच का जन्म-वर्ष भरिए।");
@@ -935,6 +939,7 @@ window.addEventListener('scroll', function(){
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
     if(tobPartial()){ checkTob(); stop(); if(thh)thh.focus(); return; }
     if(!document.getElementById("unknownTime").checked && !document.getElementById("f-tob").value){ tobHint.textContent=L("Please select your birth time, or tick the box below if you do not know it.","अपना जन्म-समय चुनिए, या अगर पता नहीं है तो नीचे वाला बॉक्स टिक कीजिए।"); stop(); return; } tobHint.textContent="";
+    if(document.getElementById("unknownTime").checked && !document.getElementById("f-approx").value){ approxHint.textContent=L("Please pick an approximate time, or select “No idea at all”.","अनुमानित समय चुनिए, या “बिल्कुल नहीं पता” चुनिए।"); stop(); if(approxSel)approxSel.focus(); return; } approxHint.textContent="";
     var h=[clean,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,document.getElementById("unknownTime").checked,(document.getElementById("f-place").value||"")].join("|");
     var teaser=document.getElementById("teaser");
     if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }

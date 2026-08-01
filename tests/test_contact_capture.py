@@ -107,6 +107,25 @@ def test_webhook_prefers_popup_number_over_payment_contact(client, monkeypatch, 
     assert "Payment" in html and "+91 11122 23334" in html
 
 
+def test_webhook_account_email_prefers_popup_over_payment(client, monkeypatch, pay_webhook):
+    """The ACCOUNT/profile email must be the POPUP email (meta._email), not the
+    Razorpay/transaction email. When the two differ, the created account keeps
+    the popup email; the Razorpay email stays only on the payment record."""
+    rid = _new_report(client)
+    _stub_rzp(monkeypatch)
+    client.post("/api/order", json={"report_id": rid,
+                                    "phone": "9876500007",
+                                    "email": "popup@example.com"})
+    # Razorpay reports a DIFFERENT contact email for the transaction.
+    pay_webhook(client, rid, "pay_email_1", "+911112223334",
+                email="razorpay@example.com")
+
+    acct = client.get(f"/api/report/{rid}").json()["account"]
+    assert acct is not None
+    assert acct["email"] == "popup@example.com"    # account = POPUP email
+    assert acct["email"] != "razorpay@example.com"
+
+
 def test_webhook_falls_back_to_payment_contact(client, pay_webhook):
     """No popup number on file -> the Razorpay contact still creates the
     account (pre-popup behaviour, and the safety net if the popup is skipped)."""
@@ -141,6 +160,24 @@ def test_milan_webhook_without_name_does_not_crash(client, monkeypatch, pay_webh
     # the display name is the couple, not a crash
     assert api._display_name(
         {"product": "milan", "meta": {"p1": "Asha", "p2": "Vikram"}}) == "Asha & Vikram"
+
+
+# -------------------------------- account is NOT auto-named from the report
+def test_webhook_does_not_auto_name_account_from_report(client, monkeypatch, pay_webhook):
+    """A milan report's display name is a COUPLE ("A & B") — wrong as a person's
+    account name. Payment must create the account with a BLANK name; the user
+    sets it later on /account. (WhatsApp/PDF delivery still use _display_name.)"""
+    monkeypatch.setattr(api, "_pregenerate_pdf_task", lambda rid: None)
+    monkeypatch.setattr(api, "send_whatsapp_report", lambda *a, **k: None)
+    rid = "r_noautoname_1"
+    api.save_report(rid, {"product": "milan",
+                          "teaser": {"verdict": "ok"},
+                          "meta": {"p1": "Gunn", "p2": "Arnav Garg"}})
+    pay_webhook(client, rid, "pay_noname_1", "+919812311111")
+
+    acct = client.get(f"/api/report/{rid}").json()["account"]
+    assert acct is not None
+    assert not acct.get("name")                    # blank, NOT "Gunn & Arnav Garg"
 
 
 # --------------------------------------------------- free-pass unlock
