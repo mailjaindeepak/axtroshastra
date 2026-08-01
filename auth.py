@@ -10,25 +10,36 @@ account:
   verify-otp   ->  check the code, upsert the user, mint a session
   session      ->  opaque token in an httpOnly cookie, backed by a `sessions` row
 
-OTP delivery uses **Twilio Verify** (channel configurable, default WhatsApp) so we
-reuse the Twilio credentials already wired for report delivery and let Twilio own
-the message templates — the only same-day-launchable path for India, since our own
-SMS/WhatsApp templates would need DLT / template approval first.
+OTP delivery is provider-pluggable via `OTP_PROVIDER` (auto-detected when unset):
 
-When Twilio Verify is NOT configured (local dev), we fall back to a self-managed
-code stored in `login_otps` and logged to the console, so the whole flow is
-testable without Twilio. That path is dev-only and never used once
-TWILIO_VERIFY_SERVICE_SID is set.
+  * ``messagecentral`` — Message Central Verify Now (SMS). Selected automatically
+    when MESSAGECENTRAL_CUSTOMER_ID is set. Message Central owns code generation,
+    delivery and expiry; unlike Twilio it keys a verification by a `verificationId`
+    returned from *send* that must be replayed to *validate*, so we stash that id in
+    `login_otps` (column ``mc_verification_id``) between the two requests.
+  * ``twilio`` — Twilio Verify (channel configurable, default WhatsApp), reusing the
+    Twilio credentials already wired for report delivery.
+  * ``dev`` — self-managed 6-digit code stored in `login_otps` and logged to the
+    console, so the whole flow is testable locally without any provider. Used when
+    neither provider is configured; never used once a provider is set.
+
+All provider HTTP is stdlib ``urllib`` (no SDK), so nothing needs adding to the
+offline wheelhouse in ``packages/``.
 
 All SQL is SQLite dialect, auto-translated to MySQL by dbcompat (same constraints
 as users.py: opaque token PKs, no AUTOINCREMENT, status set on INSERT). Storage
 goes through the app's `db()` connection factory, passed in from api.py.
 """
+import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 import secrets
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timedelta
 
 import dbcompat
@@ -54,6 +65,54 @@ def _verify_channel() -> str:
     return os.getenv("TWILIO_VERIFY_CHANNEL", "whatsapp").strip().lower() or "whatsapp"
 
 
+def _otp_provider() -> str:
+    """Which OTP backend to use. Honour an explicit OTP_PROVIDER, else auto-detect:
+    Message Central if its customerId is set, then Twilio Verify, else the dev
+    fallback."""
+    p = os.getenv("OTP_PROVIDER", "").strip().lower()
+    if p:
+        return p
+    if _mc_customer_id():
+        return "messagecentral"
+    if _twilio_verify_sid():
+        return "twilio"
+    return "dev"
+
+
+# --- Message Central (Verify Now) config, all read at call time -------------- #
+def _mc_base() -> str:
+    return os.getenv(
+        "MESSAGECENTRAL_BASE_URL", "https://cpaas.messagecentral.com").rstrip("/")
+
+
+def _mc_customer_id() -> str:
+    return os.getenv("MESSAGECENTRAL_CUSTOMER_ID", "").strip()
+
+
+def _mc_password() -> str:
+    return os.getenv("MESSAGECENTRAL_PASSWORD", "")
+
+
+def _mc_email() -> str:
+    return os.getenv("MESSAGECENTRAL_EMAIL", "").strip()
+
+
+def _mc_country() -> str:
+    # numeric dialling code (no '+'); India by default
+    return os.getenv("MESSAGECENTRAL_COUNTRY_CODE", "91").strip() or "91"
+
+
+def _mc_otp_length() -> str:
+    return os.getenv("MESSAGECENTRAL_OTP_LENGTH", "6").strip() or "6"
+
+
+def _mc_timeout() -> float:
+    try:
+        return float(os.getenv("MESSAGECENTRAL_TIMEOUT", "20"))
+    except ValueError:
+        return 20.0
+
+
 def _demo_mode() -> bool:
     return os.getenv("DEMO_MODE") == "1"
 
@@ -74,11 +133,17 @@ def ensure_tables(db):
         c.execute("""CREATE TABLE IF NOT EXISTS sessions(
             token TEXT PRIMARY KEY, user_id TEXT, mobile TEXT,
             created_at TEXT, expires_at TEXT)""")
-        # dev-fallback OTP store (unused when Twilio Verify is configured).
-        # PK is the mobile so a fresh request overwrites any pending code.
+        # OTP-in-flight store. PK is the mobile so a fresh request overwrites any
+        # pending code. `code_hash` holds the dev-fallback code; `mc_verification_id`
+        # holds Message Central's per-verification id (replayed to validateOtp).
+        # Twilio Verify uses neither — it tracks the code by phone number itself.
         c.execute("""CREATE TABLE IF NOT EXISTS login_otps(
             mobile TEXT PRIMARY KEY, code_hash TEXT,
+            mc_verification_id TEXT,
             expires_at TEXT, attempts INTEGER)""")
+        # migrate DBs created before the Message Central column existed
+        if not users._column_exists(c, "login_otps", "mc_verification_id"):
+            c.execute("ALTER TABLE login_otps ADD COLUMN mc_verification_id TEXT")
 
 
 # --------------------------------------------------------------------------- #
@@ -103,33 +168,224 @@ def _twilio_client():
 
 def send_otp(db, mobile: str) -> dict:
     """Send an OTP to `mobile`. Returns {'ok': bool, 'channel': str, 'dev_code': str?}.
-    Never raises to the caller for a delivery failure — returns ok=False instead."""
+    Never raises to the caller for a delivery failure — returns ok=False instead.
+    Dispatches to the configured provider (Message Central / Twilio / dev)."""
     mobile = _norm(mobile)
     if not mobile or len(mobile) < 8:
         return {"ok": False, "error": "invalid_mobile"}
 
-    sid = _twilio_verify_sid()
-    if sid:
-        # --- production: Twilio Verify owns code generation, storage, expiry ---
-        try:
-            client = _twilio_client()
-            if client is None:
-                return {"ok": False, "error": "twilio_not_configured"}
-            client.verify.v2.services(sid).verifications.create(
-                to=mobile, channel=_verify_channel())
-            return {"ok": True, "channel": _verify_channel()}
-        except Exception as e:
-            logger.error("[auth] Twilio Verify send failed for %s: %s", mobile, e)
-            return {"ok": False, "error": "send_failed"}
+    provider = _otp_provider()
+    if provider == "messagecentral":
+        return _mc_send_otp(db, mobile)
+    if provider == "twilio":
+        return _twilio_send_otp(mobile)
+    return _dev_send_otp(db, mobile)
 
-    # --- dev fallback: self-managed code, logged (and echoed only in DEMO_MODE) ---
+
+def check_otp(db, mobile: str, code: str) -> bool:
+    """Verify `code` for `mobile`. True on success. Consumes the code (single-use)
+    on success. Dispatches to the same provider that sent it."""
+    mobile = _norm(mobile)
+    code = (code or "").strip()
+    if not (mobile and code.isdigit()):
+        return False
+
+    provider = _otp_provider()
+    if provider == "messagecentral":
+        return _mc_check_otp(db, mobile, code)
+    if provider == "twilio":
+        return _twilio_check_otp(mobile, code)
+    return _dev_check_otp(db, mobile, code)
+
+
+# --------------------------------------------------------------------------- #
+# provider: Message Central (Verify Now) — stdlib HTTP, no SDK
+# --------------------------------------------------------------------------- #
+# auth token is valid ~24h; cache it per-process to avoid a round-trip per OTP
+_MC_TOKEN_CACHE = {"token": "", "exp": None}
+
+
+def _mc_split(mobile: str):
+    """Split a normalised '+<cc><national>' number into (countryCode, national)
+    as Message Central wants them. Falls back to the configured country code and
+    the last 10 digits when the prefix doesn't match (India-first; set
+    MESSAGECENTRAL_COUNTRY_CODE for other single-country deployments)."""
+    cc = _mc_country()
+    digits = "".join(ch for ch in mobile if ch.isdigit())
+    if digits.startswith(cc):
+        return cc, digits[len(cc):]
+    return cc, digits[-10:]
+
+
+def _mc_request(method: str, url: str, headers: dict) -> dict:
+    """GET/POST a Message Central endpoint and return the parsed JSON. Params ride
+    in the query string (the API takes no request body). A 4xx/5xx whose body is
+    JSON is returned as-is (so callers can read verificationStatus / responseCode);
+    anything else propagates."""
+    data = b"" if method == "POST" else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=_mc_timeout()) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")
+        try:
+            return json.loads(body)
+        except ValueError:
+            raise
+
+
+def _mc_auth_token() -> str:
+    """Return a Message Central auth token. Prefers a static MESSAGECENTRAL_AUTH_TOKEN
+    if provided, else generates one from customerId + base64(password) and caches it."""
+    static = os.getenv("MESSAGECENTRAL_AUTH_TOKEN", "").strip()
+    if static:
+        return static
+    cid, pwd = _mc_customer_id(), _mc_password()
+    if not (cid and pwd):
+        return ""
+    now = datetime.utcnow()
+    if _MC_TOKEN_CACHE["token"] and _MC_TOKEN_CACHE["exp"] and _MC_TOKEN_CACHE["exp"] > now:
+        return _MC_TOKEN_CACHE["token"]
+    params = urllib.parse.urlencode({
+        "customerId": cid,
+        "key": base64.b64encode(pwd.encode()).decode(),
+        "scope": "NEW",
+        "country": _mc_country(),
+        "email": _mc_email(),
+    })
+    url = f"{_mc_base()}/auth/v1/authentication/token?{params}"
+    try:
+        resp = _mc_request("GET", url, {"accept": "application/json"})
+    except Exception as e:
+        logger.error("[auth] MessageCentral token request failed: %s", e)
+        return ""
+    token = str(resp.get("token") or "")
+    if token:
+        _MC_TOKEN_CACHE["token"] = token
+        _MC_TOKEN_CACHE["exp"] = now + timedelta(hours=23)
+    else:
+        logger.error("[auth] MessageCentral token response had no token: %s", resp)
+    return token
+
+
+def _mc_send_otp(db, mobile: str) -> dict:
+    token = _mc_auth_token()
+    if not token:
+        return {"ok": False, "error": "messagecentral_not_configured"}
+    cc, national = _mc_split(mobile)
+    params = urllib.parse.urlencode({
+        "countryCode": cc,
+        "customerId": _mc_customer_id(),
+        "flowType": "SMS",
+        "mobileNumber": national,
+        "otpLength": _mc_otp_length(),
+    })
+    url = f"{_mc_base()}/verification/v2/verification/send?{params}"
+    try:
+        resp = _mc_request("POST", url, {"authToken": token})
+    except Exception as e:
+        logger.error("[auth] MessageCentral send failed for %s: %s", mobile, e)
+        return {"ok": False, "error": "send_failed"}
+    vid = str((resp.get("data") or {}).get("verificationId") or "")
+    if not vid:
+        logger.error("[auth] MessageCentral send returned no verificationId: %s", resp)
+        return {"ok": False, "error": "send_failed"}
+    expires = (datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES)).isoformat()
+    with db() as c:
+        c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
+        c.execute("INSERT INTO login_otps(mobile,code_hash,mc_verification_id,"
+                  "expires_at,attempts) VALUES(?,?,?,?,0)", (mobile, "", vid, expires))
+    return {"ok": True, "channel": "sms"}
+
+
+def _mc_check_otp(db, mobile: str, code: str) -> bool:
+    with db() as c:
+        row = c.execute("SELECT mc_verification_id,expires_at,attempts FROM login_otps "
+                        "WHERE mobile=?", (mobile,)).fetchone()
+    if not row:
+        return False
+    vid, expires_at, attempts = row[0], row[1], (row[2] or 0)
+    if (not vid or attempts >= OTP_MAX_ATTEMPTS
+            or (expires_at and expires_at < datetime.utcnow().isoformat())):
+        with db() as c:
+            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
+        return False
+    token = _mc_auth_token()
+    if not token:
+        return False
+    params = urllib.parse.urlencode({
+        "customerId": _mc_customer_id(),
+        "verificationId": vid,
+        "code": code,
+    })
+    url = f"{_mc_base()}/verification/v2/verification/validateOtp?{params}"
+    try:
+        resp = _mc_request("GET", url, {"authToken": token})
+    except Exception as e:
+        logger.error("[auth] MessageCentral validate failed for %s: %s", mobile, e)
+        with db() as c:
+            c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
+                      (attempts + 1, mobile))
+        return False
+    status = str((resp.get("data") or {}).get("verificationStatus") or "").upper()
+    ok = status == "VERIFICATION_COMPLETED"
+    with db() as c:
+        if ok:
+            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
+        else:
+            c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
+                      (attempts + 1, mobile))
+    return ok
+
+
+# --------------------------------------------------------------------------- #
+# provider: Twilio Verify
+# --------------------------------------------------------------------------- #
+def _twilio_send_otp(mobile: str) -> dict:
+    """Twilio Verify owns code generation, storage and expiry."""
+    sid = _twilio_verify_sid()
+    if not sid:
+        return {"ok": False, "error": "twilio_not_configured"}
+    try:
+        client = _twilio_client()
+        if client is None:
+            return {"ok": False, "error": "twilio_not_configured"}
+        client.verify.v2.services(sid).verifications.create(
+            to=mobile, channel=_verify_channel())
+        return {"ok": True, "channel": _verify_channel()}
+    except Exception as e:
+        logger.error("[auth] Twilio Verify send failed for %s: %s", mobile, e)
+        return {"ok": False, "error": "send_failed"}
+
+
+def _twilio_check_otp(mobile: str, code: str) -> bool:
+    sid = _twilio_verify_sid()
+    if not sid:
+        return False
+    try:
+        client = _twilio_client()
+        if client is None:
+            return False
+        res = client.verify.v2.services(sid).verification_checks.create(
+            to=mobile, code=code)
+        return getattr(res, "status", "") == "approved"
+    except Exception as e:
+        logger.error("[auth] Twilio Verify check failed for %s: %s", mobile, e)
+        return False
+
+
+# --------------------------------------------------------------------------- #
+# provider: dev fallback — self-managed code, logged (echoed only in DEMO_MODE)
+# --------------------------------------------------------------------------- #
+def _dev_send_otp(db, mobile: str) -> dict:
     code = f"{secrets.randbelow(1000000):06d}"
     expires = (datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES)).isoformat()
     with db() as c:
         c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
         c.execute("INSERT INTO login_otps(mobile,code_hash,expires_at,attempts) "
                   "VALUES(?,?,?,0)", (mobile, _hash_code(mobile, code), expires))
-    logger.warning("[auth][DEV] OTP for %s is %s (Twilio Verify not configured)",
+    logger.warning("[auth][DEV] OTP for %s is %s (no OTP provider configured)",
                    mobile, code)
     out = {"ok": True, "channel": "dev"}
     if _demo_mode():
@@ -137,28 +393,7 @@ def send_otp(db, mobile: str) -> dict:
     return out
 
 
-def check_otp(db, mobile: str, code: str) -> bool:
-    """Verify `code` for `mobile`. True on success. Consumes the code either way
-    (single-use) in the dev path; Twilio Verify enforces single-use itself."""
-    mobile = _norm(mobile)
-    code = (code or "").strip()
-    if not (mobile and code.isdigit()):
-        return False
-
-    sid = _twilio_verify_sid()
-    if sid:
-        try:
-            client = _twilio_client()
-            if client is None:
-                return False
-            res = client.verify.v2.services(sid).verification_checks.create(
-                to=mobile, code=code)
-            return getattr(res, "status", "") == "approved"
-        except Exception as e:
-            logger.error("[auth] Twilio Verify check failed for %s: %s", mobile, e)
-            return False
-
-    # --- dev fallback ---
+def _dev_check_otp(db, mobile: str, code: str) -> bool:
     with db() as c:
         row = c.execute("SELECT code_hash,expires_at,attempts FROM login_otps "
                         "WHERE mobile=?", (mobile,)).fetchone()
@@ -168,7 +403,7 @@ def check_otp(db, mobile: str, code: str) -> bool:
         if attempts >= OTP_MAX_ATTEMPTS or expires_at < datetime.utcnow().isoformat():
             c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
             return False
-        ok = hmac.compare_digest(code_hash, _hash_code(mobile, code))
+        ok = hmac.compare_digest(code_hash or "", _hash_code(mobile, code))
         if ok:
             c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
         else:
