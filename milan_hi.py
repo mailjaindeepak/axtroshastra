@@ -34,7 +34,7 @@ HI = {
     "Excellent Match": "बेहतरीन मैच",
     "Very Good Match": "बहुत अच्छा मैच",
     "Good Match": "अच्छा मैच",
-    "Workable Match": "चलने लायक मैच",
+    "Workable Match": "बन सकने वाला मैच",
     "Needs Work": "मेहनत चाहिए",
 
     # ---- 5-area summary (section 01) ----
@@ -54,7 +54,7 @@ HI = {
     "Why you two work": "आप दोनों की जोड़ी क्यों बनती है",
     "The strengths worth celebrating 💚": "जश्न मनाने लायक ताक़तें 💚",
     "YOUR SUPERPOWER": "आपकी सुपरपावर",
-    "Your playbook": "आपका प्लेबुक",
+    "Your playbook": "आपकी गाइड",
     "One thing worth working on": "एक चीज़ जिस पर काम करने लायक है",
     "Small effort, big payoff": "थोड़ी मेहनत, बड़ा फ़ायदा",
     "The honest answer": "ईमानदार जवाब",
@@ -154,7 +154,7 @@ HI = {
     "— Your astrologer, Axtroshastra": "— आपका ज्योतिषी, Axtroshastra",
 
     # ---- certificate (section 24) ----
-    "Yours to keep": "आपके पास रखने के लिए",
+    "Yours to keep": "यह हमेशा आपका रहेगा",
     "Compatibility Certificate": "कम्पैटिबिलिटी सर्टिफ़िकेट",
     "“According to Vedic astrology, this relationship holds warm and auspicious potential.”":
         "“वैदिक ज्योतिष के अनुसार, इस रिश्ते में गर्मजोशी और शुभ संभावनाएँ हैं।”",
@@ -209,7 +209,7 @@ HI = {
     "The fine print, in plain words": "बारीक बातें, आसान शब्दों में",
     "Method & glossary": "विधि और शब्दावली",
     "So you can check it yourself": "ताकि आप ख़ुद जाँच सकें",
-    "Verify it yourself": "ख़ुद सत्यापित करें",
+    "Verify it yourself": "ख़ुद जाँच कर देखिए",
     "The math is yours. The stars did the rest.": "गणित आपका है। बाक़ी सितारों ने किया।",
 
     # ---- sticky actions ----
@@ -254,7 +254,7 @@ HI = {
     "Graha Maitri": "ग्रह मैत्री", "Gana": "गण", "Bhakoot": "भकूट", "Nadi": "नाड़ी",
 
     # ---- appendix dosha verdict cells ----
-    "Clear ✓": "साफ़ ✓",
+    "Clear ✓": "कोई दोष नहीं ✓",
     "Dosha only if identical → cleared.": "दोष सिर्फ़ तभी जब बिल्कुल एक जैसे हों → साफ़।",
 
     # ---- method glossary (section 30) ----
