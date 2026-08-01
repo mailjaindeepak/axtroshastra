@@ -91,8 +91,32 @@ TWILIO_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")     # 'whatsapp:+14155238886
 TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved MEDIA template (PDF attached)
 TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved TEXT template — fallback when the PDF isn't ready
 
-PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Kundli Milan",
+PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing"}
+
+# Visual identity per product for the account dashboard cards. Minimal gold
+# line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
+# unified navy header — products differ by ICON, not by band colour. Inlined so
+# there are no external files/deps and no heavy PDF-thumbnail work.
+_SVG_OPEN = ('<svg viewBox="0 0 32 32" fill="none" stroke="#E4B04A" '
+             'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" '
+             'aria-hidden="true">')
+PRODUCT_SVG = {
+    # marriage — a solitaire band: ring hoop with a diamond above.
+    "marriage": _SVG_OPEN + '<circle cx="16" cy="20.5" r="7"/>'
+                '<path d="M12 12 L16 6 L20 12 L16 15 Z"/>'
+                '<path d="M12 12 H20"/></svg>',
+    # compatibility (milan) — two interlocking rings.
+    "milan": _SVG_OPEN + '<circle cx="12.5" cy="16" r="6.5"/>'
+             '<circle cx="19.5" cy="16" r="6.5"/></svg>',
+    # life blueprint (jeevan) — a lit diya: bowl with a flame.
+    "blueprint": _SVG_OPEN + '<path d="M6 20 H26 Q16 27 6 20 Z"/>'
+                 '<path d="M16 19 C12.5 15 16 12 16 8 C16 12 19.5 15 16 19 Z"/></svg>',
+    # career (vidyarthi) — a graduation cap with tassel.
+    "vidyarthi": _SVG_OPEN + '<path d="M4 13 L16 8 L28 13 L16 18 Z"/>'
+                 '<path d="M9 15 V21 Q16 24 23 21 V15"/>'
+                 '<path d="M28 13 V20.5"/><circle cx="28" cy="21.5" r="1"/></svg>',
+}
 
 def _display_name(payload: dict) -> str:
     """Safe display name for any product. Milan reports have meta.p1/p2 and NO
@@ -717,10 +741,11 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
             # never let it break the unlock.
             if user_phone:
                 try:
+                    # No auto-set name — account name is user-editable on
+                    # /account. Email is the popup email typed at checkout.
                     uid = users.upsert_user_from_payment(
                         db, mobile=user_phone,
-                        email=(body.email or "").strip(),
-                        name=_display_name(rec["payload"]))
+                        email=(body.email or "").strip())
                     if uid:
                         users.link_report(db, rid, uid)
                 except Exception as e:
@@ -778,14 +803,16 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 background_tasks.add_task(_generate_narrative_task, rid)
                 form_email = rec["payload"]["meta"].get("_email")
                 # Account: create/link a user on the popup number (fallback:
-                # Razorpay contact). Prefer the email Razorpay collected; fall
-                # back to the one typed into the form/popup. Never let account
-                # creation break the webhook.
+                # Razorpay contact). The ACCOUNT email must prefer the POPUP
+                # email the buyer typed (fallback: the Razorpay contact email).
+                # pay_email stays the Razorpay/transaction email for tracking.
+                # Never auto-set the account NAME from the report — a milan
+                # report's name is a couple ("A & B"), wrong as a person's
+                # account name; the user edits it on /account instead.
                 pay_email = ent.get("email") or form_email or ""
                 try:
                     uid = users.upsert_user_from_payment(
-                        db, mobile=phone, email=pay_email,
-                        name=_display_name(rec["payload"]))
+                        db, mobile=phone, email=form_email or pay_email)
                     if uid:
                         users.link_report(db, rid, uid)
                 except Exception as e:
@@ -851,9 +878,10 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
                 rec["payload"].get("product", "marriage"))
         form_email = rec["payload"]["meta"].get("_email")
         try:
+            # ACCOUNT email prefers the POPUP email (fallback: Razorpay contact
+            # email). No auto-set name — the user edits it on /account.
             uid = users.upsert_user_from_payment(
-                db, mobile=phone, email=pay_email or form_email or "",
-                name=_display_name(rec["payload"]))
+                db, mobile=phone, email=form_email or pay_email or "")
             if uid:
                 users.link_report(db, rid, uid)
         except Exception as e:
@@ -1318,7 +1346,9 @@ def _render_account(user: dict, reports: list) -> str:
     a card per past paid report. Styled inline in the site's design system so it
     needs no template file and is safe to gate entirely server-side."""
     import html as _html
-    name = _html.escape(user.get("name") or "there")
+    raw_name = (user.get("name") or "").strip()
+    greeting = _html.escape(raw_name or "there")
+    name_attr = _html.escape(raw_name, quote=True)   # safe as an input value=""
     mobile = _html.escape(_fmt_mobile(user.get("mobile") or ""))
     email = _html.escape(user.get("email") or "")
     city = _html.escape(user.get("city") or "")
@@ -1329,24 +1359,41 @@ def _render_account(user: dict, reports: list) -> str:
         return (f'<div class="row"><span class="k">{label}</span>'
                 f'<span class="v">{value}</span></div>')
 
-    details = (_detail("Name", name if name != "there" else "")
-               + _detail("Mobile", mobile) + _detail("Email", email)
-               + _detail("City", city)) or \
-        '<div class="row"><span class="v" style="color:#8a7d72">No extra details on ' \
-        'file yet.</span></div>'
+    # Name is user-editable (never auto-set from the report). Empty -> a
+    # placeholder prompts the user to add it, rather than showing blank.
+    name_hint = ("" if raw_name else
+                 '<div class="name-hint">Add your name so we can address you '
+                 'properly.</div>')
+    name_row = (
+        '<div class="row name-row">'
+        '<span class="k">Name</span>'
+        '<form class="name-form" id="nameForm" onsubmit="return saveName(event)">'
+        f'<input id="nameInput" name="name" type="text" value="{name_attr}" '
+        'placeholder="Your name" autocomplete="name" maxlength="80">'
+        '<button type="submit" class="name-save">Save</button>'
+        '</form></div>' + name_hint)
+
+    details = (name_row + _detail("Mobile", mobile) + _detail("Email", email)
+               + _detail("City", city))
 
     if reports:
         cards = ""
         for r in reports:
-            label = _html.escape(PRODUCT_LABEL.get(r["product"], "Report"))
+            product = r["product"]
+            label = _html.escape(PRODUCT_LABEL.get(product, "Report"))
+            icon = PRODUCT_SVG.get(product, PRODUCT_SVG["marriage"])
             subject = _html.escape(r.get("subject") or "")
             date = _html.escape((r.get("created_at") or "")[:10])
             sub = f'<div class="rp-sub">{subject}</div>' if subject else ""
-            cards += (f'<a class="rp-card" href="/report/{r["id"]}">'
-                      f'<div class="rp-top"><span class="rp-label">{label}</span>'
-                      f'<span class="rp-date">{date}</span></div>{sub}'
-                      f'<span class="rp-cta">View report &rarr;</span></a>')
-        reports_block = f'<div class="rp-list">{cards}</div>'
+            date_row = f'<span class="rp-date">{date}</span>' if date else ""
+            cards += (
+                f'<a class="rp-card" href="/report/{r["id"]}">'
+                f'<div class="rp-band"><span class="rp-icon">{icon}</span></div>'
+                f'<div class="rp-body"><span class="rp-label">{label}</span>{sub}'
+                f'<div class="rp-meta">{date_row}'
+                f'<span class="rp-cta">View report &rarr;</span></div>'
+                f'</div></a>')
+        reports_block = f'<div class="rp-grid">{cards}</div>'
     else:
         reports_block = ('<div class="empty">You have no reports yet. '
                          '<a href="/">Get your first report &rarr;</a></div>')
@@ -1376,17 +1423,44 @@ margin-top:20px;box-shadow:0 2px 10px rgba(70,50,30,.05)}}
 margin-bottom:12px;font-weight:700}}
 .row{{display:flex;gap:12px;padding:9px 0;border-top:1px solid #f0eadd;font-size:15px}}
 .row:first-of-type{{border-top:0}}
-.row .k{{color:var(--muted);width:70px;flex:0 0 auto;font-size:13px;padding-top:1px}}
+.row .k{{color:var(--muted);width:70px;flex:0 0 auto;font-size:13px;padding-top:9px}}
 .row .v{{font-weight:600}}
-.rp-list{{display:grid;gap:12px;margin-top:14px}}
-.rp-card{{display:block;background:#fff;border:1px solid var(--line);border-radius:14px;
-padding:15px 16px;text-decoration:none;color:var(--ink);box-shadow:0 2px 10px rgba(70,50,30,.05)}}
-.rp-card:active{{transform:scale(.995)}}
-.rp-top{{display:flex;justify-content:space-between;align-items:center}}
-.rp-label{{font-weight:700;font-size:15.5px}}
-.rp-date{{color:var(--muted);font-size:12.5px}}
-.rp-sub{{color:var(--muted);font-size:13.5px;margin-top:2px}}
-.rp-cta{{display:inline-block;margin-top:8px;color:var(--sindoor);font-weight:700;font-size:14px}}
+.name-row{{align-items:center}}
+.name-form{{display:flex;gap:8px;flex:1 1 auto;align-items:center}}
+.name-form input{{flex:1 1 auto;min-width:0;font:inherit;font-size:15px;font-weight:600;
+color:var(--ink);background:#fbf8f1;border:1px solid var(--line);border-radius:10px;
+padding:8px 11px}}
+.name-form input::placeholder{{color:#a99f8f;font-weight:500}}
+.name-form input:focus{{outline:none;border-color:var(--haldi);background:#fff}}
+.name-save{{flex:0 0 auto;background:var(--midnight);color:#fff;border:0;border-radius:10px;
+padding:8px 15px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}}
+.name-save:disabled{{opacity:.55;cursor:default}}
+.name-hint{{color:#8a7d72;font-size:12.5px;padding:2px 0 6px 82px}}
+.name-msg{{color:#2E7D64;font-size:12.5px;padding:2px 0 4px 82px;display:none}}
+.rp-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+gap:16px;margin-top:16px}}
+.rp-card{{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
+border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);
+box-shadow:0 2px 12px rgba(70,50,30,.06);transition:transform .16s ease,box-shadow .16s ease}}
+.rp-card:hover{{transform:translateY(-3px);box-shadow:0 12px 26px rgba(21,28,57,.14)}}
+.rp-card:active{{transform:scale(.996)}}
+/* Unified premium navy header + a soft blurred gold glow behind the icon;
+   a thin gold hairline separates it from the white body. */
+.rp-band{{position:relative;height:78px;display:flex;align-items:center;
+justify-content:center;background:linear-gradient(135deg,#151C39,#1D2547);
+overflow:hidden;border-bottom:1px solid var(--haldi)}}
+.rp-band::before{{content:"";position:absolute;width:130px;height:130px;border-radius:50%;
+background:radial-gradient(circle,rgba(228,176,74,.40),rgba(228,176,74,0) 70%);
+filter:blur(16px);pointer-events:none}}
+.rp-icon{{position:relative;width:32px;height:32px}}
+.rp-icon svg{{display:block;width:100%;height:100%}}
+.rp-body{{padding:16px 18px 17px;display:flex;flex-direction:column;flex:1 1 auto}}
+.rp-label{{font-weight:700;font-size:16px;letter-spacing:-.01em;color:var(--ink)}}
+.rp-date{{color:var(--muted);font-size:12px;letter-spacing:.02em}}
+.rp-sub{{color:var(--muted);font-size:13.5px;margin-top:4px}}
+.rp-meta{{display:flex;justify-content:space-between;align-items:center;
+margin-top:auto;padding-top:14px}}
+.rp-cta{{color:var(--sindoor);font-weight:700;font-size:14px}}
 .empty{{margin-top:14px;color:var(--muted);font-size:15px}}
 .empty a,.rp-cta{{color:var(--sindoor)}}
 .section-title{{margin-top:26px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
@@ -1397,16 +1471,36 @@ font-family:inherit}}
 </style></head><body>
 <div class="hero"><div class="wrap">
 <div class="eyebrow">My Account</div>
-<h1>Namaste, {name} 🙏</h1>
+<h1>Namaste, {greeting} 🙏</h1>
 <p>Your saved details and reports, all in one place.</p>
 </div></div>
 <div class="wrap">
-<div class="card"><h2>Your Details</h2>{details}</div>
+<div class="card"><h2>Your Details</h2>{details}<div class="name-msg" id="nameMsg">Saved.</div></div>
 <div class="section-title">Your Reports</div>
 {reports_block}
 <button class="logout" onclick="logout()">Log out</button>
 </div>
 <script>
+async function saveName(e){{
+  e.preventDefault();
+  var inp=document.getElementById('nameInput');
+  var btn=document.querySelector('.name-save');
+  var msg=document.getElementById('nameMsg');
+  var hint=document.querySelector('.name-hint');
+  btn.disabled=true;
+  try{{
+    var r=await fetch('/api/account/name',{{method:'POST',
+      headers:{{'Content-Type':'application/json'}},
+      body:JSON.stringify({{name:inp.value}})}});
+    if(r.ok){{
+      msg.style.display='block';
+      if(hint) hint.style.display='none';
+      setTimeout(function(){{msg.style.display='none';}},2500);
+    }}
+  }}catch(err){{}}
+  btn.disabled=false;
+  return false;
+}}
 async function logout(){{
   try{{ await fetch('/api/auth/logout',{{method:'POST'}}); }}catch(e){{}}
   location.href='/';
@@ -1497,6 +1591,23 @@ def login_page(request: Request):
     if os.path.exists(path):
         return _serve_page_with_nav(path)
     raise HTTPException(404, "not found")
+
+
+class AccountNameIn(BaseModel):
+    name: str
+
+
+@app.post("/api/account/name")
+def account_set_name(body: AccountNameIn, request: Request):
+    """Let the logged-in user set/edit their own account name. Session-gated —
+    only the owner of the session can edit their own name. The account name is
+    NOT auto-set at payment time (a milan report's name is a couple), so this is
+    how a user gives their account a personal name."""
+    user = _current_user(request)
+    if not user:
+        raise HTTPException(401, "not logged in")
+    users.set_user_name(db, user["id"], body.name)
+    return {"ok": True, "name": (body.name or "").strip()[:80]}
 
 
 @app.get("/account", include_in_schema=False)
