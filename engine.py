@@ -504,7 +504,7 @@ def _sade_sati(moon_sign: int, today: datetime) -> dict:
     """Saturn transit vs natal moon: 12th/1st/2nd house = rising/peak/setting."""
     sat_lon, _ = sidereal_lon(swe.SATURN, jd(today))
     rel = (sign_of(sat_lon) - moon_sign) % 12
-    phase = {11: "rising (pehla charan)", 0: "peak (dusra charan)", 1: "setting (aakhri charan)"}.get(rel)
+    phase = {11: "rising phase", 0: "peak phase", 1: "setting phase"}.get(rel)
     if phase:
         t, end = today, None
         for _ in range(120):                       # sample monthly up to 10y

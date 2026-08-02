@@ -326,6 +326,7 @@ def render_report_v2(p: dict) -> str:
     birth = meta.get("_birth", {}) or {}
     name = escape(meta.get("name", ""))
     tq = meta.get("time_quality", "T0")
+    lang = "hi" if meta.get("lang") == "hi" else "en"   # report_addons emits Devanagari directly for hi
 
     all_windows = p.get("windows") or []
     windows = _visible_windows(all_windows, meta)     # (#3) hide far windows when near ones exist
@@ -563,7 +564,7 @@ def render_report_v2(p: dict) -> str:
                 if rem.get("gem") else
                 (f"<li><b>Gemstone:</b> {rem['gem_note']}</li>" if rem.get("gem_note") else ""))
     rem7_html = (f"""<div class="remcard"><b>Support for your 7th lord ({rem.get('lord','')})</b>
-<ul class="rem"><li><b>Fast / vrat:</b> {rem.get('fast_day','')}</li>
+<ul class="rem"><li><b>Fast day:</b> {rem.get('fast_day','')}</li>
 <li><b>Mantra:</b> {rem.get('mantra','')} — 108 times, on {rem.get('fast_day','')}</li>{gem_html}</ul></div>"""
                  if rem else "")
     dr_html = ""
@@ -572,7 +573,7 @@ def render_report_v2(p: dict) -> str:
                else "<li><b>Gemstone:</b> not advised for this period — the mantra and fast are enough.</li>")
         dr_html += (f"""<div class="remcard"><b>{d['lord']} {d['role']} · {d['from']} – {d['to']}</b>
 <p class="pd">{d['reason']}</p>
-<ul class="rem"><li><b>Fast / vrat:</b> {d['fast_day']}</li>
+<ul class="rem"><li><b>Fast day:</b> {d['fast_day']}</li>
 <li><b>Mantra:</b> {d['mantra']} — 108 times, on {d['fast_day']}</li>{gem}</ul></div>""")
     if not dr_html:
         dr_html = ("<p class='soft'>No weak Mahadasha/Antardasha periods are flagged in the near term — "
@@ -629,7 +630,7 @@ def render_report_v2(p: dict) -> str:
     parts.append(_sec("Birth chart · D1", "Your chart", "Your birth chart (D1)",
                       f'<p class="lead">{_prose(p, "chart_reading", cr_bank)}</p>'
                       f'<div style="text-align:center">{north_chart_svg(p)}</div>'))
-    parts.append(report_addons.planet_table_html(p))
+    parts.append(report_addons.planet_table_html(p, lang))
 
     lm_bank = ("Two lenses matter most: the Lagna (ascendant) governs your body, personality and the frame of the "
                "whole chart, while the Moon governs your mind and emotions — and drives your dasha timeline.")
@@ -653,7 +654,7 @@ def render_report_v2(p: dict) -> str:
     sh_bank = (f"The 7th house — {seventh_sign} in your chart — is the seat of marriage, partnership and commitment. "
                "It is the primary area every marriage judgement is built on.")
     parts.append(_sec("The 7th house", "Marriage seat", "The 7th house — seat of marriage",
-                      f'<p class="lead">{_prose(p, "seventh_house", sh_bank)}</p>{report_addons.occupants_html(p)}'))
+                      f'<p class="lead">{_prose(p, "seventh_house", sh_bank)}</p>{report_addons.occupants_html(p, lang)}'))
 
     sln_bank = (f"Your 7th lord is {seventh_lord}, {DIGNITY_TXT.get(sl_dignity, sl_dignity)}. Think of it as the main "
                 "switch for marriage: its condition shapes the quality and clarity of the timing.")
@@ -691,7 +692,7 @@ def render_report_v2(p: dict) -> str:
                       f'<p class="lead">{_prose(p, "dasha_periods", dp_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Current Mahadasha</span><span class="v">{cur.get("md","—")}</span></div>'
                       f'<div class="row"><span class="k">Current Antardasha</span><span class="v">{cur.get("ad","—")}</span></div></div>'))
-    parts.append(report_addons.scoring_box_html(p))
+    parts.append(report_addons.scoring_box_html(p, lang))
 
     tr_bank = ("Transits are the moving sky read against your birth chart: Jupiter is the 'go' signal that opens "
                "doors when it touches your marriage houses, while Saturn is the 'slow' signal that asks for patience.")
@@ -702,7 +703,7 @@ def render_report_v2(p: dict) -> str:
                f"beyond mere timing. Your D9 reads as a {(nav.get('strength') or 'steady')} promise.")
     parts.append(_sec("Navamsa · D9", d9_band.title(), "The Navamsa (D9)",
                       f'<p class="lead">{_prose(p, "navamsa_reading", nr_bank)}</p>'))
-    parts.append(report_addons.d9_section_html(p))
+    parts.append(report_addons.d9_section_html(p, lang))
 
     cn_bank = ("Whatever the dates, remember this: your chart shows a real and reachable promise of partnership. "
                "Use the timing as a guide, meet it with honest effort, and trust the process. Wishing you a warm, lasting union.")

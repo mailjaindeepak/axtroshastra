@@ -161,13 +161,13 @@ KOOTA_TEXT = {
 
 # ---- Remedies keyed to 7th lord (classical, agency-first) ----
 REMEDY_7L = {
-"Sun":("Ravivar (Sunday)","Om Ghrini Suryaya Namah","Ruby (Manik) — only if Sun is well-placed"),
-"Moon":("Somvar (Monday)","Om Som Somaya Namah","Pearl (Moti) — only if Moon is well-placed"),
-"Mars":("Mangalvar (Tuesday)","Om Ang Angarakaya Namah","Red Coral (Moonga) — only if Mars is well-placed"),
-"Mercury":("Budhvar (Wednesday)","Om Bum Budhaya Namah","Emerald (Panna) — only if Mercury is well-placed"),
-"Jupiter":("Guruvar (Thursday)","Om Brim Brihaspataye Namah","Yellow Sapphire (Pukhraj) — only if Jupiter is well-placed"),
-"Venus":("Shukravar (Friday)","Om Shum Shukraya Namah","Diamond/White Sapphire — only if Venus is well-placed"),
-"Saturn":("Shanivar (Saturday)","Om Sham Shanaishcharaya Namah","Blue Sapphire (Neelam) — only after expert trial, if Saturn is well-placed")}
+"Sun":("Sunday","Om Ghrini Suryaya Namah","Ruby — only if Sun is well-placed"),
+"Moon":("Monday","Om Som Somaya Namah","Pearl — only if Moon is well-placed"),
+"Mars":("Tuesday","Om Ang Angarakaya Namah","Red Coral — only if Mars is well-placed"),
+"Mercury":("Wednesday","Om Bum Budhaya Namah","Emerald — only if Mercury is well-placed"),
+"Jupiter":("Thursday","Om Brim Brihaspataye Namah","Yellow Sapphire — only if Jupiter is well-placed"),
+"Venus":("Friday","Om Shum Shukraya Namah","Diamond/White Sapphire — only if Venus is well-placed"),
+"Saturn":("Saturday","Om Sham Shanaishcharaya Namah","Blue Sapphire — only after expert trial, if Saturn is well-placed")}
 
 MD_LORD_HI = {"Sun":"Surya","Moon":"Chandra","Mars":"Mangal","Mercury":"Budh",
 "Jupiter":"Guru","Venus":"Shukra","Saturn":"Shani","Rahu":"Rahu","Ketu":"Ketu"}
@@ -175,9 +175,9 @@ MD_LORD_HI = {"Sun":"Surya","Moon":"Chandra","Mars":"Mangal","Mercury":"Budh",
 # ---- Remedy note for node (Rahu/Ketu) dasha periods (no classical gemstone here) ----
 # REMEDY_7L covers the 7 planets; the nodes get a plain, agency-first note instead.
 REMEDY_NODE = {
-"Rahu":("Shanivar (Saturday)","Om Ram Rahave Namah",
+"Rahu":("Saturday","Om Ram Rahave Namah",
         "No gemstone advised for a Rahu period — keep routines steady and decisions unhurried."),
-"Ketu":("Mangalvar (Tuesday)","Om Kem Ketave Namah",
+"Ketu":("Tuesday","Om Kem Ketave Namah",
         "No gemstone advised for a Ketu period — favour clarity, closure and simple habits."),
 }
 
