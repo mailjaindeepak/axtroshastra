@@ -739,6 +739,16 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
         if freed:
             # free-pass unlock is a real paid report -> generate prose too
             background_tasks.add_task(_generate_narrative_task, rid)
+            # Mirror the paid path (webhook/verify): PDF first so the WhatsApp
+            # message can attach it, then the SAME approved template a paying
+            # customer gets. Only this request flipped used 0->1 / paid 0->1
+            # (guarded above), so the send fires exactly once per pass.
+            if user_phone:
+                background_tasks.add_task(_pregenerate_pdf_task, rid)
+                background_tasks.add_task(
+                    send_whatsapp_report, user_phone, rid,
+                    _display_name(rec["payload"]),
+                    rec["payload"].get("product", "marriage"))
             # The popup collected the buyer's number before this unlock, so a
             # free pass still creates the account (no Razorpay webhook will
             # ever fire for it). Runs AFTER the unlock transaction closed —
@@ -1031,6 +1041,7 @@ setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3200)
 function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
 var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
 function done(){if(b)b.style.opacity='';}
+function attempt(retriesLeft){
 fetch(location.pathname.replace(/\\/+$/,'')+'/pdf').then(function(r){
 if(!r.ok||((r.headers.get('Content-Type')||'').indexOf('pdf')<0))throw 0;
 var m=(r.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/);
@@ -1039,9 +1050,14 @@ var a=document.createElement('a');a.href=u;a.download=m?m[1]:'Axtroshastra_Repor
 document.body.appendChild(a);a.click();
 setTimeout(function(){URL.revokeObjectURL(u);if(a.parentNode)a.parentNode.removeChild(a);},4000);
 axToastPdf('PDF downloaded \\u2713 check your Downloads / Files app.');done();});
-}).catch(function(){done();
+}).catch(function(){
+if(retriesLeft>0){axToastPdf('Preparing your PDF \\u2014 one moment\\u2026');
+setTimeout(function(){attempt(retriesLeft-1);},3000);return;}
+done();
 axToastPdf('Preparing your PDF \\u2014 choose "Save as PDF" in the window that opens, or grab it from WhatsApp: we\\u2019ve sent it there too.');
 setTimeout(function(){window.print();},1700);});
+}
+attempt(1);
 return false;}
 </script>"""
 
@@ -1251,7 +1267,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/match", "/career", "/blog",
+    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -1291,7 +1307,7 @@ def make_pass(key: str = "", n: int = 5):
     return {"passes": toks,
             "example_links": [f"{base}/shaadi?pass={toks[0]}",
                               f"{base}/milan?pass={toks[0]}",
-                              f"{base}/match?pass={toks[0]}",
+                              f"{base}/en/compatibility?pass={toks[0]}",
                               f"{base}/jeevan?pass={toks[0]}",
                               f"{base}/career?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
@@ -1712,6 +1728,16 @@ def shaadi_redirect(request: Request):
 def milan_redirect(request: Request):
     """Legacy /milan → /en/compatibility (301 permanent). Preserves query string
     so already-issued unlock links like /milan?pass=<token> keep working."""
+    q = request.url.query
+    return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/match", include_in_schema=False)
+def match_redirect(request: Request):
+    """Legacy /match (Hinglish milan funnel) → /en/compatibility (301 permanent).
+    Mirrors /milan above; the report's "Gift a friend" CTA pointed here for a
+    while, so old reports/PDFs keep working. Preserves query string so
+    already-issued unlock links like /match?pass=<token> keep working."""
     q = request.url.query
     return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)
 

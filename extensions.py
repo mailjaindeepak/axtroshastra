@@ -9,7 +9,6 @@ ctx keys:
   valid_admin_key(key) -> bool
 
 Endpoints added:
-  GET  /report/{rid}/pdf   server-side PDF of a paid report            (#7)
   GET  /api/deep/{rid}     divisional charts + yogas + ashtakavarga    (#8)
   GET  /api/i18n           supported languages + a language catalog    (#9)
   POST /api/reconcile      admin: reconcile unpaid reports w/ Razorpay (#6)
@@ -18,34 +17,23 @@ Endpoints added:
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
 
 import divisional
 import i18n
 import payments
-import delivery
 
 
 def install(app, ctx):
     db = ctx["db"]
     get_report = ctx["get_report"]
-    render = ctx["render"]
+    render = ctx["render"]                       # noqa: F841 — kept in ctx contract
     valid_admin_key = ctx["valid_admin_key"]
 
-    @app.get("/report/{rid}/pdf", include_in_schema=False)
-    def report_pdf(rid: str):
-        rec = get_report(rid)
-        if not rec or not rec["paid"]:
-            raise HTTPException(404, "report not found or payment pending")
-        payload = rec["payload"]
-        html = render(payload.get("product", "marriage"), payload)
-        pdf = delivery.html_to_pdf(html)
-        if pdf is None:
-            raise HTTPException(503, "PDF renderer not installed on server")
-        name = (payload.get("meta", {}).get("name") or "report").replace(" ", "_")
-        return Response(content=pdf, media_type="application/pdf",
-                        headers={"Content-Disposition":
-                                 f'attachment; filename="axtroshastra_{name}.pdf"'})
+    # NOTE: an earlier /report/{rid}/pdf route lived here (xhtml2pdf-based).
+    # It was DEAD code — api.py registers its own /report/{rid}/pdf (headless
+    # Chrome, pdfgen.py) before install() runs, and Starlette serves the first
+    # match — so it was removed rather than left to mislead.
 
     @app.get("/api/deep/{rid}")
     def deep_analysis(rid: str):

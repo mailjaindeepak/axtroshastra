@@ -194,3 +194,69 @@ def test_free_pass_creates_account_from_popup(client):
     assert acct is not None
     assert acct["mobile"] == "+919876500003"
     assert acct["email"] == "free@example.com"
+
+
+# ------------------------------- free-pass unlock delivers WhatsApp too
+def _record_delivery(monkeypatch):
+    """Stub the two delivery tasks with recorders. TestClient executes FastAPI
+    background tasks before the response returns, so calls are visible
+    synchronously after client.post()."""
+    wa_calls, pdf_calls = [], []
+    monkeypatch.setattr(api, "send_whatsapp_report",
+                        lambda *a, **k: wa_calls.append((a, k)))
+    monkeypatch.setattr(api, "_pregenerate_pdf_task",
+                        lambda rid: pdf_calls.append(rid))
+    return wa_calls, pdf_calls
+
+
+def test_free_pass_sends_whatsapp_like_paid_path(client, monkeypatch):
+    """Pass redemption must trigger the SAME WhatsApp delivery a payment does:
+    PDF pregeneration first, then send_whatsapp_report with the normalised
+    popup number, the rid, the display name and the product."""
+    wa_calls, pdf_calls = _record_delivery(monkeypatch)
+    rid = _new_report(client)
+    tok = client.get("/api/make_pass?key=test-stats-key&n=1").json()["passes"][0]
+    r = client.post("/api/order", json={"report_id": rid, "pass": tok,
+                                        "phone": "98765 00003"})
+    assert r.json().get("free") is True
+    assert pdf_calls == [rid]                       # PDF cached before the send
+    assert len(wa_calls) == 1
+    args, _ = wa_calls[0]
+    assert args[0] == "+919876500003"               # normalised popup number
+    assert args[1] == rid
+    assert args[2] == "Popup Tester"                # _display_name(payload)
+    assert args[3] == "marriage"                    # product
+
+
+def test_free_pass_whatsapp_sent_exactly_once(client, monkeypatch):
+    """Idempotency: retrying the unlocked report -> already_paid, and reusing
+    the burnt pass on another report -> invalid_pass. Neither re-sends."""
+    wa_calls, _ = _record_delivery(monkeypatch)
+    rid1 = _new_report(client)
+    tok = client.get("/api/make_pass?key=test-stats-key&n=1").json()["passes"][0]
+    assert client.post("/api/order", json={"report_id": rid1, "pass": tok,
+                                           "phone": "9876500004"}
+                       ).json().get("free") is True
+    assert len(wa_calls) == 1
+    # same rid retried (double-click / reload) -> short-circuits on paid
+    r2 = client.post("/api/order", json={"report_id": rid1, "pass": tok,
+                                         "phone": "9876500004"})
+    assert r2.json().get("already_paid") is True
+    # burnt pass on a fresh report -> invalid, nothing delivered
+    rid2 = _new_report(client)
+    r3 = client.post("/api/order", json={"report_id": rid2, "pass": tok,
+                                         "phone": "9876500005"})
+    assert r3.json().get("error") == "invalid_pass"
+    assert len(wa_calls) == 1                       # still exactly one send
+
+
+def test_free_pass_without_phone_skips_whatsapp(client, monkeypatch):
+    """Headless redemption with no popup phone: unlock still succeeds, the
+    WhatsApp send is skipped gracefully (admin backstop: /api/resend_wa)."""
+    wa_calls, pdf_calls = _record_delivery(monkeypatch)
+    rid = _new_report(client)
+    tok = client.get("/api/make_pass?key=test-stats-key&n=1").json()["passes"][0]
+    r = client.post("/api/order", json={"report_id": rid, "pass": tok})
+    assert r.json().get("free") is True
+    assert client.get(f"/api/report/{rid}").json()["paid"] is True
+    assert wa_calls == [] and pdf_calls == []

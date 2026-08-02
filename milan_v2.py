@@ -10,6 +10,8 @@ classical tables (THEMES/KOOTA_UI/REMEDIES/ACTION_PLAN/ARCHETYPE) from
 report_view.py. Descriptive PROSE slots call the LLM via narr(); when the LLM is
 off/unfunded, narr() returns None and the deterministic bank text is used.
 """
+import os
+
 from html import escape
 from narrative import narr
 from report_view import (THEMES, KOOTA_UI, REMEDIES, ACTION_PLAN, THEME_DEEP,
@@ -367,12 +369,17 @@ def render_milan_v2(p: dict) -> str:
                   f'<div class="n">{p1n} &amp; {p2n}</div><div class="a">{escape(arch["name"])} {arch.get("emoji","")}</div>'
                   f'<div class="st">{_stars(pct)}</div><div class="b">{pct}% · {_verdict_word(pct)}</div>'
                   f'<div class="q">“According to Vedic astrology, this relationship holds warm and auspicious potential.”</div></div>'))
-    # referral
+    # referral — language-aware CTA target, absolute URL so the link also works
+    # inside the Chrome-rendered PDF (rendered from file://, where a root-relative
+    # href would become a dead file:///... annotation). Visible strings must stay
+    # byte-identical: milan_hi.py localises by exact text-node match.
+    _origin = os.getenv("PUBLIC_BASE_URL", "https://www.axtroshastra.com").rstrip("/")
+    ref_target = f"{_origin}/hi/compatibility" if m.get("lang") == "hi" else f"{_origin}/en/compatibility"
     S.append(("", f'<div class="eb">One last thing</div><div class="h2">Know a couple who’d love this?</div>'
                   f'<div class="sub">Every reading is calculated from real charts — no two alike</div>'
                   f'<div class="refbox"><div class="l2">Gift a friend their reading \U0001F49B</div>'
                   f'<p>If this felt true for you, it’ll mean the world to someone figuring out “is this the one?”</p>'
-                  f'<a class="refbtn" href="/match">Start a reading →</a></div>'))
+                  f'<a class="refbtn" href="{ref_target}">Start a reading →</a></div>'))
     # appendix
     S += _appendix(p, pr1, pr2, kootas, by)
 
