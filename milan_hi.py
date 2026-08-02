@@ -34,6 +34,7 @@ HI = {
     "Excellent Match": "बेहतरीन मैच",
     "Very Good Match": "बहुत अच्छा मैच",
     "Good Match": "अच्छा मैच",
+    "Worth Understanding": "समझने लायक मैच",
     "Workable Match": "बन सकने वाला मैच",
     "Needs Work": "मेहनत चाहिए",
 

@@ -47,6 +47,51 @@ def test_one_breath_is_single_source_of_truth():
     assert milan_v2.render_milan_v2(p).count(html) == 1
 
 
+def test_teaser_hindi_fields_present_and_devanagari():
+    """milan.hi.html renders the same v7 teaser from the *_hi fields (falling
+    back to English only for old cached teasers) — so every _hi field must be
+    present, non-empty, and actually in Devanagari script."""
+    p = products.compute_milan(P1, P2)
+    t = p["teaser"]
+    hi_fields = ["p1_moon_hi", "p1_nak_hi", "p1_persona_hi", "p1_love_hi",
+                 "p1_element_hi", "p1_lord_hi",
+                 "p2_moon_hi", "p2_nak_hi", "p2_persona_hi", "p2_love_hi",
+                 "p2_element_hi", "p2_lord_hi",
+                 "verdict_hi", "one_breath_hi"]
+
+    def devanagari(s):
+        return any("ऀ" <= ch <= "ॿ" for ch in s)
+
+    for f in hi_fields:
+        assert t.get(f), f"teaser missing/empty Hindi field: {f}"
+        assert devanagari(t[f]), f"{f} is not Devanagari: {t[f]!r}"
+    # the Hindi one-breath is the Devanagari twin of the same single source
+    from report_view import milan_one_breath_hi
+    assert t["one_breath_hi"] == milan_one_breath_hi(p["kootas"])
+    # English contract untouched (the hi page's fallback + milan.html's data)
+    assert t["one_breath"] == milan_one_breath(p["kootas"])
+    assert t["p1_persona"] and t["verdict"]
+
+
+def test_hindi_tables_cover_every_output():
+    """Static-table coverage: all 27 nakshatras have Hindi persona+love lines,
+    and every possible verdict word has a Devanagari entry."""
+    from jyotish_maps import NAK_PROFILE, NAK_PROFILE_HI
+    from milan_v2 import _verdict_word
+    from milan_hi import HI
+
+    def devanagari(s):
+        return any("ऀ" <= ch <= "ॿ" for ch in s)
+
+    assert set(NAK_PROFILE_HI) == set(NAK_PROFILE) == set(range(27))
+    for idx, (persona, love) in NAK_PROFILE_HI.items():
+        assert persona and devanagari(persona), f"nak {idx} persona_hi bad"
+        assert love and devanagari(love), f"nak {idx} love_hi bad"
+    for pct in range(0, 101):
+        w = _verdict_word(pct)
+        assert w in HI and devanagari(HI[w]), f"no Hindi verdict for {w!r}"
+
+
 def test_teaser_does_not_leak_paid_depth():
     """The preview shows quality, not the paid detail: no per-koota scores,
     friction points, action plan or dosha verdicts in the teaser payload."""

@@ -1282,6 +1282,33 @@ def milan_one_breath(kootas: list, *, html: bool = False) -> str:
             f"with one honest growth edge: {weak}.")
 
 
+# Devanagari theme names for the Hindi one-breath line. Keep in sync with the
+# theme-name entries in milan_hi.HI (the report localiser) so preview and
+# localised report never disagree on what a theme is called.
+THEME_NAME_HI = {
+    "Chemistry & Attraction": "कैमिस्ट्री और आकर्षण",
+    "Everyday Vibe": "रोज़मर्रा का तालमेल",
+    "Mind & Values": "सोच और मूल्य",
+    "Love & Long-Term": "प्यार और लंबा साथ",
+    "Health & Vitality": "सेहत और जीवनशक्ति",
+}
+
+
+def milan_one_breath_hi(kootas: list) -> str:
+    """Devanagari twin of milan_one_breath — the SAME theme logic (strong themes
+    listed, weakest named), rendered as the equivalent warm Hindi sentence. Used
+    by the free teaser on pages/milan.hi.html via compute_milan's one_breath_hi.
+    Deterministic: static tables only, no runtime translation."""
+    themes = _theme_scores(kootas)
+    strong = [t for t in themes if t["pct"] >= 75]
+    st = ", ".join(THEME_NAME_HI.get(t["theme"]["name"], t["theme"]["name"])
+                   for t in strong[:3]) or "आपकी बुनियाद"
+    weak = (THEME_NAME_HI.get(themes[-1]["theme"]["name"], themes[-1]["theme"]["name"])
+            if themes else "एक क्षेत्र")
+    return (f"दो लोग जो गहराई से टिकने के लिए बने हैं — {st} में मज़बूत — "
+            f"बस एक ईमानदार ग्रोथ एरिया के साथ: {weak}।")
+
+
 def _archetype(profiles: dict) -> dict:
     return ARCHETYPE.get(frozenset({profiles["p1"]["element"], profiles["p2"]["element"]}), ARCHETYPE_DEFAULT)
 

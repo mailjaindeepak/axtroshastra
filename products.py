@@ -318,8 +318,15 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     # own helpers so the preview reads as a genuine slice of what's bought.
     # We reveal the SCORE, 2-3 theme cards and the one-line summary; the deeper
     # koota-by-koota detail, doshas and action plan stay locked behind paywall.
-    from report_view import _theme_scores as _ts, milan_one_breath as _one_breath
+    from report_view import (_theme_scores as _ts, milan_one_breath as _one_breath,
+                             milan_one_breath_hi as _one_breath_hi)
     from milan_v2 import _verdict_word as _vword
+    # Devanagari lookups for the Hindi funnel page (milan.hi.html): reuse the
+    # report localiser's proper-noun tokens (signs, nakshatras, planets, elements)
+    # and its verdict-word dictionary rather than duplicating those tables here.
+    from milan_hi import TOK as _HI_TOK, HI as _HI_TEXT
+    from jyotish_maps import NAK_PROFILE_HI
+    _dev = lambda s: _HI_TOK.get(s, s)
     _bands = lambda pc: "strong" if pc >= 75 else ("solid" if pc >= 45 else "grow")
     _tscores = _ts(kootas)
     teaser_themes = [{"name": t["theme"]["name"], "emoji": t["theme"]["emoji"],
@@ -354,7 +361,20 @@ def compute_milan(p1: dict, p2: dict) -> dict:
             "verdict": _vword(match_pct),
             "one_breath": _one_breath(kootas),
             "themes": teaser_themes,
-            "strongest": strongest},
+            "strongest": strongest,
+            # ---- Devanagari (_hi) variants for the Hindi funnel teaser ----
+            # Additive only: the English fields above are the contract for
+            # milan.html AND the fallback for milan.hi.html when a cached teaser
+            # predates these fields. Authored static tables — no runtime
+            # translation, no LLM.
+            "p1_moon_hi": _dev(SIGNS[g["sign"]]), "p2_moon_hi": _dev(SIGNS[b["sign"]]),
+            "p1_nak_hi": _dev(NAKSHATRAS[g["nak"]]), "p2_nak_hi": _dev(NAKSHATRAS[b["nak"]]),
+            "p1_persona_hi": NAK_PROFILE_HI[g["nak"]][0], "p1_love_hi": NAK_PROFILE_HI[g["nak"]][1],
+            "p2_persona_hi": NAK_PROFILE_HI[b["nak"]][0], "p2_love_hi": NAK_PROFILE_HI[b["nak"]][1],
+            "p1_element_hi": _dev(e1.capitalize()), "p2_element_hi": _dev(e2.capitalize()),
+            "p1_lord_hi": _dev(SIGN_LORD[g["sign"]]), "p2_lord_hi": _dev(SIGN_LORD[b["sign"]]),
+            "verdict_hi": _HI_TEXT.get(_vword(match_pct), _vword(match_pct)),
+            "one_breath_hi": _one_breath_hi(kootas)},
         "kootas": kootas, "total": total, "max_total": 36,
         "verdict": verdict, "verdict_key": vkey,
         "cancellations": cancellations, "effective": effective,
