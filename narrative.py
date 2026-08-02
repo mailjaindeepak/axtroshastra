@@ -109,6 +109,23 @@ def _max_tokens(product: str) -> int:
             pass
     return MAX_TOKENS_BY_PRODUCT.get(product, DEFAULT_MAX_TOKENS)
 
+# Per-product HTTP timeout (seconds). Generating all 32 marriage slots (up to
+# ~16k output tokens, heavier in Devanagari) takes well over the 30s default —
+# a short timeout silently fails the whole call and drops every slot to its bank.
+# This runs as a background task at payment time, so a long timeout is safe.
+# Env NARRATIVE_TIMEOUT overrides all products.
+TIMEOUT_BY_PRODUCT = {"marriage": 180.0}
+DEFAULT_TIMEOUT = 30.0
+
+def _timeout(product: str) -> float:
+    env = os.getenv("NARRATIVE_TIMEOUT")
+    if env:
+        try:
+            return float(env)
+        except Exception:
+            pass
+    return TIMEOUT_BY_PRODUCT.get(product, DEFAULT_TIMEOUT)
+
 # --------------------------------------------------------------------------- #
 # which prose slots each product exposes to the LLM.  key -> writing brief.
 # Renderers read these keys via narr(p, key); anything not produced (or dropped
@@ -196,7 +213,7 @@ def generate_narrative(payload: dict) -> dict:
         facts = _facts_for_llm(payload, product)
         system = _system_prompt(product, spec, _resolve_lang(payload))
         user = _user_prompt(facts, spec)
-        raw = _call(system, user, _max_tokens(product))
+        raw = _call(system, user, _max_tokens(product), _timeout(product))
         if not raw:
             return {}
         data = _parse_json(raw)
@@ -455,20 +472,21 @@ def _claims_ok(text: str, truth: dict) -> bool:
 # --------------------------------------------------------------------------- #
 # provider dispatch (stdlib HTTP — no SDK, no new wheels)
 # --------------------------------------------------------------------------- #
-def _call(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
+def _call(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS,
+          timeout: float = DEFAULT_TIMEOUT) -> str:
     fn = _call_openai if _provider() == "openai" else _call_anthropic
-    return fn(system, user, max_tokens)
+    return fn(system, user, max_tokens, timeout)
 
 
-def _http_post_json(url: str, headers: dict, body: dict) -> dict:
+def _http_post_json(url: str, headers: dict, body: dict, timeout: float = DEFAULT_TIMEOUT) -> dict:
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-    timeout = _float("NARRATIVE_TIMEOUT", "30")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
+def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS,
+                    timeout: float = DEFAULT_TIMEOUT) -> str:
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
         logger.warning("[narrative] ANTHROPIC_API_KEY not set")
@@ -492,9 +510,12 @@ def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS
     headers = {"x-api-key": key, "anthropic-version": ANTHROPIC_VERSION,
                "content-type": "application/json"}
     try:
-        out = _http_post_json(ANTHROPIC_URL, headers, body)
+        out = _http_post_json(ANTHROPIC_URL, headers, body, timeout)
     except urllib.error.HTTPError as e:
         logger.error("[narrative] anthropic HTTP %s (model=%s): %s", e.code, _model(), e.read()[:300])
+        return ""
+    except Exception as e:                # socket timeout / URLError etc.
+        logger.error("[narrative] anthropic call failed (model=%s, timeout=%ss): %s", _model(), timeout, e)
         return ""
     parts = out.get("content") or []
     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
@@ -503,7 +524,8 @@ def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS
     return "{" + text if prefill else text
 
 
-def _call_openai(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
+def _call_openai(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS,
+                 timeout: float = DEFAULT_TIMEOUT) -> str:
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         logger.warning("[narrative] OPENAI_API_KEY not set")
@@ -518,9 +540,12 @@ def _call_openai(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -
     }
     headers = {"Authorization": f"Bearer {key}", "content-type": "application/json"}
     try:
-        out = _http_post_json(OPENAI_URL, headers, body)
+        out = _http_post_json(OPENAI_URL, headers, body, timeout)
     except urllib.error.HTTPError as e:
         logger.error("[narrative] openai HTTP %s: %s", e.code, e.read()[:300])
+        return ""
+    except Exception as e:                # socket timeout / URLError etc.
+        logger.error("[narrative] openai call failed (timeout=%ss): %s", timeout, e)
         return ""
     try:
         return out["choices"][0]["message"]["content"] or ""

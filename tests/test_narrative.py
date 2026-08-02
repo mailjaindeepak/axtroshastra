@@ -30,10 +30,11 @@ def _clean_env(monkeypatch):
 def _fake_http(monkeypatch, captured, payload_obj):
     """Patch the single HTTP chokepoint to return a chosen provider response
     shaped like Anthropic or OpenAI, and record what would have been sent."""
-    def fake(url, headers, body):
+    def fake(url, headers, body, timeout=None):
         captured["url"] = url
         captured["headers"] = headers
         captured["body"] = body
+        captured["timeout"] = timeout
         text = json.dumps(payload_obj)
         if "anthropic" in url:
             model = body.get("model", "")
@@ -123,7 +124,7 @@ def test_bad_json_falls_back(monkeypatch):
     monkeypatch.setenv("NARRATIVE_ENABLED", "1")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "k")
     monkeypatch.setattr(narrative, "_http_post_json",
-                        lambda u, h, b: {"content": [{"type": "text", "text": "not json"}]})
+                        lambda u, h, b, t=None: {"content": [{"type": "text", "text": "not json"}]})
     assert narrative.generate_narrative(MILAN_PAYLOAD) == {}
 
 
