@@ -99,36 +99,36 @@ def navamsa_analysis(chart: dict, ref_sign: int, female: bool = False) -> dict:
     reasons = []
     if seventh_lord_vargottama:
         score += 2
-        reasons.append(f"aapka 7th lord ({d1_seventh_lord}) vargottama hai (D1 aur D9 mein ek hi rashi) — marriage promise strong")
+        reasons.append(f"Your 7th lord ({d1_seventh_lord}) is vargottama (same sign in D1 and D9) — a strong marriage promise.")
     if venus_vargottama:
         score += 2
-        reasons.append("Venus (marriage karaka) vargottama hai — sneh aur nibhaav ki strength")
+        reasons.append("Venus (the marriage karaka) is vargottama — strength in affection and staying power.")
     if d9_7l_dignity in ("own", "exalted"):
         score += 2
-        reasons.append(f"D9 mein 7th lord ({d9_seventh_lord}) apni acchi dignity mein hai ({d9_7l_dignity})")
+        reasons.append(f"In D9 the 7th lord ({d9_seventh_lord}) holds good dignity ({d9_7l_dignity}).")
     if venus_d9_dignity in ("own", "exalted"):
         score += 1
-        reasons.append(f"Venus D9 mein strong hai ({venus_d9_dignity})")
+        reasons.append(f"Venus is strong in D9 ({venus_d9_dignity}).")
     if d9_7l_dignity == "debilitated":
         score -= 2
-        reasons.append(f"D9 mein 7th lord ({d9_seventh_lord}) debilitated hai — timing par thoda extra dhyaan")
+        reasons.append(f"In D9 the 7th lord ({d9_seventh_lord}) is debilitated — a little extra care around timing.")
     if venus_d9_dignity == "debilitated":
         score -= 1
-        reasons.append("Venus D9 mein debilitated hai — expression mein narmi ki zaroorat")
+        reasons.append("Venus is debilitated in D9 — a gentler, softer touch in how love is expressed.")
 
     if score >= 3:
-        band, band_note = "strong", ("Navamsa marriage promise ko strongly support karta hai — "
-                                     "yog pakka hai, sirf timing ki baat hai (upar windows dekhiye).")
+        band, band_note = "strong", ("The Navamsa strongly supports the marriage promise — the union is "
+                                     "well indicated; it is only a matter of timing (see the windows above).")
     elif score <= -1:
-        band, band_note = "tender", ("Navamsa thoda tender hai — iska matlab shaadi nahi hoti aisa "
-                                     "nahi, balki partner-choice aur timing mein soch-samajh zyada zaroori hai. "
-                                     "Yeh warning nahi, awareness hai.")
+        band, band_note = "tender", ("The Navamsa is a little tender — this does not mean marriage won't "
+                                     "happen; it means partner-choice and timing simply deserve more thought. "
+                                     "This is awareness, not a warning.")
     else:
-        band, band_note = "steady", ("Navamsa marriage promise ko steadily support karta hai — "
-                                     "koi badi rukaawat nahi, D1 windows hi driver hain.")
+        band, band_note = "steady", ("The Navamsa steadily supports the marriage promise — no major "
+                                     "obstacle; the D1 windows are the real driver.")
 
     if not reasons:
-        reasons.append("D9 mein koi strong plus ya minus signal nahi — neutral promise, timing D1 se aati hai.")
+        reasons.append("No strong plus or minus signal in D9 — a neutral promise; the timing comes from D1.")
 
     return {
         "d9_lagna": SIGNS[d9_lagna], "d9_lagna_idx": d9_lagna,

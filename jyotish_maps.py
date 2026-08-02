@@ -171,3 +171,73 @@ REMEDY_7L = {
 
 MD_LORD_HI = {"Sun":"Surya","Moon":"Chandra","Mars":"Mangal","Mercury":"Budh",
 "Jupiter":"Guru","Venus":"Shukra","Saturn":"Shani","Rahu":"Rahu","Ketu":"Ketu"}
+
+# ---- Remedy note for node (Rahu/Ketu) dasha periods (no classical gemstone here) ----
+# REMEDY_7L covers the 7 planets; the nodes get a plain, agency-first note instead.
+REMEDY_NODE = {
+"Rahu":("Shanivar (Saturday)","Om Ram Rahave Namah",
+        "No gemstone advised for a Rahu period — keep routines steady and decisions unhurried."),
+"Ketu":("Mangalvar (Tuesday)","Om Kem Ketave Namah",
+        "No gemstone advised for a Ketu period — favour clarity, closure and simple habits."),
+}
+
+# ---- Manglik guidance: verdict framing + Dos & Don'ts, keyed by manglik.status ----
+# Deliberately non-fatalistic. Rendered on the deterministic Manglik pages (no LLM).
+MANGLIK_DOSDONTS = {
+"non_manglik": {
+    "line": "Mars does not sit in a Manglik house from either your Lagna or your Moon, "
+            "so the classical Mangal dosha simply does not apply to you.",
+    "do": [
+        "Answer the question confidently: on this chart, you are not Manglik.",
+        "Match on the things that actually last — values, temperament, timing.",
+        "Keep the focus on your marriage windows rather than this checkbox.",
+    ],
+    "dont": [
+        "Don't let anyone invent a dosha that your chart does not show.",
+        "Don't pay for 'Manglik remedies' you do not need.",
+    ],
+},
+"manglik_cancelled": {
+    "line": "Mars is in a Manglik position, but a recognised classical cancellation "
+            "applies — so in practice this is treated as effectively non-Manglik.",
+    "do": [
+        "Understand the cancellation so you can explain it calmly to family.",
+        "State it plainly in a match: technically present, classically cancelled.",
+        "Weigh compatibility on the whole chart, not this single factor.",
+    ],
+    "dont": [
+        "Don't accept fear-based framing — a cancelled dosha is not a warning.",
+        "Don't over-spend on remedies for a dosha that is already neutralised.",
+    ],
+},
+"manglik": {
+    "line": "Mars sits in a Manglik house. This is not a curse or a verdict on your "
+            "marriage — classical texts treat it as a factor to handle thoughtfully, "
+            "and it becomes neutral in a Manglik–Manglik match.",
+    "do": [
+        "Give the relationship time to mature before big commitments — patience suits this placement.",
+        "Consider a partner who is also Manglik, where the factor cancels out.",
+        "Channel the Mars energy into shared goals and honest, quick conflict-resolution.",
+    ],
+    "dont": [
+        "Don't panic or treat this as doom — it is common and manageable.",
+        "Don't rush into expensive or fear-driven remedies; start with awareness.",
+        "Don't let this single factor override an otherwise strong match.",
+    ],
+},
+}
+
+# ---- Weak / quiet period guidance (Component 5). Generic, agency-first actions. ----
+WEAK_PERIOD_ACTION = {
+    "line": "In a quiet phase, matches may still come but tend not to convert. This is "
+            "pattern, not personal failure — and it is the best time to prepare rather than push.",
+    "do": [
+        "Use the time for clarity — what you actually want in a partner and a life.",
+        "Keep your profile current and doors open, without forcing outcomes.",
+        "Invest in yourself: health, work, and the conversations with family that make later 'yes' easier.",
+    ],
+    "dont": [
+        "Don't read a slow phase as a closed door — it is a low-activation window, not a verdict.",
+        "Don't force a decision that doesn't feel right just because time is passing.",
+    ],
+}

@@ -29,6 +29,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from engine import compute_report
 from report_view import render_report, render_milan, render_blueprint, render_vidyarthi, north_chart_svg
+from report_view_v2 import render_report_v2   # marriage report v2 (4-tier, LLM-narrated)
 from products import compute_milan, compute_blueprint
 from vidyarthi import compute_vidyarthi_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
@@ -230,7 +231,7 @@ def _render_for(product, payload):
         return render_blueprint(payload)
     if product == "vidyarthi":
         return render_vidyarthi(payload)
-    html = render_report(payload)
+    html = render_report_v2(payload)
     # Devanagari marriage report for the /hi/marriage funnel (deterministic localizer)
     if (payload.get("meta") or {}).get("lang") == "hi":
         try:
@@ -687,7 +688,10 @@ def create_kundli(inp: KundliIn):
         pass         # (#1) provenance
 
     report["meta"]["_birth"] = {"dob": inp.dob, "tob": tob, "tz": tz,
-                                "lat": lat, "lon": lon}   # (#8) for /api/deep
+                                "lat": lat, "lon": lon,
+                                "place": inp.place}   # (#8) for /api/deep + report cover
+    # note: birth details live under the underscore-prefixed _birth so narrative.py's
+    # PII scrub keeps them out of the LLM payload; the report cover reads them here.
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)

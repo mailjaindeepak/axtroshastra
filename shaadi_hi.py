@@ -19,8 +19,90 @@ import html as _htmlmod
 from shaadi_hi_data import HI_DATA
 
 # ---------------------------------------------------------------- phrase dict
+# v2 marriage report (report_view_v2) is English-base. These are the deterministic
+# labels/headers/keys it emits; the LLM prose slots already arrive in Devanagari and
+# pass through unchanged. Dynamic composite runs (dates, grades, planet names) are
+# still handled by the TOK / GRADE / MONTH maps and the _template patterns below.
+EN_HI_DATA = {
+    # tier dividers
+    "Tier 2": "भाग 2", "Tier 3": "भाग 3", "Tier 4": "भाग 4",
+    "Summary": "सारांश", "Detailed Report": "विस्तृत रिपोर्ट", "The Astrology": "ज्योतिष विवरण",
+    "The whole report, in six pages.": "पूरी रिपोर्ट, छह पन्नों में।",
+    "Full depth on your timing, your partner, and your remedies.":
+        "आपकी टाइमिंग, आपके जीवनसाथी और आपके उपायों का पूरा विवरण।",
+    "Every classical calculation behind this report.":
+        "इस रिपोर्ट के पीछे की हर शास्त्रीय गणना।",
+    # section labels (plabel)
+    "Your answer — at a glance": "आपका जवाब — एक नज़र में",
+    "The answer": "जवाब", "Chart snapshot": "कुंडली की झलक", "Your person": "आपका जीवनसाथी",
+    "Your timing story": "आपकी टाइमिंग की कहानी", "The big questions": "बड़े सवाल",
+    "Your move": "आपका अगला कदम", "Window 1": "विंडो 1", "Window 2": "विंडो 2", "Window 3": "विंडो 3",
+    "Action plan": "कार्य-योजना", "Quiet periods": "शांत अवधि", "Past years": "बीते वर्ष",
+    "Year by year": "साल-दर-साल", "Manglik": "मांगलिक", "Sade Sati": "साढ़ेसाती",
+    "Remedies": "उपाय", "Your partner": "आपका जीवनसाथी", "How you'll meet": "आप कैसे मिलेंगे",
+    "Your pattern": "आपका स्वभाव", "Method": "पद्धति", "Birth chart · D1": "जन्म कुंडली · D1",
+    "Lagna & Moon": "लग्न और चंद्र", "The nine planets": "नौ ग्रह",
+    "Nakshatra & pada": "नक्षत्र और पद", "The 7th house": "सातवाँ भाव", "The 7th lord": "सातवें भाव का स्वामी",
+    "Karakas": "कारक", "Darakaraka": "दारकारक", "The nodes": "राहु-केतु", "Dashas": "दशाएँ",
+    "Gochar · transits": "गोचर", "Navamsa · D9": "नवमांश · D9", "Closing": "समापन",
+    "Full chart": "पूरी कुंडली", "Under the hood": "गणना के पीछे",
+    # h2 headings
+    "When will you get married?": "आपकी शादी कब होगी?",
+    "Your marriage windows": "आपकी विवाह विंडोज़",
+    "Your Kundli at a glance": "आपकी कुंडली — एक नज़र में",
+    "Your potential partner": "आपका संभावित जीवनसाथी",
+    "Why not yet — and what's changing": "अब तक क्यों नहीं — और क्या बदल रहा है",
+    "The three things everyone asks": "तीन सवाल जो हर कोई पूछता है",
+    "What to do now": "अब क्या करें",
+    "Your strongest window": "आपकी सबसे मज़बूत विंडो",
+    "Your second window": "आपकी दूसरी विंडो", "Your third window": "आपकी तीसरी विंडो",
+    "Strong & moderate windows — your move": "मज़बूत और मध्यम विंडोज़ — आपका कदम",
+    "Weak periods — what to do": "कमज़ोर अवधि — क्या करें",
+    "Why it hasn't happened yet": "अब तक क्यों नहीं हुई",
+    "The next three years": "अगले तीन साल",
+    "Manglik — impact, dos & don'ts": "मांगलिक — प्रभाव, क्या करें और क्या नहीं",
+    "Sade Sati — the Saturn cycle": "साढ़ेसाती — शनि का चक्र",
+    "Remedies for your dasha periods": "आपकी दशा अवधियों के उपाय",
+    "For weak periods ahead": "आगे की कमज़ोर अवधियों के लिए",
+    "Their likely personality": "उनका संभावित स्वभाव",
+    "Their background & how you'll meet": "उनकी पृष्ठभूमि और आप कैसे मिलेंगे",
+    "How you love": "आप प्रेम कैसे करते हैं",
+    "Method & foundations": "पद्धति और आधार",
+    "Your birth chart (D1)": "आपकी जन्म कुंडली (D1)",
+    "Your full chart — verify it yourself": "आपकी पूरी कुंडली — खुद जाँचिए",
+    "Your birth star": "आपका जन्म-नक्षत्र",
+    "The 7th house — seat of marriage": "सातवाँ भाव — विवाह का स्थान",
+    "The 7th lord — the marriage switch": "सातवें भाव का स्वामी — विवाह का मुख्य स्विच",
+    "The marriage karakas": "विवाह के कारक",
+    "Darakaraka (Jaimini)": "दारकारक (जैमिनी)",
+    "Rahu / Ketu on the 7th axis": "सातवें अक्ष पर राहु / केतु",
+    "The dasha system & your periods": "दशा पद्धति और आपकी अवधियाँ",
+    "Jupiter & Saturn transits": "गुरु और शनि का गोचर",
+    "The Navamsa (D9)": "नवमांश (D9)", "A note to you": "आपके लिए एक संदेश",
+    "The Navamsa (D9) — marriage's truest mirror": "नवमांश (D9) — विवाह का सच्चा दर्पण",
+    # fact keys
+    "Lagna": "लग्न", "Moon · Nakshatra": "चंद्र · नक्षत्र", "7th house": "सातवाँ भाव",
+    "7th lord": "सातवें भाव का स्वामी", "Marriage karaka": "विवाह कारक",
+    "Navamsa promise": "नवमांश का वादा", "Ayanamsa": "अयनांश", "Houses": "भाव पद्धति",
+    "System": "पद्धति", "Birth-time quality": "जन्म-समय की गुणवत्ता",
+    "Moon sign · Nakshatra": "चंद्र राशि · नक्षत्र", "Dignity": "स्थिति",
+    "House from Lagna": "लग्न से भाव", "Karaka(s)": "कारक",
+    "Current Mahadasha": "वर्तमान महादशा", "Current Antardasha": "वर्तमान अंतर्दशा",
+    "D9 Lagna": "D9 लग्न", "D9 7th house": "D9 सातवाँ भाव", "D9 7th lord": "D9 सातवें भाव का स्वामी",
+    "Venus in D9": "D9 में शुक्र",
+    # dos & don'ts + remedy labels
+    "Do": "करें", "Don't": "न करें", "Whole sign": "पूर्ण-राशि",
+    "The connection may come through": "यह रिश्ता जुड़ सकता है",
+    # table headers (planet table)
+    "Planet": "ग्रह", "Sign": "राशि", "Nakshatra": "नक्षत्र", "House": "भाव",
+    "State": "स्थिति", "Total": "कुल",
+    # cover / misc
+    "Marriage Timing Report": "विवाह समय रिपोर्ट",
+}
+
 HI = {}
 HI.update(HI_DATA)
+HI.update(EN_HI_DATA)
 
 # ---------------------------------------------------------------- proper nouns
 TOK = {

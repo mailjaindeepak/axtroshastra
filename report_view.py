@@ -83,7 +83,7 @@ def north_chart_svg(payload: dict) -> str:
 <rect x="8" y="8" width="384" height="384" fill="none" stroke="#E4B04A" stroke-width="2"/>
 <path d="M8 8 L392 392 M392 8 L8 392" stroke="#E4B04A" stroke-width="1.5" fill="none"/>
 <path d="M200 8 L392 200 L200 392 L8 200 Z" stroke="#E4B04A" stroke-width="2" fill="none"/>
-<style>.sn{{font:600 13px sans-serif;fill:#8F92AB;text-anchor:middle}}
+<style>.sn{{font:600 13px sans-serif;fill:#A8977F;text-anchor:middle}}
 .pl{{font:800 15px sans-serif;fill:#F3EFE4;text-anchor:middle}}</style>
 {''.join(cells)}</svg>"""
 

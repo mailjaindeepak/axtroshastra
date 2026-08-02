@@ -498,7 +498,7 @@ if __name__ == "__main__":
 
 
 # ================================================== REPORT EXTRAS (deterministic)
-from jyotish_maps import (NAK_PROFILE, VENUS_STYLE, REMEDY_7L, SIGN_ELEMENT)
+from jyotish_maps import (NAK_PROFILE, VENUS_STYLE, REMEDY_7L, REMEDY_NODE, SIGN_ELEMENT)
 
 def _sade_sati(moon_sign: int, today: datetime) -> dict:
     """Saturn transit vs natal moon: 12th/1st/2nd house = rising/peak/setting."""
@@ -593,6 +593,58 @@ def _three_checks(chart, sig, ref_sign):
     return {"late_marriage_influence": late, "love_leaning": love, "foreign_or_intercommunity": foreign}
 
 
+def _dasha_remedies(chart, sig, tree, ref_sign, today, ahead_years=3):
+    """Component 9: remedies for the lords of periods active now or within
+    `ahead_years` that are classically 'weak' for marriage — debilitated or combust
+    natally, or a Saturn/Ketu period with no 7th-house link ('dry'). Deduped by lord,
+    each with the nearest relevant window. Deterministic; no LLM."""
+    g = chart["grahas"]
+    end = today + timedelta(days=int(ahead_years * 365.25))
+
+    def has_7_connection(p):
+        return (p == sig["seventh_lord"] or
+                houses_from(ref_sign, g[p].sign) == 7 or
+                aspects_house(chart, p, ref_sign, 7) or
+                g[p].sign == g[sig["seventh_lord"]].sign)
+
+    def weakness(lord):
+        gg = g[lord]
+        if gg.dignity == "debilitated":
+            return f"{lord} is debilitated in the birth chart — its periods ask for extra patience and care."
+        if getattr(gg, "combust", False):
+            return f"{lord} is combust (too close to the Sun) — its influence is quieter during its periods."
+        if lord in ("Saturn", "Ketu") and not has_7_connection(lord):
+            return f"{lord} has no direct link to the 7th house — a slower, low-activation period for marriage."
+        return None
+
+    seen, out = set(), []
+    for md in tree:
+        for ad in md["ads"]:
+            if ad["end"] < today or ad["start"] > end:
+                continue
+            for role, lord, s, e in (("Antardasha", ad["lord"], ad["start"], ad["end"]),
+                                     ("Mahadasha", md["lord"], md["start"], md["end"])):
+                if lord in seen:
+                    continue
+                reason = weakness(lord)
+                if not reason:
+                    continue
+                seen.add(lord)
+                if lord in REMEDY_7L:
+                    fast, mantra, gem = REMEDY_7L[lord]
+                    if g[lord].dignity == "debilitated" or getattr(g[lord], "combust", False):
+                        gem = None                       # never a gemstone for a weakened lord
+                elif lord in REMEDY_NODE:
+                    fast, mantra, gem = REMEDY_NODE[lord]
+                else:
+                    continue
+                out.append({"lord": lord, "role": role, "reason": reason,
+                            "from": max(s, today).strftime("%b %Y"),
+                            "to": e.strftime("%b %Y"),
+                            "fast_day": fast, "mantra": mantra, "gem": gem})
+    return out
+
+
 def marriage_extras(chart, sig, tree, out_windows, ref_sign, ref_signs_tr, today):
     g = chart["grahas"]; moon = g["Moon"]; venus = g["Venus"]
     seventh_lord = SIGN_LORD[(ref_sign + 6) % 12]
@@ -605,12 +657,13 @@ def marriage_extras(chart, sig, tree, out_windows, ref_sign, ref_signs_tr, today
         "nak_profile": {"nakshatra": NAKSHATRAS[moon.nak], "symbol": nakp[0],
                         "nature": nakp[1], "relationship": nakp[2]},
         "venus_style": VENUS_STYLE[venus.sign] +
-                       (" — Venus combust hai, isliye expression mein hesitation aa sakti hai; feelings genuine, awaaz dheemi." if venus.combust else
-                        (" — Venus apne hi sign mein strong hai; pyaar mein aapki instinct par bharosa kiya ja sakta hai." if venus.dignity in ("own","exalted") else "")),
+                       (" — with Venus combust, expression can carry some hesitation; the feelings are genuine, the voice just softer." if venus.combust else
+                        (" — with Venus strong in its own sign, you can trust your instincts in love." if venus.dignity in ("own","exalted") else "")),
         "checks": _three_checks(chart, sig, ref_sign),
         "sade_sati": _sade_sati(moon.sign, today),
         "remedies": {"lord": seventh_lord, "fast_day": fast, "mantra": mantra,
                      "gem": gem if gem_ok else None,
                      "gem_note": None if gem_ok else
-                     f"{seventh_lord} ki current condition mein gemstone recommend nahi karte — mantra aur fast kaafi hain."},
+                     f"A gemstone isn't advised for {seventh_lord} right now — the mantra and fast day are enough."},
+        "dasha_remedies": _dasha_remedies(chart, sig, tree, ref_sign, today),
     }

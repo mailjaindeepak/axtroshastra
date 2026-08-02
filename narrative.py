@@ -44,6 +44,7 @@ import os
 import re
 import urllib.request
 import urllib.error
+from datetime import datetime, timedelta
 
 logger = logging.getLogger("axtroshastra.narrative")
 
@@ -91,6 +92,20 @@ def _float(name, default):
     except Exception:
         return float(default)
 
+# Per-product output-token budget. Marriage v2 has ~32 slots and needs headroom;
+# other products keep the smaller default. Env NARRATIVE_MAX_TOKENS overrides all.
+MAX_TOKENS_BY_PRODUCT = {"marriage": 8000}
+DEFAULT_MAX_TOKENS = 4096
+
+def _max_tokens(product: str) -> int:
+    env = os.getenv("NARRATIVE_MAX_TOKENS")
+    if env:
+        try:
+            return int(float(env))
+        except Exception:
+            pass
+    return MAX_TOKENS_BY_PRODUCT.get(product, DEFAULT_MAX_TOKENS)
+
 # --------------------------------------------------------------------------- #
 # which prose slots each product exposes to the LLM.  key -> writing brief.
 # Renderers read these keys via narr(p, key); anything not produced (or dropped
@@ -108,12 +123,46 @@ SECTION_SPECS = {
         ("combined_energy", "2-3 sentences on their element pairing and what it means day to day."),
         ("closing_note", "A warm 4-5 sentence closing letter to the couple, by name — the emotional payload."),
     ],
+    # Marriage report v2 (see claude/marriage-report-blueprint.md). ~32 prose slots
+    # across 4 tiers. One LLM call returns all of them as one JSON object; each slot
+    # falls back to its deterministic English bank in report_view.py if missing or
+    # dropped by a guardrail. Manglik pages are deliberately NOT slots (deterministic).
     "marriage": [
-        ("top_summary", "2-3 warm sentences answering 'when will marriage happen' from their strongest window."),
-        ("chart_intro", "2 sentences introducing what their chart says about marriage, plain language."),
-        ("partner", "3-4 sentences on the kind of partner and how they may meet, from the indications."),
+        # ---- Tier 1: Main page ----
+        ("top_summary", "2-3 warm sentences answering 'when will marriage happen' from the strongest window."),
+        # ---- Tier 2: Summary ----
+        ("windows_intro", "2 sentences framing the 1-3 windows ahead as a timeline, encouraging."),
+        ("chart_teaser", "2 sentences on what the chart says about marriage at a glance."),
+        ("partner_teaser", "1-2 intriguing sentences hinting at the kind of partner indicated."),
+        ("story_teaser", "2 sentences: why it hasn't happened yet and that momentum is turning."),
+        ("action_teaser", "2 sentences on the single most useful thing to do now."),
+        # ---- Tier 3: Detailed report ----
+        ("window_1", "3-4 sentences on what the strongest window means and why it lights up, plain language."),
+        ("window_2", "2-3 sentences on the second window; how it differs from the first."),
+        ("window_3", "2-3 sentences on the third window or the longer outlook beyond it."),
+        ("action_strong", "2-3 encouraging, non-fatalistic sentences on making the most of good windows."),
+        ("action_weak", "2-3 sentences reframing quiet periods: what to do (and not force) now."),
+        ("past_pattern", "3-4 reassuring sentences on why past periods did/didn't convert - timing, not failure."),
+        ("outlook", "2-3 sentences on the shape of the next 3 years and the months to watch."),
+        ("sade_sati_note", "2-3 calm, non-fatalistic sentences on the Saturn cycle's current phase."),
+        ("remedies_note", "2-3 sentences framing remedies as optional support, agency first, zero pressure."),
+        ("partner_personality", "2-3 sentences on the partner's likely personality, from the 7th sign."),
+        ("meeting_context", "3-4 sentences on the partner's background and how/where you may meet; love-vs-arranged."),
         ("love_pattern", "3-4 sentences on how this person loves, from their nakshatra and Venus."),
-        ("action_intro", "2-3 encouraging sentences on what to do now, non-fatalistic."),
+        # ---- Tier 4: Astrology details ----
+        ("method_intro", "2-3 sentences on why this sidereal/whole-sign method is authentic and trustworthy."),
+        ("chart_reading", "2-3 sentences reading the overall shape of the birth chart, plainly."),
+        ("lagna_moon", "2-3 sentences on the two lenses - ascendant and Moon - and what each governs."),
+        ("planet_strengths", "3-4 sentences on what the planetary dignities mean for this person, plainly."),
+        ("nakshatra_deep", "3-4 sentences on the classical character of this birth star."),
+        ("seventh_house", "2-3 sentences on the 7th house as the seat of marriage in this chart."),
+        ("seventh_lord", "3-4 sentences on the 7th lord as the 'marriage switch' and what its condition implies."),
+        ("karakas", "2-3 sentences on Venus (and Jupiter) as the natural significators of union."),
+        ("darakaraka", "2-3 sentences explaining the Jaimini spouse-indicator and what it adds."),
+        ("node_axis", "2-3 sentences on any Rahu/Ketu link to the 7th axis - the karmic dimension."),
+        ("dasha_periods", "3-4 sentences on what the active and upcoming periods bring for marriage."),
+        ("transits", "2-3 sentences on Jupiter and Saturn transits as the 'go' and 'slow' signals."),
+        ("navamsa_reading", "3-4 sentences on the D9 as the marriage-promise chart and what its strength band says."),
         ("closing_note", "A warm 3-4 sentence closing note to the reader."),
     ],
     "blueprint": [
@@ -144,7 +193,7 @@ def generate_narrative(payload: dict) -> dict:
         facts = _facts_for_llm(payload, product)
         system = _system_prompt(product, spec, _resolve_lang(payload))
         user = _user_prompt(facts, spec)
-        raw = _call(system, user)
+        raw = _call(system, user, _max_tokens(product))
         if not raw:
             return {}
         data = _parse_json(raw)
@@ -213,6 +262,21 @@ def _facts_for_llm(payload: dict, product: str) -> dict:
               "persona", "career", "roadmap", "extras", "chart", "navamsa"):
         if k in payload:
             facts[k] = payload[k]
+
+    # Marriage: the report hides windows starting >4 years out when a nearer one
+    # exists (report_view_v2._visible_windows). Mirror that here so the LLM never
+    # narrates a window the reader can't see. Uses the frozen report date so it
+    # stays consistent with the rendered view.
+    if product == "marriage" and isinstance(facts.get("windows"), list):
+        try:
+            gen = datetime.strptime(meta.get("generated", ""), "%Y-%m-%d")
+            cutoff = gen + timedelta(days=int(4 * 365.25))
+            near = [w for w in facts["windows"]
+                    if datetime.strptime(w.get("start", ""), "%Y-%m") <= cutoff]
+            if near:
+                facts["windows"] = near
+        except Exception:
+            pass
     return facts
 
 
@@ -388,8 +452,9 @@ def _claims_ok(text: str, truth: dict) -> bool:
 # --------------------------------------------------------------------------- #
 # provider dispatch (stdlib HTTP — no SDK, no new wheels)
 # --------------------------------------------------------------------------- #
-def _call(system: str, user: str) -> str:
-    return (_call_openai if _provider() == "openai" else _call_anthropic)(system, user)
+def _call(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
+    fn = _call_openai if _provider() == "openai" else _call_anthropic
+    return fn(system, user, max_tokens)
 
 
 def _http_post_json(url: str, headers: dict, body: dict) -> dict:
@@ -400,7 +465,7 @@ def _http_post_json(url: str, headers: dict, body: dict) -> dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def _call_anthropic(system: str, user: str) -> str:
+def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
         logger.warning("[narrative] ANTHROPIC_API_KEY not set")
@@ -413,7 +478,7 @@ def _call_anthropic(system: str, user: str) -> str:
         messages.append({"role": "assistant", "content": "{"})
     body = {
         "model": model,
-        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "4096")),
+        "max_tokens": max_tokens,
         "system": system,
         "messages": messages,
     }
@@ -435,7 +500,7 @@ def _call_anthropic(system: str, user: str) -> str:
     return "{" + text if prefill else text
 
 
-def _call_openai(system: str, user: str) -> str:
+def _call_openai(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         logger.warning("[narrative] OPENAI_API_KEY not set")
@@ -443,7 +508,7 @@ def _call_openai(system: str, user: str) -> str:
     body = {
         "model": _model(),
         "temperature": _float("NARRATIVE_TEMPERATURE", "0.7"),
-        "max_tokens": int(_float("NARRATIVE_MAX_TOKENS", "4096")),
+        "max_tokens": max_tokens,
         "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": system},
                      {"role": "user", "content": user}],
