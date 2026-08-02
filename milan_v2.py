@@ -13,7 +13,8 @@ off/unfunded, narr() returns None and the deterministic bank text is used.
 from html import escape
 from narrative import narr
 from report_view import (THEMES, KOOTA_UI, REMEDIES, ACTION_PLAN, THEME_DEEP,
-                         ARCHETYPE, ARCHETYPE_DEFAULT, _theme_scores)
+                         ARCHETYPE, ARCHETYPE_DEFAULT, _theme_scores,
+                         milan_one_breath)
 
 SIGN_GLYPH = {"Aries": "♈", "Taurus": "♉", "Gemini": "♊", "Cancer": "♋",
               "Leo": "♌", "Virgo": "♍", "Libra": "♎", "Scorpio": "♏",
@@ -664,12 +665,11 @@ def _why_aced(th, ks, pr1, pr2):
 
 
 def _synthesis(p, themes, strong):
-    st = ", ".join(escape(t["theme"]["name"]) for t in strong[:3]) or "your foundations"
-    weak = escape(themes[-1]["theme"]["name"]) if themes else "one area"
+    # One-breath line comes from the shared helper (report_view.milan_one_breath)
+    # so the report and the free teaser preview stay identical.
     return [("", f'<div class="eb">The whole picture</div><div class="h2">Your relationship, in one breath</div>'
                  f'<div class="rule"></div>'
-                 f'<p class="story">Two people <b>deeply built to last</b> — strong across {st} — '
-                 f'with one honest growth edge: <b>{weak}</b>.</p>'
+                 f'<p class="story">{milan_one_breath(p.get("kootas", []), html=True)}</p>'
                  f'<p class="story" style="margin-top:14px">The rare part — the deep, hard-to-build compatibility — you already <b>have</b>. '
                  f'The workable part is exactly the kind couples <b>grow into</b>.</p>'
                  f'<p class="payoff" style="margin-top:20px">That’s not a fragile match. It’s a strong one, with a clear path.</p>')]

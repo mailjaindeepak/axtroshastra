@@ -1262,6 +1262,26 @@ def _theme_scores(kootas: list) -> list:
     return out
 
 
+def milan_one_breath(kootas: list, *, html: bool = False) -> str:
+    """The "Your relationship, in one breath" one-line summary.
+
+    Single source of truth for the poetic one-sentence read of the match, used
+    both by the full report (milan_v2._synthesis, the owner's "page 17" section)
+    and by the free teaser preview on pages/milan.html — so the two never drift.
+    Returns plain text by default; with html=True the key phrases are bolded
+    (and user-safe escaped) for the report's serif rendering.
+    """
+    themes = _theme_scores(kootas)
+    strong = [t for t in themes if t["pct"] >= 75]
+    st = ", ".join(t["theme"]["name"] for t in strong[:3]) or "your foundations"
+    weak = themes[-1]["theme"]["name"] if themes else "one area"
+    if html:
+        return (f'Two people <b>deeply built to last</b> — strong across {escape(st)} — '
+                f'with one honest growth edge: <b>{escape(weak)}</b>.')
+    return (f"Two people deeply built to last — strong across {st} — "
+            f"with one honest growth edge: {weak}.")
+
+
 def _archetype(profiles: dict) -> dict:
     return ARCHETYPE.get(frozenset({profiles["p1"]["element"], profiles["p2"]["element"]}), ARCHETYPE_DEFAULT)
 
