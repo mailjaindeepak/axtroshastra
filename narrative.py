@@ -92,9 +92,12 @@ def _float(name, default):
     except Exception:
         return float(default)
 
-# Per-product output-token budget. Marriage v2 has ~32 slots and needs headroom;
-# other products keep the smaller default. Env NARRATIVE_MAX_TOKENS overrides all.
-MAX_TOKENS_BY_PRODUCT = {"marriage": 8000}
+# Per-product output-token budget. Marriage v2 has ~32 slots; Devanagari (Hindi)
+# tokenises heavier than English, so give generous headroom to avoid truncating
+# Hindi output. This is only a CEILING — you pay for tokens actually generated, so
+# a high cap costs nothing extra and just prevents cut-off sections.
+# Env NARRATIVE_MAX_TOKENS overrides all products.
+MAX_TOKENS_BY_PRODUCT = {"marriage": 16000}
 DEFAULT_MAX_TOKENS = 4096
 
 def _max_tokens(product: str) -> int:
