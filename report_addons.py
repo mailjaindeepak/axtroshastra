@@ -9,7 +9,8 @@ Sections:
   planet_table_html(p)      full verifiable planet placement table (brand: any astrologer can check)
   scoring_box_html(p)       the exact rule table + points behind the top window (transparency)
 
-No LLM. Same chart, same output.
+English base text (v2). Deterministic — same chart, same output. No LLM. The Hindi
+report is produced by translating these labels via the shaadi_hi localizer.
 """
 
 SIGNS = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
@@ -19,9 +20,6 @@ SIGN_NUM = {s: i for i, s in enumerate(SIGNS)}
 PLANET_ABBR = {"Sun": "Su", "Moon": "Mo", "Mars": "Ma", "Mercury": "Me",
                "Jupiter": "Ju", "Venus": "Ve", "Saturn": "Sa",
                "Rahu": "Ra", "Ketu": "Ke"}
-PLANET_HI = {"Sun": "Surya", "Moon": "Chandra", "Mars": "Mangal", "Mercury": "Budh",
-             "Jupiter": "Guru", "Venus": "Shukra", "Saturn": "Shani",
-             "Rahu": "Rahu", "Ketu": "Ketu"}
 
 HOUSE_POS = {1: (200, 105), 2: (105, 58), 3: (55, 105), 4: (105, 200),
              5: (55, 295), 6: (105, 345), 7: (200, 295), 8: (295, 345),
@@ -29,15 +27,15 @@ HOUSE_POS = {1: (200, 105), 2: (105, 58), 3: (55, 105), 4: (105, 200),
 
 # ---- planet-in-7th meanings (classical, bounded, marriage lens) ----
 PLANET_IN_7TH = {
-    "Sun": "self-respecting, strong-willed partner — individuality rishtey mein central; ek dusre ke ego ko space dena seekhna faydemand",
-    "Moon": "emotionally attuned, caring partner — ghar-parivar ka warmth bond ka kendra; mood-tuning dono ki saanjhi zimmedari",
-    "Mars": "energetic, passionate bond — kabhi tez-mizaji bhi (Manglik check upar dekhiye); jhagdon ko jaldi suljhana rishtey ko majboot karta hai",
-    "Mercury": "youthful, communicative partner — baat-cheet aapka asli gum hai; aksar partner young-natured ya age-gap kam",
-    "Jupiter": "wise, principled, often traditional-values partner — 7th house mein Guru ko classical texts shubh maante hain; family-approved yog",
-    "Venus": "affectionate, harmony-loving partner — romance aur comfort sahaj; marriage karaka apni hi jagah, isliye achha placement",
-    "Saturn": "mature, committed, possibly older ya seriously-minded partner — bond dheere banta hai par tikau; shuruaati sabr baad mein rang laata hai",
-    "Rahu": "unconventional attraction — partner alag background/community/desh se ho sakta hai; shuruaat sudden ya intense",
-    "Ketu": "gehra par thoda detached bond — partner spiritually-inclined ho sakta hai; over-analysis se bachna, dil se judna",
+    "Sun": "a self-respecting, strong-willed partner — individuality is central to the bond; giving each other's ego room pays off",
+    "Moon": "an emotionally attuned, caring partner — home and warmth sit at the centre; tuning into each other's moods is a shared job",
+    "Mars": "an energetic, passionate bond — sometimes fiery too (see the Manglik check above); resolving conflict quickly makes it stronger",
+    "Mercury": "a youthful, communicative partner — conversation is your real glue; often a younger-feeling partner or a small age gap",
+    "Jupiter": "a wise, principled, often traditional-values partner — classical texts consider Jupiter in the 7th auspicious; a family-approved match",
+    "Venus": "an affectionate, harmony-loving partner — romance and comfort come easily; the marriage karaka in its own domain, a good placement",
+    "Saturn": "a mature, committed, possibly older or serious-minded partner — the bond builds slowly but lasts; early patience is rewarded later",
+    "Rahu": "an unconventional attraction — the partner may come from a different background, community or country; the start can be sudden or intense",
+    "Ketu": "a deep but slightly detached bond — the partner may be spiritually inclined; connect from the heart rather than over-analysing",
 }
 
 # ---- scoring rule table (mirrors engine.RULES so no engine edit is needed) ----
@@ -90,7 +88,7 @@ def _d9_chart_svg(nav: dict) -> str:
 <rect x="8" y="8" width="384" height="384" fill="none" stroke="{_GOLD}" stroke-width="2"/>
 <path d="M8 8 L392 392 M392 8 L8 392" stroke="{_GOLD}" stroke-width="1.5" fill="none"/>
 <path d="M200 8 L392 200 L200 392 L8 200 Z" stroke="{_GOLD}" stroke-width="2" fill="none"/>
-<style>.sn9{{font:600 13px sans-serif;fill:#8F92AB;text-anchor:middle}}
+<style>.sn9{{font:600 13px sans-serif;fill:#A8977F;text-anchor:middle}}
 .pl9{{font:800 15px sans-serif;fill:#F3EFE4;text-anchor:middle}}</style>
 {''.join(cells)}</svg>"""
 
@@ -100,23 +98,23 @@ def d9_section_html(p: dict) -> str:
     if not nav:
         return ""
     vgt = nav["vargottama_planets"]
-    vgt_line = ("Vargottama (D1 aur D9 mein ek hi rashi — extra strong): <b>"
-                + ", ".join(PLANET_HI[x] for x in vgt) + "</b>."
-                if vgt else "Is chart mein koi graha vargottama nahi — normal hai, "
-                            "zyaadatar charts mein 0–2 hote hain.")
+    vgt_line = ("Vargottama (same sign in D1 and D9 — extra strong): <b>"
+                + ", ".join(vgt) + "</b>."
+                if vgt else "No planet is vargottama in this chart — that's normal; "
+                            "most charts have 0–2.")
     band_color = {"strong": "#2E7D53", "steady": _GOLD, "tender": "#C93B2E"}[nav["strength"]]
     reasons = "".join(f"<li>{r}</li>" for r in nav["reasons"])
     return f"""
 <section class="pg"><p class="plabel">Navamsa · D9</p>
-<h2>Navamsa (D9) — shaadi ka asli sheesha</h2>
-<p>Rashi chart (D1) <b>kab</b> batata hai; Navamsa (D9) <b>kitna pakka</b> aur <b>kaisa</b>
-nibhega — isiliye classical Jyotish mein shaadi ke liye D9 sabse zaroori divisional chart hai.
-Aapka D9 lagna <b>{nav['d9_lagna']}</b> hai.</p>
+<h2>The Navamsa (D9) — marriage's truest mirror</h2>
+<p>The Rashi chart (D1) shows <b>when</b>; the Navamsa (D9) shows <b>how solid</b> and
+<b>how it will feel</b>. That is why, in classical Jyotish, D9 is the single most important
+divisional chart for marriage. Your D9 Lagna is <b>{nav['d9_lagna']}</b>.</p>
 <div class="tl" style="padding:14px"><div style="text-align:center">{_d9_chart_svg(nav)}</div>
-<p style="color:#8F92AB;font-size:11.5px;text-align:center;margin-top:6px">
-D9 chart · <b style="color:{_GOLD}">*</b> = vargottama · sign-numbers houses ke andar</p></div>
+<p style="color:#A8977F;font-size:12.5px;text-align:center;margin-top:6px">
+D9 chart · <b style="color:{_GOLD}">*</b> = vargottama · sign numbers inside the houses</p></div>
 <div class="facts" style="margin-top:6px">
-<div class="row"><span class="k">D9 lagna</span><span class="v">{nav['d9_lagna']}</span></div>
+<div class="row"><span class="k">D9 Lagna</span><span class="v">{nav['d9_lagna']}</span></div>
 <div class="row"><span class="k">D9 7th house</span><span class="v">{nav['d9_seventh_sign']}</span></div>
 <div class="row"><span class="k">D9 7th lord</span><span class="v">{nav['d9_seventh_lord']} — {nav['d9_seventh_lord_dignity']}</span></div>
 <div class="row"><span class="k">Venus in D9</span><span class="v">{nav['venus_d9_sign']}{' (vargottama)' if nav['venus_vargottama'] else ''}</span></div>
@@ -126,22 +124,22 @@ D9 chart · <b style="color:{_GOLD}">*</b> = vargottama · sign-numbers houses k
 <b class="h" style="color:{band_color}">Navamsa marriage-promise: {nav['strength'].upper()}</b>
 <p>{nav['strength_note']}</p>
 <ul class="wwhy" style="margin-top:10px">{reasons}</ul></div>
-<p class="soft">D9 promise ki baat hai, timing ki nahi — timing upar ke windows batate hain.
-Dono milkar poori tasveer dete hain.</p></section>"""
+<p class="soft">D9 speaks to the promise, not the timing — the windows above give the timing.
+Together, they form the full picture.</p></section>"""
 
 
 # ============================================================ 7th-house occupants
 def occupants_html(p: dict) -> str:
     occ = p.get("significators", {}).get("seventh_occupants") or []
     if not occ:
-        return ("<p style='margin-top:14px'><b>7th house khaali hai</b> — koi graha 7th mein nahi. "
-                "Yeh normal aur aksar shubh maana jaata hai: partner ka pattern 7th ke "
-                "<i>lord</i> aur karaka se padha jaata hai (upar diya hai), naa ki kisi baithe graha se.</p>")
+        return ("<p style='margin-top:14px'><b>Your 7th house is empty</b> — no planet sits in it. "
+                "This is normal and often considered favourable: the partner pattern is read from the "
+                "<i>lord</i> of the 7th and the karaka (given above), not from a planet sitting there.</p>")
     rows = "".join(
-        f"<div class='act'><b>{PLANET_HI.get(x, x)} 7th house mein</b><p>{PLANET_IN_7TH.get(x, '')}</p></div>"
+        f"<div class='act'><b>{x} in the 7th house</b><p>{PLANET_IN_7TH.get(x, '')}</p></div>"
         for x in occ)
-    return f"""<p style="margin-top:14px"><b>Aapke 7th house mein baithe graha:</b>
-{', '.join(PLANET_HI.get(x, x) for x in occ)} — yeh partnership ke rang ko sabse seedha shape dete hain:</p>
+    return f"""<p style="margin-top:14px"><b>Planets in your 7th house:</b>
+{', '.join(occ)} — these shape the colour of the partnership most directly:</p>
 {rows}"""
 
 
@@ -164,23 +162,23 @@ def planet_table_html(p: dict) -> str:
         if d.get("combust"):
             state.append("combust")
         state_txt = ", ".join(state) if state else "—"
-        rows += (f"<tr><td style='font-weight:700'>{PLANET_HI.get(name, name)}</td>"
+        rows += (f"<tr><td style='font-weight:700'>{name}</td>"
                  f"<td>{d['sign']}</td><td>{d['nakshatra']}</td>"
                  f"<td style='text-align:center'>{house}</td>"
                  f"<td style='color:#6B6D82'>{state_txt}</td></tr>")
     return f"""
 <section class="pg"><p class="plabel">Full chart</p>
-<h2>Aapka poora chart — verify kijiye</h2>
-<p>Hum kuch chhupate nahi. Neeche aapke saare 9 grahon ki exact position hai —
-koi bhi astrologer ise apni panchang se milaa sakta hai. Yahi hamari transparency hai.</p>
-<table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px;background:#fff;
+<h2>Your full chart — verify it yourself</h2>
+<p>We hide nothing. Below are the exact positions of all nine planets — any astrologer can
+check them against their own panchang. That transparency is the point.</p>
+<table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:14.5px;background:#fff;
 border:1.5px solid #E7E0D2;border-radius:12px;overflow:hidden">
-<thead><tr style="background:#151C39;color:#F3EFE4;font-family:'Bricolage Grotesque',sans-serif">
-<th style="text-align:left;padding:9px 10px">Graha</th><th style="text-align:left;padding:9px 10px">Rashi</th>
-<th style="text-align:left;padding:9px 10px">Nakshatra</th><th style="padding:9px 10px">Bhaav</th>
-<th style="text-align:left;padding:9px 10px">Sthiti</th></tr></thead>
+<thead><tr style="background:#4A3A2A;color:#F3EFE4;font-family:'Bricolage Grotesque',sans-serif">
+<th style="text-align:left;padding:9px 10px">Planet</th><th style="text-align:left;padding:9px 10px">Sign</th>
+<th style="text-align:left;padding:9px 10px">Nakshatra</th><th style="padding:9px 10px">House</th>
+<th style="text-align:left;padding:9px 10px">State</th></tr></thead>
 <tbody>{rows}</tbody></table>
-<p class="soft">Bhaav (house) lagna se gina gaya hai · Lahiri ayanamsa · whole-sign houses.</p></section>"""
+<p class="soft">House counted from the Lagna · Lahiri ayanamsa · whole-sign houses.</p></section>"""
 
 
 # ============================================================ scoring transparency
@@ -202,15 +200,16 @@ def scoring_box_html(p: dict) -> str:
         return (f"<tr><td style='padding:7px 10px'>{RULE_DESC.get(rid, rid)}</td>"
                 f"<td style='padding:7px 10px;text-align:right;font-weight:800;color:{col}'>{sign}{pts:g}</td></tr>")
     body = "".join(row(r, pt) for r, pt in pos) + "".join(row(r, pt) for r, pt in neg)
+    dasha = (w.get('dasha', '') or '').replace(' MD ', ' Mahadasha ').replace(' AD', ' Antardasha')
     return f"""
 <section class="pg"><p class="plabel">Under the hood</p>
-<h2>Aapke top window ka scorecard</h2>
-<p>Yeh window ({w['dasha']}) ko humne <b>{w.get('score', 0):g} points</b> diye, isliye grade
-<b>{w['grade']}</b> mila. Har point ke peeche ek classical rule hai — neeche exact breakdown:</p>
-<table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:14px;background:#fff;
+<h2>Your top window's scorecard</h2>
+<p>We gave this window ({dasha}) <b>{w.get('score', 0):g} points</b>, which is why it
+graded <b>{w['grade']}</b>. Every point traces back to a classical rule — here's the exact breakdown:</p>
+<table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:15.5px;background:#fff;
 border:1.5px solid #E7E0D2;border-radius:12px;overflow:hidden">
 <tbody>{body}
 <tr style="background:#F6E7C6"><td style="padding:9px 10px;font-weight:800">Total</td>
 <td style="padding:9px 10px;text-align:right;font-weight:800">{w.get('score', 0):g}</td></tr></tbody></table>
-<p class="soft">Grade bands: Strong ≥ 8 · Moderate ≥ 5 · Building ≥ 3. Koi astrologer chaahe toh
-in rules ko apne haath se verify kar sakta hai — kyunki yeh judgement nahi, calculation hai.</p></section>"""
+<p class="soft">Grade bands: Strong ≥ 8 · Moderate ≥ 5 · Building ≥ 3. Any astrologer can verify
+these rules by hand — because this is calculation, not opinion.</p></section>"""
