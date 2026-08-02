@@ -313,6 +313,20 @@ def compute_milan(p1: dict, p2: dict) -> dict:
     }
     match_pct = int(round(effective / 36 * 100))
 
+    # ---- premium free-teaser preview (a real GLIMPSE of the paid report) ----
+    # The verdict word + the one-breath summary come straight from the report's
+    # own helpers so the preview reads as a genuine slice of what's bought.
+    # We reveal the SCORE, 2-3 theme cards and the one-line summary; the deeper
+    # koota-by-koota detail, doshas and action plan stay locked behind paywall.
+    from report_view import _theme_scores as _ts, milan_one_breath as _one_breath
+    from milan_v2 import _verdict_word as _vword
+    _bands = lambda pc: "strong" if pc >= 75 else ("solid" if pc >= 45 else "grow")
+    _tscores = _ts(kootas)
+    teaser_themes = [{"name": t["theme"]["name"], "emoji": t["theme"]["emoji"],
+                      "pct": int(round(t["pct"])), "blurb": t["theme"]["blurb"],
+                      "band": _bands(t["pct"])} for t in _tscores[:3]]
+    strongest = _tscores[0]["theme"]["name"] if _tscores else ""
+
     return {
         "product": "milan",
         "meta": {"p1": p1["name"], "p2": p2["name"],
@@ -324,8 +338,23 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         "teaser": {
             "p1_moon": SIGNS[g["sign"]], "p1_nak": NAKSHATRAS[g["nak"]],
             "p2_moon": SIGNS[b["sign"]], "p2_nak": NAKSHATRAS[b["nak"]],
+            # Per-person facts for the warm-cream preview UI (same lookups as
+            # `profiles` below — English sign names, nakshatra persona/love
+            # one-liners, element + ruling lord for the trait-box pills).
+            "p1_name": p1["name"], "p2_name": p2["name"],
+            "p1_moon_en": SIGNS_EN[g["sign"]], "p2_moon_en": SIGNS_EN[b["sign"]],
+            "p1_persona": NAK_PROFILE[g["nak"]][1], "p1_love": NAK_PROFILE[g["nak"]][2],
+            "p2_persona": NAK_PROFILE[b["nak"]][1], "p2_love": NAK_PROFILE[b["nak"]][2],
+            "p1_element": e1.capitalize(), "p2_element": e2.capitalize(),
+            "p1_lord": SIGN_LORD[g["sign"]], "p2_lord": SIGN_LORD[b["sign"]],
             "gana_preview": f"Gana: {GANA_NAME[g1]} – {GANA_NAME[g2]}",
-            "score_locked": True},
+            # Revealed in the premium preview (the hook):
+            "score_locked": False,
+            "match_pct": match_pct,
+            "verdict": _vword(match_pct),
+            "one_breath": _one_breath(kootas),
+            "themes": teaser_themes,
+            "strongest": strongest},
         "kootas": kootas, "total": total, "max_total": 36,
         "verdict": verdict, "verdict_key": vkey,
         "cancellations": cancellations, "effective": effective,
