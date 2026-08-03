@@ -275,6 +275,13 @@ def scoring_box_html(p: dict, lang: str = "en") -> str:
         if pts is None:
             continue
         (pos if pts > 0 else neg).append((rid, pts))
+    # An honest total, always consistent with the rows shown: older stored
+    # payloads may lack 'score', and a "0 points → Moderate" line destroys
+    # trust. Fall back to the sum of the listed rules; if nothing scored,
+    # showing no scorecard beats showing a contradictory one.
+    total_pts = w.get("score") or round(sum(pt for _, pt in pos + neg), 1)
+    if not pos or total_pts <= 0:
+        return ""
     def row(rid, pts):
         col = "#2E7D53" if pts > 0 else "#C93B2E"
         sign = "+" if pts > 0 else ""
@@ -284,9 +291,9 @@ def scoring_box_html(p: dict, lang: str = "en") -> str:
     dasha = _dasha_disp(w.get('dasha', ''), lang)
     plabel = _t("Under the hood", "पर्दे के पीछे", lang)
     h2 = _t("Your top window's scorecard", "आपकी टॉप विंडो का स्कोरकार्ड", lang)
-    intro = _t(f"We gave this window ({dasha}) <b>{w.get('score', 0):g} points</b>, which is why it "
+    intro = _t(f"We gave this window ({dasha}) <b>{total_pts:g} points</b>, which is why it "
                f"graded <b>{w['grade']}</b>. Every point traces back to a classical rule — here's the exact breakdown:",
-               f"हमने इस विंडो ({dasha}) को <b>{w.get('score', 0):g} अंक</b> दिए, इसीलिए इसे "
+               f"हमने इस विंडो ({dasha}) को <b>{total_pts:g} अंक</b> दिए, इसीलिए इसे "
                f"<b>{w['grade']}</b> ग्रेड मिला। हर अंक के पीछे एक शास्त्रीय नियम है — नीचे सटीक ब्योरा:", lang)
     total = _t("Total", "कुल", lang)
     soft = _t("Grade bands: Strong ≥ 8 · Moderate ≥ 5 · Building ≥ 3. Any astrologer can verify "
@@ -301,5 +308,5 @@ def scoring_box_html(p: dict, lang: str = "en") -> str:
 border:1.5px solid #E7DDC9;border-radius:12px;overflow:hidden">
 <tbody>{body}
 <tr style="background:#F1E4C8"><td style="padding:9px 10px;font-weight:800">{total}</td>
-<td style="padding:9px 10px;text-align:right;font-weight:800">{w.get('score', 0):g}</td></tr></tbody></table>
+<td style="padding:9px 10px;text-align:right;font-weight:800">{total_pts:g}</td></tr></tbody></table>
 <p class="soft">{soft}</p></section>"""

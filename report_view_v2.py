@@ -1,11 +1,10 @@
 """
 Marriage report renderer — v2 (blueprint LOCKED v2).
 
-Rebuilds the marriage report into the four delivery tiers:
-  Tier 1  Main page          — cover + the narrowest wedding-timing answer
-  Tier 2  Summary (6 pp)     — the whole report, digestible
-  Tier 3  Detailed report    — full depth (timing / partner / remedies)
-  Tier 4  Astrology details  — every classical calculation, one topic per page
+Report structure (one topic = one chapter, no repetition):
+  Cover → Answer page (hero cards + Kundli) → Detailed Report (windows once
+  with actions folded in, quiet phases, why-not-yet, next 3 years, partner,
+  Manglik, Sade Sati, remedies) → The Astrology (method, charts, calculations)
 
 Design:
   * English is the deterministic base. Every prose slot is `_prose(p, slot, bank)`
@@ -133,11 +132,12 @@ MG_CARD = {
     "manglik_cancelled": "Technically yes, but cancelled — practically no.",
     "manglik": "Manageable — the impact and remedies are explained in the Manglik section.",
 }
-# why the confidence sits where it does (answer-page Confidence card), by grade
+# why the confidence sits where it does (answer-page Confidence card), by grade —
+# fallback for when a window carries no scored rules to list
 CONF_REASON = {
-    "Strong": "Multiple dasha and transit factors point to the same period — the signals agree.",
-    "Moderate": "The main dasha and transit signals agree, with a few mixed factors.",
-    "Building": "Supportive factors are present but still building — read the window as a direction.",
+    "Strong": "Several timing factors — your running dasha and the supporting transits — all point to this same period.",
+    "Moderate": "The main timing factors agree here, with a few mixed signals.",
+    "Building": "The supporting factors are still gathering strength — treat this as a direction, not a date.",
 }
 # short explanations for the Kundli-at-a-glance rows
 GLANCE_WHY = {
@@ -257,6 +257,9 @@ p{margin-bottom:10px}
 .details{display:inline-block;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(228,176,74,.4);border-radius:12px;padding:14px 18px;margin:16px auto 0}
 .details .drow{display:flex;gap:14px;font-size:14.5px;padding:3px 0;color:#E9E6DC}
 .details .dk{color:#C9B79C;min-width:104px}
+.toc{margin-top:18px;min-width:230px}
+.toc .th{font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--haldi);margin-bottom:8px}
+.toc .dk{min-width:26px;font-family:var(--display);font-weight:700;color:var(--haldi)}
 .kchart{width:100%;max-width:320px;height:auto;display:block;margin:0 auto}
 .kwrap{background:var(--midnight);border-radius:14px;padding:14px;margin-top:20px}
 .kwrap .kcap{font-size:11.5px;color:#C9B79C;text-transform:uppercase;letter-spacing:.04em;text-align:center;margin:8px 0 0}
@@ -273,6 +276,7 @@ p{margin-bottom:10px}
 .dl{font-family:var(--display);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sindoor);margin:0 0 6px}
 .dv{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.25;margin:0}
 .dr{font-size:13px;color:var(--muted);margin:6px 0 0;line-height:1.45}
+.chk{font-size:12.5px;color:#2E7D53;margin:6px 0 0;line-height:1.4;text-align:left;font-weight:600}
 .mgband{background:#fff;border:2px solid #2E7D53;border-radius:14px;padding:16px 18px;text-align:center}
 .mgband.warn{border-color:var(--haldi)}
 .facts{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:6px 18px}
@@ -328,8 +332,14 @@ p{margin-bottom:10px}
 .btn{flex:1;font-family:var(--display);font-weight:800;font-size:16.5px;text-align:center;padding:13px;border-radius:11px;border:0;cursor:pointer;text-decoration:none}
 .btn.p{background:var(--sindoor);color:#fff}.btn.s{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
 footer{text-align:center;font-size:12.5px;color:var(--muted);padding:26px 20px 44px;max-width:640px;margin:0 auto}
+/* print-spacer table: wraps everything after the cover; thead/tfoot rows repeat
+   on every printed page, giving paper-coloured breathing room top and bottom */
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl>tbody>tr>td{padding:0}
+.pgt,.pgb{height:0;padding:0}
+@media print{.pgt{height:8mm}.pgb{height:7mm}}
 .ax-wm{display:none;position:fixed;inset:0;z-index:9998;pointer-events:none;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-28deg);opacity:.08;color:#4A3A2A;font-family:Georgia,serif}
-.ax-wm b{font-size:66px;letter-spacing:.12em;line-height:1}.ax-wm span{font-size:18px;letter-spacing:.35em;margin-top:6px}
+.ax-wm b{font-size:36px;letter-spacing:.1em;line-height:1}.ax-wm span{font-size:12px;letter-spacing:.28em;margin-top:6px}
 .ax-share{display:inline-block;background:#25D366;color:#fff;border:0;border-radius:10px;padding:12px 18px;font:600 15px/1 sans-serif;cursor:pointer;text-decoration:none}
 .ax-disc{max-width:640px;margin:28px auto 8px;padding:14px 16px;border:1px solid #E7E0D2;border-radius:10px;background:#fbf7ef;font-size:13.5px;line-height:1.5;color:#6b6f80}
 .ax-endcard{max-width:640px;margin:12px auto 28px;text-align:center;padding:18px;border-top:2px solid #E4B04A}
@@ -337,6 +347,11 @@ footer{text-align:center;font-size:12.5px;color:var(--muted);padding:26px 20px 4
 /* Phone-shaped page (not A4): a mobile PDF viewer fits page-width to the screen,
    so a narrow page renders ~1:1 and the text stays readable instead of being
    downscaled ~55% the way an A4 page is. */
+/* NOTE: @page margins must stay 0 — Chrome always paints the margin area
+   white, which shows as white strips on the warm paper background. Breathing
+   space on every page instead comes from the .ptbl table wrapper: its
+   thead/tfoot spacer rows repeat at the top and bottom of every printed page,
+   painted in the page's own paper background. */
 @page{size:104mm 300mm;margin:0}
 @media print{
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -375,8 +390,10 @@ def _sec(plabel: str, chip: str, h2: str, body: str) -> str:
 
 
 def _tier(n: str, title: str, sub: str) -> str:
-    return (f'<section class="tierhead"><p class="tn">{n}</p>'
-            f'<h2>{title}</h2><p>{sub}</p></section>')
+    # `n` (the "Tier N" label) is no longer rendered — dividers show the title
+    # alone, with an optional one-line subtitle.
+    s = f"<p>{sub}</p>" if sub else ""
+    return f'<section class="tierhead"><h2>{title}</h2>{s}</section>'
 
 
 def _timeline_html(windows: list, meta: dict) -> str:
@@ -420,10 +437,6 @@ def _dosdont(block: dict) -> str:
             f"<div class='col dont'><b>Don't</b><ul>{dont}</ul></div></div>")
 
 
-def _first_word(s: str) -> str:
-    return (s or "").split(",")[0].split()[0].strip().capitalize() if s else ""
-
-
 # --------------------------------------------------------------------------- #
 # main entry
 # --------------------------------------------------------------------------- #
@@ -456,7 +469,6 @@ def render_report_v2(p: dict) -> str:
     sl_dignity = sig.get("seventh_lord_dignity", "neutral")
     sl_house = sig.get("seventh_lord_house", 1)
     dk = sig["darakaraka"]
-    d9_band = (nav.get("strength") or "steady").upper()
     love = ex.get("checks", {}).get("love_leaning")
     lv_line = ("Your chart leans toward a love or self-chosen match." if love
                else "Your chart leans toward an arranged or introduction-led match.")
@@ -479,12 +491,24 @@ def render_report_v2(p: dict) -> str:
     details = ("<div class='details'>" + "".join(
         f"<div class='drow'><span class='dk'>{k}</span><span>{escape(str(v))}</span></div>"
         for k, v in drows) + "</div>") if drows else ""
+    toc_items = ["Your marriage windows", "Why it hasn't happened yet",
+                 "Next 3 Year Forecast", "Your potential partner",
+                 "Manglik &amp; Sade Sati", "Remedies", "The full astrology behind it"]
+    toc = ('<div class="details toc"><p class="th">What\'s inside</p>' +
+           "".join(f'<div class="drow"><span class="dk">{i:02d}</span><span>{t}</span></div>'
+                   for i, t in enumerate(toc_items, 1)) + "</div>")
     parts.append(f"""<section class="pg cover">
   <p class="brand">✦ AXTROSHASTRA</p>
   <p class="rtitle">Marriage Timing Report</p>
   <h1>{name}</h1>
   {details}
+  {toc}
 </section>""")
+
+    # everything after the cover lives inside the spacer table (.ptbl): its
+    # thead/tfoot rows repeat on every printed page as paper-coloured gaps
+    parts.append("<table class='ptbl'><thead><tr><td class='pgt'></td></tr></thead>"
+                 "<tfoot><tr><td class='pgb'></td></tr></tfoot><tbody><tr><td>")
 
     # ---- The Answer (page 2): big scannable cards only, then the Kundli + method note.
     # No prose here — everything below is covered in depth later in the report.
@@ -493,12 +517,18 @@ def render_report_v2(p: dict) -> str:
         conf, _ = _confidence(w1["grade"], tq)
         time_note = ('<p class="dr">Birth time is approximate, so the window is kept honestly wide.</p>'
                      if tq in ("T2", "T3") else "")
+        # the factors behind the confidence — the window's scored rules, as ✓ lines
+        rdesc = report_addons.RULE_DESC_HI if hi else report_addons.RULE_DESC
+        factors = [r["id"] for r in w1.get("rules_fired", [])
+                   if report_addons.RULE_PTS.get(r["id"], 0) > 0][:3]
+        why = ("".join(f'<p class="chk">✓ {rdesc.get(f, f)}</p>' for f in factors)
+               or f'<p class="dr">{CONF_REASON.get(w1["grade"], CONF_REASON["Moderate"])}</p>')
         hero = (f'<div class="hero"><p class="hero-month">{strongest_month}</p>'
                 f'<p class="hero-label">Most likely marriage window</p></div>')
         duo = (f'<div class="duo"><div class="duocard"><p class="dl">Full marriage window</p>'
                f'<p class="dv">{_pretty(w1["start"])} – {_pretty(w1["end"])}</p></div>'
                f'<div class="duocard"><p class="dl">Confidence</p><p class="dv">{conf}</p>'
-               f'<p class="dr">{CONF_REASON.get(w1["grade"], CONF_REASON["Moderate"])}</p>{time_note}</div></div>')
+               f'{why}{time_note}</div></div>')
     else:
         hero = duo = ""
     mgband = (f'<div class="mgband{" warn" if mg["status"] == "manglik" else ""}">'
@@ -513,38 +543,29 @@ def render_report_v2(p: dict) -> str:
 <p class="method">Generated {meta.get('generated','')} · NASA JPL data (Swiss Ephemeris) · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
 </section>""")
 
-    # ============================================ TIER 2 — summary
-    parts.append(_tier("Tier 2", "Summary", "The whole report, made digestible."))
+    # ============================================ THE REPORT (one topic = one chapter)
+    parts.append(_tier("", "Detailed Report", ""))
 
-    # ---- Page 3: the marriage windows (chronological, future only) ----
+    # ---- Windows chapter: the ONLY place windows appear in full. Timeline,
+    # each window's deep card, and what to do in it — together, once. ----
     wi_bank = (f"You have {len(windows)} marriage window{'s' if len(windows) != 1 else ''} on the horizon. "
-               "Think of them as a timeline of higher-probability phases, not fixed dates.")
+               "These are the stretches when a match is most likely to click — your best seasons to act, "
+               "not fixed dates.")
     if hi:
         wi_bank = (f"आपके सामने {len(windows)} विवाह विंडो{'ज़' if len(windows) != 1 else ''} हैं। "
-                   "इन्हें तय तारीख़ें नहीं, बल्कि ज़्यादा-संभावना वाले दौर की टाइमलाइन समझिए।")
-    quick = "".join(_window_card(i, w, deep=False) for i, w in enumerate(windows, 1))
+                   "इन्हें तय तारीख़ें नहीं, बल्कि वे मौसम समझिए जब रिश्ता बनने की संभावना सबसे ज़्यादा "
+                   "होती है — यही क़दम उठाने के सबसे अच्छे दौर हैं।")
+    wrows = ""
+    for i, w in enumerate(windows, 1):
+        head, body = GRADE_ACTION.get(w["grade"], ("Stay active.", ""))
+        wrows += (_window_card(i, w, deep=True) +
+                  f"<div class='act'><b>{head}</b><p>{body}</p></div>")
     parts.append(_sec("", "", f"Your marriage windows ({len(windows)})",
-                      f'<p class="lead">{_prose(p, "windows_intro", wi_bank)}</p>{_timeline_html(windows, meta)}{quick}'))
+                      f'<p class="lead">{_prose(p, "windows_intro", wi_bank)}</p>{_timeline_html(windows, meta)}{wrows}'
+                      '<p class="soft">Your chart shows the timing; the effort and the choice stay in your hands. '
+                      'Even in a strong window you still have to look — the odds are just far better.</p>'))
 
-    # ---- Page 4: the potential partner — three scannable cards, then 2-3 lines ----
-    pt_bank = (f"Your indications point to {nature}. Where and how you meet is written into the chart too — "
-               "the detailed pages draw the full picture.")
-    if hi:
-        pt_bank = (f"संकेत बताते हैं कि आपका जीवनसाथी {_hi_phrase(nature)} हो सकता है। आप कहाँ और कैसे "
-                   "मिलेंगे, यह भी कुंडली में लिखा है — विस्तृत पन्ने पूरी तस्वीर खींचते हैं।")
-    meet_short = MEETING_SHORT[sl_house - 1] if 1 <= sl_house <= 12 else "Your own circles"
-    partner_cards = (
-        f'<div class="trio">'
-        f'<div class="duocard"><p class="dl">Love or arranged</p>'
-        f'<p class="dv">{"Love Marriage" if love else "Arranged Marriage"}</p></div>'
-        f'<div class="duocard"><p class="dl">Nature</p>'
-        f'<p class="dv">{SIGN_PARTNER_SHORT.get(seventh_sign, "Well-matched")}</p></div>'
-        f'<div class="duocard"><p class="dl">Meeting context</p>'
-        f'<p class="dv">{meet_short}</p></div></div>')
-    parts.append(_sec("", "", "Your potential partner",
-                      f'{partner_cards}<p class="lead">{_prose(p, "partner_teaser", pt_bank)}</p>'))
-
-    # ---- Page 5: why it hasn't happened yet — past-period cards first, then the text ----
+    # ---- Why it hasn't happened yet — past-period cards first, then the text ----
     past_rows = ""
     lbl = {"active": ("#2E7D53", "ACTIVE"), "mild": ("#E4B04A", "MILD"), "quiet": ("#A8977F", "QUIET")}
     for pp in ex.get("past", []):
@@ -576,94 +597,10 @@ def render_report_v2(p: dict) -> str:
     if hi:
         ol_bank = ("अगले तीन सालों में रुझान आपकी विंडोज़ की ओर बढ़ता जाता है — अनुकूल महीनों पर नज़र रखिए, "
                    "और शांत दौर को तैयारी का समय मानिए।")
-    parts.append(_sec("", "", "The next three years",
+    parts.append(_sec("", "", "Next 3 Year Forecast",
                       f'<p class="lead">{_prose(p, "outlook", ol_bank)}</p>{y_rows}'))
 
     ss = ex.get("sade_sati", {}) or {}
-    ss_status = "currently running" if ss.get("active") else "not currently running"
-    big_q = f"""<div class="facts">
-  <div class="row"><span class="k">Manglik</span><span class="v">{MG_SHORT[mg['status']]}</span></div>
-  <div class="row"><span class="k">Sade Sati</span><span class="v">{ss_status}</span></div>
-  <div class="row"><span class="k">Navamsa promise</span><span class="v">{d9_band}</span></div>
-</div><p class="soft">Each of these has its own detailed page ahead, with the reasoning and what it means for you.</p>"""
-    parts.append(_sec("", "", "The three things everyone asks", big_q))
-
-    # Kundli-at-a-glance sits late in the summary on purpose (pushed back).
-    ct_bank = ("At a glance, your chart sets marriage in a clear frame: the 7th house, its lord, "
-               "and the natural karakas together shape both the timing and the kind of bond.")
-    if hi:
-        ct_bank = ("एक नज़र में, आपकी कुंडली विवाह को एक साफ़ चौखट में रखती है: सातवाँ भाव, उसका स्वामी "
-                   "और स्वाभाविक कारक मिलकर समय और रिश्ते का स्वरूप — दोनों तय करते हैं।")
-    glance = f"""<div class="facts">
-  <div class="row"><span class="k">Lagna (ascendant)</span><span class="v">{p['chart']['lagna']}</span></div>
-  <p class="why">{GLANCE_WHY['Lagna']}</p>
-  <div class="row"><span class="k">Moon · Nakshatra</span><span class="v">{teaser.get('moon_sign','—')} · {teaser.get('nakshatra','—')}</span></div>
-  <p class="why">{GLANCE_WHY['Moon']}</p>
-  <div class="row"><span class="k">7th house</span><span class="v">{seventh_sign}</span></div>
-  <p class="why">{GLANCE_WHY['7th house']}</p>
-  <div class="row"><span class="k">7th lord</span><span class="v">{seventh_lord} — {DIGNITY_TXT.get(sl_dignity, sl_dignity)}</span></div>
-  <p class="why">{GLANCE_WHY['7th lord']}</p>
-  <div class="row"><span class="k">Marriage karaka</span><span class="v">{' + '.join(sig['karakas'])}</span></div>
-  <p class="why">{GLANCE_WHY['karaka']}</p>
-  <div class="row"><span class="k">Darakaraka</span><span class="v">{dk}</span></div>
-  <p class="why">{GLANCE_WHY['darakaraka']}</p>
-</div>"""
-    parts.append(_sec("", "", "Your Kundli at a glance",
-                      f'<p class="lead">{_prose(p, "chart_teaser", ct_bank)}</p>{glance}'))
-
-    at_bank = ("The single most useful thing right now is to line up your effort with your timing — "
-               "lean in during strong windows, and prepare during the quiet ones.")
-    if hi:
-        at_bank = ("अभी सबसे काम की बात है अपनी मेहनत को अपने समय के साथ जोड़ना — मज़बूत विंडो में "
-                   "पूरा ज़ोर लगाइए, और शांत दौर में तैयारी कीजिए।")
-    parts.append(_sec("", "", "What to do now",
-                      f'<p class="lead">{_prose(p, "action_teaser", at_bank)}</p>'))
-
-    # ============================================ TIER 3 — detailed
-    parts.append(_tier("Tier 3", "Detailed Report", "Full depth on your timing, your partner, and your remedies."))
-
-    if w1:
-        w1_bank = (f"Your strongest window runs {_pretty(w1['start'])}–{_pretty(w1['end'])} and grades {w1['grade']}. "
-                   "It lights up because the running periods connect directly to your house of marriage, and the "
-                   "supporting transits back them up.")
-        if hi:
-            w1_bank = (f"आपकी सबसे मज़बूत विंडो {_hi_pretty(w1['start'])}–{_hi_pretty(w1['end'])} तक चलती है "
-                       f"और {_hi_grade(w1['grade'])} स्तर की है। यह इसलिए जगमगाती है क्योंकि चल रही दशाएँ "
-                       "सीधे आपके विवाह-भाव से जुड़ती हैं, और सहायक गोचर उन्हें बल देते हैं।")
-        parts.append(_sec("Window 1", "Strongest", "Your strongest window",
-                          f'<p class="lead">{_prose(p, "window_1", w1_bank)}</p>{_window_card(1, w1)}'))
-    if w2:
-        w2_bank = (f"Your second window, {_pretty(w2['start'])}–{_pretty(w2['end'])} ({w2['grade']}), is a distinct "
-                   "opportunity with its own driving periods — useful if the first passes or as a second run at it.")
-        if hi:
-            w2_bank = (f"आपकी दूसरी विंडो, {_hi_pretty(w2['start'])}–{_hi_pretty(w2['end'])} "
-                       f"({_hi_grade(w2['grade'])}), अपने अलग चालक दौर वाली एक स्वतंत्र संभावना है — "
-                       "अगर पहली निकल जाए, या दूसरे प्रयास के लिए, यह काम आती है।")
-        parts.append(_sec("Window 2", "Second", "Your second window",
-                          f'<p class="lead">{_prose(p, "window_2", w2_bank)}</p>{_window_card(2, w2)}'))
-    if w3:
-        w3_bank = (f"A third window opens {_pretty(w3['start'])}–{_pretty(w3['end'])} ({w3['grade']}) — the longer "
-                   "arc, worth keeping on your radar.")
-        if hi:
-            w3_bank = (f"एक तीसरी विंडो {_hi_pretty(w3['start'])}–{_hi_pretty(w3['end'])} "
-                       f"({_hi_grade(w3['grade'])}) में खुलती है — यह लंबी दौड़ की बात है, नज़र में रखने लायक।")
-        parts.append(_sec("Window 3", "Longer arc", "Your third window",
-                          f'<p class="lead">{_prose(p, "window_3", w3_bank)}</p>{_window_card(3, w3)}'))
-
-    as_bank = ("In a strong or moderate window, the odds of a match converting are at their highest — so this is "
-               "the time to say yes to meetings, involve family, and not postpone decisions that feel right.")
-    if hi:
-        as_bank = ("मज़बूत या मध्यम विंडो में रिश्ता पक्का होने की संभावना सबसे ऊँची होती है — इसलिए यही समय है "
-                   "मुलाक़ातों के लिए हाँ कहने का, परिवार को साथ लेने का, और सही लगते फ़ैसलों को न टालने का।")
-    acts = ""
-    for i, w in enumerate(windows, 1):
-        head, body = GRADE_ACTION.get(w["grade"], ("Stay active.", ""))
-        acts += (f"<div class='act'><b>Window {i} ({_pretty(w['start'])} – {_pretty(w['end'])}): {head}</b>"
-                 f"<p>{body}</p></div>")
-    parts.append(_sec("Action plan", "Lean in", "What you need to do for better results",  # (#7)
-                      f'<p class="lead">{_prose(p, "action_strong", as_bank)}</p>{acts}'
-                      '<p class="soft">Your chart shows the timing; the effort and the choice stay in your hands. '
-                      'Even in a strong window you still have to look — the conversion rate is just far better.</p>'))
 
     # weak periods, clamped to the same near horizon as the windows (#3): never
     # surface a quiet stretch that runs into a hidden far window.
@@ -679,10 +616,44 @@ def render_report_v2(p: dict) -> str:
         weak_labels.append(f"{a} – {b}" if sb <= cutoff else f"{a} onwards")
     aw_bank = _hi_phrase(WEAK_PERIOD_ACTION["line"]) if hi else WEAK_PERIOD_ACTION["line"]
     weak_rows = "".join(
-        f"<div class='quiet'><b>{lab}</b><p>A low-activation phase — matches may come but tend not to convert. "
-        f"Delays here are pattern, not personal failure.</p></div>" for lab in weak_labels)
+        f"<div class='quiet'><b>{lab}</b><p>A quieter stretch — matches may come along, but they rarely stick. "
+        f"That is the pattern of the period, not a failing.</p></div>" for lab in weak_labels)
     parts.append(_sec("Quiet periods", "Prepare", "Make your quiet phases count",  # (#8)
                       f'<p class="lead">{_prose(p, "action_weak", aw_bank)}</p>{weak_rows}{_dosdont(WEAK_PERIOD_ACTION)}'))
+
+    # ---- Partner chapter: everything about the partner, once. Scannable cards
+    # up top, then each dimension exactly one card. ----
+    pt_bank = (f"Your indications point to {nature}. Where and how you meet is written into the chart too — "
+               "here is the full picture, dimension by dimension.")
+    if hi:
+        pt_bank = (f"संकेत बताते हैं कि आपका जीवनसाथी {_hi_phrase(nature)} हो सकता है। आप कहाँ और कैसे "
+                   "मिलेंगे, यह भी कुंडली में लिखा है — नीचे पूरी तस्वीर है, पहलू-दर-पहलू।")
+    meet = MEETING_EN[sl_house - 1] if 1 <= sl_house <= 12 else "your own circles"
+    meet_short = MEETING_SHORT[sl_house - 1] if 1 <= sl_house <= 12 else "Your own circles"
+    foreign = ex.get("checks", {}).get("foreign_or_intercommunity")
+    for_line = ("There is also a signature for a partner from a different community, background, or place."
+                if foreign else "The indications lean toward your own circle and community.")
+    nakp = ex.get("nak_profile", {}) or {}
+    partner_cards = (
+        f'<div class="trio">'
+        f'<div class="duocard"><p class="dl">Love or arranged</p>'
+        f'<p class="dv">{"Love Marriage" if love else "Arranged Marriage"}</p></div>'
+        f'<div class="duocard"><p class="dl">Nature</p>'
+        f'<p class="dv">{SIGN_PARTNER_SHORT.get(seventh_sign, "Well-matched")}</p></div>'
+        f'<div class="duocard"><p class="dl">Where will you guys meet</p>'
+        f'<p class="dv">{meet_short}</p></div></div>')
+    partner_detail = (
+        f'<div class="pcard"><span class="pk">Their personality</span><p>{nature}.</p></div>'
+        f'<div class="pcard"><span class="pk">Love vs Arranged</span><p>{lv_line}</p></div>'
+        f'<div class="pcard"><span class="pk">Darakaraka ({dk})</span><p>{DK_PARTNER.get(dk, "—")}.</p></div>'
+        f'<div class="pcard"><span class="pk">How you\'ll meet</span><p>The connection may come through {meet}.</p></div>'
+        f'<div class="pcard"><span class="pk">Community &amp; background</span><p>{for_line}</p></div>'
+        f'<div class="card2"><b>How you love — your Venus</b><p>Your love-style is {ex.get("venus_style", "—")}.</p></div>'
+        f'<div class="card2"><b>Your nakshatra: {nakp.get("nakshatra", "—")} ({nakp.get("symbol", "")})</b>'
+        f'<p>{nakp.get("nature", "")}.</p><p style="margin-top:8px">{nakp.get("relationship", "")}.</p></div>'
+        '<p class="soft">These are indications, not a portrait — the chart gives the direction; life fills in the detail.</p>')
+    parts.append(_sec("", "", "Your potential partner",
+                      f'{partner_cards}<p class="lead">{_prose(p, "partner_teaser", pt_bank)}</p>{partner_detail}'))
 
     mgd = MANGLIK_DOSDONTS[mg["status"]]
     mg_head = {"non_manglik": "You are not Manglik ✅",
@@ -709,9 +680,10 @@ def render_report_v2(p: dict) -> str:
         if hi:
             ss_fact = (f"साढ़ेसाती अभी नहीं चल रही। अगला चरण {_hi_date(ss.get('next_starts','—'))} के आसपास "
                        "शुरू होगा। फ़िलहाल शनि इस कोण से कोई देरी-दबाव नहीं डाल रहा।")
+    # the fact renders once: as the LLM's note when present, else as the bank line
     parts.append(_sec("Sade Sati", "Active phase" if ss.get("active") else "Not now",
                       "Sade Sati — the Saturn cycle",
-                      f'<p class="lead">{_prose(p, "sade_sati_note", ss_fact)}</p><div class="ss">{ss_fact}</div>'))
+                      f'<div class="ss">{_prose(p, "sade_sati_note", ss_fact)}</div>'))
 
     rem = ex.get("remedies", {}) or {}
     gem_html = (f"<li><b>Gemstone:</b> {rem['gem']} — only after a trial, via a qualified jeweller/astrologer.</li>"
@@ -743,47 +715,8 @@ def render_report_v2(p: dict) -> str:
                       f'{dr_html}<p class="soft">Remember the order: action first — actively looking during a strong window. '
                       'This is support, not a substitute.</p>'))
 
-    pp2_bank = f"Your 7th sign, {seventh_sign}, points to {nature}."
-    if hi:
-        pp2_bank = (f"आपकी सातवीं राशि, {_hi_tok(seventh_sign)}, ऐसे जीवनसाथी की ओर इशारा करती है: "
-                    f"{_hi_phrase(nature)}।")
-    parts.append(_sec("Your partner", _first_word(nature), "Their likely personality",
-                      f'<p class="lead">{_prose(p, "partner_personality", pp2_bank)}</p>'
-                      f'<div class="pcard"><span class="pk">Nature</span><p>{nature}.</p></div>'))
-
-    meet = MEETING_EN[sl_house - 1] if 1 <= sl_house <= 12 else "your own circles"
-    foreign = ex.get("checks", {}).get("foreign_or_intercommunity")
-    for_line = ("There is also a signature for a partner from a different community, background, or place."
-                if foreign else "The indications lean toward your own circle and community.")
-    mc_bank = (f"Your darakaraka {dk} suggests {DK_PARTNER.get(dk,'a compatible partner')}. The 7th lord's placement "
-               f"points to meeting {meet}. {lv_line} {for_line}")
-    if hi:
-        meet_hi = _HI_MEETING[sl_house - 1] if 1 <= sl_house <= 12 else "आपके अपने दायरों से"
-        dkp_hi = _hi_phrase(DK_PARTNER.get(dk, "")) or "एक अनुकूल साथी"
-        mc_bank = (f"आपका दारकारक {_hi_tok(dk)} संकेत देता है — {dkp_hi}। सातवें भाव के स्वामी की स्थिति "
-                   f"बताती है कि मुलाक़ात {meet_hi} हो सकती है। {_hi_phrase(lv_line)} {_hi_phrase(for_line)}")
-    parts.append(_sec("How you'll meet", "Love" if love else "Arranged", "Their background &amp; how you'll meet",
-                      f'<p class="lead">{_prose(p, "meeting_context", mc_bank)}</p>'
-                      f'<div class="pcard"><span class="pk">Love vs Arranged</span><p>{lv_line}</p></div>'
-                      f'<div class="pcard"><span class="pk">Darakaraka ({dk})</span><p>{DK_PARTNER.get(dk,"—")}.</p></div>'
-                      f'<div class="pcard"><span class="pk">Meeting context</span><p>The connection may come through {meet}.</p></div>'
-                      '<p class="soft">These are indications, not a portrait — the chart gives the direction; life fills in the detail.</p>'))
-
-    nakp = ex.get("nak_profile", {}) or {}
-    lp_bank = (f"With your Moon in {nakp.get('nakshatra','your birth star')} and your Venus placement, "
-               f"{nakp.get('relationship','you love with care and depth')}.")
-    if hi:
-        rel_hi = _hi_phrase(nakp.get("relationship", "")) or "आप परवाह और गहराई से प्रेम करते हैं"
-        lp_bank = (f"आपके चंद्रमा के {_hi_tok(nakp.get('nakshatra', 'आपके जन्म-नक्षत्र'))} नक्षत्र में होने "
-                   f"और आपके शुक्र की स्थिति से — {rel_hi}।")
-    parts.append(_sec("Your pattern", _first_word(ex.get("venus_style", "")) or "Your love", "How you love",
-                      f'<p class="lead">{_prose(p, "love_pattern", lp_bank)}</p>'
-                      f'<div class="card2"><b>Your nakshatra: {nakp.get("nakshatra","—")} ({nakp.get("symbol","")})</b>'
-                      f'<p>{nakp.get("nature","")}.</p><p style="margin-top:8px">{nakp.get("relationship","")}.</p></div>'
-                      f'<div class="card2"><b>Your Venus</b><p>Your love-style is {ex.get("venus_style","—")}.</p></div>'))
-
-    # ============================================ TIER 4 — astrology
-    parts.append(_tier("Tier 4", "The Astrology", "Every classical calculation behind this report."))
+    # ============================================ THE ASTROLOGY
+    parts.append(_tier("", "The Astrology", "Every classical calculation behind this report."))
 
     mi_bank = ("This report uses the sidereal zodiac with the Lahiri ayanamsa and whole-sign houses — the classical "
                "Parashari framework. Every position is computed from NASA JPL ephemeris data, so any astrologer can verify it.")
@@ -808,25 +741,29 @@ def render_report_v2(p: dict) -> str:
                       f'<div class="kwrap">{north_chart_svg(p)}</div>'))
     parts.append(report_addons.planet_table_html(p, lang))
 
-    lm_bank = ("Two lenses matter most: the Lagna (ascendant) governs your body, personality and the frame of the "
-               "whole chart, while the Moon governs your mind and emotions — and drives your dasha timeline.")
+    # Kundli-at-a-glance: the six keys of the chart with plain-language "why"
+    # lines — this is the single reference card for Lagna/Moon/7th/karakas.
+    ct_bank = ("At a glance, your chart sets marriage in a clear frame: the 7th house, its lord, "
+               "and the natural karakas together shape both the timing and the kind of bond.")
     if hi:
-        lm_bank = ("दो नज़रिए सबसे ज़्यादा मायने रखते हैं: लग्न आपके शरीर, व्यक्तित्व और पूरी कुंडली की चौखट "
-                   "का स्वामी है, जबकि चंद्रमा आपके मन और भावनाओं का — और आपकी दशा-टाइमलाइन उसी से चलती है।")
-    parts.append(_sec("Lagna &amp; Moon", "Two lenses", "Lagna &amp; Moon",
-                      f'<p class="lead">{_prose(p, "lagna_moon", lm_bank)}</p>'
-                      f'<div class="facts"><div class="row"><span class="k">Lagna</span><span class="v">{p["chart"]["lagna"]}</span></div>'
-                      f'<div class="row"><span class="k">Moon sign · Nakshatra</span><span class="v">{teaser.get("moon_sign","—")} · {teaser.get("nakshatra","—")}</span></div></div>'))
-
-    ps_bank = ("Each planet's dignity — whether it sits in its own sign, exalted, debilitated or neutral — tells you "
-               "how freely it can act. Strong dignities support clear timing; weaker ones simply ask for more patience.")
-    if hi:
-        ps_bank = ("हर ग्रह की गरिमा — वह अपनी राशि में है, उच्च है, नीच है या सामान्य — यह बताती है कि वह "
-                   "कितनी आज़ादी से काम कर पाता है। मज़बूत स्थितियाँ साफ़ समय का साथ देती हैं; कमज़ोर बस "
-                   "थोड़ा और धैर्य माँगती हैं।")
-    parts.append(_sec("The nine planets", "9 planets", "The nine planets",
-                      f'<p class="lead">{_prose(p, "planet_strengths", ps_bank)}</p>'
-                      '<p class="soft">The full placement table with each planet\'s sign, nakshatra, house and state is on the birth-chart page above.</p>'))
+        ct_bank = ("एक नज़र में, आपकी कुंडली विवाह को एक साफ़ चौखट में रखती है: सातवाँ भाव, उसका स्वामी "
+                   "और स्वाभाविक कारक मिलकर समय और रिश्ते का स्वरूप — दोनों तय करते हैं।")
+    glance = f"""<div class="facts">
+  <div class="row"><span class="k">Lagna (ascendant)</span><span class="v">{p['chart']['lagna']}</span></div>
+  <p class="why">{GLANCE_WHY['Lagna']}</p>
+  <div class="row"><span class="k">Moon · Nakshatra</span><span class="v">{teaser.get('moon_sign','—')} · {teaser.get('nakshatra','—')}</span></div>
+  <p class="why">{GLANCE_WHY['Moon']}</p>
+  <div class="row"><span class="k">7th house</span><span class="v">{seventh_sign}</span></div>
+  <p class="why">{GLANCE_WHY['7th house']}</p>
+  <div class="row"><span class="k">7th lord</span><span class="v">{seventh_lord} — {DIGNITY_TXT.get(sl_dignity, sl_dignity)}</span></div>
+  <p class="why">{GLANCE_WHY['7th lord']}</p>
+  <div class="row"><span class="k">Marriage karaka</span><span class="v">{' + '.join(sig['karakas'])}</span></div>
+  <p class="why">{GLANCE_WHY['karaka']}</p>
+  <div class="row"><span class="k">Darakaraka</span><span class="v">{dk}</span></div>
+  <p class="why">{GLANCE_WHY['darakaraka']}</p>
+</div>"""
+    parts.append(_sec("", "", "Your Kundli at a glance",
+                      f'<p class="lead">{_prose(p, "chart_teaser", ct_bank)}</p>{glance}'))
 
     nd_bank = (f"Your Moon sits in {teaser.get('nakshatra','your birth star')} — the nakshatra colours your instincts, "
                "your emotional style, and how you approach closeness.")
@@ -863,8 +800,7 @@ def render_report_v2(p: dict) -> str:
         k_bank = ("शुक्र हर किसी के लिए प्रेम और विवाह का स्वाभाविक कारक है; स्त्री की कुंडली में गुरु भी पति "
                   "के कारक के रूप में जुड़ते हैं। इनकी स्थिति मिलन के वादे को सहारा देती है।")
     parts.append(_sec("Karakas", "Significators", "The marriage karakas",
-                      f'<p class="lead">{_prose(p, "karakas", k_bank)}</p>'
-                      f'<div class="facts"><div class="row"><span class="k">Karaka(s)</span><span class="v">{" + ".join(sig["karakas"])}</span></div></div>'))
+                      f'<p class="lead">{_prose(p, "karakas", k_bank)}</p>'))
 
     dkn_bank = (f"In the Jaimini system, the darakaraka is the planet at the lowest degree — here, {dk} — and it acts "
                 "as a second, independent significator of the spouse, adding another layer to the partner picture.")
@@ -872,8 +808,7 @@ def render_report_v2(p: dict) -> str:
         dkn_bank = (f"जैमिनी पद्धति में दारकारक वह ग्रह है जो सबसे कम अंश पर हो — यहाँ, {_hi_tok(dk)} — और "
                     "यह जीवनसाथी का एक दूसरा, स्वतंत्र कारक बनकर साथी की तस्वीर में एक और परत जोड़ता है।")
     parts.append(_sec("Darakaraka", "Jaimini", "Darakaraka (Jaimini)",
-                      f'<p class="lead">{_prose(p, "darakaraka", dkn_bank)}</p>'
-                      f'<div class="card2"><b>{dk}</b><p>{DK_PARTNER.get(dk,"—")}.</p></div>'))
+                      f'<p class="lead">{_prose(p, "darakaraka", dkn_bank)}</p>'))
 
     node_on = sig.get("node_on_7th_axis")
     na_bank = ("Rahu and Ketu on the 7th axis add a karmic dimension to relationships — often an unconventional or "
@@ -889,18 +824,22 @@ def render_report_v2(p: dict) -> str:
                       f'<p class="lead">{_prose(p, "node_axis", na_bank)}</p>'))
 
     cur = p.get("current_period", {}) or {}
+    # scorecard describes the top DISPLAYED window (cleaned list), never a stale
+    # engine window; when it has nothing to show, don't promise it in the prose
+    scorebox = report_addons.scoring_box_html({**p, "windows": windows}, lang)
     dp_bank = (f"You are currently in {cur.get('md','—')} Mahadasha / {cur.get('ad','—')} Antardasha. Your marriage "
-               "windows are simply the periods within this timeline whose lords connect to your 7th house — which is "
-               "exactly what the scorecard below shows.")
+               "windows are simply the periods within this timeline whose lords connect to your 7th house"
+               + (" — which is exactly what the scorecard below shows." if scorebox else "."))
     if hi:
         dp_bank = (f"आप अभी {_hi_tok(cur.get('md','—'))} महादशा / {_hi_tok(cur.get('ad','—'))} अंतर्दशा में हैं। "
-                   "आपकी विवाह-विंडोज़ इसी टाइमलाइन के वे दौर हैं जिनके स्वामी आपके सातवें भाव से जुड़ते हैं — "
-                   "नीचे का स्कोरकार्ड ठीक यही दिखाता है।")
+                   "आपकी विवाह-विंडोज़ इसी टाइमलाइन के वे दौर हैं जिनके स्वामी आपके सातवें भाव से जुड़ते हैं"
+                   + (" — नीचे का स्कोरकार्ड ठीक यही दिखाता है।" if scorebox else "।"))
     parts.append(_sec("Dashas", "Your periods", "The dasha system &amp; your periods",
                       f'<p class="lead">{_prose(p, "dasha_periods", dp_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Current Mahadasha</span><span class="v">{cur.get("md","—")}</span></div>'
                       f'<div class="row"><span class="k">Current Antardasha</span><span class="v">{cur.get("ad","—")}</span></div></div>'))
-    parts.append(report_addons.scoring_box_html(p, lang))
+    if scorebox:
+        parts.append(scorebox)
 
     tr_bank = ("Transits are the moving sky read against your birth chart: Jupiter is the 'go' signal that opens "
                "doors when it touches your marriage houses, while Saturn is the 'slow' signal that asks for patience.")
@@ -910,14 +849,7 @@ def render_report_v2(p: dict) -> str:
     parts.append(_sec("Gochar · transits", "Go / slow", "Jupiter &amp; Saturn transits",
                       f'<p class="lead">{_prose(p, "transits", tr_bank)}</p>'))
 
-    nr_bank = ("The Navamsa (D9) is the marriage-promise chart — it shows how solid and how lasting the union is, "
-               f"beyond mere timing. Your D9 reads as a {(nav.get('strength') or 'steady')} promise.")
-    if hi:
-        band_hi = _HI_D9_BAND.get((nav.get("strength") or "steady"), "स्थिर")
-        nr_bank = ("नवमांश (D9) विवाह-वादे की कुंडली है — यह बताती है कि मिलन कितना ठोस और टिकाऊ है, "
-                   f"सिर्फ़ समय से आगे की बात। आपका D9 एक {band_hi} वादा दिखाता है।")
-    parts.append(_sec("Navamsa · D9", d9_band.title(), "The Navamsa (D9)",
-                      f'<p class="lead">{_prose(p, "navamsa_reading", nr_bank)}</p>'))
+    # the D9 add-on section is the full Navamsa chapter — no stub before it
     parts.append(report_addons.d9_section_html(p, lang))
 
     cn_bank = ("Whatever the dates, remember this: your chart shows a real and reachable promise of partnership. "
@@ -935,8 +867,6 @@ def render_report_v2(p: dict) -> str:
   <p class="sline"><b>Manglik:</b> {MG_SHORT[mg['status']]}</p>
   <p class="sline"><b>Partner direction:</b> {dk}-type — see the partner pages</p>
 </div>
-<div class="upsell"><b>One more question, from the same chart: when will your career lift?</b>
-<p>Career Timing Report — same precision, ₹299 for report holders. <a href="https://wa.me/919599827297?text=CAREER" style="color:#C93B2E;font-weight:700">Send CAREER on WhatsApp →</a></p></div>
 <div class="btnrow">
   <a class="btn p" id="ax-pdf" href="#" onclick="window.print();return false;">Download PDF</a>
   <button class="ax-share" onclick="axShare()">Share on WhatsApp</button>
@@ -946,7 +876,8 @@ def render_report_v2(p: dict) -> str:
     parts.append("""<footer>Windows are probability estimates from classical dasha–transit principles,
 not guarantees. <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · support@axtroshastra.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
 <div class="ax-wm" aria-hidden="true"><b>AXTROSHASTRA</b><span>axtroshastra.com</span></div>
-<section class="pg"><div class="ax-disc"><b>Disclaimer:</b> This report is computed from classical Vedic Jyotish (dasha–transit) principles — for guidance, not a guarantee. Timing windows are probabilities, not fixed dates. This is not legal, medical or financial advice. Make your own life decisions using your own judgement; Axtroshastra takes no responsibility for any outcome.</div><div class="ax-endcard"><b>Axtroshastra</b><br>Made with Axtroshastra — get your own report: <a href="https://www.axtroshastra.com/shaadi">axtroshastra.com</a></div></section>""")
+<section class="pg"><div class="ax-disc"><b>Disclaimer:</b> This report is computed from classical Vedic Jyotish (dasha–transit) principles — for guidance, not a guarantee. Timing windows are probabilities, not fixed dates. This is not legal, medical or financial advice. Make your own life decisions using your own judgement; Axtroshastra takes no responsibility for any outcome.</div><div class="ax-endcard"><b>Axtroshastra</b><br>Made with Axtroshastra — get your own report: <a href="https://www.axtroshastra.com/shaadi">axtroshastra.com</a></div></section>
+</td></tr></tbody></table>""")
 
     head = (f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">'

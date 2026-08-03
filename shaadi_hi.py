@@ -109,6 +109,12 @@ EN_HI_V2 = {
     # ---- cover ----
     "Date of birth": "जन्म तिथि", "Time of birth": "जन्म समय", "Place of birth": "जन्म स्थान",
     "Birth-time accuracy": "जन्म-समय की सटीकता",
+    # cover contents list
+    "What's inside": "इस रिपोर्ट में क्या-क्या है",
+    "Next 3 Year Forecast": "अगले 3 साल का पूर्वानुमान",
+    "Manglik & Sade Sati": "मांगलिक और साढ़ेसाती",
+    "The full astrology behind it": "इसके पीछे का पूरा ज्योतिष",
+    "Where will you guys meet": "आप दोनों कहाँ मिलेंगे",
     "Exact": "सटीक", "Approximate (±45 min)": "अनुमानित (±45 मिनट)",
     "Approximate (±3 hours)": "अनुमानित (±3 घंटे)",
     "Unknown — Moon-chart method used": "अज्ञात — चंद्र-कुंडली पद्धति प्रयुक्त",
@@ -136,12 +142,12 @@ EN_HI_V2 = {
     "High confidence · approx. birth time": "उच्च भरोसा · अनुमानित जन्म-समय",
     "Moderate confidence · approx. birth time": "मध्यम भरोसा · अनुमानित जन्म-समय",
     "Emerging confidence · approx. birth time": "उभरता भरोसा · अनुमानित जन्म-समय",
-    "Multiple dasha and transit factors point to the same period — the signals agree.":
-        "दशा और गोचर के कई संकेत एक ही अवधि की ओर इशारा करते हैं — संकेत आपस में मेल खाते हैं।",
-    "The main dasha and transit signals agree, with a few mixed factors.":
-        "मुख्य दशा-गोचर संकेत मेल खाते हैं, साथ में कुछ मिले-जुले कारक भी हैं।",
-    "Supportive factors are present but still building — read the window as a direction.":
-        "सहायक कारक मौजूद हैं पर अभी बन रहे हैं — इस विंडो को एक दिशा की तरह पढ़ें।",
+    "Several timing factors — your running dasha and the supporting transits — all point to this same period.":
+        "समय के कई संकेत — आपकी चल रही दशा और सहायक गोचर — सब इसी एक अवधि की ओर इशारा करते हैं।",
+    "The main timing factors agree here, with a few mixed signals.":
+        "समय के मुख्य संकेत यहाँ मेल खाते हैं, कुछ मिले-जुले संकेतों के साथ।",
+    "The supporting factors are still gathering strength — treat this as a direction, not a date.":
+        "सहायक कारक अभी ताक़त जुटा रहे हैं — इसे तारीख़ नहीं, एक दिशा मानिए।",
     "Birth time is approximate, so the window is kept honestly wide.":
         "जन्म-समय अनुमानित है, इसलिए विंडो ईमानदारी से चौड़ी रखी गई है।",
     "No obstacle on this front — nothing to remedy.":
@@ -208,10 +214,10 @@ EN_HI_V2 = {
     "Each of these has its own detailed page ahead, with the reasoning and what it means for you.":
         "इनमें से हर एक का अपना विस्तृत पन्ना आगे है, कारण और आपके लिए उसके मतलब के साथ।",
     # ---- action / weak ----
-    "Your chart shows the timing; the effort and the choice stay in your hands. Even in a strong window you still have to look — the conversion rate is just far better.":
-        "कुंडली टाइमिंग बताती है; मेहनत और चुनाव आपके हाथ में हैं। मज़बूत विंडो में भी ढूँढना तो पड़ता है — बस सफलता की दर कहीं बेहतर होती है।",
-    "A low-activation phase — matches may come but tend not to convert. Delays here are pattern, not personal failure.":
-        "कम-सक्रियता का दौर — रिश्ते आ सकते हैं पर अक्सर टिकते नहीं। यहाँ देरी एक पैटर्न है, आपकी कमी नहीं।",
+    "Your chart shows the timing; the effort and the choice stay in your hands. Even in a strong window you still have to look — the odds are just far better.":
+        "कुंडली टाइमिंग बताती है; मेहनत और चुनाव आपके हाथ में हैं। मज़बूत विंडो में भी ढूँढना तो पड़ता है — बस संभावना कहीं बेहतर होती है।",
+    "A quieter stretch — matches may come along, but they rarely stick. That is the pattern of the period, not a failing.":
+        "एक शांत दौर — रिश्ते आ तो सकते हैं, पर अक्सर टिकते नहीं। यह उस दौर का पैटर्न है, आपकी कमी नहीं।",
     # ---- remedies ----
     "For weak periods ahead": "आगे की कमज़ोर अवधियों के लिए",
     "Fast day:": "व्रत का दिन:", "Mantra:": "मंत्र:", "Gemstone:": "रत्न:",
@@ -226,6 +232,9 @@ EN_HI_V2 = {
         "Axtroshastra से बनी — अपनी रिपोर्ट पाएँ:",
     "One more question, from the same chart: when will your career lift?":
         "एक और सवाल, इसी कुंडली से: आपका करियर कब उड़ान भरेगा?",
+    "That completes your marriage picture. When you feel ready for the next big question —":
+        "यहीं आपकी विवाह-तस्वीर पूरी होती है। जब आप अगले बड़े सवाल के लिए तैयार महसूस करें —",
+    "Ready to explore your career?": "अपने करियर को जानने के लिए तैयार?",
     "WhatsApp Support": "WhatsApp सहायता", "Download PDF": "PDF डाउनलोड करें",
     "Share on WhatsApp": "WhatsApp पर शेयर करें",
 }
