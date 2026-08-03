@@ -513,7 +513,7 @@ window.__renderTeaser = renderTeaser;   // expose at init (hoisted) so a restore
 // populate Month dropdown (Day + Year are typed inputs — no long scroll, no calendar year-paging)
 (function(){
   var mm = document.getElementById('f-mm');
-  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var months=['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
   months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
 })();
 function buildDob(){
