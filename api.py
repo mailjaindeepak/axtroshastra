@@ -811,15 +811,21 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 # the buyer typed into the pre-payment popup ("your report,
                 # OTP & account will be created on this number").
                 pay_phone = ent.get("contact") or ""
+                # Account keeps the pre-existing fallback (popup number, else
+                # the Razorpay contact). But the REPORT is delivered ONLY to
+                # the popup number — NEVER the Razorpay number, not even as a
+                # fallback (the popup mobile is a mandatory field).
                 phone = rec.get("user_phone") or pay_phone
+                wa_phone = rec.get("user_phone") or ""
                 mark_paid(rid, payment_id=ent.get("id"), phone=pay_phone)
                 # PDF first, then WhatsApp: background tasks run in order, so
                 # the message can attach the freshly cached PDF.
                 background_tasks.add_task(_pregenerate_pdf_task, rid)
-                background_tasks.add_task(
-                    send_whatsapp_report, phone, rid,
-                    _display_name(rec["payload"]),
-                    rec["payload"].get("product", "marriage"))
+                if wa_phone:
+                    background_tasks.add_task(
+                        send_whatsapp_report, wa_phone, rid,
+                        _display_name(rec["payload"]),
+                        rec["payload"].get("product", "marriage"))
                 # Optional creative prose (Claude/OpenAI). No-op unless
                 # NARRATIVE_ENABLED=1; runs before WhatsApp/email are opened by
                 # the user since delivery links point at /report/{id}.
@@ -889,14 +895,16 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             pay_email = ent.get("email") or ""
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
+        # Account keeps the fallback; the REPORT goes only to the popup number.
         phone = rec.get("user_phone") or pay_phone
+        wa_phone = rec.get("user_phone") or ""
         mark_paid(rid, payment_id=pid, phone=pay_phone)
         # Mirror the webhook: PDF first so the WhatsApp message can attach it.
         background_tasks.add_task(_pregenerate_pdf_task, rid)
         background_tasks.add_task(_generate_narrative_task, rid)
-        if phone:
+        if wa_phone:
             background_tasks.add_task(
-                send_whatsapp_report, phone, rid,
+                send_whatsapp_report, wa_phone, rid,
                 _display_name(rec["payload"]),
                 rec["payload"].get("product", "marriage"))
         form_email = rec["payload"]["meta"].get("_email")
@@ -1375,7 +1383,7 @@ def resend_whatsapp(rid: str, key: str = ""):
         raise HTTPException(404, "report not found or unpaid")
     # Prefer the WhatsApp number typed in the pre-payment popup; fall back to
     # the Razorpay payment contact.
-    phone = rec.get("user_phone") or rec.get("phone") or ""
+    phone = rec.get("user_phone") or ""   # never the Razorpay number
     if not phone:
         return {"ok": False, "error": "no_phone_on_report"}
     _pregenerate_pdf_task(rid)                     # sync: admin call, fine to wait

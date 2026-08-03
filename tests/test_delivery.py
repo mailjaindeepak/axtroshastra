@@ -110,6 +110,9 @@ def test_resend_wa_calls_send_for_paid_report_with_phone(client, monkeypatch, pa
     rid = client.post("/api/kundli", json=KUNDLI).json()["report_id"]
     # Keep the webhook's own background delivery a no-op & fast.
     monkeypatch.setattr(api, "_pregenerate_pdf_task", lambda rid: None)
+    # Popup number (mandatory in production) — this is where the report must go.
+    client.post("/api/order", json={"report_id": rid, "phone": "9876500055"})
+    # The customer pays from a DIFFERENT number — must be ignored for delivery.
     pay_webhook(client, rid, "pay_resend_1", "+919812345678", "buyer@example.com")
 
     # Now record what resend_wa hands to the sender.
@@ -122,7 +125,7 @@ def test_resend_wa_calls_send_for_paid_report_with_phone(client, monkeypatch, pa
     assert r.json()["ok"] is True
     assert len(calls) == 1, "send_whatsapp_report must fire exactly once"
     args, _ = calls[0]
-    assert args[0] == "+919812345678"     # the report's payment phone
+    assert args[0] == "+919876500055"     # the POPUP number, NEVER the payment number
     assert args[1] == rid
 
 
