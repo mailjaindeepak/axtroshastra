@@ -366,6 +366,7 @@ html,body{background:var(--paper)!important}
 /* cover fills the whole first page — the dark card colour runs edge to edge,
    no paper-coloured gap below the content (page box is exactly 300mm tall) */
 .cover{break-after:page;padding:40px 22px;min-height:300mm}
+.newpg{break-before:page}
 .tierhead{margin-top:6px;padding:34px 22px}
 h1,h2{break-after:avoid}
 .lead,p{orphans:2;widows:2}
@@ -389,11 +390,11 @@ def _sec(plabel: str, chip: str, h2: str, body: str) -> str:
     return f'<section class="pg"><h2>{h2}</h2>{body}</section>'
 
 
-def _tier(n: str, title: str, sub: str) -> str:
+def _tier(n: str, title: str, sub: str, cls: str = "") -> str:
     # `n` (the "Tier N" label) is no longer rendered — dividers show the title
     # alone, with an optional one-line subtitle.
     s = f"<p>{sub}</p>" if sub else ""
-    return f'<section class="tierhead"><h2>{title}</h2>{s}</section>'
+    return f'<section class="tierhead{" " + cls if cls else ""}"><h2>{title}</h2>{s}</section>'
 
 
 def _timeline_html(windows: list, meta: dict) -> str:
@@ -534,12 +535,24 @@ def render_report_v2(p: dict) -> str:
     mgband = (f'<div class="mgband{" warn" if mg["status"] == "manglik" else ""}">'
               f'<p class="dl">Manglik</p><p class="dv">{MG_SHORT[mg["status"]]}</p>'
               f'<p class="dr">{MG_CARD[mg["status"]]}</p></div>')
+    # partner snapshot cards — shown here on the answer page, and again atop the
+    # full partner chapter (the Kundli itself lives in The Astrology)
+    meet_short = MEETING_SHORT[sl_house - 1] if 1 <= sl_house <= 12 else "Your own circles"
+    partner_cards = (
+        f'<div class="trio">'
+        f'<div class="duocard"><p class="dl">Love or arranged</p>'
+        f'<p class="dv">{"Love Marriage" if love else "Arranged Marriage"}</p></div>'
+        f'<div class="duocard"><p class="dl">Nature</p>'
+        f'<p class="dv">{SIGN_PARTNER_SHORT.get(seventh_sign, "Well-matched")}</p></div>'
+        f'<div class="duocard"><p class="dl">Where will you guys meet</p>'
+        f'<p class="dv">{meet_short}</p></div></div>')
     parts.append(f"""<section class="pg answer">
 <h2>When will you get married?</h2>
 {hero}
 {duo}
 {mgband}
-<div class="kwrap">{north_chart_svg(p)}<p class="kcap">Your birth chart (Kundli) · North Indian style</p></div>
+<h2 style="font-size:22px;margin:26px 0 12px">Your potential partner</h2>
+{partner_cards}
 <p class="method">Generated {meta.get('generated','')} · NASA JPL data (Swiss Ephemeris) · Lahiri ayanamsa · Whole-sign houses · {system_note}</p>
 </section>""")
 
@@ -629,19 +642,10 @@ def render_report_v2(p: dict) -> str:
         pt_bank = (f"संकेत बताते हैं कि आपका जीवनसाथी {_hi_phrase(nature)} हो सकता है। आप कहाँ और कैसे "
                    "मिलेंगे, यह भी कुंडली में लिखा है — नीचे पूरी तस्वीर है, पहलू-दर-पहलू।")
     meet = MEETING_EN[sl_house - 1] if 1 <= sl_house <= 12 else "your own circles"
-    meet_short = MEETING_SHORT[sl_house - 1] if 1 <= sl_house <= 12 else "Your own circles"
     foreign = ex.get("checks", {}).get("foreign_or_intercommunity")
     for_line = ("There is also a signature for a partner from a different community, background, or place."
                 if foreign else "The indications lean toward your own circle and community.")
     nakp = ex.get("nak_profile", {}) or {}
-    partner_cards = (
-        f'<div class="trio">'
-        f'<div class="duocard"><p class="dl">Love or arranged</p>'
-        f'<p class="dv">{"Love Marriage" if love else "Arranged Marriage"}</p></div>'
-        f'<div class="duocard"><p class="dl">Nature</p>'
-        f'<p class="dv">{SIGN_PARTNER_SHORT.get(seventh_sign, "Well-matched")}</p></div>'
-        f'<div class="duocard"><p class="dl">Where will you guys meet</p>'
-        f'<p class="dv">{meet_short}</p></div></div>')
     partner_detail = (
         f'<div class="pcard"><span class="pk">Their personality</span><p>{nature}.</p></div>'
         f'<div class="pcard"><span class="pk">Love vs Arranged</span><p>{lv_line}</p></div>'
@@ -715,8 +719,8 @@ def render_report_v2(p: dict) -> str:
                       f'{dr_html}<p class="soft">Remember the order: action first — actively looking during a strong window. '
                       'This is support, not a substitute.</p>'))
 
-    # ============================================ THE ASTROLOGY
-    parts.append(_tier("", "The Astrology", "Every classical calculation behind this report."))
+    # ============================================ THE ASTROLOGY (starts a fresh page)
+    parts.append(_tier("", "The Astrology", "Every classical calculation behind this report.", cls="newpg"))
 
     mi_bank = ("This report uses the sidereal zodiac with the Lahiri ayanamsa and whole-sign houses — the classical "
                "Parashari framework. Every position is computed from NASA JPL ephemeris data, so any astrologer can verify it.")
@@ -738,7 +742,7 @@ def render_report_v2(p: dict) -> str:
                    "मिलकर विवाह की पृष्ठभूमि तैयार करते हैं।")
     parts.append(_sec("Birth chart · D1", "Your chart", "Your birth chart (D1)",
                       f'<p class="lead">{_prose(p, "chart_reading", cr_bank)}</p>'
-                      f'<div class="kwrap">{north_chart_svg(p)}</div>'))
+                      f'<div class="kwrap">{north_chart_svg(p)}<p class="kcap">Your birth chart (Kundli) · North Indian style</p></div>'))
     parts.append(report_addons.planet_table_html(p, lang))
 
     # Kundli-at-a-glance: the six keys of the chart with plain-language "why"
