@@ -28,6 +28,7 @@ EN_HI_DATA = {
     "Tier 2": "भाग 2", "Tier 3": "भाग 3", "Tier 4": "भाग 4",
     "Summary": "सारांश", "Detailed Report": "विस्तृत रिपोर्ट", "The Astrology": "ज्योतिष विवरण",
     "The whole report, in six pages.": "पूरी रिपोर्ट, छह पन्नों में।",
+    "The whole report, made digestible.": "पूरी रिपोर्ट, आसान रूप में।",
     "Full depth on your timing, your partner, and your remedies.":
         "आपकी टाइमिंग, आपके जीवनसाथी और आपके उपायों का पूरा विवरण।",
     "Every classical calculation behind this report.":
@@ -107,6 +108,10 @@ EN_HI_DATA = {
 EN_HI_V2 = {
     # ---- cover ----
     "Date of birth": "जन्म तिथि", "Time of birth": "जन्म समय", "Place of birth": "जन्म स्थान",
+    "Birth-time accuracy": "जन्म-समय की सटीकता",
+    "Exact": "सटीक", "Approximate (±45 min)": "अनुमानित (±45 मिनट)",
+    "Approximate (±3 hours)": "अनुमानित (±3 घंटे)",
+    "Unknown — Moon-chart method used": "अज्ञात — चंद्र-कुंडली पद्धति प्रयुक्त",
     "Lagna-based analysis with full house precision.":
         "लग्न-आधारित विश्लेषण, पूरी भाव-सटीकता के साथ।",
     # ---- headline chips (1-2 words) ----
@@ -121,13 +126,49 @@ EN_HI_V2 = {
     "Clear": "स्पष्ट", "Cleared": "निवारण", "Manageable": "सँभालने योग्य",
     "Active phase": "सक्रिय चरण", "Not now": "अभी नहीं",
     "1 window": "1 विंडो", "2 windows": "2 विंडोज़", "3 windows": "3 विंडोज़",
-    # ---- hero ----
+    # ---- hero / answer-page cards ----
     "Most likely marriage window": "सबसे संभावित विवाह विंडो",
+    "Full marriage window": "पूरी विवाह विंडो",
+    "Confidence": "भरोसा",
+    "High": "उच्च", "Emerging": "उभरता",
     "High confidence": "उच्च भरोसा", "Moderate confidence": "मध्यम भरोसा",
     "Emerging confidence": "उभरता भरोसा",
     "High confidence · approx. birth time": "उच्च भरोसा · अनुमानित जन्म-समय",
     "Moderate confidence · approx. birth time": "मध्यम भरोसा · अनुमानित जन्म-समय",
     "Emerging confidence · approx. birth time": "उभरता भरोसा · अनुमानित जन्म-समय",
+    "Multiple dasha and transit factors point to the same period — the signals agree.":
+        "दशा और गोचर के कई संकेत एक ही अवधि की ओर इशारा करते हैं — संकेत आपस में मेल खाते हैं।",
+    "The main dasha and transit signals agree, with a few mixed factors.":
+        "मुख्य दशा-गोचर संकेत मेल खाते हैं, साथ में कुछ मिले-जुले कारक भी हैं।",
+    "Supportive factors are present but still building — read the window as a direction.":
+        "सहायक कारक मौजूद हैं पर अभी बन रहे हैं — इस विंडो को एक दिशा की तरह पढ़ें।",
+    "Birth time is approximate, so the window is kept honestly wide.":
+        "जन्म-समय अनुमानित है, इसलिए विंडो ईमानदारी से चौड़ी रखी गई है।",
+    "No obstacle on this front — nothing to remedy.":
+        "इस ओर कोई रुकावट नहीं — किसी उपाय की ज़रूरत नहीं।",
+    "Technically yes, but cancelled — practically no.":
+        "तकनीकी रूप से हाँ, पर निवारण हो गया — व्यावहारिक रूप से नहीं।",
+    "Manageable — the impact and remedies are explained in the Manglik section.":
+        "सँभालने योग्य — प्रभाव और उपाय मांगलिक खंड में समझाए गए हैं।",
+    "Your birth chart (Kundli) · North Indian style":
+        "आपकी जन्म कुंडली · उत्तर भारतीय शैली",
+    # ---- partner cards (page 4) ----
+    "Love or arranged": "प्रेम या अरेंज्ड", "Meeting context": "मिलने का संदर्भ",
+    "Love Marriage": "प्रेम विवाह", "Arranged Marriage": "अरेंज्ड विवाह",
+    "Direct & energetic": "सीधे और ऊर्जावान", "Steady & loyal": "स्थिर और वफ़ादार",
+    "Witty & sociable": "हाज़िरजवाब और मिलनसार", "Caring & family-first": "ख़याल रखने वाले, परिवार-प्रेमी",
+    "Warm & confident": "गर्मजोश और आत्मविश्वासी", "Practical & sincere": "व्यावहारिक और सच्चे",
+    "Charming & balanced": "आकर्षक और संतुलित", "Intense & loyal": "गहरे और वफ़ादार",
+    "Optimistic & principled": "आशावादी और उसूलों वाले", "Mature & ambitious": "परिपक्व और महत्वाकांक्षी",
+    "Independent & unconventional": "स्वतंत्र और अलग सोच वाले", "Gentle & artistic": "कोमल और कलात्मक",
+    "Well-matched": "अच्छे मेल वाले",
+    "Through your own efforts": "आपकी अपनी कोशिशों से", "Family networks": "परिवार के नेटवर्क से",
+    "Neighbours or short travels": "पड़ोस या छोटी यात्राओं से", "The home circle": "घर के दायरे से",
+    "Social settings": "सामाजिक मौक़ों से", "Workplace or daily circles": "कार्यस्थल या रोज़मर्रा के दायरों से",
+    "Direct proposals": "सीधे प्रस्तावों से", "In-law networks": "ससुराल के नेटवर्क से",
+    "Different community or place": "अलग समुदाय या जगह से", "Career settings": "करियर की परिस्थितियों से",
+    "A friend's introduction": "किसी दोस्त के ज़रिए", "Quiet or private settings": "शांत या निजी परिस्थितियों से",
+    "Your own circles": "आपके अपने दायरे से",
     # ---- answer / manglik one-liners ----
     "Manglik: No — no obstacle on this front.": "मांगलिक: नहीं — इस ओर कोई रुकावट नहीं।",
     "Manglik: technically yes, but cancelled — practically No.":
@@ -677,6 +718,9 @@ def _template(key):
     if m and m.group(1) in TOK and (" " in m.group(2) or "/" in m.group(2)):
         return f"{TOK[m.group(1)]} ({HI.get(m.group(2), m.group(2))})"
     # ---- report_view_v2 (English base) interpolated patterns ----
+    m = re.match(r"^Your marriage windows \((\d+)\)$", key)
+    if m:
+        return f"आपकी विवाह विंडोज़ ({m.group(1)})"
     m = re.match(r"^Full window: (.+)$", key)
     if m and _MON_RE.search(m.group(1)):
         return f"पूरी विंडो: {_months_line(m.group(1)) or m.group(1)}"
