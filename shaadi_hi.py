@@ -68,6 +68,7 @@ EN_HI_DATA = {
     "Their likely personality": "उनका संभावित स्वभाव",
     "Their background & how you'll meet": "उनकी पृष्ठभूमि और आप कैसे मिलेंगे",
     "How you love": "आप प्रेम कैसे करते हैं",
+    "How you love — your Venus": "आप प्रेम कैसे करते हैं — आपका शुक्र",
     "Method & foundations": "पद्धति और आधार",
     "Your birth chart (D1)": "आपकी जन्म कुंडली (D1)",
     "Your full chart — verify it yourself": "आपकी पूरी कुंडली — खुद जाँचिए",
