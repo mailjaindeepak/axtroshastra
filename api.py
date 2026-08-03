@@ -1161,9 +1161,18 @@ def report_pdf(rid: str):
     name = meta.get("name") or (f"{meta['p1']}_{meta['p2']}" if meta.get("p1") and meta.get("p2")
                                 else "report")
     name = name.replace(" ", "_")[:40]
+    # HTTP headers are latin-1 only, but a Hindi report's name can be Devanagari
+    # (e.g. "आशा शर्मा"). Building the header with the raw name raised
+    # UnicodeEncodeError -> 500 -> the browser fell back to the print dialog
+    # (this was the real cause of "Hindi PDF only gives the fallback"). Emit an
+    # ASCII-safe filename plus an RFC 5987 UTF-8 variant for modern browsers.
+    from urllib.parse import quote as _urlquote
+    ascii_name = name.encode("ascii", "ignore").decode("ascii").strip("_") or "Report"
+    utf8_name = _urlquote(f"Axtroshastra_{name}.pdf")
+    disposition = (f'attachment; filename="Axtroshastra_{ascii_name}.pdf"; '
+                   f"filename*=UTF-8''{utf8_name}")
     return Response(content=pdf, media_type="application/pdf",
-                    headers={"Content-Disposition":
-                             f'attachment; filename="Axtroshastra_{name}.pdf"',
+                    headers={"Content-Disposition": disposition,
                              "Cache-Control": "private, max-age=3600"})
 
 
