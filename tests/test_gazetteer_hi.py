@@ -86,6 +86,88 @@ def test_non_devanagari_non_latin_scripts_do_not_match():
     assert gazetteer.suggest("자이푸르", 8) == []
 
 
+# ----------------------------------------------------- name_hi display polish
+
+# Curated Devanagari DISPLAY name for the dropdown on *.hi.html pages.
+# `label` must stay ASCII English — it is what the input is filled with and
+# what the form submits/geocodes.
+
+_MAJOR = [("दिल्ली", "Delhi", "दिल्ली"),
+          ("मुंबई", "Mumbai", "मुंबई"),
+          ("कोलकाता", "Kolkata", "कोलकाता"),
+          ("बेंगलुरु", "Bengaluru", "बेंगलुरु"),
+          ("जयपुर", "Jaipur", "जयपुर"),
+          ("वाराणसी", "Varanasi", "वाराणसी"),
+          ("लखनऊ", "Lucknow", "लखनऊ"),
+          ("इंदौर", "Indore", "इंदौर"),
+          ("पुणे", "Pune", "पुणे"),
+          ("चेन्नई", "Chennai", "चेन्नई")]
+
+
+def test_name_hi_present_for_major_cities():
+    for q, name_en, name_hi in _MAJOR:
+        res = gazetteer.suggest(q, 8)
+        assert res and res[0]["name"] == name_en, f"{q} -> {[r['name'] for r in res[:3]]}"
+        assert res[0].get("name_hi") == name_hi
+        # label stays ASCII English regardless of name_hi
+        assert res[0]["label"].isascii()
+        assert res[0]["label"].startswith(name_en)
+
+
+def test_name_hi_prefers_modern_common_form():
+    # display table overrides archaic alias/geonames first forms
+    assert gazetteer.suggest("मुंबई", 1)[0]["name_hi"] == "मुंबई"          # not ग्रेटर मुम्बई
+    assert gazetteer.suggest("कोलकाता", 1)[0]["name_hi"] == "कोलकाता"     # not कलकत्ता
+    assert gazetteer.suggest("वाराणसी", 1)[0]["name_hi"] == "वाराणसी"     # not काशी
+    assert gazetteer.suggest("मंगलुरु", 1)[0]["name_hi"] == "मंगलुरु"       # not मंगलौर
+
+
+def test_name_hi_omitted_for_uncurated_small_towns():
+    # No curated name -> key omitted entirely (frontend falls back to English)
+    for q in ["hodal", "bhabhua", "aonla"]:
+        res = gazetteer.suggest(q, 8)
+        assert res, q
+        assert res[0].get("name_hi") is None
+        assert "name_hi" not in res[0]
+
+
+def test_name_hi_is_devanagari_label_is_latin_everywhere():
+    # label stays Latin-script for every city (geonames names may carry
+    # macrons, e.g. "Thāne" — Latin, but not strict ASCII); name_hi, when
+    # present, is real Devanagari.
+    gazetteer._load()
+    for r in gazetteer._CITIES:
+        p = gazetteer._public(r)
+        assert not any("ऀ" <= ch <= "ॿ" for ch in p["label"]), p["label"]
+        if "name_hi" in p:
+            assert p["name_hi"] and any("ऀ" <= ch <= "ॿ" for ch in p["name_hi"])
+
+
+# ------------------------------------------------- hi-page dropdown wiring
+
+def _page(name):
+    import pathlib
+    return (pathlib.Path(__file__).resolve().parent.parent / "pages" / name).read_text(encoding="utf-8")
+
+
+def test_hi_pages_render_name_hi_but_submit_english_label():
+    """Static markers for the *.hi.html autosuggest: the dropdown row shows
+    name_hi (fallback English name), but pick() still fills the input with the
+    English c.label, so the submit guard (inp.value === picked.label) and the
+    server-side re-geocode are untouched."""
+    for name, guard in [("milan.hi.html", "inp.value.trim()!==sel.label"),
+                        ("shaadi.hi.html", "inp.value.trim()!==selected.label")]:
+        html = _page(name)
+        assert "c.name_hi||c.name" in html, name          # row shows Hindi first
+        assert "inp.value=c.label" in html, name          # pick fills English label
+        assert guard in html, name                        # submit guard compares label
+
+
+def test_english_pages_untouched_by_name_hi():
+    for name in ["milan.html", "shaadi.html", "jeevan.html", "career.html", "career.hinglish.html"]:
+        assert "name_hi" not in _page(name), name
+
+
 # ------------------------------------------------- end-to-end submit safety
 
 def test_api_city_suggest_devanagari(client):
@@ -94,8 +176,18 @@ def test_api_city_suggest_devanagari(client):
     results = r.json()["results"]
     assert results and results[0]["name"] == "Jaipur"
     assert results[0]["label"].isascii()
-    # response schema unchanged
+    # response schema unchanged (plus curated name_hi for display)
     assert {"id", "name", "label", "lat", "lon", "tz"} <= set(results[0])
+    assert results[0]["name_hi"] == "जयपुर"
+
+
+def test_api_city_suggest_delhi_name_hi(client):
+    r = client.get("/api/city-suggest", params={"q": "दिल्ली"})
+    assert r.status_code == 200
+    top = r.json()["results"][0]
+    assert top["name"] == "Delhi"
+    assert top["name_hi"] == "दिल्ली"
+    assert top["label"] == "Delhi, India" and top["label"].isascii()
 
 
 def test_suggested_label_geocodes_offline(client, monkeypatch):

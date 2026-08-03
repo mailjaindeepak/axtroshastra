@@ -916,7 +916,13 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     function render(){
       if(!items.length){list.classList.remove('open');list.innerHTML='';return;}
       list.innerHTML=items.map(function(c,i){
-        return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+c.name+' <small>'+(c.region||c.country)+'</small></div>';
+        // Hindi page: show the curated Devanagari name when the API sends one
+        // (name_hi), with the English "Name, State" as small context. The
+        // INPUT is still filled with c.label (English) on pick — see pick() —
+        // so the submit guard (inp.value===sel.label) and server geocoding
+        // are unchanged.
+        var big=c.name_hi||c.name, ctx=c.name_hi?(c.name+', '+(c.region||c.country)):(c.region||c.country);
+        return '<div class="ci'+(i===active?' active':'')+'" data-i="'+i+'">'+big+' <small>'+ctx+'</small></div>';
       }).join('');
       list.classList.add('open');
     }

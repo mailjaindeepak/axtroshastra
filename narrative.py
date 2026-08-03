@@ -223,6 +223,7 @@ def generate_narrative(payload: dict) -> dict:
         out = {}
         allowed = _allowed_numbers(facts)
         truth = _planet_truth(facts)
+        out_lang = _resolve_lang(payload)
         for key, _brief in spec:
             val = data.get(key)
             if not isinstance(val, str):
@@ -235,6 +236,12 @@ def generate_narrative(payload: dict) -> dict:
                 continue
             if not _claims_ok(val, truth):
                 logger.warning("[narrative] section %r dropped: chart-contradicting placement", key)
+                continue
+            if out_lang == "hi" and not _devanagari_ok(val):
+                # English/Hinglish prose can NEVER be localized downstream (the
+                # localizers are exact-match) — better the Hindi bank than a
+                # Roman-script section in a Devanagari report.
+                logger.warning("[narrative] section %r dropped: not Devanagari", key)
                 continue
             out[key] = html.escape(val)
         logger.info("[narrative] %s/%s lang=%s model=%s -> %d/%d sections generated",
@@ -283,6 +290,36 @@ def _facts_for_llm(payload: dict, product: str) -> dict:
         if k in payload:
             facts[k] = payload[k]
 
+    # Milan: the koota/element "text" fields are legacy HINGLISH bank prose
+    # (jyotish_maps.KOOTA_TEXT). Fed raw, the model imitates the Roman-Hinglish
+    # it sees — the main Hinglish vector into the Hindi narrative. For a Hindi
+    # report substitute the authored Devanagari twins (milan_hi_data), otherwise
+    # drop the field: the koota name, score and English "meaning" carry enough
+    # signal for the prose.
+    if product == "milan":
+        lang = _resolve_lang(payload)
+        try:
+            from milan_hi_data import HI_DATA as _MHD
+        except Exception:
+            _MHD = {}
+
+        def _scrub_text(block: dict) -> dict:
+            t = block.get("text")
+            if not t:
+                return block
+            block = dict(block)
+            if lang == "hi" and t in _MHD:
+                block["text"] = _MHD[t]
+            else:
+                block.pop("text", None)
+            return block
+
+        if isinstance(facts.get("kootas"), list):
+            facts["kootas"] = [_scrub_text(k) if isinstance(k, dict) else k
+                               for k in facts["kootas"]]
+        if isinstance(facts.get("element"), dict):
+            facts["element"] = _scrub_text(facts["element"])
+
     # Marriage: the report hides windows starting >4 years out when a nearer one
     # exists (report_view_v2._visible_windows). Mirror that here so the LLM never
     # narrates a window the reader can't see. Uses the frozen report date so it
@@ -308,10 +345,15 @@ def _system_prompt(product: str, spec, lang_code: str = "") -> str:
                 "speaks. Address the reader respectfully as 'आप'. Use everyday spoken Hindi, "
                 "not heavy or over-Sanskritised textbook Hindi; a few familiar loan-words "
                 "(रिश्ता, कम्पैटिबिलिटी, बैलेंस) are fine where they read naturally. Do NOT "
-                "transliterate Hindi into Roman/Latin letters. Keep proper nouns and the "
-                "Vedic terms in the Devanagari form given in the facts; write digits and "
-                "scores as Western numerals (e.g. 36, 18/36, 85%). Sound like a real person "
-                "who has actually read this chart, never like a translation.")
+                "transliterate Hindi into Roman/Latin letters. The facts JSON gives Vedic "
+                "terms in Roman letters — you must still write every sign, nakshatra and "
+                "planet name in Devanagari (e.g. Mesha → मेष, Anuradha → अनुराधा, Venus → "
+                "शुक्र). Keep people's names exactly as given, and write digits and scores "
+                "as Western numerals (e.g. 36, 18/36, 85%). HARD RULE: your output must "
+                "contain no Roman-script sentences and no Hinglish — never copy Roman-"
+                "Hinglish wording from the facts; express the same meaning in Devanagari "
+                "Hindi. Sound like a real person who has actually read this chart, never "
+                "like a translation.")
     else:
         lang = ("Write in warm, natural, conversational English — the way a caring, "
                 "well-spoken astrologer speaks to someone they genuinely want to help. "
@@ -360,6 +402,22 @@ def _user_prompt(facts: dict, spec) -> str:
               "earlier sections set up later ones, and do not repeat the same point across "
               "sections.\n\nSections:\n" + briefs
             + "\n\nReturn only the JSON object.")
+
+
+# --------------------------------------------------------------------------- #
+# output-language guardrail (Hindi reports)
+# --------------------------------------------------------------------------- #
+_DEV_CHAR = re.compile(r"[ऀ-ॿ]")
+
+def _devanagari_ok(text: str, min_ratio: float = 0.5) -> bool:
+    """True when at least `min_ratio` of the alphabetic characters are Devanagari.
+    Proper nouns/loan-words in Roman (names, 'D9', 'NASA') pass easily; a section
+    the model wrote in English or Roman-Hinglish fails and falls back to the bank."""
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return True
+    dev = sum(1 for c in letters if _DEV_CHAR.match(c))
+    return dev / len(letters) >= min_ratio
 
 
 # --------------------------------------------------------------------------- #

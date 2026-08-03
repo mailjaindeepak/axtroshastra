@@ -198,6 +198,20 @@ def get_cached(rid: str) -> bytes | None:
     return None
 
 
+def invalidate(rid: str) -> bool:
+    """Drop the cached PDF for `rid` (used after a payload change — e.g. the
+    narrative backfill — so the next download re-renders). True if a file was
+    removed; never raises."""
+    try:
+        p = cache_path(rid)
+        if os.path.exists(p):
+            os.unlink(p)
+            return True
+    except OSError as e:
+        logger.error("[pdf] cache invalidate failed for %s: %s", rid, e)
+    return False
+
+
 def save(rid: str, data: bytes) -> None:
     try:
         os.makedirs(PDF_DIR, exist_ok=True)

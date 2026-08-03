@@ -160,14 +160,6 @@ HI = {
     "“According to Vedic astrology, this relationship holds warm and auspicious potential.”":
         "“वैदिक ज्योतिष के अनुसार, इस रिश्ते में गर्मजोशी और शुभ संभावनाएँ हैं।”",
 
-    # ---- CTA (section 25) ----
-    "One last thing": "आख़िरी एक बात",
-    "Know a couple who’d love this?": "कोई ऐसा जोड़ा जानते हैं जिसे ये पसंद आएगा?",
-    "Every reading is calculated from real charts — no two alike":
-        "हर रीडिंग असली कुंडली से कैलकुलेट होती है — कोई दो एक जैसी नहीं",
-    "Gift a friend their reading 💛": "किसी दोस्त को उनकी रीडिंग गिफ़्ट करें 💛",
-    "Start a reading →": "एक रीडिंग शुरू करें →",
-
     # ---- appendix (sections 26-30) ----
     "Appendix · The receipts": "परिशिष्ट · हिसाब-किताब",
     "Nothing hidden": "कुछ नहीं छिपाया",
@@ -562,6 +554,17 @@ def localize(html: str) -> str:
     tmp = tmp.replace('<html lang="en"', '<html lang="hi"', 1)
     tmp = tmp.replace("</head>", _HEAD_HI + "</head>", 1)
     tmp = _flip_lang_toggle(tmp)
+    # v1 (legacy Hinglish) report only: pin the in-page Hinglish↔English toggle to
+    # 'hi' so it can never rewrite localized Devanagari nodes (its EXACT map holds
+    # e.g. "नहीं"→"NO"), and hide the capsule — the /hi funnel is URL-fixed.
+    # No-op on the v2 report, which carries no axlang script.
+    if "axlang" in tmp:
+        tmp = tmp.replace("var l = localStorage.getItem('axlang') || 'en';",
+                          "var l = 'hi';")
+        tmp = tmp.replace("var saved='en'; try{ saved=localStorage.getItem('axlang')||'en'; }catch(e){}",
+                          "var saved='hi';")
+        tmp = tmp.replace("</head>",
+                          "<style>#axlang{display:none!important}</style></head>", 1)
     return tmp
 
 

@@ -29,12 +29,16 @@ def test_webhook_creates_and_links_account(client, pay_webhook):
     assert acct["mobile"] == "+919812345678"
     assert acct["email"] == "buyer@example.com"
 
-    # The saved details are shown on the paid report page (banner: "Account
-    # created" with the mobile formatted as +91 XXXXX XXXXX).
+    # The "Account created" banner CARD is gone from the paid report page —
+    # the saved details are no longer rendered inline. Only the auto-hiding
+    # toast (JS snippet, localStorage-guarded) remains, armed via __HASACCT__.
     html = client.get(f"/report/{rid}").text
-    assert "+91 98123 45678" in html
-    assert "buyer@example.com" in html
-    assert "account created" in html.lower()
+    assert "acct-banner" not in html
+    assert "Saved from this purchase" not in html
+    assert "+91 98123 45678" not in html
+    assert "buyer@example.com" not in html
+    assert "axs_acct_toast_" in html               # toast snippet present
+    assert 'hasAcct=("1"==="1")' in html           # toast armed: account exists
 
 
 def test_bare_ten_digit_mobile_is_normalised(client, pay_webhook):

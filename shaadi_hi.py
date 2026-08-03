@@ -363,6 +363,53 @@ HI.update({
     "friends' circles — a friend's introduction": "दोस्तों के दायरे से — किसी दोस्त के ज़रिए परिचय",
     "quiet or private settings, possibly at some distance": "शांत या निजी परिस्थितियों से, शायद कुछ दूरी पर",
 })
+# ---- v2 report: remedies (mantras Roman → Devanagari, gem advisories) ----
+# The mantra transliterations and gem lines come from jyotish_maps REMEDY_7L /
+# REMEDY_NODE and are rendered verbatim, so exact keys cover them.
+MANTRA_HI = {
+    "Om Ghrini Suryaya Namah": "ॐ घृणि सूर्याय नमः",
+    "Om Som Somaya Namah": "ॐ सों सोमाय नमः",
+    "Om Ang Angarakaya Namah": "ॐ अं अंगारकाय नमः",
+    "Om Bum Budhaya Namah": "ॐ बुं बुधाय नमः",
+    "Om Brim Brihaspataye Namah": "ॐ बृं बृहस्पतये नमः",
+    "Om Shum Shukraya Namah": "ॐ शुं शुक्राय नमः",
+    "Om Sham Shanaishcharaya Namah": "ॐ शं शनैश्चराय नमः",
+    "Om Ram Rahave Namah": "ॐ रां राहवे नमः",
+    "Om Kem Ketave Namah": "ॐ कें केतवे नमः",
+}
+HI.update(MANTRA_HI)
+GEM_HI = {
+    "Ruby": "माणिक", "Pearl": "मोती", "Red Coral": "मूँगा", "Emerald": "पन्ना",
+    "Yellow Sapphire": "पुखराज", "Diamond/White Sapphire": "हीरा/सफ़ेद पुखराज",
+    "Blue Sapphire": "नीलम",
+}
+HI.update(GEM_HI)
+HI.update({
+    # Saturn's gem line breaks the generic "only if X is well-placed" pattern
+    # ("only after expert trial, if …"), so it gets an exact key.
+    "Blue Sapphire — only after expert trial, if Saturn is well-placed":
+        "नीलम — केवल विशेषज्ञ परीक्षण के बाद, यदि शनि अच्छी स्थिति में हो",
+    "No gemstone advised for a Rahu period — keep routines steady and decisions unhurried.":
+        "राहु की दशा में कोई रत्न नहीं बताया जाता — दिनचर्या स्थिर रखें और फ़ैसले बिना हड़बड़ी के लें।",
+    "No gemstone advised for a Ketu period — favour clarity, closure and simple habits.":
+        "केतु की दशा में कोई रत्न नहीं बताया जाता — स्पष्टता, समापन और सरल आदतों को अपनाएँ।",
+})
+# ---- v2 report: remaining fixed-shell strings (structural-leak sweep) ----
+HI.update({
+    # cover method notes (period-less twin guards the trailing-period strip too)
+    "Lagna-based analysis with full house precision":
+        "लग्न-आधारित विश्लेषण, पूरी भाव-सटीकता के साथ",
+    "Chandra Lagna system (Moon-as-ascendant) — the classical Parashari method used when the birth time is approximate; windows are shown with honest, wider ranges.":
+        "चंद्र लग्न पद्धति (चंद्रमा को लग्न मानकर) — अनुमानित जन्म-समय के लिए अपनाई जाने वाली शास्त्रीय पाराशरी विधि; विंडोज़ ईमानदारी से थोड़ी चौड़ी दिखाई जाती हैं।",
+    "Chandra Lagna system (Moon-as-ascendant) — the classical Parashari method used when the birth time is approximate; windows are shown with honest, wider ranges":
+        "चंद्र लग्न पद्धति (चंद्रमा को लग्न मानकर) — अनुमानित जन्म-समय के लिए अपनाई जाने वाली शास्त्रीय पाराशरी विधि; विंडोज़ ईमानदारी से थोड़ी चौड़ी दिखाई जाती हैं",
+    # weak-period remedies: none flagged
+    "No weak Mahadasha/Antardasha periods are flagged in the near term — no period-specific remedy is needed right now.":
+        "निकट भविष्य में कोई कमज़ोर महादशा/अंतर्दशा चिह्नित नहीं है — अभी किसी अवधि-विशेष उपाय की ज़रूरत नहीं।",
+    # career upsell CTA (CAREER stays Roman — it is the literal WhatsApp keyword)
+    "Send CAREER on WhatsApp →": "WhatsApp पर CAREER भेजें →",
+    "Send CAREER on WhatsApp": "WhatsApp पर CAREER भेजें",
+})
 # ---- static strings missed on the first pass ----
 HI.update({
     "What you need to do for better results": "बेहतर नतीजों के लिए आपको क्या करना है",
@@ -529,12 +576,19 @@ _HINDI_PLANET = {"Surya", "Chandra", "Mangal", "Budh", "Guru", "Shukra", "Shani"
                  "Rahu", "Ketu", "Sun", "Moon", "Mars", "Mercury", "Jupiter",
                  "Venus", "Saturn"}
 
-# venus_style suffixes (engine.py) → Devanagari, applied after the base love-style
+# venus_style suffixes (engine.py) → Devanagari, applied after the base love-style.
+# BOTH generations of the engine strings are covered: the old Hinglish pair and
+# the current English pair (engine.py "venus_style") — the English ones were
+# leaking untranslated into the Hindi report's "Your Venus" card.
 _VENUS_SUFFIX = [
     (" — Venus combust hai, isliye expression mein hesitation aa sakti hai; feelings genuine, awaaz dheemi.",
      " — शुक्र अस्त है, इसलिए ज़ाहिर करने में झिझक आ सकती है; भावनाएँ सच्ची, आवाज़ धीमी।"),
     (" — Venus apne hi sign mein strong hai; pyaar mein aapki instinct par bharosa kiya ja sakta hai.",
      " — शुक्र अपनी ही राशि में मज़बूत है; प्रेम में आपकी सहज-प्रवृत्ति पर भरोसा किया जा सकता है।"),
+    (" — with Venus combust, expression can carry some hesitation; the feelings are genuine, the voice just softer.",
+     " — शुक्र अस्त है, इसलिए ज़ाहिर करने में झिझक आ सकती है; भावनाएँ सच्ची हैं, बस आवाज़ थोड़ी धीमी।"),
+    (" — with Venus strong in its own sign, you can trust your instincts in love.",
+     " — शुक्र अपनी ही राशि में मज़बूत है; प्रेम में आप अपनी सहज-प्रवृत्ति पर भरोसा कर सकते हैं।"),
 ]
 
 
@@ -564,6 +618,17 @@ def _template(key):
     if key.startswith(". This tends to bring a maturing pressure rather than denial"):
         return ("। यह इनकार नहीं, बल्कि परिपक्व करने वाला दबाव लाती है — शनि के दौर में बने विवाह "
                 "सबसे टिकाऊ माने जाते हैं।")
+    # Sade Sati NOT running (v2 English composite with interpolated date)
+    m = re.match(r"^Sade Sati is not currently running\. The next phase begins around (.+?)\. "
+                 r"For now, Saturn is not adding delay-pressure from this angle\.$", key)
+    if m:
+        d = _months_line(m.group(1)) or m.group(1)
+        return (f"साढ़ेसाती अभी नहीं चल रही। अगला चरण {d} के आसपास शुरू होगा। "
+                "फ़िलहाल शनि इस कोण से कोई देरी-दबाव नहीं डाल रहा।")
+    # <title> tag: "<name> — Marriage Timing Report | Axtroshastra"
+    m = re.match(r"^(.+) — Marriage Timing Report \| Axtroshastra$", key)
+    if m:
+        return f"{m.group(1)} — विवाह समय रिपोर्ट | Axtroshastra"
     # dasha-remedy reasons (engine _dasha_remedies)
     m = re.match(r"^(\w+) is debilitated in the birth chart — its periods ask for extra patience and care\.$", key)
     if m and m.group(1) in TOK:
@@ -574,11 +639,25 @@ def _template(key):
     m = re.match(r"^(\w+) has no direct link to the 7th house — a slower, low-activation period for marriage\.$", key)
     if m and m.group(1) in TOK:
         return f"{TOK[m.group(1)]} का 7वें भाव से सीधा संबंध नहीं — विवाह के लिए धीमा, कम-सक्रियता वाला दौर।"
-    # gemstone line (base + optional trial suffix)
+    # gemstone line (base + optional trial suffix); gem name via GEM_HI
     m = re.match(r"^(.+?) — only if (\w+) is well-placed( — only after a trial, via a qualified jeweller/astrologer\.)?$", key)
     if m and m.group(2) in TOK:
         tail = "। केवल परीक्षण के बाद, किसी योग्य जौहरी/ज्योतिषी के ज़रिए।" if m.group(3) else ""
-        return f"{m.group(1)} — केवल यदि {TOK[m.group(2)]} अच्छी स्थिति में हो{tail}"
+        return f"{GEM_HI.get(m.group(1), m.group(1))} — केवल यदि {TOK[m.group(2)]} अच्छी स्थिति में हो{tail}"
+    # gemstone advisory tails on an otherwise-resolvable head (covers Saturn's
+    # "Blue Sapphire — only after expert trial, if …" exact-key head + both tails)
+    m = re.match(r"^(.+?)( — only after a trial, via a qualified jeweller/astrologer\.| — only after expert trial\.)$", key)
+    if m:
+        head = _resolve(m.group(1), 5)
+        if head is not None:
+            tail = ("केवल परीक्षण के बाद, किसी योग्य जौहरी/ज्योतिषी के ज़रिए।"
+                    if "jeweller" in m.group(2) else "केवल विशेषज्ञ परीक्षण के बाद।")
+            sep = " " if head.endswith(("।", ".", "!", "?")) else "। "
+            return head + sep + tail
+    # "A gemstone isn't advised for <lord> right now — …" (engine gem_note)
+    m = re.match(r"^A gemstone isn't advised for (\w+) right now — the mantra and fast day are enough\.$", key)
+    if m and m.group(1) in TOK:
+        return f"{TOK[m.group(1)]} के लिए अभी रत्न की सलाह नहीं — मंत्र और व्रत का दिन ही काफ़ी हैं।"
     # navamsa (D9) reason patterns (interpolated planet/dignity)
     m = re.match(r"^Your 7th lord \((\w+)\) is vargottama \(same sign in D1 and D9\) — a strong marriage promise\.$", key)
     if m and m.group(1) in TOK:
@@ -618,7 +697,7 @@ def _template(key):
         return f"आपके 7वें भाव के स्वामी ({TOK[m.group(1)]}) के लिए सहारा"
     m = re.match(r"^(.+) — 108 times, on (\w+)$", key)
     if m:
-        return f"{m.group(1)} — 108 बार, {HI.get(m.group(2), m.group(2))} को"
+        return f"{HI.get(m.group(1), m.group(1))} — 108 बार, {HI.get(m.group(2), m.group(2))} को"
     m = re.match(r"^(\w+) (Mahadasha|Antardasha) · (.+)$", key)
     if m and m.group(1) in TOK:
         role = "महादशा" if m.group(2) == "Mahadasha" else "अंतर्दशा"
@@ -692,9 +771,12 @@ def _template(key):
         ad = _dasha_side(m.group(2))
         if ad is not None:
             return f"{TOK[m.group(1)]} महादशा — {ad} अंतर्दशा"
-    m = re.match(r"^(\w+) Mahadasha [—-] (\w+) Antardasha$", key)
-    if m and m.group(1) in TOK and m.group(2) in TOK:
-        return f"{TOK[m.group(1)]} महादशा — {TOK[m.group(2)]} अंतर्दशा"
+    # spelled-out dasha combo, single OR multi antardasha ("X Mahadasha — Y + Z Antardasha")
+    m = re.match(r"^(\w+) Mahadasha [—-] (.+) Antardasha$", key)
+    if m and m.group(1) in TOK:
+        ad = _dasha_side(m.group(2))
+        if ad is not None:
+            return f"{TOK[m.group(1)]} महादशा — {ad} अंतर्दशा"
     # "Yeh window (<dasha>) ko humne"
     m = re.match(r"^Yeh window \((.+?)\) ko humne$", key)
     if m:
@@ -823,6 +905,15 @@ def _resolve(key, depth=0):
         return None
     if key in HI:
         return HI[key]
+    # Templated patterns BEFORE the trailing-period strip below: a composed run
+    # like "Generated … · Lagna-based analysis with full house precision." must
+    # match its template with the period intact. The strip used to recurse first,
+    # re-matching the template with the final period missing — so the inner
+    # phrase lookup (whose dict key keeps the period) failed and the English
+    # note shipped untranslated inside an otherwise-Devanagari line.
+    t = _template(key)
+    if t is not None:
+        return t
     # trailing sentence period: content-map cards render "<phrase>." — resolve the
     # phrase and re-add a Devanagari full stop. Guard against decimals (e.g. "8.5").
     if key.endswith(".") and not re.search(r"\d\.$", key):
@@ -860,7 +951,7 @@ def _resolve(key, depth=0):
     tk = _tok_line(key)
     if tk is not None:
         return tk
-    return _template(key)
+    return None    # (_template already tried above, before the period strip)
 
 
 def _neutralize_toggle(html):

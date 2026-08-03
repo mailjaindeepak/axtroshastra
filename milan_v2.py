@@ -10,8 +10,6 @@ classical tables (THEMES/KOOTA_UI/REMEDIES/ACTION_PLAN/ARCHETYPE) from
 report_view.py. Descriptive PROSE slots call the LLM via narr(); when the LLM is
 off/unfunded, narr() returns None and the deterministic bank text is used.
 """
-import os
-
 from html import escape
 from narrative import narr
 from report_view import (THEMES, KOOTA_UI, REMEDIES, ACTION_PLAN, THEME_DEEP,
@@ -210,16 +208,13 @@ body{font-family:var(--body);background:#E8E1D4;color:var(--ink);line-height:1.6
 .chk .bd{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
 .chk .bd.ok{background:var(--green)}.chk .bd.mild{background:var(--amber)}.chk .bd.ic{background:transparent;font-size:17px}
 .chk b{font-family:var(--disp);font-size:14.5px}.chk p{font-size:13.5px;color:var(--muted);margin-top:2px}
-/* letter/cert/ref */
+/* letter/cert */
 .letter{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 20px;margin-top:14px;box-shadow:0 6px 22px rgba(90,60,20,.06)}
 .letter p{font-family:var(--disp);font-size:15px;line-height:1.7;color:#3d352b}.letter .sign{font-family:var(--disp);font-style:italic;font-size:14px;color:var(--amber);margin-top:14px;text-align:right}
 .cert{border:2px solid var(--gold);border-radius:16px;padding:26px 20px;margin-top:16px;text-align:center;background:linear-gradient(180deg,#fffdf8,#FAF3E4)}
 .cert .seal{font-size:26px;color:var(--gold)}.cert .lbl{letter-spacing:.26em;font-size:10px;color:var(--amber);font-weight:700;margin-top:6px}
 .cert .n{font-family:var(--disp);font-size:26px;margin-top:8px}.cert .a{font-family:var(--disp);font-style:italic;color:var(--amber);font-size:14px;margin-top:2px}
 .cert .st{color:var(--gold);letter-spacing:5px;font-size:17px;margin:11px 0}.cert .b{font-family:var(--disp);font-size:19px}.cert .q{font-family:var(--disp);font-style:italic;font-size:13.5px;color:var(--muted);margin-top:11px}
-.refbox{background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#EDE7DA;border-radius:18px;padding:22px;margin-top:14px;text-align:center}
-.refbox .l2{font-family:var(--disp);font-size:19px;color:#fff}.refbox p{font-size:14px;color:#CBBFA6;margin-top:8px}
-.refbtn{display:inline-block;margin-top:14px;background:var(--gold);color:#2A2015;font-weight:700;border-radius:100px;padding:11px 22px;font-size:14px;text-decoration:none}
 /* dark/method/appendix */
 .dark{background:linear-gradient(135deg,var(--espresso1),var(--espresso2));color:#E9E3D6}.dark .eb{color:var(--gold-lt)}.dark .h2{color:#fff}
 .dark .pn{color:rgba(201,163,78,.7)}
@@ -369,17 +364,6 @@ def render_milan_v2(p: dict) -> str:
                   f'<div class="n">{p1n} &amp; {p2n}</div><div class="a">{escape(arch["name"])} {arch.get("emoji","")}</div>'
                   f'<div class="st">{_stars(pct)}</div><div class="b">{pct}% · {_verdict_word(pct)}</div>'
                   f'<div class="q">“According to Vedic astrology, this relationship holds warm and auspicious potential.”</div></div>'))
-    # referral — language-aware CTA target, absolute URL so the link also works
-    # inside the Chrome-rendered PDF (rendered from file://, where a root-relative
-    # href would become a dead file:///... annotation). Visible strings must stay
-    # byte-identical: milan_hi.py localises by exact text-node match.
-    _origin = os.getenv("PUBLIC_BASE_URL", "https://www.axtroshastra.com").rstrip("/")
-    ref_target = f"{_origin}/hi/compatibility" if m.get("lang") == "hi" else f"{_origin}/en/compatibility"
-    S.append(("", f'<div class="eb">One last thing</div><div class="h2">Know a couple who’d love this?</div>'
-                  f'<div class="sub">Every reading is calculated from real charts — no two alike</div>'
-                  f'<div class="refbox"><div class="l2">Gift a friend their reading \U0001F49B</div>'
-                  f'<p>If this felt true for you, it’ll mean the world to someone figuring out “is this the one?”</p>'
-                  f'<a class="refbtn" href="{ref_target}">Start a reading →</a></div>'))
     # appendix
     S += _appendix(p, pr1, pr2, kootas, by)
 
