@@ -1421,23 +1421,6 @@ def _strength_deepdive_html(p: dict) -> str:
             + items)
 
 
-def _askbesties_html(p: dict) -> str:
-    return ("<h2>Share it with your friends 💌</h2>"
-            "<div class='besties'>"
-            "<p>Share this report with a few friends who know you both. Then ask them the "
-            "real question: <b>“Does this actually sound like us?”</b></p>"
-            "<p>The people close to you know you better than any chart — their gut-check is the best second "
-            "opinion you'll get. And for the bits marked <b>‘work on it’</b>, they're exactly the people who'll "
-            "keep you honest and cheer you on.</p>"
-            "<div class='sharebtns'>"
-            "<button class='sharebtn' onclick='axShare()'>Share link 💫</button></div>"
-            "<div class='friendnote'><b>👀 Hey — did a friend send you this?</b>"
-            "<p>They shared it because your honest take matters more than any chart. Two ways to be a great "
-            "friend right now: tell them if the ‘you two’ bits actually ring true, and for anything marked "
-            "<b>‘work on it’</b>, be the one who cheers them on. That's the whole point. 💛</p></div>"
-            "<p class='bnote'>Shared with love · your report stays private unless you send it.</p></div>")
-
-
 def _certificate_html(p: dict) -> str:
     arche = _archetype(p["profiles"]); pct = _match_pct(p)
     p1 = escape(p["profiles"]["p1"]["name"]); p2 = escape(p["profiles"]["p2"]["name"])
@@ -1633,7 +1616,6 @@ def render_milan(p: dict) -> str:
                       f"<div class=\"acc-body\">{method_body}</div></details>")
     else:
         method_acc = ""
-    besties_html = _askbesties_html(p) if has_profiles else ""
     cert_html = _certificate_html(p) if has_profiles else ""
     matchpct_html = (f"<p class='matchpct'>{_match_pct(p)}% match on what matters</p>"
                      if has_profiles else "")
@@ -1746,8 +1728,6 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .sharebtn{{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:16px;padding:14px;margin-top:14px;cursor:pointer}}
 .sharebtns{{display:flex;gap:10px}}.sharebtns .sharebtn{{flex:1}}
 .sharebtn.ghost{{background:transparent;color:var(--sindoor);border:2px solid var(--sindoor);padding:12px}}
-.friendnote{{background:#F6E7C6;border-radius:12px;padding:14px 15px;margin-top:14px;font-size:14px}}
-.friendnote b{{font-family:var(--display)}}.friendnote p{{margin-top:6px;margin-bottom:0}}
 .cert{{background:linear-gradient(#FFFDF7,#F7EFDD);border:2px solid var(--haldi);border-radius:16px;padding:8px;box-shadow:0 12px 34px rgba(35,37,59,.12)}}
 .certin{{border:1.5px dashed #CDA43E;border-radius:12px;padding:24px 18px;text-align:center}}
 .certseal{{font-size:30px;color:var(--haldi);line-height:1}}
@@ -1782,9 +1762,6 @@ h2{{font-family:var(--display);font-size:21px;margin:34px 0 14px}}
 .wsplit{{background:#FBF4E6;border-radius:10px;padding:9px 12px;margin-top:9px;font-size:14px}}
 .wsplit p{{margin:5px 0}}
 .wtalk{{margin-top:8px;font-size:14px}}
-.besties{{background:#fff;border:2px dashed var(--haldi);border-radius:14px;padding:18px}}
-.besties p{{font-size:15px;margin-bottom:10px}}
-.bnote{{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}}
 .methbox{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;font-size:15px}}
 .methbox p{{margin-bottom:9px}}
 .meth{{width:100%;border-collapse:collapse;margin:6px 0;font-size:14px}}
@@ -1828,7 +1805,7 @@ details.acc>summary::-webkit-details-marker{{display:none}}
 details.acc[open]>summary .acc-x .caret{{transform:rotate(180deg)}}
 .caret{{display:inline-block;transition:transform .15s;color:var(--haldi)}}
 @media print{{#axlang{{display:none!important}}details.acc>*{{display:block!important}}details.acc>summary .acc-x{{display:none}}body{{max-width:100%;padding:0 10px 16px;background:#fff}}.hero{{margin:0 -10px}}
-.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.besties,.methbox,.gloss li,.wplan,.cert,.friendnote,.sharebtns,.sharebtn,.matchpct,.profwrap,.kchartwrap{{break-inside:avoid}}
+.koota,.theme,.work,.canc,.note,.mg,.effbox,.elbox,.nlbox,.lowbox,.review,.swl li,.opennote,.sharecard,.prof,.deep,.methbox,.gloss li,.wplan,.cert,.sharebtns,.sharebtn,.matchpct,.profwrap,.kchartwrap{{break-inside:avoid}}
 h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}}}
 </style></head><body>
 <div class="hero"><p class="brand">✦ AXTROSHASTRA · KUNDLI MILAN</p>
@@ -1852,7 +1829,6 @@ h2,h3{{break-after:avoid}}p{{orphans:2;widows:2}}*{{-webkit-print-color-adjust:e
 {manglik_html}
 {method_acc}
 {cert_html}
-{besties_html}
 {('<h2>Important notes</h2>' + notes) if notes else ''}
 {low_html}
 <p class="tn">System: {m['system']} · {m['time_note']} · Generated {m['generated']}<br>
