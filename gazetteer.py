@@ -138,6 +138,118 @@ _HI_ALIASES = {
 }
 
 
+# Curated Hindi DISPLAY names, keyed by geonameid — the `name_hi` shown in the
+# dropdown on the Hindi (*.hi.html) pages. Display-only: `name`/`label` stay
+# English so the submitted value keeps geocoding exactly as before.
+# Prefer the modern common name (मुंबई not ग्रेटर मुम्बई, कोलकाता not कलकत्ता,
+# वाराणसी not काशी). Cities NOT here fall back to the first _HI_ALIASES entry
+# (curated from Hindi Wikipedia titles, so its first form is display-ready);
+# entries below also OVERRIDE aliases whose first form is archaic (मंगलौर,
+# बेलगाम). No curated name at all -> name_hi omitted, frontend shows English.
+_HI_DISPLAY = {
+    1275339: "मुंबई",             # Mumbai
+    1273294: "दिल्ली",             # Delhi
+    1261481: "नई दिल्ली",          # New Delhi
+    1269843: "हैदराबाद",           # Hyderabad
+    1279233: "अहमदाबाद",          # Ahmedabad
+    1264527: "चेन्नई",             # Chennai
+    1275004: "कोलकाता",           # Kolkata (not कलकत्ता)
+    1259229: "पुणे",               # Pune
+    1269515: "जयपुर",             # Jaipur
+    1267995: "कानपुर",            # Kanpur
+    6619347: "नवी मुंबई",          # Navi Mumbai
+    1264733: "लखनऊ",             # Lucknow
+    1262180: "नागपुर",             # Nagpur
+    1273865: "कोयंबटूर",           # Coimbatore
+    1253573: "वडोदरा",            # Vadodara
+    1275841: "भोपाल",             # Bhopal
+    7626690: "पिंपरी-चिंचवड",       # Pimpri-Chinchwad
+    1259652: "पिंपरी",             # Pimpri
+    1260086: "पटना",              # Patna
+    1264728: "लुधियाना",           # Ludhiana
+    1261731: "नासिक",             # Nashik
+    1264521: "मदुरै",              # Madurai
+    1254361: "तिरुनेलवेली",         # Tirunelveli
+    1279259: "आगरा",              # Agra
+    1271951: "फरीदाबाद",          # Faridabad
+    1262111: "नजफगढ़",            # Najafgarh
+    1269300: "जमशेदपुर",          # Jamshedpur
+    1272423: "डोंबिवली",           # Dombivali
+    1263214: "मेरठ",              # Meerut
+    1255634: "श्रीनगर",            # Srinagar
+    1272979: "धनबाद",             # Dhanbad
+    1278149: "औरंगाबाद",          # Aurangabad
+    1253405: "वाराणसी",           # Varanasi (not काशी/बनारस)
+    1278710: "अमृतसर",            # Amritsar
+    1253184: "विजयवाड़ा",          # Vijayawada
+    1258526: "रांची",              # Ranchi
+    1269633: "जबलपुर",            # Jabalpur
+    1253102: "विशाखापत्तनम",       # Visakhapatnam
+    1268865: "जोधपुर",            # Jodhpur
+    1258980: "रायपुर",             # Raipur
+    1254388: "तिरुचिरापल्ली",       # Tiruchirappalli
+    1266049: "कोटा",              # Kota
+    1274746: "चंडीगढ़",            # Chandigarh
+    1254348: "तिरुपुर",            # Tiruppur
+    1271476: "गुवाहाटी",           # Guwahati
+    1262321: "मैसूर",              # Mysuru
+    1270642: "गुरुग्राम",           # Gurugram
+    1275817: "भुवनेश्वर",           # Bhubaneswar
+    1275901: "भिवंडी",             # Bhiwandi
+    1268782: "जालंधर",            # Jalandhar
+    1276014: "भायंदर",            # Bhayandar
+    1254163: "तिरुवनंतपुरम",        # Thiruvananthapuram
+    1279017: "अलीगढ़",            # Aligarh
+    1277013: "बरेली",              # Bareilly
+    1252948: "वारंगल",            # Warangal
+    1270927: "गोरखपुर",           # Gorakhpur (second geonames entry)
+    1270668: "गुंटूर",              # Guntur
+    1259425: "पुडुचेरी",            # Puducherry
+    1278718: "अमरावती",           # Amravati
+    1275665: "बीकानेर",            # Bikaner
+    1273874: "कोच्चि",             # Kochi
+    1275971: "भिलाई",             # Bhilai
+    1273780: "कटक",               # Cuttack
+    1275248: "बोरीवली",            # Borivli
+    1276032: "भावनगर",            # Bhavnagar
+    1269317: "जामनगर",            # Jamnagar
+    1269321: "जम्मू",              # Jammu
+    1261977: "नांदेड़",             # Nanded
+    1261529: "नेल्लोर",             # Nellore
+    1270752: "कलबुर्गी",            # Kalaburagi
+    1279159: "अजमेर",             # Ajmer
+    1273313: "देहरादून",            # Dehra Dun
+    1272013: "इरोड",              # Erode
+    1272175: "दुर्गापुर",            # Durgapur
+    1253894: "उल्हासनगर",          # Ulhasnagar
+    1256525: "सिलीगुड़ी",           # Siliguri
+    1253914: "उज्जैन",             # Ujjain
+    1278314: "आसनसोल",           # Asansol
+    1253286: "वेल्लोर",             # Vellore
+    1269407: "जलगांव",            # Jalgaon
+    1265491: "कुरनूल",             # Kurnool
+    1253986: "उदयपुर",            # Udaipur
+    1279105: "अकोला",             # Akola
+    1266122: "कोरबा",             # Korba
+    8629640: "थूथुकुडी",            # Thoothukudi
+    1276509: "बल्लारी",            # Ballari
+    1279290: "अगरतला",            # Agartala
+    1258076: "रोहतक",             # Rohtak
+    1262330: "मुजफ्फरपुर",          # Muzaffarpur
+    1263364: "मथुरा",             # Mathura
+    1278946: "अलवर",              # Alwar
+    1273491: "दरभंगा",             # Darbhanga
+    1254360: "तिरुपति",            # Tirupati
+    7279746: "नोएडा",             # Noida
+    1273066: "देवास",              # Dewas
+    1269771: "इंफाल",             # Imphal
+    1256237: "शिमला",             # Shimla
+    # ---- overrides: alias list starts with an archaic form ----
+    1263780: "मंगलुरु",            # Mangaluru (alias first entry: मंगलौर)
+    1276533: "बेलगावी",            # Belagavi  (alias first entry: बेलगाम)
+}
+
+
 def _load():
     global _CITIES, _BY_ID, _COUNTRY
     if _CITIES is not None:
@@ -171,8 +283,16 @@ def _load():
                 alts.add(aa)
         for a in _HI_ALIASES.get(c["geonameid"], []):
             alts_hi.add(_ascii(a))
+        # Curated Hindi display name: explicit table wins; else first alias
+        # entry (display-ready, from Hindi Wikipedia titles); else None (the
+        # frontend falls back to the English name). Also indexed for matching
+        # so every displayed name is findable by typing it.
+        name_hi = _HI_DISPLAY.get(c["geonameid"]) or \
+            next(iter(_HI_ALIASES.get(c["geonameid"], [])), None)
+        if name_hi:
+            alts_hi.add(_ascii(name_hi))
         rows.append({
-            "id": c["geonameid"], "name": name, "name_l": _ascii(name),
+            "id": c["geonameid"], "name": name, "name_l": _ascii(name), "name_hi": name_hi,
             "alts": alts, "alts_hi": alts_hi, "cc": cc, "country": _COUNTRY.get(cc, cc),
             "lat": round(float(c["latitude"]), 4), "lon": round(float(c["longitude"]), 4),
             "tz": c.get("timezone", ""), "pop": int(c.get("population", 0) or 0),
@@ -186,10 +306,16 @@ def _load():
 def _public(r: dict) -> dict:
     st = _STATE.get(r.get("admin1", ""), "")
     region = st if (st and st != r["name"]) else "India"
-    return {"id": r["id"], "name": r["name"], "label": f"{r['name']}, {region}",
-            "region": region,
-            "country": r["country"], "cc": r["cc"], "lat": r["lat"], "lon": r["lon"],
-            "tz": r["tz"], "pop": r["pop"]}
+    out = {"id": r["id"], "name": r["name"], "label": f"{r['name']}, {region}",
+           "region": region,
+           "country": r["country"], "cc": r["cc"], "lat": r["lat"], "lon": r["lon"],
+           "tz": r["tz"], "pop": r["pop"]}
+    # Curated Hindi display name (dropdown text on *.hi.html pages ONLY).
+    # `label` stays English ALWAYS — it is what the form submits and geocodes.
+    # Omitted when we have no curated name; frontend then shows the English name.
+    if r.get("name_hi"):
+        out["name_hi"] = r["name_hi"]
+    return out
 
 
 def suggest(q: str, limit: int = 8) -> list:

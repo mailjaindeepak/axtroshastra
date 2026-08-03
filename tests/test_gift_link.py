@@ -1,10 +1,13 @@
-"""Gift-a-friend CTA regression tests (T4).
+"""Report-page cleanup regression tests.
 
-The milan v2 report's referral button ("Gift a friend their reading") must
-target the live, language-matched funnel with an ABSOLUTE url — root-relative
-hrefs die inside the Chrome-rendered PDF (file:///match) — and the legacy
-/match Hinglish funnel must 301 to /en/compatibility preserving the query
-string so already-issued /match?pass=<token> unlock links keep working.
+The "Gift a friend" referral section was removed from every report template
+(owner-confirmed), and the "Account created" banner CARD was removed from the
+served report chrome (the auto-hiding toast stays). These tests pin both
+removals on paid EN and HI milan reports and on a marriage report.
+
+The legacy /match Hinglish funnel must still 301 to /en/compatibility
+preserving the query string, so already-issued /match?pass=<token> unlock
+links (and old PDFs whose CTA pointed at /match) keep working.
 """
 
 MILAN = {"p1_name": "Ravi", "p1_dob": "1995-08-15", "p1_tob": "10:30",
@@ -12,7 +15,8 @@ MILAN = {"p1_name": "Ravi", "p1_dob": "1995-08-15", "p1_tob": "10:30",
          "p2_name": "Priya", "p2_dob": "1996-01-20", "p2_tob": "14:00",
          "p2_place": "Mumbai"}
 
-ORIGIN = "https://www.axtroshastra.com"   # PUBLIC_BASE_URL fallback in milan_v2
+KUNDLI = {"name": "Gift Tester", "dob": "1990-05-10", "tob": "09:20",
+          "time_quality": "T0", "place": "Delhi", "gender": "male"}
 
 
 def _paid_milan_report_html(client, variant):
@@ -25,19 +29,44 @@ def _paid_milan_report_html(client, variant):
     return page.text
 
 
-def test_gift_cta_targets_english_funnel_on_en_report(client):
+def _paid_marriage_report_html(client):
+    r = client.post("/api/kundli", json=KUNDLI)
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    page = client.get(f"/report/{rid}")
+    assert page.status_code == 200
+    return page.text
+
+
+def _assert_no_gift_no_banner(html):
+    # gift/referral section gone
+    assert "refbtn" not in html
+    assert "refbox" not in html
+    assert "Gift a friend" not in html
+    assert "Start a reading" not in html
+    # account banner card gone; the toast JS snippet is still shipped
+    assert "acct-banner" not in html
+    assert "Saved from this purchase" not in html
+    assert "axs_acct_toast_" in html
+
+
+def test_en_milan_report_has_no_gift_section_or_banner(client):
     html = _paid_milan_report_html(client, "/en/compatibility")
-    assert f'<a class="refbtn" href="{ORIGIN}/en/compatibility">' in html
-    assert 'href="/match"' not in html
-    assert "Start a reading" in html          # visible copy unchanged
+    _assert_no_gift_no_banner(html)
 
 
-def test_gift_cta_targets_hindi_funnel_on_hi_report(client):
+def test_hi_milan_report_has_no_gift_section_or_banner(client):
     html = _paid_milan_report_html(client, "/hi/compatibility")
-    assert f'<a class="refbtn" href="{ORIGIN}/hi/compatibility">' in html
-    assert 'href="/match"' not in html
-    # the localiser swaps the label text but must never touch the href
-    assert "एक रीडिंग शुरू करें" in html
+    _assert_no_gift_no_banner(html)
+    # localised gift copy gone too
+    assert "गिफ़्ट" not in html
+    assert "एक रीडिंग शुरू करें" not in html
+
+
+def test_marriage_report_has_no_gift_section_or_banner(client):
+    html = _paid_marriage_report_html(client)
+    _assert_no_gift_no_banner(html)
 
 
 def test_match_redirects_to_en_compatibility(client):

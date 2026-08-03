@@ -101,10 +101,12 @@ def test_webhook_prefers_popup_number_over_payment_contact(client, monkeypatch, 
     assert pay == "+911112223334"             # payment number kept verbatim
     assert um is not None                      # user keyed on the POPUP number
 
-    # Banner: account mobile primary + muted "Payment via <payment number>" row.
+    # The account banner card is gone: neither the account mobile nor the
+    # payment number is rendered on the report page any more.
     html = client.get(f"/report/{rid}").text
-    assert "+91 98765 00002" in html
-    assert "Payment" in html and "+91 11122 23334" in html
+    assert "acct-banner" not in html
+    assert "+91 98765 00002" not in html
+    assert "+91 11122 23334" not in html
 
 
 def test_webhook_account_email_prefers_popup_over_payment(client, monkeypatch, pay_webhook):

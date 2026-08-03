@@ -24,7 +24,11 @@ def _sign(oid, pid):
 
 class _StubPayment:
     def fetch(self, pid):
-        return {"contact": "+919812345678", "email": "verified@example.com"}
+        # NB: the suite shares ONE database, and users de-dupe by mobile with
+        # first-writer-wins email. This number must stay UNIQUE to test_verify:
+        # reusing +919812345678 (test_users / test_delivery / test_tracking)
+        # made test_users' account-email assertion order-dependent.
+        return {"contact": "+919855511111", "email": "verified@example.com"}
 
 
 class _StubRzp:

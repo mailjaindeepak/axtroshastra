@@ -20,6 +20,7 @@ Design:
   * MD/AD are always spelled out (Mahadasha / Antardasha).
   * The Hindi (Devanagari) report is this same HTML run through shaadi_hi.localize.
 """
+import re
 from datetime import datetime, timedelta
 from html import escape
 
@@ -123,6 +124,48 @@ MEETING_EN = [
     "friends' circles — a friend's introduction",
     "quiet or private settings, possibly at some distance",
 ]
+
+# --------------------------------------------------------------------------- #
+# Hindi (Devanagari) compose-time helpers for the bank twins.
+# The *_bank fallbacks below are interpolated f-strings (dates, grades, signs),
+# so the exact-text-node localizer in shaadi_hi can never translate them after
+# render. Instead, when meta.lang == "hi" every bank is COMPOSED in Devanagari
+# here, reusing shaadi_hi's month/grade/proper-noun maps so vocabulary stays
+# identical to the localized shell. English stays the deterministic base.
+# --------------------------------------------------------------------------- #
+from shaadi_hi import (MONTHS as _HI_MONTHS, GRADE as _HI_GRADE,
+                       TOK as _HI_TOK, HI as _HI_DICT, MEETING as _HI_MEETING)
+
+_HI_D9_BAND = {"strong": "मज़बूत", "steady": "स्थिर", "tender": "कोमल"}
+_HI_SS_PHASE = {"rising phase": "आरंभिक चरण", "peak phase": "शिखर चरण",
+                "setting phase": "उतरता चरण"}
+
+
+def _hi_date(s: str) -> str:
+    """'Jun 2027' -> 'जून 2027'; 'beyond 10 years' -> '10 साल से आगे'."""
+    m = re.match(r"^beyond (\d+) years$", s or "")
+    if m:
+        return f"{m.group(1)} साल से आगे"
+    return " ".join(_HI_MONTHS.get(x, x) for x in (s or "").split())
+
+
+def _hi_pretty(ym: str) -> str:
+    return _hi_date(_pretty(ym))
+
+
+def _hi_grade(g: str) -> str:
+    return _HI_GRADE.get(g, g)
+
+
+def _hi_tok(x: str) -> str:
+    return _HI_TOK.get(x, x)
+
+
+def _hi_phrase(x: str) -> str:
+    """English content-map value (SIGN_PARTNER / DK_PARTNER / dignity phrase /
+    nakshatra line...) -> its authored Devanagari twin from shaadi_hi.HI, or
+    the input unchanged when no twin exists (graceful degradation)."""
+    return _HI_DICT.get(x, x)
 
 
 # --------------------------------------------------------------------------- #
@@ -327,6 +370,7 @@ def render_report_v2(p: dict) -> str:
     name = escape(meta.get("name", ""))
     tq = meta.get("time_quality", "T0")
     lang = "hi" if meta.get("lang") == "hi" else "en"   # report_addons emits Devanagari directly for hi
+    hi = lang == "hi"   # Devanagari bank twins below (LLM prose slots override either way)
 
     all_windows = p.get("windows") or []
     windows = _visible_windows(all_windows, meta)     # (#3) hide far windows when near ones exist
@@ -352,8 +396,11 @@ def render_report_v2(p: dict) -> str:
     nature = SIGN_PARTNER.get(seventh_sign, "a well-matched partner")
 
     def peak_line(w):
-        return (f" The strongest months look like {', '.join(w['peak_months'])}."
-                if w and w.get("peak_months") else "")
+        if not (w and w.get("peak_months")):
+            return ""
+        if hi:
+            return f" सबसे मज़बूत महीने {', '.join(_hi_date(m) for m in w['peak_months'])} लग रहे हैं।"
+        return f" The strongest months look like {', '.join(w['peak_months'])}."
 
     parts = []
 
@@ -386,6 +433,10 @@ def render_report_v2(p: dict) -> str:
         conf, conf_note = _confidence(w1["grade"], tq)
         ts_bank = (f"Your strongest window for marriage is {_pretty(w1['start'])}–{_pretty(w1['end'])} "
                    f"({w1['grade']}).{peak_line(w1)} Everything that follows explains why, and what to do about it.")
+        if hi:
+            ts_bank = (f"आपकी शादी की सबसे मज़बूत विंडो {_hi_pretty(w1['start'])}–{_hi_pretty(w1['end'])} "
+                       f"({_hi_grade(w1['grade'])}) है।{peak_line(w1)} आगे की पूरी रिपोर्ट समझाती है कि "
+                       "ऐसा क्यों है, और अब क्या करना है।")
         after = (f"<p class='sline' style='color:var(--muted)'>After that: {_pretty(w2['start'])} – {_pretty(w2['end'])} ({w2['grade']})</p>"
                  if w2 else "")
         hero = (f'<div class="hero"><p class="hero-label">Most likely marriage window</p>'
@@ -407,6 +458,9 @@ def render_report_v2(p: dict) -> str:
 
     wi_bank = (f"You have {len(windows)} marriage window{'s' if len(windows) != 1 else ''} on the horizon. "
                "Think of them as a timeline of higher-probability phases, not fixed dates.")
+    if hi:
+        wi_bank = (f"आपके सामने {len(windows)} विवाह विंडो{'ज़' if len(windows) != 1 else ''} हैं। "
+                   "इन्हें तय तारीख़ें नहीं, बल्कि ज़्यादा-संभावना वाले दौर की टाइमलाइन समझिए।")
     quick = "".join(_window_card(i, w, deep=False) for i, w in enumerate(windows, 1))
     parts.append(_sec("The answer", f"{len(windows)} window{'s' if len(windows)!=1 else ''}",
                       "Your marriage windows",
@@ -414,6 +468,9 @@ def render_report_v2(p: dict) -> str:
 
     ct_bank = ("At a glance, your chart sets marriage in a clear frame: the 7th house, its lord, "
                "and the natural karakas together shape both the timing and the kind of bond.")
+    if hi:
+        ct_bank = ("एक नज़र में, आपकी कुंडली विवाह को एक साफ़ चौखट में रखती है: सातवाँ भाव, उसका स्वामी "
+                   "और स्वाभाविक कारक मिलकर समय और रिश्ते का स्वरूप — दोनों तय करते हैं।")
     glance = f"""<div class="facts">
   <div class="row"><span class="k">Lagna (ascendant)</span><span class="v">{p['chart']['lagna']}</span></div>
   <p class="why">{GLANCE_WHY['Lagna']}</p>
@@ -433,6 +490,9 @@ def render_report_v2(p: dict) -> str:
 
     pt_bank = (f"Your indications point to {nature}. Where and how you meet is written into the chart too — "
                "the detailed pages draw the full picture.")
+    if hi:
+        pt_bank = (f"संकेत बताते हैं कि आपका जीवनसाथी {_hi_phrase(nature)} हो सकता है। आप कहाँ और कैसे "
+                   "मिलेंगे, यह भी कुंडली में लिखा है — विस्तृत पन्ने पूरी तस्वीर खींचते हैं।")
     person_cards = (f'<div class="pcard"><span class="pk">Nature</span><p>{nature}.</p></div>'
                     f'<div class="pcard"><span class="pk">Love vs Arranged</span><p>{lv_line}</p></div>')
     parts.append(_sec("Your person", _first_word(nature), "Your potential partner",
@@ -441,6 +501,9 @@ def render_report_v2(p: dict) -> str:
     past_n = len(ex.get("past", []))
     st_bank = ("If it hasn't happened yet, your past periods usually explain why — the timing simply "
                "wasn't activated. The good news is that momentum is turning toward your windows ahead.")
+    if hi:
+        st_bank = ("अगर अब तक शादी नहीं हुई है, तो उसकी वजह अक्सर आपके बीते दौर में मिलती है — समय "
+                   "बस सक्रिय नहीं हुआ था। अच्छी ख़बर यह है कि रुख़ अब आपकी आने वाली विंडोज़ की ओर मुड़ रहा है।")
     parts.append(_sec("Your timing story", "Turning", "Why not yet — and what's changing",
                       f'<p class="lead">{_prose(p, "story_teaser", st_bank)}</p>'
                       f'<p class="soft">The detailed report breaks down your last {max(past_n,3)} years period by period, and the next three years month by month.</p>'))
@@ -456,6 +519,9 @@ def render_report_v2(p: dict) -> str:
 
     at_bank = ("The single most useful thing right now is to line up your effort with your timing — "
                "lean in during strong windows, and prepare during the quiet ones.")
+    if hi:
+        at_bank = ("अभी सबसे काम की बात है अपनी मेहनत को अपने समय के साथ जोड़ना — मज़बूत विंडो में "
+                   "पूरा ज़ोर लगाइए, और शांत दौर में तैयारी कीजिए।")
     parts.append(_sec("Your move", "Act", "What to do now",
                       f'<p class="lead">{_prose(p, "action_teaser", at_bank)}</p>'))
 
@@ -466,21 +532,35 @@ def render_report_v2(p: dict) -> str:
         w1_bank = (f"Your strongest window runs {_pretty(w1['start'])}–{_pretty(w1['end'])} and grades {w1['grade']}. "
                    "It lights up because the running periods connect directly to your house of marriage, and the "
                    "supporting transits back them up.")
+        if hi:
+            w1_bank = (f"आपकी सबसे मज़बूत विंडो {_hi_pretty(w1['start'])}–{_hi_pretty(w1['end'])} तक चलती है "
+                       f"और {_hi_grade(w1['grade'])} स्तर की है। यह इसलिए जगमगाती है क्योंकि चल रही दशाएँ "
+                       "सीधे आपके विवाह-भाव से जुड़ती हैं, और सहायक गोचर उन्हें बल देते हैं।")
         parts.append(_sec("Window 1", "Strongest", "Your strongest window",
                           f'<p class="lead">{_prose(p, "window_1", w1_bank)}</p>{_window_card(1, w1)}'))
     if w2:
         w2_bank = (f"Your second window, {_pretty(w2['start'])}–{_pretty(w2['end'])} ({w2['grade']}), is a distinct "
                    "opportunity with its own driving periods — useful if the first passes or as a second run at it.")
+        if hi:
+            w2_bank = (f"आपकी दूसरी विंडो, {_hi_pretty(w2['start'])}–{_hi_pretty(w2['end'])} "
+                       f"({_hi_grade(w2['grade'])}), अपने अलग चालक दौर वाली एक स्वतंत्र संभावना है — "
+                       "अगर पहली निकल जाए, या दूसरे प्रयास के लिए, यह काम आती है।")
         parts.append(_sec("Window 2", "Second", "Your second window",
                           f'<p class="lead">{_prose(p, "window_2", w2_bank)}</p>{_window_card(2, w2)}'))
     if w3:
         w3_bank = (f"A third window opens {_pretty(w3['start'])}–{_pretty(w3['end'])} ({w3['grade']}) — the longer "
                    "arc, worth keeping on your radar.")
+        if hi:
+            w3_bank = (f"एक तीसरी विंडो {_hi_pretty(w3['start'])}–{_hi_pretty(w3['end'])} "
+                       f"({_hi_grade(w3['grade'])}) में खुलती है — यह लंबी दौड़ की बात है, नज़र में रखने लायक।")
         parts.append(_sec("Window 3", "Longer arc", "Your third window",
                           f'<p class="lead">{_prose(p, "window_3", w3_bank)}</p>{_window_card(3, w3)}'))
 
     as_bank = ("In a strong or moderate window, the odds of a match converting are at their highest — so this is "
                "the time to say yes to meetings, involve family, and not postpone decisions that feel right.")
+    if hi:
+        as_bank = ("मज़बूत या मध्यम विंडो में रिश्ता पक्का होने की संभावना सबसे ऊँची होती है — इसलिए यही समय है "
+                   "मुलाक़ातों के लिए हाँ कहने का, परिवार को साथ लेने का, और सही लगते फ़ैसलों को न टालने का।")
     acts = ""
     for i, w in enumerate(windows, 1):
         head, body = GRADE_ACTION.get(w["grade"], ("Stay active.", ""))
@@ -503,7 +583,7 @@ def render_report_v2(p: dict) -> str:
         if sa > cutoff:
             continue
         weak_labels.append(f"{a} – {b}" if sb <= cutoff else f"{a} onwards")
-    aw_bank = WEAK_PERIOD_ACTION["line"]
+    aw_bank = _hi_phrase(WEAK_PERIOD_ACTION["line"]) if hi else WEAK_PERIOD_ACTION["line"]
     weak_rows = "".join(
         f"<div class='quiet'><b>{lab}</b><p>A low-activation phase — matches may come but tend not to convert. "
         f"Delays here are pattern, not personal failure.</p></div>" for lab in weak_labels)
@@ -519,6 +599,9 @@ def render_report_v2(p: dict) -> str:
                       f"<p class='pw'>{' · '.join(pp['why'])}</p></div>")
     pp_bank = ("Looking back, the periods that passed quietly did so because the timing simply wasn't activated for "
                "marriage — not because of anything you did or didn't do. That distinction matters.")
+    if hi:
+        pp_bank = ("पीछे मुड़कर देखें, तो जो दौर चुपचाप निकल गए, वे इसलिए निकले क्योंकि विवाह के लिए समय "
+                   "सक्रिय ही नहीं था — इसलिए नहीं कि आपने कुछ किया या नहीं किया। यह फ़र्क़ मायने रखता है।")
     parts.append(_sec("Past years", "Why not yet", "Why it hasn't happened yet",
                       f'<p class="lead">{_prose(p, "past_pattern", pp_bank)}</p>{past_rows}'))
 
@@ -534,6 +617,9 @@ def render_report_v2(p: dict) -> str:
                    f"<p class='yd'>{' / '.join(y.get('dashas', []))}</p><p>{jup}</p>{fav}</div>")
     ol_bank = ("Across the next three years the momentum builds toward your windows — watch the favourable months, "
                "and treat the quieter stretches as preparation time.")
+    if hi:
+        ol_bank = ("अगले तीन सालों में रुझान आपकी विंडोज़ की ओर बढ़ता जाता है — अनुकूल महीनों पर नज़र रखिए, "
+                   "और शांत दौर को तैयारी का समय मानिए।")
     parts.append(_sec("Year by year", "Next 3 yrs", "The next three years",
                       f'<p class="lead">{_prose(p, "outlook", ol_bank)}</p>{y_rows}'))
 
@@ -552,9 +638,16 @@ def render_report_v2(p: dict) -> str:
         ss_fact = (f"Sade Sati is currently running ({ss.get('phase','')}), until <b>{ss.get('ends','—')}</b>. "
                    "This tends to bring a maturing pressure rather than denial — marriages formed under Saturn are "
                    "considered among the most durable.")
+        if hi:
+            ss_fact = (f"साढ़ेसाती अभी चल रही है ({_HI_SS_PHASE.get(ss.get('phase',''), ss.get('phase',''))}), "
+                       f"<b>{_hi_date(ss.get('ends','—'))}</b> तक। यह इनकार नहीं, बल्कि परिपक्व करने वाला "
+                       "दबाव लाती है — शनि के दौर में बने विवाह सबसे टिकाऊ माने जाते हैं।")
     else:
         ss_fact = (f"Sade Sati is not currently running. The next phase begins around {ss.get('next_starts','—')}. "
                    "For now, Saturn is not adding delay-pressure from this angle.")
+        if hi:
+            ss_fact = (f"साढ़ेसाती अभी नहीं चल रही। अगला चरण {_hi_date(ss.get('next_starts','—'))} के आसपास "
+                       "शुरू होगा। फ़िलहाल शनि इस कोण से कोई देरी-दबाव नहीं डाल रहा।")
     parts.append(_sec("Sade Sati", "Active phase" if ss.get("active") else "Not now",
                       "Sade Sati — the Saturn cycle",
                       f'<p class="lead">{_prose(p, "sade_sati_note", ss_fact)}</p><div class="ss">{ss_fact}</div>'))
@@ -580,6 +673,9 @@ def render_report_v2(p: dict) -> str:
                    "no period-specific remedy is needed right now.</p>")
     rn_bank = ("Remedies here are optional support, never a substitute for action. The order matters: the first "
                "remedy is always to act during your strong windows. Treat the rest as gentle reinforcement, with zero pressure.")
+    if hi:
+        rn_bank = ("यहाँ दिए उपाय वैकल्पिक सहारा हैं, कर्म का विकल्प कभी नहीं। क्रम मायने रखता है: पहला उपाय "
+                   "हमेशा यही है कि अपनी मज़बूत विंडो में सक्रिय रहें। बाक़ी को हल्का सहारा मानिए — बिना किसी दबाव के।")
     parts.append(_sec("Remedies", "Optional", "Remedies for your dasha periods",
                       f'<p class="lead">{_prose(p, "remedies_note", rn_bank)}</p>{rem7_html}'
                       '<h2 style="font-size:18px;margin:18px 0 10px">For weak periods ahead</h2>'
@@ -587,6 +683,9 @@ def render_report_v2(p: dict) -> str:
                       'This is support, not a substitute.</p>'))
 
     pp2_bank = f"Your 7th sign, {seventh_sign}, points to {nature}."
+    if hi:
+        pp2_bank = (f"आपकी सातवीं राशि, {_hi_tok(seventh_sign)}, ऐसे जीवनसाथी की ओर इशारा करती है: "
+                    f"{_hi_phrase(nature)}।")
     parts.append(_sec("Your partner", _first_word(nature), "Their likely personality",
                       f'<p class="lead">{_prose(p, "partner_personality", pp2_bank)}</p>'
                       f'<div class="pcard"><span class="pk">Nature</span><p>{nature}.</p></div>'))
@@ -597,6 +696,11 @@ def render_report_v2(p: dict) -> str:
                 if foreign else "The indications lean toward your own circle and community.")
     mc_bank = (f"Your darakaraka {dk} suggests {DK_PARTNER.get(dk,'a compatible partner')}. The 7th lord's placement "
                f"points to meeting {meet}. {lv_line} {for_line}")
+    if hi:
+        meet_hi = _HI_MEETING[sl_house - 1] if 1 <= sl_house <= 12 else "आपके अपने दायरों से"
+        dkp_hi = _hi_phrase(DK_PARTNER.get(dk, "")) or "एक अनुकूल साथी"
+        mc_bank = (f"आपका दारकारक {_hi_tok(dk)} संकेत देता है — {dkp_hi}। सातवें भाव के स्वामी की स्थिति "
+                   f"बताती है कि मुलाक़ात {meet_hi} हो सकती है। {_hi_phrase(lv_line)} {_hi_phrase(for_line)}")
     parts.append(_sec("How you'll meet", "Love" if love else "Arranged", "Their background &amp; how you'll meet",
                       f'<p class="lead">{_prose(p, "meeting_context", mc_bank)}</p>'
                       f'<div class="pcard"><span class="pk">Love vs Arranged</span><p>{lv_line}</p></div>'
@@ -607,6 +711,10 @@ def render_report_v2(p: dict) -> str:
     nakp = ex.get("nak_profile", {}) or {}
     lp_bank = (f"With your Moon in {nakp.get('nakshatra','your birth star')} and your Venus placement, "
                f"{nakp.get('relationship','you love with care and depth')}.")
+    if hi:
+        rel_hi = _hi_phrase(nakp.get("relationship", "")) or "आप परवाह और गहराई से प्रेम करते हैं"
+        lp_bank = (f"आपके चंद्रमा के {_hi_tok(nakp.get('nakshatra', 'आपके जन्म-नक्षत्र'))} नक्षत्र में होने "
+                   f"और आपके शुक्र की स्थिति से — {rel_hi}।")
     parts.append(_sec("Your pattern", _first_word(ex.get("venus_style", "")) or "Your love", "How you love",
                       f'<p class="lead">{_prose(p, "love_pattern", lp_bank)}</p>'
                       f'<div class="card2"><b>Your nakshatra: {nakp.get("nakshatra","—")} ({nakp.get("symbol","")})</b>'
@@ -618,6 +726,10 @@ def render_report_v2(p: dict) -> str:
 
     mi_bank = ("This report uses the sidereal zodiac with the Lahiri ayanamsa and whole-sign houses — the classical "
                "Parashari framework. Every position is computed from NASA JPL ephemeris data, so any astrologer can verify it.")
+    if hi:
+        mi_bank = ("यह रिपोर्ट निरयन राशिचक्र, लाहिरी अयनांश और पूर्ण-राशि भाव पद्धति पर आधारित है — यही "
+                   "शास्त्रीय पाराशरी ढाँचा है। हर ग्रह-स्थिति NASA JPL पंचांग-डेटा से गणना की गई है, इसलिए "
+                   "कोई भी ज्योतिषी इसे जाँच सकता है।")
     parts.append(_sec("Method", "Foundations", "Method &amp; foundations",
                       f'<p class="lead">{_prose(p, "method_intro", mi_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Ayanamsa</span><span class="v">{meta.get("ayanamsa","Lahiri")}</span></div>'
@@ -627,6 +739,9 @@ def render_report_v2(p: dict) -> str:
 
     cr_bank = ("Read as a whole, your birth chart sets the stage for marriage through the balance of its planets and "
                "the strength of the houses that govern partnership.")
+    if hi:
+        cr_bank = ("पूरी कुंडली को एक साथ पढ़ें, तो आपके ग्रहों का संतुलन और साझेदारी के भावों की मज़बूती "
+                   "मिलकर विवाह की पृष्ठभूमि तैयार करते हैं।")
     parts.append(_sec("Birth chart · D1", "Your chart", "Your birth chart (D1)",
                       f'<p class="lead">{_prose(p, "chart_reading", cr_bank)}</p>'
                       f'<div style="text-align:center">{north_chart_svg(p)}</div>'))
@@ -634,6 +749,9 @@ def render_report_v2(p: dict) -> str:
 
     lm_bank = ("Two lenses matter most: the Lagna (ascendant) governs your body, personality and the frame of the "
                "whole chart, while the Moon governs your mind and emotions — and drives your dasha timeline.")
+    if hi:
+        lm_bank = ("दो नज़रिए सबसे ज़्यादा मायने रखते हैं: लग्न आपके शरीर, व्यक्तित्व और पूरी कुंडली की चौखट "
+                   "का स्वामी है, जबकि चंद्रमा आपके मन और भावनाओं का — और आपकी दशा-टाइमलाइन उसी से चलती है।")
     parts.append(_sec("Lagna &amp; Moon", "Two lenses", "Lagna &amp; Moon",
                       f'<p class="lead">{_prose(p, "lagna_moon", lm_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Lagna</span><span class="v">{p["chart"]["lagna"]}</span></div>'
@@ -641,23 +759,37 @@ def render_report_v2(p: dict) -> str:
 
     ps_bank = ("Each planet's dignity — whether it sits in its own sign, exalted, debilitated or neutral — tells you "
                "how freely it can act. Strong dignities support clear timing; weaker ones simply ask for more patience.")
+    if hi:
+        ps_bank = ("हर ग्रह की गरिमा — वह अपनी राशि में है, उच्च है, नीच है या सामान्य — यह बताती है कि वह "
+                   "कितनी आज़ादी से काम कर पाता है। मज़बूत स्थितियाँ साफ़ समय का साथ देती हैं; कमज़ोर बस "
+                   "थोड़ा और धैर्य माँगती हैं।")
     parts.append(_sec("The nine planets", "9 planets", "The nine planets",
                       f'<p class="lead">{_prose(p, "planet_strengths", ps_bank)}</p>'
                       '<p class="soft">The full placement table with each planet\'s sign, nakshatra, house and state is on the birth-chart page above.</p>'))
 
     nd_bank = (f"Your Moon sits in {teaser.get('nakshatra','your birth star')} — the nakshatra colours your instincts, "
                "your emotional style, and how you approach closeness.")
+    if hi:
+        nd_bank = (f"आपका चंद्रमा {_hi_tok(teaser.get('nakshatra', 'आपके जन्म-नक्षत्र'))} नक्षत्र में है — "
+                   "नक्षत्र आपकी सहज-प्रवृत्तियों, भावनात्मक शैली और नज़दीकी के अंदाज़ को रंग देता है।")
     parts.append(_sec("Nakshatra &amp; pada", "Birth star", "Your birth star",
                       f'<p class="lead">{_prose(p, "nakshatra_deep", nd_bank)}</p>'
                       f'<div class="card2"><b>{nakp.get("nakshatra","—")} ({nakp.get("symbol","")})</b><p>{nakp.get("nature","")}.</p></div>'))
 
     sh_bank = (f"The 7th house — {seventh_sign} in your chart — is the seat of marriage, partnership and commitment. "
                "It is the primary area every marriage judgement is built on.")
+    if hi:
+        sh_bank = (f"सातवाँ भाव — आपकी कुंडली में {_hi_tok(seventh_sign)} — विवाह, साझेदारी और प्रतिबद्धता "
+                   "का स्थान है। हर विवाह-निर्णय इसी बुनियाद पर खड़ा होता है।")
     parts.append(_sec("The 7th house", "Marriage seat", "The 7th house — seat of marriage",
                       f'<p class="lead">{_prose(p, "seventh_house", sh_bank)}</p>{report_addons.occupants_html(p, lang)}'))
 
     sln_bank = (f"Your 7th lord is {seventh_lord}, {DIGNITY_TXT.get(sl_dignity, sl_dignity)}. Think of it as the main "
                 "switch for marriage: its condition shapes the quality and clarity of the timing.")
+    if hi:
+        sln_bank = (f"आपके सातवें भाव का स्वामी {_hi_tok(seventh_lord)} है — "
+                    f"{_hi_phrase(DIGNITY_TXT.get(sl_dignity, sl_dignity))}। इसे विवाह का मुख्य स्विच समझिए: "
+                    "इसकी हालत ही समय की गुणवत्ता और स्पष्टता तय करती है।")
     parts.append(_sec("The 7th lord", "The switch", "The 7th lord — the marriage switch",
                       f'<p class="lead">{_prose(p, "seventh_lord", sln_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">7th lord</span><span class="v">{seventh_lord}</span></div>'
@@ -666,12 +798,18 @@ def render_report_v2(p: dict) -> str:
 
     k_bank = ("Venus is the natural significator (karaka) of love and marriage for everyone; for a woman's chart, "
               "Jupiter joins it as the significator of the husband. Their condition supports the promise of union.")
+    if hi:
+        k_bank = ("शुक्र हर किसी के लिए प्रेम और विवाह का स्वाभाविक कारक है; स्त्री की कुंडली में गुरु भी पति "
+                  "के कारक के रूप में जुड़ते हैं। इनकी स्थिति मिलन के वादे को सहारा देती है।")
     parts.append(_sec("Karakas", "Significators", "The marriage karakas",
                       f'<p class="lead">{_prose(p, "karakas", k_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Karaka(s)</span><span class="v">{" + ".join(sig["karakas"])}</span></div></div>'))
 
     dkn_bank = (f"In the Jaimini system, the darakaraka is the planet at the lowest degree — here, {dk} — and it acts "
                 "as a second, independent significator of the spouse, adding another layer to the partner picture.")
+    if hi:
+        dkn_bank = (f"जैमिनी पद्धति में दारकारक वह ग्रह है जो सबसे कम अंश पर हो — यहाँ, {_hi_tok(dk)} — और "
+                    "यह जीवनसाथी का एक दूसरा, स्वतंत्र कारक बनकर साथी की तस्वीर में एक और परत जोड़ता है।")
     parts.append(_sec("Darakaraka", "Jaimini", "Darakaraka (Jaimini)",
                       f'<p class="lead">{_prose(p, "darakaraka", dkn_bank)}</p>'
                       f'<div class="card2"><b>{dk}</b><p>{DK_PARTNER.get(dk,"—")}.</p></div>'))
@@ -681,6 +819,11 @@ def render_report_v2(p: dict) -> str:
                "fated quality." if node_on else
                "In your chart, Rahu and Ketu do not fall on the 7th axis — the partnership area is free of that "
                "particular karmic overlay.")
+    if hi:
+        na_bank = ("राहु और केतु का सातवें अक्ष पर होना रिश्तों में एक कार्मिक आयाम जोड़ता है — अक्सर एक "
+                   "अनोखा या नियति-सा जुड़ाव।" if node_on else
+                   "आपकी कुंडली में राहु और केतु सातवें अक्ष पर नहीं हैं — साझेदारी का क्षेत्र उस ख़ास "
+                   "कार्मिक परत से मुक्त है।")
     parts.append(_sec("The nodes", "Karmic axis", "Rahu / Ketu on the 7th axis",
                       f'<p class="lead">{_prose(p, "node_axis", na_bank)}</p>'))
 
@@ -688,6 +831,10 @@ def render_report_v2(p: dict) -> str:
     dp_bank = (f"You are currently in {cur.get('md','—')} Mahadasha / {cur.get('ad','—')} Antardasha. Your marriage "
                "windows are simply the periods within this timeline whose lords connect to your 7th house — which is "
                "exactly what the scorecard below shows.")
+    if hi:
+        dp_bank = (f"आप अभी {_hi_tok(cur.get('md','—'))} महादशा / {_hi_tok(cur.get('ad','—'))} अंतर्दशा में हैं। "
+                   "आपकी विवाह-विंडोज़ इसी टाइमलाइन के वे दौर हैं जिनके स्वामी आपके सातवें भाव से जुड़ते हैं — "
+                   "नीचे का स्कोरकार्ड ठीक यही दिखाता है।")
     parts.append(_sec("Dashas", "Your periods", "The dasha system &amp; your periods",
                       f'<p class="lead">{_prose(p, "dasha_periods", dp_bank)}</p>'
                       f'<div class="facts"><div class="row"><span class="k">Current Mahadasha</span><span class="v">{cur.get("md","—")}</span></div>'
@@ -696,17 +843,28 @@ def render_report_v2(p: dict) -> str:
 
     tr_bank = ("Transits are the moving sky read against your birth chart: Jupiter is the 'go' signal that opens "
                "doors when it touches your marriage houses, while Saturn is the 'slow' signal that asks for patience.")
+    if hi:
+        tr_bank = ("गोचर यानी चलता आसमान, आपकी जन्म कुंडली पर पढ़ा हुआ: गुरु 'आगे बढ़ो' का संकेत है जो "
+                   "आपके विवाह-भावों को छूते ही दरवाज़े खोलता है, जबकि शनि 'धीरे चलो' का संकेत है जो धैर्य माँगता है।")
     parts.append(_sec("Gochar · transits", "Go / slow", "Jupiter &amp; Saturn transits",
                       f'<p class="lead">{_prose(p, "transits", tr_bank)}</p>'))
 
     nr_bank = ("The Navamsa (D9) is the marriage-promise chart — it shows how solid and how lasting the union is, "
                f"beyond mere timing. Your D9 reads as a {(nav.get('strength') or 'steady')} promise.")
+    if hi:
+        band_hi = _HI_D9_BAND.get((nav.get("strength") or "steady"), "स्थिर")
+        nr_bank = ("नवमांश (D9) विवाह-वादे की कुंडली है — यह बताती है कि मिलन कितना ठोस और टिकाऊ है, "
+                   f"सिर्फ़ समय से आगे की बात। आपका D9 एक {band_hi} वादा दिखाता है।")
     parts.append(_sec("Navamsa · D9", d9_band.title(), "The Navamsa (D9)",
                       f'<p class="lead">{_prose(p, "navamsa_reading", nr_bank)}</p>'))
     parts.append(report_addons.d9_section_html(p, lang))
 
     cn_bank = ("Whatever the dates, remember this: your chart shows a real and reachable promise of partnership. "
                "Use the timing as a guide, meet it with honest effort, and trust the process. Wishing you a warm, lasting union.")
+    if hi:
+        cn_bank = ("तारीख़ें जो भी हों, यह याद रखिए: आपकी कुंडली साझेदारी का एक सच्चा और पहुँच में आता वादा "
+                   "दिखाती है। समय को मार्गदर्शक मानिए, उस पर ईमानदार मेहनत कीजिए, और प्रक्रिया पर भरोसा "
+                   "रखिए। आपको एक गर्मजोश, टिकाऊ साथ की शुभकामनाएँ।")
     parts.append(f"""<section class="pg"><div class="shead"><p class="plabel">Closing</p><span class="chip">For you</span></div>
 <h2>A note to you</h2>
 <p class="lead">{_prose(p, 'closing_note', cn_bank)}</p>

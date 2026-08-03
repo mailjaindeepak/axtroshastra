@@ -193,9 +193,9 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
 
 
 def _full_report_html(payload: dict) -> str:
-    """The exact HTML a user sees at /report/{rid} (milan v2 when applicable),
-    WITHOUT the account banner — used for PDF rendering so the print output
-    matches the on-screen report (action bars are print-hidden via CSS)."""
+    """The exact HTML a user sees at /report/{rid} (milan v2 when applicable) —
+    used for PDF rendering so the print output matches the on-screen report
+    (action bars are print-hidden via CSS)."""
     if payload.get("product") == "milan":
         try:
             import milan_v2
@@ -226,7 +226,16 @@ def _pregenerate_pdf_task(rid: str):
 
 def _render_for(product, payload):
     if product == "milan":
-        return render_milan(payload)
+        html = render_milan(payload)
+        # v1 fallback path (?v2=0 or a v2 render failure): a Hindi buyer must
+        # still get Devanagari — the v1 base is Hinglish and used to ship raw.
+        if (payload.get("meta") or {}).get("lang") == "hi":
+            try:
+                import milan_hi
+                html = milan_hi.localize(html)
+            except Exception as e:
+                logger.error("[milan_hi] v1 localize failed: %s", e)
+        return html
     if product == "blueprint":
         return render_blueprint(payload)
     if product == "vidyarthi":
@@ -956,75 +965,6 @@ def _fmt_mobile(m: str) -> str:
     return m
 
 
-def _account_banner(rid: str) -> str:
-    """English 'Account created' card shown on a paid report with the saved mobile
-    (+ email when we have one). A neutral band wraps a white card so it reads as a
-    deliberate confirmation on any product's hero colour. Empty string when no
-    account is linked, so it can never break the page. Injected at the top of
-    <body> (report HTML ends its head with '</head><body>')."""
-    try:
-        u = users.get_user_for_report(db, rid)
-    except Exception as e:
-        logger.error("[users] banner lookup failed for %s: %s", rid, e)
-        return ""
-    if not u or not (u.get("mobile") or u.get("email")):
-        return ""
-    import html as _html
-
-    def _row(label, value):
-        return ('<div style="display:flex;align-items:center;gap:10px;font-size:13.5px;'
-                'color:#2b2521">'
-                f'<span style="color:#8a7d72;width:58px;font-size:12px">{label}</span>'
-                f'<span style="font-weight:600;letter-spacing:.2px">{value}</span></div>')
-
-    rows = ""
-    if u.get("mobile"):
-        rows += _row("Mobile", _html.escape(_fmt_mobile(u["mobile"])))
-    if u.get("email"):
-        rows += _row("Email", _html.escape(u["email"]))
-    # Two-number case: the account lives on the popup (WhatsApp) number, but the
-    # payment came from a different contact — show it as a muted second row so
-    # "why does Razorpay show another number?" support tickets answer themselves.
-    try:
-        rec = get_report(rid) or {}
-        pay = users._norm_mobile(rec.get("phone") or "")
-        acct = users._norm_mobile(u.get("mobile") or "")
-        if pay and acct and pay != acct:
-            rows += ('<div style="display:flex;align-items:center;gap:10px;'
-                     'font-size:12px;color:#8a7d72">'
-                     '<span style="width:58px;font-size:12px">Payment</span>'
-                     f'<span>via {_html.escape(_fmt_mobile(pay))}</span></div>')
-    except Exception as e:
-        logger.error("[users] banner payment-row failed for %s: %s", rid, e)
-
-    return (
-        # id lets @media print hide this card so a browser Print-to-PDF of the
-        # on-screen report matches the clean /report/{rid}/pdf output (which
-        # never includes the banner). See print rule injected in _wire_report_chrome.
-        '<div id="acct-banner" style="background:#f3ece0;padding:14px;font-family:system-ui,'
-        "-apple-system,'Segoe UI',Roboto,sans-serif\">"
-        '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid '
-        '#ece3d6;border-radius:14px;box-shadow:0 2px 10px rgba(70,50,30,.05);'
-        'padding:15px 16px 13px">'
-        '<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">'
-        '<span style="width:34px;height:34px;border-radius:50%;background:#eef7f1;'
-        'border:1px solid #cfe8dc;color:#157a52;display:inline-flex;align-items:center;'
-        'justify-content:center;font-size:16px;flex:0 0 auto">&#10003;</span>'
-        '<div><div style="font-size:15px;font-weight:700;color:#2b2521">Account created'
-        '</div><div style="font-size:12px;color:#8a7d72;margin-top:1px">Saved from this '
-        'purchase</div></div></div>'
-        '<div style="border-top:1px solid #ece3d6;padding-top:11px;display:grid;gap:8px">'
-        + rows +
-        '</div>'
-        '<div style="margin-top:12px;font-size:12px;color:#8a7d72;display:flex;'
-        'align-items:center;gap:10px;flex-wrap:wrap">'
-        '<a href="/login?next=%2Faccount" style="background:#151C39;color:#E4B04A;'
-        'text-decoration:none;font-weight:700;font-size:12.5px;border-radius:20px;'
-        'padding:7px 14px;letter-spacing:.02em">Log in &rarr;</a>'
-        '<span>Use this mobile number &mdash; OTP aayega, no password.</span></div>'
-        '</div></div>')
-
-
 # --- one-tap PDF download wiring (all report templates) -------------------
 # Every report's "Download PDF" anchor is `onclick="window.print();return false;"`.
 # _wire_pdf_download() swaps that for axPdfDl(): fetch /report/{rid}/pdf ->
@@ -1062,15 +1002,34 @@ return false;}
 </script>"""
 
 
-def _wire_pdf_download(html: str) -> str:
+# Devanagari twins for the user-visible toast strings inside _AXDL_SNIPPET.
+# The chrome is injected AFTER shaadi_hi/milan_hi.localize runs, so any English
+# it carries would ship untranslated on a Hindi report — swap it here instead.
+_AXDL_HI = [
+    ("PDF downloaded \\u2713 check your Downloads / Files app.",
+     "PDF डाउनलोड हो गई \\u2713 अपने Downloads / Files ऐप में देखें।"),
+    ("Preparing your PDF \\u2014 one moment\\u2026",
+     "आपकी PDF तैयार हो रही है \\u2014 बस एक पल\\u2026"),
+    ('Preparing your PDF \\u2014 choose "Save as PDF" in the window that opens, '
+     'or grab it from WhatsApp: we\\u2019ve sent it there too.',
+     'आपकी PDF तैयार हो रही है \\u2014 खुलने वाली विंडो में "Save as PDF" चुनें, '
+     'या WhatsApp से ले लीजिए: हमने वहाँ भी भेज दी है।'),
+]
+
+
+def _wire_pdf_download(html: str, lang: str = "en") -> str:
     """Swap print-dialog PDF buttons for the one-tap download (never raises)."""
     try:
         if "window.print();return false;" not in html:
             return html
         html = html.replace("window.print();return false;", "return axPdfDl(event);")
+        snip = _AXDL_SNIPPET
+        if lang == "hi":
+            for en, hi in _AXDL_HI:
+                snip = snip.replace(en, hi)
         if "</body>" in html:
-            return html.replace("</body>", _AXDL_SNIPPET + "</body>", 1)
-        return html + _AXDL_SNIPPET
+            return html.replace("</body>", snip + "</body>", 1)
+        return html + snip
     except Exception:
         return html
 
@@ -1107,25 +1066,36 @@ _REPORT_NAV_SNIPPET = """<script>
 </script>"""
 
 
-def _wire_report_chrome(html: str, rid: str) -> str:
+# Devanagari account-created toast (see _REPORT_NAV_SNIPPET). "Log in" keeps its
+# arrow; the link target is unchanged.
+_ACCT_TOAST_EN = ('\\u2705 Account created \\u2014 login anytime with your mobile number. '
+                  '<a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;'
+                  'text-decoration:none">Log in \\u2192</a>')
+_ACCT_TOAST_HI = ('\\u2705 अकाउंट बन गया \\u2014 अपने मोबाइल नंबर से कभी भी लॉगिन करें। '
+                  '<a href="/login?next=%2Faccount" style="color:#E4B04A;font-weight:700;'
+                  'text-decoration:none">लॉगिन \\u2192</a>')
+
+
+def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
     """Everything a served report page gets on top of the raw template:
-    one-tap PDF button, account banner, hamburger nav, account toast and the
-    back-button supplement. Never raises — worst case the raw page ships."""
+    one-tap PDF button, hamburger nav, account toast and the back-button
+    supplement. `lang` keeps this chrome in-language: it is injected AFTER the
+    shaadi_hi/milan_hi localizers run, so English here would ship untranslated
+    on a Hindi report. Never raises — worst case the raw page ships."""
     try:
         html = _inject_tracking(html)
-        html = _wire_pdf_download(html)
-        banner = _account_banner(rid)
-        if banner:
-            import re as _re
-            # Hide the account card in print so browser Print-to-PDF of /report
-            # matches the banner-free /report/{rid}/pdf output.
-            banner = ('<style>@media print{#acct-banner{display:none!important}}</style>'
-                      + banner)
-            html, n = _re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + banner,
-                               html, count=1, flags=_re.IGNORECASE)
-        html = _inject_nav(html)
+        html = _wire_pdf_download(html, lang)
+        has_acct = False
+        try:                            # toast fires only when an account exists
+            u = users.get_user_for_report(db, rid)
+            has_acct = bool(u and (u.get("mobile") or u.get("email")))
+        except Exception as e:
+            logger.error("[users] account lookup failed for %s: %s", rid, e)
+        html = _inject_nav(html, lang)
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
-                .replace("__HASACCT__", "1" if banner else "0"))
+                .replace("__HASACCT__", "1" if has_acct else "0"))
+        if lang == "hi":
+            snip = snip.replace(_ACCT_TOAST_EN, _ACCT_TOAST_HI)
         if "</body>" in html:
             html = html.replace("</body>", snip + "</body>", 1)
         else:
@@ -1157,18 +1127,19 @@ def report_page(rid: str, v2: int = 1):
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
+    lang = "hi" if (payload.get("meta") or {}).get("lang") == "hi" else "en"
     if payload.get("product") == "milan" and v2 != 0:
         try:
             import milan_v2
             html = milan_v2.render_milan_v2(payload)
-            if (payload.get("meta") or {}).get("lang") == "hi":
+            if lang == "hi":
                 import milan_hi
                 html = milan_hi.localize(html)
-            return HTMLResponse(_wire_report_chrome(html, rid))
+            return HTMLResponse(_wire_report_chrome(html, rid, lang))
         except Exception as e:
             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
-    return HTMLResponse(_wire_report_chrome(html, rid))
+    return HTMLResponse(_wire_report_chrome(html, rid, lang))
 
 
 @app.get("/report/{rid}/pdf", include_in_schema=False)
@@ -1311,6 +1282,65 @@ def make_pass(key: str = "", n: int = 5):
                               f"{base}/jeevan?pass={toks[0]}",
                               f"{base}/career?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
+
+
+def _backfill_narrative_task(rid: str):
+    """Background per-report backfill: (re)generate the LLM narrative, store it,
+    then invalidate + re-warm the cached PDF so downloads/WhatsApp attachments
+    pick up the new prose. Never raises."""
+    try:
+        rec = get_report(rid)
+        if not rec or not rec["paid"]:
+            return
+        narr = narrative.generate_narrative(rec["payload"])
+        if not narr:
+            logger.warning("[narrative] backfill produced no sections for %s", rid)
+            return
+        save_narrative(rid, narr)
+        pdfgen.invalidate(rid)
+        _pregenerate_pdf_task(rid)
+    except Exception as e:
+        logger.error("[narrative] backfill failed for %s: %s", rid, e)
+
+
+@app.post("/api/backfill_narrative")
+def backfill_narrative(background_tasks: BackgroundTasks, key: str = "",
+                       rid: str = "", limit: int = 25):
+    """Admin: (re)generate + save the LLM narrative for already-paid reports.
+
+    Old Hindi marriage reports were paid while the 30s narrative timeout was
+    silently failing, so they carry no narrative and render the English banks
+    forever — generation only ever ran at payment time. This queues it again.
+
+      ?rid=<id>   backfill exactly that paid report (any product/language)
+      (no rid)    scan for paid marriage reports with meta.lang='hi' and no
+                  stored narrative, oldest first, up to `limit`
+
+    Each report is queued as a background task (a marriage generation can take
+    ~3 minutes); the task stores the prose and invalidates + re-warms the cached
+    PDF. Gated by STATS_KEY. Requires NARRATIVE_ENABLED=1 (+ API key) to have
+    any effect — reported in the response so a no-op run is obvious."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    if rid:
+        rec = get_report(rid)
+        if not rec or not rec["paid"]:
+            raise HTTPException(404, "report not found or unpaid")
+        rids = [rid]
+    else:
+        with db() as c:
+            rows = c.execute(
+                """SELECT id FROM reports
+                   WHERE paid=1
+                     AND json_extract(payload,'$.meta.lang')='hi'
+                     AND COALESCE(json_extract(payload,'$.product'),'marriage')='marriage'
+                     AND json_extract(payload,'$.narrative') IS NULL
+                   ORDER BY rowid LIMIT ?""", (int(limit),)).fetchall()
+        rids = [r[0] for r in rows]
+    for r in rids:
+        background_tasks.add_task(_backfill_narrative_task, r)
+    return {"queued": rids, "count": len(rids),
+            "narrative_enabled": narrative.enabled()}
 
 
 @app.get("/api/backfill_users")
@@ -1735,9 +1765,9 @@ def milan_redirect(request: Request):
 @app.get("/match", include_in_schema=False)
 def match_redirect(request: Request):
     """Legacy /match (Hinglish milan funnel) → /en/compatibility (301 permanent).
-    Mirrors /milan above; the report's "Gift a friend" CTA pointed here for a
-    while, so old reports/PDFs keep working. Preserves query string so
-    already-issued unlock links like /match?pass=<token> keep working."""
+    Mirrors /milan above; older reports/PDFs carried links pointing here, so
+    they keep working. Preserves query string so already-issued unlock links
+    like /match?pass=<token> keep working."""
     q = request.url.query
     return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)
 
