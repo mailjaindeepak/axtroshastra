@@ -200,3 +200,65 @@ def test_suggested_label_geocodes_offline(client, monkeypatch):
         d = geocoding.resolve_detailed(label)
         assert d["resolved"], f"{q} -> {label} fell back to Delhi"
         assert d["source"] != "default_delhi"
+
+
+# ----------------------------------------------------------------- Goa (BUG 8)
+# "Goa" is a STATE, not a city: geonames has no city named Goa, and the real
+# Goa cities are stored under other names with no Devanagari alt. गोवा/गोआ/goa
+# now resolve to the capital Panaji (stored as "Panjim"), and each main Goa
+# city is typeable in Devanagari. `name`/`label` stay ASCII English as always.
+
+def test_goa_devanagari_resolves_to_panaji():
+    for q in ["गोवा", "गोआ"]:
+        res = gazetteer.suggest(q, 8)
+        assert res, q
+        assert res[0]["name"] == "Panjim", f"{q} -> {[r['name'] for r in res[:3]]}"
+        assert res[0]["label"].isascii()
+        assert res[0]["label"] == "Panjim, Goa"
+        assert res[0].get("name_hi") == "पणजी"
+
+
+def test_goa_english_surfaces_goa_city_not_assam():
+    # regression: 'goa' used to return Goālpāra (Assam) as the top, confusing hit
+    names = _names("goa")
+    assert names and names[0] == "Panjim", names[:3]
+    assert names[0] != "Goālpāra"
+
+
+def test_goa_cities_devanagari_typeable():
+    for q, expect, name_hi in [
+        ("पणजी", "Panjim", "पणजी"),
+        ("मडगांव", "Madgaon", "मडगांव"),
+        ("मारगांव", "Madgaon", "मडगांव"),
+        ("वास्को", "Vasco da Gama", "वास्को द गामा"),
+        ("मुरगांव", "Mormugao", "मुरगांव"),
+        ("मापुसा", "Mapusa", "मापुसा"),
+    ]:
+        res = gazetteer.suggest(q, 8)
+        assert res and res[0]["name"] == expect, f"{q} -> {[r['name'] for r in res[:3]]}"
+        assert res[0]["label"].isascii(), res[0]["label"]
+        assert res[0].get("name_hi") == name_hi
+
+
+def test_goa_labels_ascii_and_geocode_endtoend():
+    # label stays ASCII English so the client submits exactly what it always
+    # did; geocoding.resolve() accepts it end-to-end without raising. (Offline
+    # non-Delhi resolution needs these towns in cities_in.py, which is outside
+    # this fix; the ASCII-label contract is what keeps downstream unchanged.)
+    for q in ["गोवा", "गोआ", "goa", "पणजी", "मडगांव", "वास्को", "मापुसा"]:
+        label = gazetteer.suggest(q, 1)[0]["label"]
+        assert label.isascii(), (q, label)
+        lat, lon, tz = geocoding.resolve(label)
+        assert isinstance(lat, float) and isinstance(lon, float)
+
+
+def test_goa_labels_geocode_to_goa_not_delhi():
+    """The Goa suggestions must resolve to real Goa coordinates offline (in
+    cities_in.py), not silently fall back to Delhi -> a wrong birth chart."""
+    import geocoding
+    for label in ("Panjim, Goa", "Madgaon, Goa", "Vasco da Gama, Goa",
+                  "Mormugao, Goa", "Mapusa, Goa"):
+        d = geocoding.resolve_detailed(label)
+        assert d["resolved"] is True, label
+        assert d["source"] != "default_delhi", f"{label} fell back to Delhi"
+        assert 14.8 < d["lat"] < 15.9 and 73.5 < d["lon"] < 74.3, (label, d)

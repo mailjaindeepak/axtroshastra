@@ -191,6 +191,7 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+.sticky.kbd{display:none!important}
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -732,7 +733,13 @@ function axContactModal(onDone){
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
-  if(!AX_CONTACT){ axContactModal(startPayment); return; }
+  // BUG 5: ALWAYS confirm the delivery number for THIS unlock — never silently reuse a
+  // previously-saved number. The modal pre-fills any last-entered value only for convenience.
+  if(!window.__axContactConfirmed){
+    axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });
+    return;
+  }
+  window.__axContactConfirmed = false;   // reset so the next unlock click re-asks
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
@@ -802,10 +809,15 @@ async function awaitReport(){
     fetch('/api/report/' + pr).then(function(r){return r.json()}).then(function(d){
       if(d && d.paid){
         var b = document.createElement('div');
-        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 16px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
-        b.innerHTML='✅ आपकी पेड रिपोर्ट तैयार है — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">यहाँ देखिए →</a>';
+        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 44px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
+        b.innerHTML='✅ आपकी पेड रिपोर्ट तैयार है — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">यहाँ देखिए →</a><button type="button" aria-label="बंद करें" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0 4px">×</button>';
         document.body.appendChild(b);
         localStorage.removeItem('axtro_rid');
+        // BUG 6: banner must not permanently cover the header — add a × close control and auto-hide after ~8s.
+        var __axBannerTimer;
+        function __axCloseBanner(){ if(__axBannerTimer){ clearTimeout(__axBannerTimer); } if(b && b.parentNode){ b.parentNode.removeChild(b); } }
+        b.querySelector('button').addEventListener('click', __axCloseBanner);
+        __axBannerTimer = setTimeout(__axCloseBanner, 8000);
       } else if(d && d.paid === false) { /* unpaid teaser — keep quietly */ }
     }).catch(function(){});
   }catch(e){}
@@ -817,6 +829,19 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
+// BUG 7: on mobile the on-screen keyboard shoves the fixed ₹499 bar over the form.
+// Hide the bar while any form field is focused (keyboard likely open); restore on blur.
+// This is independent of the scroll-based .hidden toggle above.
+(function(){
+  var kbForm = document.getElementById('kundliForm');
+  if(!kbForm || !sticky) return;
+  kbForm.addEventListener('focusin', function(){ sticky.classList.add('kbd'); });
+  kbForm.addEventListener('focusout', function(){
+    setTimeout(function(){
+      if(!kbForm.contains(document.activeElement)){ sticky.classList.remove('kbd'); }
+    }, 120);
+  });
+})();
 </script>
 <div class="ov" id="calcOv"><div class="inner">
 <svg viewBox="0 0 100 100" fill="none">
@@ -993,17 +1018,18 @@ window.addEventListener('scroll', function(){
     var st; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); }catch(e){ st=null; }
     if(!st) return;
     window._formStarted = !!st.formStarted;   // form already started before the toggle -> don't let restore focus events re-fire form_start
-    IDS.forEach(function(id){ if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
+    // BUG 4: do NOT carry the NAME field across a language switch — a name typed in one
+    // script must not linger in the other. dob/time/place/city/gender are still restored below.
+    var SKIP_ON_SWITCH={'f-name':1};
+    IDS.forEach(function(id){ if(SKIP_ON_SWITCH[id]) return; if(st[id]!=null){ var el=document.getElementById(id); if(el){ el.value=st[id]; } } });
     var g=document.getElementById('f-gender'); if(g && st['f-gender']!=null) fire(g,'change');
     var u=document.getElementById('unknownTime'); if(u && st.unknownTime!=null){ u.checked=st.unknownTime; fire(u,'change'); }
     var hh=document.getElementById('f-hh'); if(hh) fire(hh,'change');
     if(st.city && window.__axApplyCity){ window.__axApplyCity(st.city); }
-    if(st.reportId && st.teaser){
-      window.REPORT_ID=st.reportId; window.__teaserData=st.teaser;
-      window.__axNoScroll=true;
-      if(window.__renderTeaser){ try{ window.__renderTeaser(st.teaser); }catch(e){} }
-      window.__axNoScroll=false;
-    }
+    // BUG 3: do NOT carry the previously-created report across a language switch — its
+    // variant is the OLD language, so paying would unlock the wrong-language report. Force
+    // a fresh preview on the new-language page and keep REPORT_ID null so unlock can't fire.
+    window.REPORT_ID=null; REPORT_ID=null; window.__teaserData=null;
   }
   document.addEventListener('input', save, true);
   document.addEventListener('change', save, true);
