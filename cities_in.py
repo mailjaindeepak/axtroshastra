@@ -449,6 +449,12 @@ CITIES_IN = {
     "ādilābād": (19.67, 78.54, 5.5),
     "jhunjhunūn": (28.13, 75.40, 5.5),
     "jetpur": (21.75, 70.62, 5.5),
+    # --- Goa (added for autosuggest coverage; keyed by the suggestion name before the comma) ---
+    "panjim": (15.49, 73.83, 5.5),
+    "madgaon": (15.28, 73.99, 5.5),
+    "vasco da gama": (15.40, 73.81, 5.5),
+    "mormugao": (15.40, 73.80, 5.5),
+    "mapusa": (15.59, 73.81, 5.5),
 }
 ALIASES = {'bengaluru': 'bangalore', 'gurugram': 'gurgaon', 'prayagraj': 'allahabad', 'new delhi': 'delhi', 'navi mumbai': 'mumbai', 'noida': 'noida'}
 for a, b in ALIASES.items():

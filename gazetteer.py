@@ -30,6 +30,13 @@ import re
 MIN_POP = 50000
 _LOCALITY_RE = re.compile(r"\b(cantonment|cantt)\b", re.I)
 
+# Geonameids kept even below MIN_POP because they are the representative/known
+# city for an area users search by a broader name (e.g. Mapusa is a well-known
+# Goa town below the population floor but reachable via मापुसा / "Goa").
+_KEEP_IDS = {
+    1263580,   # Mapusa (Goa), pop ~40k < MIN_POP
+}
+
 
 def _ascii(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", s)
@@ -135,6 +142,23 @@ _HI_ALIASES = {
     1271942: ["फर्रुखाबाद"],                       # Farrukhābād
     1271987: ["इटावा"],                           # Etāwah
     1278860: ["अंबाला", "अम्बाला"],                 # Ambāla
+    # ---- Goa: "Goa" is a STATE, not a city; the real cities sit under other
+    # names with no Devanagari alt. Map गोवा/गोआ to the capital Panaji (Panjim),
+    # and give each main Goa city a typeable Devanagari spelling. ----
+    1260607: ["गोवा", "गोआ", "पणजी"],              # Panjim (Panaji) — Goa capital
+    1264588: ["मडगांव", "मारगांव"],                 # Madgaon (Margao)
+    1253367: ["वास्को द गामा", "वास्को"],            # Vasco da Gama
+    1263494: ["मुरगांव"],                          # Mormugao
+    1263580: ["मापुसा"],                          # Mapusa
+}
+
+
+# Curated Latin-script aliases treated at NAME priority (so they outrank a
+# same-or-lower-population city whose real name merely shares the prefix).
+# "Goa" is a state with no city of that name, so 'goa' should surface the Goa
+# capital (Panjim) — not Goālpāra in Assam, which merely starts with "goa".
+_EN_ALIASES = {
+    1260607: ["goa"],                            # Panjim (Panaji) — Goa capital
 }
 
 
@@ -247,6 +271,12 @@ _HI_DISPLAY = {
     # ---- overrides: alias list starts with an archaic form ----
     1263780: "मंगलुरु",            # Mangaluru (alias first entry: मंगलौर)
     1276533: "बेलगावी",            # Belagavi  (alias first entry: बेलगाम)
+    # ---- Goa cities (name stays English; Devanagari shown on *.hi.html) ----
+    1260607: "पणजी",              # Panjim (Panaji) — Goa capital
+    1264588: "मडगांव",             # Madgaon (Margao)
+    1253367: "वास्को द गामा",       # Vasco da Gama
+    1263494: "मुरगांव",            # Mormugao
+    1263580: "मापुसा",             # Mapusa
 }
 
 
@@ -264,7 +294,7 @@ def _load():
         if cc != "IN":            # India-only for now: hide foreign cities (avoids confusion)
             continue
         pop = int(c.get("population", 0) or 0)
-        if pop < MIN_POP:         # keep city/district level — drop tiny localities
+        if pop < MIN_POP and c["geonameid"] not in _KEEP_IDS:   # keep city/district level — drop tiny localities
             continue
         if _LOCALITY_RE.search(name):   # drop cantonment / sub-locality entries
             continue
@@ -283,6 +313,8 @@ def _load():
                 alts.add(aa)
         for a in _HI_ALIASES.get(c["geonameid"], []):
             alts_hi.add(_ascii(a))
+        # Curated Latin-script aliases matched at name priority (see _EN_ALIASES).
+        alts_en = {fa for a in _EN_ALIASES.get(c["geonameid"], []) if (fa := _ascii(a))}
         # Curated Hindi display name: explicit table wins; else first alias
         # entry (display-ready, from Hindi Wikipedia titles); else None (the
         # frontend falls back to the English name). Also indexed for matching
@@ -293,7 +325,7 @@ def _load():
             alts_hi.add(_ascii(name_hi))
         rows.append({
             "id": c["geonameid"], "name": name, "name_l": _ascii(name), "name_hi": name_hi,
-            "alts": alts, "alts_hi": alts_hi, "cc": cc, "country": _COUNTRY.get(cc, cc),
+            "alts": alts, "alts_hi": alts_hi, "alts_en": alts_en, "cc": cc, "country": _COUNTRY.get(cc, cc),
             "lat": round(float(c["latitude"]), 4), "lon": round(float(c["longitude"]), 4),
             "tz": c.get("timezone", ""), "pop": int(c.get("population", 0) or 0),
             "admin1": c.get("admin1code", ""),
@@ -341,7 +373,7 @@ def suggest(q: str, limit: int = 8) -> list:
                 break
     else:
         for r in _CITIES:                        # already population-sorted
-            if r["name_l"].startswith(qq):
+            if r["name_l"].startswith(qq) or any(a.startswith(qq) for a in r["alts_en"]):
                 pre_name.append(r)
             elif any(a.startswith(qq) for a in r["alts"]):
                 pre_alt.append(r)
