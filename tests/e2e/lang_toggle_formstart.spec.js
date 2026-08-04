@@ -12,9 +12,11 @@ const { test, expect } = require('@playwright/test');
 test('form_start is NOT re-fired when toggling language after starting the compatibility form', async ({ page }) => {
   await page.goto('/en/compatibility');
 
-  // A genuine start: focus a field, type something.
+  // A genuine start: focus a field, type something. Also fill a NON-name field
+  // (dob day) so we can check that ordinary form data still survives the toggle.
   await page.locator('#p1-name').focus();
   await page.fill('#p1-name', 'Asha');
+  await page.fill('#p1-dd', '15');
   expect(await page.evaluate(() => window._formStarted)).toBe(true);
 
   // Toggle to Hindi via the real capsule link (it flags the switch, then navigates).
@@ -26,16 +28,18 @@ test('form_start is NOT re-fired when toggling language after starting the compa
     const g = window.gtag;
     window.gtag = function () { if (arguments[1] === 'form_start') n++; if (g) return g.apply(this, arguments); };
     const startedAfterRestore = window._formStarted;              // restored -> true
-    const nameRestored = (document.getElementById('p1-name') || {}).value;
+    const nameAfter = (document.getElementById('p1-name') || {}).value;
+    const ddAfter = (document.getElementById('p1-dd') || {}).value;
     // Simulate the focus event that restoration (city apply / field repopulation) can generate.
     const el = document.getElementById('p1-name');
     if (el) el.dispatchEvent(new Event('focusin', { bubbles: true }));
-    return { startedAfterRestore, refires: n, nameRestored };
+    return { startedAfterRestore, refires: n, nameAfter, ddAfter };
   });
 
   expect(res.startedAfterRestore).toBe(true);   // restore() carried the "already started" flag
-  expect(res.nameRestored).toBe('Asha');        // form data survived the toggle
-  expect(res.refires).toBe(0);                  // THE FIX: form_start does not fire again
+  expect(res.nameAfter).toBe('');               // BUG 4: the NAME is intentionally cleared on a language switch
+  expect(res.ddAfter).toBe('15');               // other form data still survives the toggle
+  expect(res.refires).toBe(0);                  // THE FIX: form_start still does not fire again
 });
 
 test('form_start STILL fires on a genuine first fill (no toggle)', async ({ page }) => {
