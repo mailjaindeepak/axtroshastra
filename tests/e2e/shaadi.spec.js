@@ -104,3 +104,23 @@ test('Happy path: a valid submission renders the free teaser snapshot', async ({
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#teaser')).toContainText(/kundli ready|ready/i);
 });
+
+// Regression: a partial birth time shows an error; ticking "don't know exact
+// time" must CLEAR that error (the hint node is a sibling of #tobField, so
+// hiding the time row alone used to leave the message stuck on screen).
+test('Ticking "don\'t know exact time" clears a stale partial-time error', async ({ page }) => {
+  const tobErr = page.locator('#tobField + .field-hint');
+  await page.selectOption('#f-hh', '10');            // hour only → partial time
+  await expect(tobErr).toContainText('full time');   // error appears
+  await page.check('#unknownTime');                  // tick the box
+  await expect(tobErr).toHaveText('');               // error is gone
+});
+
+test('Partial-time error clears on the Hindi marriage page too', async ({ page }) => {
+  await page.goto('/hi/marriage');
+  const tobErr = page.locator('#tobField + .field-hint');
+  await page.selectOption('#f-hh', '10');            // partial time
+  await expect(tobErr).not.toHaveText('');           // some error is shown
+  await page.check('#unknownTime');
+  await expect(tobErr).toHaveText('');               // cleared
+});

@@ -972,6 +972,11 @@ window.addEventListener('scroll', function(){
   var approxHint=mkHint(document.getElementById("tobApprox"));
   var approxSel=document.getElementById("f-approx");
   if(approxSel){ approxSel.addEventListener("change", function(){ approxHint.textContent=""; }); }
+  // Toggling "don't know exact time" hides the time row; clear any stale
+  // partial-time / birth-time errors so they don't linger (the hint node is a
+  // sibling of #tobField, so hiding the field alone leaves the message on screen).
+  var unkTob=document.getElementById("unknownTime");
+  if(unkTob){ unkTob.addEventListener("change", function(){ tobHint.textContent=""; approxHint.textContent=""; }); }
   function dateValid(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return true; var dt=new Date(+y,+m-1,+d); return dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d; }
   function checkDate(){
     var y=(yy.value||"").trim(), cur=new Date().getFullYear(), msg="";
