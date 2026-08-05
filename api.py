@@ -19,7 +19,7 @@ Razorpay dashboard prerequisites:
   1. Settings > Payment capture -> AUTO capture (else payment.captured never fires)
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
-import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
+import hashlib, hmac, json, logging, os, secrets, sqlite3, threading, time
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
@@ -924,6 +924,129 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
             "INR", phone, pay_email or form_email or "")
     return {"ok": True, "report_id": rid}
+
+
+# ---------------------------------------------------------------- recovery net
+# "No paid customer is ever left without their report." If a browser closes
+# mid-payment AND the Razorpay webhook is missed, the report is never delivered
+# (an "orphaned payment"). This backstop does not depend on the webhook: a
+# lightweight in-process poll (and the admin /api/reconcile sweep) asks Razorpay
+# which unpaid-in-our-DB reports were actually captured and runs the SAME
+# delivery the webhook does. Idempotency is airtight because a report is
+# delivered ONLY by the caller that atomically flips paid 0->1
+# (payments.claim_paid), so neither the webhook nor two overlapping poll cycles
+# can double-deliver.
+RECONCILE_INTERVAL_SEC = int(os.getenv("RECONCILE_INTERVAL_SEC", "300"))
+_reconcile_lock = threading.Lock()      # guards against overlapping poll cycles
+_reconcile_thread_started = False
+
+
+def _deliver_report(rid: str):
+    """Run the webhook's delivery for one just-recovered report, SYNCHRONOUSLY —
+    reconcile can run in a daemon thread with no FastAPI request / BackgroundTasks
+    around it, so we call the task functions directly. Order mirrors the webhook:
+    cache the PDF first (so the WhatsApp message can attach it), then narrative,
+    then the report WhatsApp to the POPUP number ONLY (never the Razorpay
+    contact), then the optional email copy. Never raises."""
+    rec = get_report(rid)
+    if not rec:
+        return
+    _pregenerate_pdf_task(rid)            # sees paid=1 (claim already flipped it)
+    _generate_narrative_task(rid)
+    wa_phone = rec.get("user_phone") or ""   # popup number ONLY — see webhook rule
+    if wa_phone:
+        send_whatsapp_report(wa_phone, rid, _display_name(rec["payload"]),
+                             rec["payload"].get("product", "marriage"))
+    else:
+        # Old orphan whose popup number was never captured: it is now paid and
+        # the report is generated (viewable / in the account), but we cannot
+        # deliver WhatsApp to a number we do not have. Skip gracefully.
+        logger.info("[reconcile] %s recovered without a popup number — marked "
+                    "paid + report generated, WhatsApp skipped", rid)
+    form_email = (rec["payload"].get("meta") or {}).get("_email")
+    if form_email:                        # (#7) email + PDF copy, like the paid path
+        email_report(form_email, rid, rec["payload"])
+
+
+def _reconcile_and_deliver(limit: int = 200) -> dict:
+    """The webhook-independent backstop. Find reports Razorpay reports as captured
+    but still paid=0 in our DB, and for each: atomically CLAIM it (deliver only if
+    THIS path flipped paid 0->1), then run the full webhook delivery + account
+    upsert/link. Safe no-op when Razorpay is unconfigured; skips cleanly if another
+    cycle is already running. Callable synchronously (poll thread or admin)."""
+    if not payments.configured():
+        return {"checked": 0, "recovered": 0, "note": "razorpay not configured"}
+    if not _reconcile_lock.acquire(blocking=False):
+        return {"checked": 0, "recovered": 0, "note": "already running"}
+    try:
+        candidates = payments.find_recoverable(db, limit)
+        recovered = 0
+        for cand in candidates:
+            rid = cand["rid"]
+            # ATOMIC CLAIM — the single idempotency gate. If the webhook (or an
+            # overlapping cycle) already flipped this report, claim_paid returns
+            # False and we skip: NO re-delivery.
+            if not payments.claim_paid(db, rid, cand["payment_id"], cand["contact"]):
+                continue
+            try:
+                _deliver_report(rid)
+            except Exception as e:
+                logger.error("[reconcile] delivery failed for %s: %s", rid, e)
+            # Account creation/link, mirroring the webhook: the account keeps its
+            # fallback (popup number, else the Razorpay contact); the popup email
+            # is preferred over the Razorpay email.
+            try:
+                rec = get_report(rid)
+                popup = rec.get("user_phone") if rec else ""
+                form_email = ((rec or {}).get("payload", {}).get("meta") or {}).get("_email")
+                uid = users.upsert_user_from_payment(
+                    db, mobile=popup or cand["contact"],
+                    email=form_email or cand["email"])
+                if uid:
+                    users.link_report(db, rid, uid)
+            except Exception as e:
+                logger.error("[users] reconcile account link failed for %s: %s", rid, e)
+            recovered += 1
+        return {"checked": len(candidates), "recovered": recovered}
+    finally:
+        _reconcile_lock.release()
+
+
+def _reconcile_loop():
+    """Daemon loop: sweep every RECONCILE_INTERVAL_SEC, never crashing the app."""
+    while True:
+        try:
+            _reconcile_and_deliver()
+        except Exception as e:            # a bug here must not kill the backstop
+            logger.error("[reconcile] poll cycle error: %s", e)
+        time.sleep(max(RECONCILE_INTERVAL_SEC, 1))
+
+
+@app.on_event("startup")
+def _start_reconcile_poll():
+    """Start the in-process recovery poll once at boot. Single-instance EB
+    deployment, so an in-process daemon thread is the right tool. No-op cleanly
+    when Razorpay is unconfigured or the thread is already running."""
+    global _reconcile_thread_started
+    if _reconcile_thread_started:
+        return
+    if not payments.configured():
+        logger.info("[reconcile] razorpay not configured — recovery poll disabled")
+        return
+    _reconcile_thread_started = True
+    threading.Thread(target=_reconcile_loop, name="reconcile-poll",
+                     daemon=True).start()
+    logger.info("[reconcile] recovery poll started (every %ss)", RECONCILE_INTERVAL_SEC)
+
+
+@app.post("/api/reconcile")
+def reconcile_admin(key: str = ""):
+    """Admin: force a deliver-capable recovery sweep. Registered here (before
+    extensions.install) so it SHADOWS the older non-delivering /api/reconcile in
+    extensions.py — Starlette serves the first matching route. Gated by STATS_KEY."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    return _reconcile_and_deliver()
 
 
 def _refresh_current_period(payload: dict) -> dict:

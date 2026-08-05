@@ -67,37 +67,84 @@ def _rzp():
     return razorpay.Client(auth=(key, secret))
 
 
-def reconcile(db, limit: int = 200) -> dict:
-    """Check unpaid reports that have an order against Razorpay; mark any that were
-    actually paid. Returns a summary. Safe no-op if Razorpay is not configured."""
+def configured() -> bool:
+    """True when Razorpay credentials are present, so the recovery backstop (poll
+    thread / admin sweep) can run. False -> every recovery path is a safe no-op."""
+    return _rzp() is not None
+
+
+def find_recoverable(db, limit: int = 200) -> list:
+    """Cross-check unpaid reports that carry an order against Razorpay and return
+    the ones Razorpay reports as *captured* — i.e. paid there but still paid=0 in
+    our DB (a missed webhook / tab closed mid-payment). Returns a list of dicts
+    ``{rid, order_id, payment_id, contact, email}``. It does NOT mark or deliver:
+    the caller flips paid via ``claim_paid`` (the atomic idempotency gate) so the
+    recovery path can run the SAME delivery the webhook does. Empty list when
+    Razorpay is not configured."""
     client = _rzp()
     if client is None:
-        return {"checked": 0, "recovered": 0, "note": "razorpay not configured"}
+        return []
     with db() as c:
         rows = c.execute("SELECT id,order_id FROM reports "
                          "WHERE paid=0 AND order_id IS NOT NULL LIMIT ?",
                          (limit,)).fetchall()
-    recovered = 0
+    out = []
     for rid, order_id in rows:
         try:
-            payments = client.order.payments(order_id)
-            captured = [p for p in payments.get("items", []) if p.get("status") == "captured"]
+            pays = client.order.payments(order_id)
+            captured = [p for p in pays.get("items", []) if p.get("status") == "captured"]
             if captured:
                 pay = captured[0]
-                with db() as c:
-                    c.execute("UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=?",
-                              (pay.get("id"), pay.get("contact") or "", rid))
-                try:                     # account: same mobile+email capture as the webhook
-                    uid = users.upsert_user_from_payment(
-                        db, mobile=pay.get("contact") or "", email=pay.get("email") or "")
-                    if uid:
-                        users.link_report(db, rid, uid)
-                except Exception as e:   # never fatal, but MUST be visible (was silent)
-                    logger.error("[users] reconcile account link failed for %s: %s", rid, e)
-                recovered += 1
+                out.append({"rid": rid, "order_id": order_id,
+                            "payment_id": pay.get("id"),
+                            "contact": pay.get("contact") or "",
+                            "email": pay.get("email") or ""})
         except Exception:
             continue
-    return {"checked": len(rows), "recovered": recovered}
+    return out
+
+
+def claim_paid(db, rid: str, payment_id: str, phone: str) -> bool:
+    """Atomically flip ONE report unpaid->paid and report whether THIS caller won
+    the flip. The whole idempotency story rests here:
+
+        UPDATE reports SET paid=1,... WHERE id=? AND paid=0
+
+    Because the ``AND paid=0`` predicate is evaluated inside the single UPDATE,
+    exactly one caller can change the row from 0 to 1; every later attempt (the
+    webhook that already delivered, or an overlapping poll cycle) matches zero
+    rows. Returns True only when ``rowcount == 1`` — the caller that must deliver.
+    A False result means someone else already handled the report; do NOT deliver."""
+    with db() as c:
+        cur = c.execute(
+            "UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=? AND paid=0",
+            (payment_id, phone or "", rid))
+        return cur.rowcount == 1
+
+
+def reconcile(db, limit: int = 200) -> dict:
+    """Non-delivering reconcile (account-link only), kept for callers that just
+    want unpaid-but-captured reports flipped + linked to an account. The
+    deliver-capable backstop is ``api._reconcile_and_deliver``. Now claims each
+    report atomically (``claim_paid``) so it can never double-fire. Safe no-op if
+    Razorpay is not configured."""
+    if not configured():
+        return {"checked": 0, "recovered": 0, "note": "razorpay not configured"}
+    candidates = find_recoverable(db, limit)
+    recovered = 0
+    for cand in candidates:
+        rid = cand["rid"]
+        if not claim_paid(db, rid, cand["payment_id"], cand["contact"]):
+            continue                     # someone else already handled it
+        try:                             # account: same mobile+email capture as the webhook
+            uid = users.upsert_user_from_payment(
+                db, mobile=cand["contact"], email=cand["email"])
+            if uid:
+                users.link_report(db, rid, uid)
+        except Exception as e:           # never fatal, but MUST be visible (was silent)
+            logger.error("[users] reconcile account link failed for %s: %s", rid, e)
+        recovered += 1
+    return {"checked": len(candidates), "recovered": recovered}
 
 
 def refund(db, payment_id: str, amount_paise: int | None = None) -> dict:
