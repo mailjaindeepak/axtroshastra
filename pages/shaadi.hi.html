@@ -960,6 +960,11 @@ window.addEventListener('scroll', function(){
   function tobPartial(){ if(document.getElementById("unknownTime").checked) return false; var n=(thh&&thh.value?1:0)+(tmn&&tmn.value?1:0)+(tap&&tap.value?1:0); return n>0&&n<3; }
   function checkTob(){ tobHint.textContent = tobPartial()? L("Please enter the full time (hour, minute, AM/PM), or clear it.","पूरा समय भरिए (घंटा, मिनट, AM/PM), या इसे खाली छोड़ दीजिए।") : ""; }
   if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
+  // Toggling "don't know exact time" hides the time row; clear any stale
+  // partial-time / birth-time errors so they don't linger (the hint node is a
+  // sibling of #tobField, so hiding the field alone leaves the message on screen).
+  var unkTob=document.getElementById("unknownTime");
+  if(unkTob){ unkTob.addEventListener("change", function(){ tobHint.textContent=""; approxHint.textContent=""; }); }
   form.addEventListener("submit", function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var nm=document.getElementById("f-name");
