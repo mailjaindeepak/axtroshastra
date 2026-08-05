@@ -1097,6 +1097,48 @@ def reconcile_admin(key: str = ""):
     return _reconcile_and_deliver()
 
 
+@app.get("/api/pdf_health", include_in_schema=False)
+def pdf_health(key: str = ""):
+    """Diagnostic: is the PDF-maker (headless Chrome) working ON THIS INSTANCE?
+
+    The report PDF is what Twilio downloads for the WhatsApp attachment; when it
+    can't be produced/served, delivery falls back to the link (see
+    send_whatsapp_report) and Twilio logs error 63019. This renders a tiny test
+    page and reports the resolved browser binary, timing and any error, so the
+    live PDF pipeline's health is visible from a URL — no SSH needed. A
+    load-balanced env serves a RANDOM instance per call, so hit it a few times to
+    sample every instance. Gated by STATS_KEY."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    import platform, socket, time
+    out = {
+        "host": socket.gethostname(),
+        "arch": platform.machine(),
+        "browsers_path": os.getenv("PLAYWRIGHT_BROWSERS_PATH", ""),
+        "chrome_bin": pdfgen.chrome_bin(),
+        "render_ok": False,
+    }
+    if not out["chrome_bin"]:
+        out["error"] = ("no chrome binary found on this instance — the PDF-maker "
+                        "is not installed here (check that .ebextensions/"
+                        "02_chromium.config ran; ls $PLAYWRIGHT_BROWSERS_PATH)")
+        return out
+    t0 = time.monotonic()
+    try:
+        data = pdfgen.generate(
+            "<!doctype html><html><body style='font-family:sans-serif'>"
+            "<h1>Axtroshastra PDF health check</h1></body></html>")
+        out["render_ms"] = int((time.monotonic() - t0) * 1000)
+        out["pdf_bytes"] = len(data) if data else 0
+        out["render_ok"] = bool(data and data[:4] == b"%PDF")
+        if not out["render_ok"]:
+            out["error"] = "chrome is present but the render produced no valid PDF"
+    except Exception as e:
+        out["render_ms"] = int((time.monotonic() - t0) * 1000)
+        out["error"] = f"{type(e).__name__}: {e}"
+    return out
+
+
 def _refresh_current_period(payload: dict) -> dict:
     """Recompute the time-dependent \"current period\" (current MD/AD + end date)
     from stored birth data so it is accurate as of *now*, not frozen at the time
