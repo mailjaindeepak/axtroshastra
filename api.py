@@ -132,6 +132,31 @@ def _display_name(payload: dict) -> str:
     return "ji"
 
 
+def _pdf_is_fetchable(rid: str) -> bool:
+    """Is the report PDF actually downloadable from the PUBLIC url right now?
+
+    Twilio fetches the media URL ITSELF when sending a media template. A PDF
+    cached on this server instance does NOT prove the public url serves it (a
+    cold/other instance, or a renderer hiccup, makes the fetch fail) — and when
+    it fails, the WhatsApp media message fails asynchronously with Twilio 63019
+    ("media failed to download") and the customer receives NOTHING. So probe the
+    same public .pdf url the approved media template builds before betting the
+    whole message on the attachment. Never raises → False on any doubt."""
+    if not PUBLIC_BASE_URL:
+        return False
+    url = f"{PUBLIC_BASE_URL}/report/{rid}.pdf"
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(req, timeout=8) as r:
+            ctype = (r.headers.get("Content-Type") or "").lower()
+            return getattr(r, "status", 200) == 200 and "pdf" in ctype
+    except Exception as e:
+        logger.warning("[twilio] PDF not publicly fetchable for %s (%s) — "
+                       "sending the link template instead", rid, e)
+        return False
+
+
 def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marriage"):
     """Fire-and-forget WhatsApp delivery after payment. Never raises.
 
@@ -151,38 +176,48 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
         # Attach the pre-generated PDF when it exists. Twilio fetches media by
         # URL; /report/{rid}/pdf serves the cached file (report is paid here).
         media = [f"{PUBLIC_BASE_URL}/report/{rid}/pdf"] if pdfgen.get_cached(rid) else None
-        if TWILIO_CONTENT_SID and not media and TWILIO_CONTENT_SID_TEXT:
-            # PDF not ready (e.g. Chrome unavailable): the media template would
-            # DIE at Twilio's media fetch and the customer would get NOTHING.
-            # Send the approved TEXT template instead — report link + name —
-            # so delivery is guaranteed; the PDF stays available on-site.
+        # A cached PDF is NOT enough to attach it: Twilio downloads the media url
+        # itself, and a cache that isn't publicly downloadable makes the media
+        # template fail asynchronously (63019) with the customer getting NOTHING.
+        # Only attach when the public .pdf url actually serves the file; otherwise
+        # fall through to the reliable link template. The PDF stays on-site either
+        # way. (media is falsy already when no PDF was generated → skip the probe.)
+        media_ok = bool(media) and _pdf_is_fetchable(rid)
+        if TWILIO_CONTENT_SID and media_ok:          # production: approved MEDIA template
+            # Approved media template (document header):
+            #   {{1}} customer name
+            #   {{2}} login URL
+            #   {{3}} report id ONLY — the template's media url is
+            #         https://www.axtroshastra.com/report/{{3}}.pdf (the trailing
+            #         .pdf is required: Twilio rejects a media url with no file
+            #         extension, and Meta rejects a variable at the very end).
+            #         So pass ONLY the rid here, never a path.
+            #   NOTE: TWILIO_CONTENT_SID must point at this .pdf-shaped template.
+            client.messages.create(
+                from_=TWILIO_FROM, to=f"whatsapp:{to}",
+                content_sid=TWILIO_CONTENT_SID,
+                content_variables=json.dumps(
+                    {"1": name, "2": login, "3": rid}))
+        elif TWILIO_CONTENT_SID_TEXT:                # approved TEXT template (report link)
+            # No media-download risk → delivery is guaranteed; the PDF stays
+            # available on-site. This is the default whenever the PDF can't be
+            # verified as publicly downloadable (the 63019 fix).
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID_TEXT,
                 content_variables=json.dumps({"1": name, "2": link}))
-        elif TWILIO_CONTENT_SID:                     # production: approved template
-            # Approved media template (document header):
-            #   {{1}} customer name
-            #   {{2}} login URL
-            #   {{3}} report id ONLY — the resubmitted template's media URL is
-            #         https://www.axtroshastra.com/report/{{3}}.pdf (the trailing
-            #         .pdf is required: Twilio rejects a media URL with no file
-            #         extension, and Meta rejects a variable at the very end).
-            #         So pass ONLY the rid here, never a path. /report/{rid}.pdf
-            #         serves the same file as /report/{rid}/pdf and regenerates
-            #         on a cold cache, so Twilio's media fetch always succeeds.
-            #   NOTE: TWILIO_CONTENT_SID must point at this .pdf-shaped template.
-            #         Setting it to the older /{{3}} template will build a broken
-            #         URL — the env SID and this line are a matched pair.
+        elif TWILIO_CONTENT_SID:                      # only the media template is configured
+            # Last resort: nothing else to fall back to. Attach only if verified
+            # fetchable, else send the media template without betting on the PDF.
             client.messages.create(
                 from_=TWILIO_FROM, to=f"whatsapp:{to}",
                 content_sid=TWILIO_CONTENT_SID,
                 content_variables=json.dumps(
                     {"1": name, "2": login, "3": rid}))
         else:                                        # sandbox / 24h session freeform
-            kwargs = {"media_url": media} if media else {}
+            kwargs = {"media_url": media} if media_ok else {}
             body = (f"Namaste {name}! 🙏 Aapki Axtroshastra {label} Report "
-                    + ("attached hai (PDF) 📄" if media else f"ready hai:\n{link}")
+                    + ("attached hai (PDF) 📄" if media_ok else f"ready hai:\n{link}")
                     + f"\n\n✅ Aapka account ban gaya hai is number par."
                     + f"\nLogin anytime → {login}"
                     + "\n\nKoi bhi sawaal ho — bas reply kijiye.")

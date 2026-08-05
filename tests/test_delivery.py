@@ -51,8 +51,9 @@ def test_media_template_passes_rid_as_bare_variable_3(client, monkeypatch):
     _set_twilio_env(monkeypatch)
     calls = []
     _fake_client(monkeypatch, calls)
-    # A cached PDF selects the media template path.
+    # A cached PDF that is ALSO publicly downloadable selects the media template.
     monkeypatch.setattr(api.pdfgen, "get_cached", lambda rid: b"%PDF-1.4 fake")
+    monkeypatch.setattr(api, "_pdf_is_fetchable", lambda rid: True)
 
     api.send_whatsapp_report("+919812345678", "rid_media_1", "Asha", "marriage")
 
@@ -64,6 +65,40 @@ def test_media_template_passes_rid_as_bare_variable_3(client, monkeypatch):
         "2": f"{TW_ENV['PUBLIC_BASE_URL']}/login",
         "3": "rid_media_1",          # bare rid, NOT a path/URL
     }
+
+
+def test_media_skipped_when_pdf_not_publicly_fetchable(client, monkeypatch):
+    """The 63019 fix: a PDF cached on THIS instance but not downloadable from the
+    public url must NOT be attached (that fails async and the customer gets
+    nothing). We fall back to the TEXT template with the report link instead."""
+    _set_twilio_env(monkeypatch)
+    calls = []
+    _fake_client(monkeypatch, calls)
+    monkeypatch.setattr(api.pdfgen, "get_cached", lambda rid: b"%PDF-1.4 fake")  # cached...
+    monkeypatch.setattr(api, "_pdf_is_fetchable", lambda rid: False)             # ...but not fetchable
+
+    api.send_whatsapp_report("+919812345678", "rid_media_2", "Asha", "marriage")
+
+    assert len(calls) == 1, "still exactly one WhatsApp — never zero"
+    kw = calls[0]
+    assert kw["content_sid"] == TW_ENV["TWILIO_CONTENT_SID_TEXT"], "must use the TEXT template"
+    assert json.loads(kw["content_variables"]) == {
+        "1": "Asha",
+        "2": f"{TW_ENV['PUBLIC_BASE_URL']}/report/rid_media_2",   # link, no media attached
+    }
+
+
+def test_pdf_is_fetchable_returns_false_when_probe_fails(monkeypatch):
+    """The probe never raises and returns False on any error, so a broken public
+    PDF url can never crash delivery — it just downgrades to the link template."""
+    monkeypatch.setattr(api, "PUBLIC_BASE_URL", "https://axtroshastra.example")
+    import urllib.request
+
+    def _boom(*a, **k):
+        raise OSError("connection refused")
+
+    monkeypatch.setattr(urllib.request, "urlopen", _boom)
+    assert api._pdf_is_fetchable("rid_probe") is False
 
 
 def test_text_template_used_when_pdf_not_ready(client, monkeypatch):
