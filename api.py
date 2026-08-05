@@ -987,6 +987,10 @@ requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translat
 setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-24px)';
 setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);},3200);}
 function axPdfDl(ev){if(ev&&ev.preventDefault)ev.preventDefault();
+if(window.axInApp&&window.axInApp()){var pu=location.pathname.replace(/\\/+$/,'')+'/pdf';
+window.open(pu,'_blank');
+axToastPdf('Opening your PDF\\u2026 use the in-app menu to save or share it \\u2014 or open this page in your browser for a direct download.');
+return false;}
 var b=ev&&ev.currentTarget;if(b)b.style.opacity='.55';
 function done(){if(b)b.style.opacity='';}
 function attempt(retriesLeft){
@@ -1014,6 +1018,10 @@ return false;}
 # The chrome is injected AFTER shaadi_hi/milan_hi.localize runs, so any English
 # it carries would ship untranslated on a Hindi report — swap it here instead.
 _AXDL_HI = [
+    ("Opening your PDF\\u2026 use the in-app menu to save or share it \\u2014 "
+     "or open this page in your browser for a direct download.",
+     "आपकी PDF खुल रही है\\u2026 इसे सेव या शेयर करने के लिए इन-ऐप मेनू का उपयोग करें \\u2014 "
+     "या सीधे डाउनलोड के लिए इस पेज को अपने ब्राउज़र में खोलें।"),
     ("PDF downloaded \\u2713 check your Downloads / Files app.",
      "PDF डाउनलोड हो गई \\u2713 अपने Downloads / Files ऐप में देखें।"),
     ("Preparing your PDF \\u2014 one moment\\u2026",
@@ -1084,6 +1092,109 @@ _ACCT_TOAST_HI = ('\\u2705 अकाउंट बन गया \\u2014 अपन
                   'text-decoration:none">लॉगिन \\u2192</a>')
 
 
+# --- in-app browser (Instagram / FB / TikTok / …) handling ----------------
+# Reports are opened a lot from Instagram/Facebook links, which force a
+# restricted WebView. There the blob-based PDF download silently fails and
+# wa.me / external links throw "Page can't be loaded". This snippet:
+#   * defines window.axInApp() -> the app name (or null) from the UA;
+#   * on a match, shows a dismissible, on-brand "open in your browser" banner
+#     with platform-aware steps (Android ⋮ menu / iOS ••• menu);
+#   * exposes the direct /pdf link as a tappable fallback;
+#   * wraps window.axShare so, when native share is unavailable in the WebView,
+#     it copies the report link to the clipboard with a toast.
+# The download button itself branches on axInApp() inside axPdfDl (see above):
+# in-app it opens the direct /pdf URL in a new tab instead of the blob.
+_INAPP_SNIPPET = """<script>
+(function(){
+window.axInApp=function(){var u=navigator.userAgent||'';
+if(/Instagram/i.test(u))return'Instagram';
+if(/FBAN|FBAV|FB_IAB|FBIOS/i.test(u))return'Facebook';
+if(/Snapchat/i.test(u))return'Snapchat';
+if(/musical_ly|BytedanceWebview|TikTok/i.test(u))return'TikTok';
+if(/\\bLine\\//i.test(u))return'LINE';
+if(/Twitter|TwitterAndroid/i.test(u))return'Twitter/X';
+return null;};
+var app=window.axInApp();if(!app)return;
+var TX={head:'Open in your browser for the best experience',
+introPre:'You\\u2019re viewing this inside ',
+introPost:'. To download your PDF and open WhatsApp reliably:',
+stepA:'Tap the \\u22ee menu (top-right), then choose \\u201cOpen in Chrome\\u201d / your browser.',
+stepI:'Tap the \\u2022\\u2022\\u2022 (or browser) icon, then choose \\u201cOpen in browser\\u201d.',
+pdflbl:'or open the PDF directly',
+dismiss:'Dismiss',
+copied:'Report link copied \\u2014 paste it into WhatsApp to share.'};
+try{if(sessionStorage.getItem('axs_inapp_dismiss'))var _dismissed=1;}catch(e){}
+if(!_dismissed){
+var u=navigator.userAgent||'';var ios=/iPhone|iPad|iPod/i.test(u);
+var steps=ios?TX.stepI:TX.stepA;
+var pu=location.pathname.replace(/\\/+$/,'')+'/pdf';
+var b=document.createElement('div');b.className='ax-inapp';b.setAttribute('role','region');
+b.style.cssText='position:relative;z-index:9997;margin:10px 12px;padding:14px 16px 14px 18px;'+
+'background:#FFF7E8;border:1px solid #E4B04A;border-left:5px solid #C93B2E;border-radius:12px;'+
+'color:#3A2F1B;font:400 13.5px/1.5 -apple-system,BlinkMacSystemFont,\\'Segoe UI\\',Roboto,sans-serif;'+
+'box-shadow:0 4px 14px rgba(21,28,57,.12);max-width:640px';
+b.innerHTML='<div style="font-weight:800;color:#151C39;font-size:14.5px;margin:0 44px 4px 0">'+TX.head+'</div>'+
+'<div style="margin-bottom:8px">'+TX.introPre+app+TX.introPost+' <b>'+steps+'</b></div>'+
+'<a class="ax-inapp-pdf" href="'+pu+'" target="_blank" rel="noopener" '+
+'style="color:#C93B2E;font-weight:700;text-decoration:none">'+TX.pdflbl+' \\u2192</a> '+
+'<button type="button" class="ax-inapp-x" '+
+'style="float:right;background:none;border:0;color:#7A6A4A;font-weight:700;cursor:pointer;'+
+'font-size:12.5px;padding:2px 4px">'+TX.dismiss+'</button>';
+var host=document.body;host.insertBefore(b,host.firstChild);
+b.querySelector('.ax-inapp-x').onclick=function(){
+try{sessionStorage.setItem('axs_inapp_dismiss','1');}catch(e){}
+if(b.parentNode)b.parentNode.removeChild(b);};
+}
+var _origShare=window.axShare;
+window.axShare=function(){
+try{if(navigator.share&&_origShare)return _origShare.apply(this,arguments);}catch(e){}
+var url=location.href;
+if(navigator.clipboard&&navigator.clipboard.writeText){
+navigator.clipboard.writeText(url).then(function(){
+if(window.axToastPdf)axToastPdf(TX.copied);},function(){if(_origShare)_origShare();});
+}else if(_origShare){_origShare();}
+return false;};
+})();
+</script>"""
+
+
+# Devanagari twins for the user-visible copy inside _INAPP_SNIPPET (injected
+# after the shaadi_hi/milan_hi localizers run, so English here would ship
+# untranslated on a Hindi report — swap it in Python instead).
+_INAPP_HI = [
+    ("Open in your browser for the best experience",
+     "बेहतर अनुभव के लिए अपने ब्राउज़र में खोलें"),
+    ("You\\u2019re viewing this inside ",
+     "आप इसे "),
+    (". To download your PDF and open WhatsApp reliably:",
+     " ऐप में देख रहे हैं। PDF डाउनलोड करने और WhatsApp सही से खोलने के लिए:"),
+    ("Tap the \\u22ee menu (top-right), then choose \\u201cOpen in Chrome\\u201d / your browser.",
+     "ऊपर-दाईं ओर \\u22ee मेनू पर टैप करें, फिर \\u201cChrome में खोलें\\u201d / अपना ब्राउज़र चुनें।"),
+    ("Tap the \\u2022\\u2022\\u2022 (or browser) icon, then choose \\u201cOpen in browser\\u201d.",
+     "\\u2022\\u2022\\u2022 (या ब्राउज़र) आइकन पर टैप करें, फिर \\u201cब्राउज़र में खोलें\\u201d चुनें।"),
+    ("or open the PDF directly",
+     "या PDF सीधे खोलें"),
+    ("dismiss:'Dismiss'",
+     "dismiss:'बंद करें'"),
+    ("Report link copied \\u2014 paste it into WhatsApp to share.",
+     "रिपोर्ट लिंक कॉपी हो गया \\u2014 शेयर करने के लिए WhatsApp में पेस्ट करें।"),
+]
+
+
+def _wire_inapp(html: str, lang: str = "en") -> str:
+    """Inject the in-app-browser banner + axShare fallback (never raises)."""
+    try:
+        snip = _INAPP_SNIPPET
+        if lang == "hi":
+            for en, hi in _INAPP_HI:
+                snip = snip.replace(en, hi)
+        if "</body>" in html:
+            return html.replace("</body>", snip + "</body>", 1)
+        return html + snip
+    except Exception:
+        return html
+
+
 def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
     """Everything a served report page gets on top of the raw template:
     one-tap PDF button, hamburger nav, account toast and the back-button
@@ -1093,6 +1204,7 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
     try:
         html = _inject_tracking(html)
         html = _wire_pdf_download(html, lang)
+        html = _wire_inapp(html, lang)
         has_acct = False
         try:                            # toast fires only when an account exists
             u = users.get_user_for_report(db, rid)
