@@ -19,7 +19,7 @@ Razorpay dashboard prerequisites:
   1. Settings > Payment capture -> AUTO capture (else payment.captured never fires)
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
-import hashlib, hmac, json, logging, os, secrets, sqlite3, threading
+import hashlib, hmac, json, logging, os, secrets, sqlite3, threading, time
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
@@ -817,44 +817,51 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 # fallback (the popup mobile is a mandatory field).
                 phone = rec.get("user_phone") or pay_phone
                 wa_phone = rec.get("user_phone") or ""
-                mark_paid(rid, payment_id=ent.get("id"), phone=pay_phone)
-                # PDF first, then WhatsApp: background tasks run in order, so
-                # the message can attach the freshly cached PDF.
-                background_tasks.add_task(_pregenerate_pdf_task, rid)
-                if wa_phone:
+                # ATOMIC CLAIM — the single idempotency gate, shared with the
+                # verify + poll paths. Deliver ONLY if this webhook is the caller
+                # that flips paid 0->1; if verify or a poll cycle already
+                # delivered, claim_paid returns False and we skip (no double
+                # WhatsApp). This sits on top of the event-id dedup
+                # (already_processed) above, which only guards the webhook
+                # re-sending the SAME event, not webhook-vs-verify races.
+                if payments.claim_paid(db, rid, ent.get("id"), pay_phone):
+                    # PDF first, then WhatsApp: background tasks run in order, so
+                    # the message can attach the freshly cached PDF.
+                    background_tasks.add_task(_pregenerate_pdf_task, rid)
+                    if wa_phone:
+                        background_tasks.add_task(
+                            send_whatsapp_report, wa_phone, rid,
+                            _display_name(rec["payload"]),
+                            rec["payload"].get("product", "marriage"))
+                    # Optional creative prose (Claude/OpenAI). No-op unless
+                    # NARRATIVE_ENABLED=1; runs before WhatsApp/email are opened by
+                    # the user since delivery links point at /report/{id}.
+                    background_tasks.add_task(_generate_narrative_task, rid)
+                    form_email = rec["payload"]["meta"].get("_email")
+                    # Account: create/link a user on the popup number (fallback:
+                    # Razorpay contact). The ACCOUNT email must prefer the POPUP
+                    # email the buyer typed (fallback: the Razorpay contact email).
+                    # pay_email stays the Razorpay/transaction email for tracking.
+                    # Never auto-set the account NAME from the report — a milan
+                    # report's name is a couple ("A & B"), wrong as a person's
+                    # account name; the user edits it on /account instead.
+                    pay_email = ent.get("email") or form_email or ""
+                    try:
+                        uid = users.upsert_user_from_payment(
+                            db, mobile=phone, email=form_email or pay_email)
+                        if uid:
+                            users.link_report(db, rid, uid)
+                    except Exception as e:
+                        logger.error("[users] account upsert failed for %s: %s", rid, e)
+                    if form_email:                   # (#7) email + PDF delivery
+                        background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+                    # Server-side Purchase -> Meta CAPI + GA4 MP (dormant unless the
+                    # keys are set). The reliable backstop for the browser Pixel/gtag
+                    # fire, which is lost to ad-blockers / closed tabs. event_id/
+                    # transaction_id = rid dedups it against the client fire.
                     background_tasks.add_task(
-                        send_whatsapp_report, wa_phone, rid,
-                        _display_name(rec["payload"]),
-                        rec["payload"].get("product", "marriage"))
-                # Optional creative prose (Claude/OpenAI). No-op unless
-                # NARRATIVE_ENABLED=1; runs before WhatsApp/email are opened by
-                # the user since delivery links point at /report/{id}.
-                background_tasks.add_task(_generate_narrative_task, rid)
-                form_email = rec["payload"]["meta"].get("_email")
-                # Account: create/link a user on the popup number (fallback:
-                # Razorpay contact). The ACCOUNT email must prefer the POPUP
-                # email the buyer typed (fallback: the Razorpay contact email).
-                # pay_email stays the Razorpay/transaction email for tracking.
-                # Never auto-set the account NAME from the report — a milan
-                # report's name is a couple ("A & B"), wrong as a person's
-                # account name; the user edits it on /account instead.
-                pay_email = ent.get("email") or form_email or ""
-                try:
-                    uid = users.upsert_user_from_payment(
-                        db, mobile=phone, email=form_email or pay_email)
-                    if uid:
-                        users.link_report(db, rid, uid)
-                except Exception as e:
-                    logger.error("[users] account upsert failed for %s: %s", rid, e)
-                if form_email:                   # (#7) email + PDF delivery
-                    background_tasks.add_task(email_report, form_email, rid, rec["payload"])
-                # Server-side Purchase -> Meta CAPI + GA4 MP (dormant unless the
-                # keys are set). The reliable backstop for the browser Pixel/gtag
-                # fire, which is lost to ad-blockers / closed tabs. event_id/
-                # transaction_id = rid dedups it against the client fire.
-                background_tasks.add_task(
-                    tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
-                    "INR", phone, pay_email)
+                        tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+                        "INR", phone, pay_email)
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -882,11 +889,11 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         raise HTTPException(404, "order not found")
     rid = row[0]
     rec = get_report(rid)
-    if rec and not rec["paid"]:
+    if rec and not rec["paid"]:               # cheap pre-check, NOT the gate
         # Fetch the payment entity from Razorpay server-side — it carries the
         # contact + email the customer typed into checkout. That contact stays
-        # the PAYMENT number (reports.phone via mark_paid); the account and
-        # WhatsApp delivery prefer user_phone from the pre-payment popup.
+        # the PAYMENT number (reports.phone); the account and WhatsApp delivery
+        # prefer user_phone from the pre-payment popup.
         pay_phone = body.get("phone") or ""
         pay_email = ""
         try:
@@ -895,35 +902,164 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             pay_email = ent.get("email") or ""
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
-        # Account keeps the fallback; the REPORT goes only to the popup number.
-        phone = rec.get("user_phone") or pay_phone
-        wa_phone = rec.get("user_phone") or ""
-        mark_paid(rid, payment_id=pid, phone=pay_phone)
-        # Mirror the webhook: PDF first so the WhatsApp message can attach it.
-        background_tasks.add_task(_pregenerate_pdf_task, rid)
-        background_tasks.add_task(_generate_narrative_task, rid)
-        if wa_phone:
+        # ATOMIC CLAIM — the real idempotency gate (the `not rec["paid"]` read
+        # above is only a cheap optimization that can race). Deliver ONLY if this
+        # verify call flips paid 0->1; if the webhook (or another verify) already
+        # did, claim_paid returns False and we skip — no double delivery.
+        # claim_paid also stores payment_id + the Razorpay contact, so there is
+        # no separate mark_paid here.
+        if payments.claim_paid(db, rid, pid, pay_phone):
+            # Account keeps the fallback; the REPORT goes only to the popup number.
+            phone = rec.get("user_phone") or pay_phone
+            wa_phone = rec.get("user_phone") or ""
+            # Mirror the webhook: PDF first so the WhatsApp message can attach it.
+            background_tasks.add_task(_pregenerate_pdf_task, rid)
+            background_tasks.add_task(_generate_narrative_task, rid)
+            if wa_phone:
+                background_tasks.add_task(
+                    send_whatsapp_report, wa_phone, rid,
+                    _display_name(rec["payload"]),
+                    rec["payload"].get("product", "marriage"))
+            form_email = rec["payload"]["meta"].get("_email")
+            try:
+                # ACCOUNT email prefers the POPUP email (fallback: Razorpay contact
+                # email). No auto-set name — the user edits it on /account.
+                uid = users.upsert_user_from_payment(
+                    db, mobile=phone, email=form_email or pay_email or "")
+                if uid:
+                    users.link_report(db, rid, uid)
+            except Exception as e:
+                logger.error("[users] account upsert failed for %s: %s", rid, e)
+            if form_email:
+                background_tasks.add_task(email_report, form_email, rid, rec["payload"])
+            # Mirror the webhook: server-side Purchase backstop (env-gated OFF).
             background_tasks.add_task(
-                send_whatsapp_report, wa_phone, rid,
-                _display_name(rec["payload"]),
-                rec["payload"].get("product", "marriage"))
-        form_email = rec["payload"]["meta"].get("_email")
-        try:
-            # ACCOUNT email prefers the POPUP email (fallback: Razorpay contact
-            # email). No auto-set name — the user edits it on /account.
-            uid = users.upsert_user_from_payment(
-                db, mobile=phone, email=form_email or pay_email or "")
-            if uid:
-                users.link_report(db, rid, uid)
-        except Exception as e:
-            logger.error("[users] account upsert failed for %s: %s", rid, e)
-        if form_email:
-            background_tasks.add_task(email_report, form_email, rid, rec["payload"])
-        # Mirror the webhook: server-side Purchase backstop (env-gated OFF).
-        background_tasks.add_task(
-            tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
-            "INR", phone, pay_email or form_email or "")
+                tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
+                "INR", phone, pay_email or form_email or "")
     return {"ok": True, "report_id": rid}
+
+
+# ---------------------------------------------------------------- recovery net
+# "No paid customer is ever left without their report." If a browser closes
+# mid-payment AND the Razorpay webhook is missed, the report is never delivered
+# (an "orphaned payment"). This backstop does not depend on the webhook: a
+# lightweight in-process poll (and the admin /api/reconcile sweep) asks Razorpay
+# which unpaid-in-our-DB reports were actually captured and runs the SAME
+# delivery the webhook does. Idempotency is airtight because a report is
+# delivered ONLY by the caller that atomically flips paid 0->1
+# (payments.claim_paid), so neither the webhook nor two overlapping poll cycles
+# can double-deliver.
+RECONCILE_INTERVAL_SEC = int(os.getenv("RECONCILE_INTERVAL_SEC", "300"))
+_reconcile_lock = threading.Lock()      # guards against overlapping poll cycles
+_reconcile_thread_started = False
+
+
+def _deliver_report(rid: str):
+    """Run the webhook's delivery for one just-recovered report, SYNCHRONOUSLY —
+    reconcile can run in a daemon thread with no FastAPI request / BackgroundTasks
+    around it, so we call the task functions directly. Order mirrors the webhook:
+    cache the PDF first (so the WhatsApp message can attach it), then narrative,
+    then the report WhatsApp to the POPUP number ONLY (never the Razorpay
+    contact), then the optional email copy. Never raises."""
+    rec = get_report(rid)
+    if not rec:
+        return
+    _pregenerate_pdf_task(rid)            # sees paid=1 (claim already flipped it)
+    _generate_narrative_task(rid)
+    wa_phone = rec.get("user_phone") or ""   # popup number ONLY — see webhook rule
+    if wa_phone:
+        send_whatsapp_report(wa_phone, rid, _display_name(rec["payload"]),
+                             rec["payload"].get("product", "marriage"))
+    else:
+        # Old orphan whose popup number was never captured: it is now paid and
+        # the report is generated (viewable / in the account), but we cannot
+        # deliver WhatsApp to a number we do not have. Skip gracefully.
+        logger.info("[reconcile] %s recovered without a popup number — marked "
+                    "paid + report generated, WhatsApp skipped", rid)
+    form_email = (rec["payload"].get("meta") or {}).get("_email")
+    if form_email:                        # (#7) email + PDF copy, like the paid path
+        email_report(form_email, rid, rec["payload"])
+
+
+def _reconcile_and_deliver(limit: int = 200) -> dict:
+    """The webhook-independent backstop. Find reports Razorpay reports as captured
+    but still paid=0 in our DB, and for each: atomically CLAIM it (deliver only if
+    THIS path flipped paid 0->1), then run the full webhook delivery + account
+    upsert/link. Safe no-op when Razorpay is unconfigured; skips cleanly if another
+    cycle is already running. Callable synchronously (poll thread or admin)."""
+    if not payments.configured():
+        return {"checked": 0, "recovered": 0, "note": "razorpay not configured"}
+    if not _reconcile_lock.acquire(blocking=False):
+        return {"checked": 0, "recovered": 0, "note": "already running"}
+    try:
+        candidates = payments.find_recoverable(db, limit)
+        recovered = 0
+        for cand in candidates:
+            rid = cand["rid"]
+            # ATOMIC CLAIM — the single idempotency gate. If the webhook (or an
+            # overlapping cycle) already flipped this report, claim_paid returns
+            # False and we skip: NO re-delivery.
+            if not payments.claim_paid(db, rid, cand["payment_id"], cand["contact"]):
+                continue
+            try:
+                _deliver_report(rid)
+            except Exception as e:
+                logger.error("[reconcile] delivery failed for %s: %s", rid, e)
+            # Account creation/link, mirroring the webhook: the account keeps its
+            # fallback (popup number, else the Razorpay contact); the popup email
+            # is preferred over the Razorpay email.
+            try:
+                rec = get_report(rid)
+                popup = rec.get("user_phone") if rec else ""
+                form_email = ((rec or {}).get("payload", {}).get("meta") or {}).get("_email")
+                uid = users.upsert_user_from_payment(
+                    db, mobile=popup or cand["contact"],
+                    email=form_email or cand["email"])
+                if uid:
+                    users.link_report(db, rid, uid)
+            except Exception as e:
+                logger.error("[users] reconcile account link failed for %s: %s", rid, e)
+            recovered += 1
+        return {"checked": len(candidates), "recovered": recovered}
+    finally:
+        _reconcile_lock.release()
+
+
+def _reconcile_loop():
+    """Daemon loop: sweep every RECONCILE_INTERVAL_SEC, never crashing the app."""
+    while True:
+        try:
+            _reconcile_and_deliver()
+        except Exception as e:            # a bug here must not kill the backstop
+            logger.error("[reconcile] poll cycle error: %s", e)
+        time.sleep(max(RECONCILE_INTERVAL_SEC, 1))
+
+
+@app.on_event("startup")
+def _start_reconcile_poll():
+    """Start the in-process recovery poll once at boot. Single-instance EB
+    deployment, so an in-process daemon thread is the right tool. No-op cleanly
+    when Razorpay is unconfigured or the thread is already running."""
+    global _reconcile_thread_started
+    if _reconcile_thread_started:
+        return
+    if not payments.configured():
+        logger.info("[reconcile] razorpay not configured — recovery poll disabled")
+        return
+    _reconcile_thread_started = True
+    threading.Thread(target=_reconcile_loop, name="reconcile-poll",
+                     daemon=True).start()
+    logger.info("[reconcile] recovery poll started (every %ss)", RECONCILE_INTERVAL_SEC)
+
+
+@app.post("/api/reconcile")
+def reconcile_admin(key: str = ""):
+    """Admin: force a deliver-capable recovery sweep. Registered here (before
+    extensions.install) so it SHADOWS the older non-delivering /api/reconcile in
+    extensions.py — Starlette serves the first matching route. Gated by STATS_KEY."""
+    if not _valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    return _reconcile_and_deliver()
 
 
 def _refresh_current_period(payload: dict) -> dict:
