@@ -1,0 +1,60 @@
+# T6 — Robot Customer bot. Every 4 hours it behaves like a real customer on the
+# LIVE site (desktop + mobile): fills the birth form, unlocks with a free test
+# pass (no real payment), and checks the paid report + PDF actually work. On any
+# failure it alerts the devs (email + WhatsApp). A routine failure here means
+# "something broke on a running site" — it does NOT roll back (that's only for
+# bad deploys; see ops-deploy-guard.yml).
+name: ops-robot-customer
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"        # every 4 hours
+  workflow_dispatch:
+
+concurrency:
+  group: ops-robot-customer
+  cancel-in-progress: true
+
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install robot dependencies
+        working-directory: ops/robot_customer
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Run the robot customer against the live site
+        working-directory: ops/robot_customer
+        env:
+          OPS_TARGET_URL: ${{ secrets.OPS_TARGET_URL }}
+          STATS_KEY:      ${{ secrets.STATS_KEY }}
+        run: npx playwright test
+
+      # ---- On failure: alert the developers (email + WhatsApp) ----
+      - name: Set up Python for alerting
+        if: failure()
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Alert developers
+        if: failure()
+        env:
+          OPS_ALERT_EMAILS:     ${{ secrets.OPS_ALERT_EMAILS }}
+          OPS_ALERT_WHATSAPP:   ${{ secrets.OPS_ALERT_WHATSAPP }}
+          SMTP_HOST:            ${{ secrets.SMTP_HOST }}
+          SMTP_PORT:            ${{ secrets.SMTP_PORT }}
+          SMTP_USER:            ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM:            ${{ secrets.SMTP_FROM }}
+          TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          pip install --quiet twilio
+          python -c "from ops import alerts; import os; alerts.send_alert('Robot customer FAILED', 'The end-to-end customer journey failed on the live site. Something is broken (form / unlock / report / PDF). Run: '+os.environ['RUN_URL'], 'critical')"
