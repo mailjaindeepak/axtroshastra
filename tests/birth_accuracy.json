@@ -1,0 +1,42 @@
+[
+  {
+    "id": "srinagar-1998",
+    "place": "Srinagar",
+    "dob": "1998-01-14", "tob": "05:55",
+    "lat": 34.083, "lon": 74.80,
+    "source": "AstroSage VedicReport (Lahiri) 2026-08-06",
+    "expected": {"Ascendant": "Sagittarius", "Moon": "Cancer", "Nakshatra": "Pushya", "Sun": "Sagittarius"}
+  },
+  {
+    "id": "leh-2001",
+    "place": "Leh",
+    "dob": "2001-06-21", "tob": "23:50",
+    "lat": 34.167, "lon": 77.567,
+    "source": "AstroSage VedicReport (Lahiri) 2026-08-06",
+    "expected": {"Ascendant": "Aquarius", "Moon": "Gemini", "Nakshatra": "Ardra", "Sun": "Gemini"}
+  },
+  {
+    "id": "bhuj-1972",
+    "place": "Bhuj",
+    "dob": "1972-11-30", "tob": "03:40",
+    "lat": 23.267, "lon": 69.667,
+    "source": "AstroSage VedicReport (Lahiri) 2026-08-06",
+    "expected": {"Ascendant": "Virgo", "Moon": "Virgo", "Nakshatra": "Uttara Phalguni", "Sun": "Scorpio"}
+  },
+  {
+    "id": "mumbai-1995",
+    "place": "Mumbai",
+    "dob": "1995-03-21", "tob": "12:00",
+    "lat": 19.067, "lon": 72.867,
+    "source": "AstroSage VedicReport (Lahiri) 2026-08-06",
+    "expected": {"Ascendant": "Gemini", "Moon": "Scorpio", "Nakshatra": "Vishakha", "Sun": "Pisces"}
+  },
+  {
+    "id": "nagpur-1966",
+    "place": "Nagpur",
+    "dob": "1966-09-17", "tob": "17:45",
+    "lat": 21.133, "lon": 79.083,
+    "source": "AstroSage VedicReport (Lahiri) 2026-08-06",
+    "expected": {"Ascendant": "Aquarius", "Moon": "Libra", "Nakshatra": "Swati", "Sun": "Virgo"}
+  }
+]
