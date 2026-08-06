@@ -1,0 +1,29 @@
+# List the application versions Elastic Beanstalk has saved (in S3), newest
+# first, so you can pick which one to roll back to. Read-only — it changes
+# nothing. Run this first, copy a version label, then use "eb-rollback".
+name: eb-list-versions
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION:    ap-south-1
+    steps:
+      - name: Currently LIVE version
+        run: |
+          echo "Live right now on AxtroShastraProd:"
+          aws elasticbeanstalk describe-environments \
+            --environment-names AxtroShastraProd \
+            --query "Environments[0].VersionLabel" --output text
+
+      - name: Last 25 saved versions you can roll back to (newest first)
+        run: |
+          aws elasticbeanstalk describe-application-versions \
+            --application-name AxtroShastra \
+            --query "reverse(sort_by(ApplicationVersions,&DateCreated))[:25].{Version:VersionLabel,Created:DateCreated,Description:Description}" \
+            --output table
