@@ -32,3 +32,26 @@ fails on a permission error, Deepak adds the two Describe permissions.
 - Retention: EB keeps a history of versions; if you ever can't find an old
   version, its lifecycle policy may have pruned it (`eb appversion` shows the
   list / limit).
+
+## Name each deploy (makes rollback obvious)
+
+Today Beanstalk auto-labels versions with cryptic names, so the version list is
+hard to read. If we give every deploy a **dated label + a short message**, the
+`eb-list-versions` output becomes self-explanatory and picking a rollback target
+is trivial. It's a one-line change to the deploy command:
+
+```bash
+# instead of a bare `eb deploy AxtroShastraProd`:
+eb deploy AxtroShastraProd --label v2026.08.06-2 --message "whatsapp delivery fix"
+```
+
+| Auto-labels (today) | Named (proposed) |
+|---|---|
+| `app-2608-180412` | `v2026.08.06-4 · reviews + timer` |
+| `app-2608-151002` | `v2026.08.06-3 · geocoding fix` |
+| `app-2608-120530` | `v2026.08.06-2 · whatsapp delivery` |
+
+With names, rolling back is simply: find the last known-good name in
+`eb-list-versions`, run `eb-rollback` with it. Recommended — it's a small edit to
+the deploy step in `.github/workflows/ci.yml` (label from date+run number,
+message from the commit subject).
