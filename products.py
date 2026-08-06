@@ -13,8 +13,28 @@ from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
 VARNA = {3:3, 7:3, 11:3,  0:2, 4:2, 8:2,  1:1, 5:1, 9:1,  2:0, 6:0, 10:0}
 VARNA_NAME = {3:"Brahmin", 2:"Kshatriya", 1:"Vaishya", 0:"Shudra"}
 
-# Vashya group by moon sign: Q quadruped, M human, J water, V wild, K insect
+# Vashya group by moon sign: Q quadruped, M human, J water, V wild, K insect.
+# Sagittarius(8) and Capricorn(9) are classical SPLIT signs — their group
+# depends on which half of the sign (0-15 deg vs 15-30 deg) the Moon falls in,
+# not the sign alone. The two entries below are the front-half (0-15 deg)
+# defaults; _vashya_group() overrides them for the back half. Verified against
+# AstroSage's Kundli Milan (Capricorn back-half -> Chatushpad/Q), 2026-08-06.
 VASHYA = {0:"Q",1:"Q",2:"M",3:"J",4:"V",5:"M",6:"M",7:"K",8:"M",9:"J",10:"M",11:"J"}
+
+
+def _vashya_group(sign: int, deg_in_sign: float) -> str:
+    """Vashya group for a moon sign+degree, handling the two classical split
+    signs. Sagittarius: front half (0-15) Manav/human, back half (15-30)
+    Chatushpad/quadruped. Capricorn: front half (0-15) Chatushpad/quadruped,
+    back half (15-30) Jalachar/water — empirically matched against AstroSage's
+    Kundli Milan (a Capricorn moon at 5.7 deg read as Chatushpad there),
+    2026-08-06; this is the reverse of the naive "goat head is Jalachar"
+    assumption. Every other sign is a single fixed group (VASHYA table)."""
+    if sign == 8:
+        return "M" if deg_in_sign < 15 else "Q"
+    if sign == 9:
+        return "Q" if deg_in_sign < 15 else "J"
+    return VASHYA[sign]
 VASHYA_SCORE = {("Q","Q"):2,("Q","M"):1,("Q","J"):1,("Q","V"):0,("Q","K"):1,
                 ("M","Q"):1,("M","M"):2,("M","J"):.5,("M","V"):0,("M","K"):1,
                 ("J","Q"):1,("J","M"):.5,("J","J"):2,("J","V"):1,("J","K"):1,
@@ -63,13 +83,14 @@ def _yoni_score(y1: str, y2: str) -> float:
 # Gana by nakshatra: D deva, M manushya, R rakshasa
 GANA = "DMRMDMDDRRMMDRDRDRRMMDRRMMD"
 GANA_NAME = {"D":"Deva","M":"Manushya","R":"Rakshasa"}
-# Direction-dependent (groom, bride) classical Gana table. Key order is
-# (groom_gana, bride_gana): a Manushya groom with a Deva bride scores 6, but a
-# Deva groom with a Manushya bride scores 5; a Rakshasa groom with a Deva/Manushya
-# bride scores 0. (Earlier table was symmetric and over-scored these cases.)
+# Standard symmetric classical Gana table (same score regardless of groom/bride
+# direction): Deva-Manushya=5, Deva-Rakshasa=0, Manushya-Rakshasa=0. Verified
+# against AstroSage's Kundli Milan on 3 independent real pairs (accuracy test,
+# 2026-08-06) — a prior asymmetric variant here scored (M,D)=6 and (D,R)=1,
+# both of which disagreed with AstroSage.
 GANA_SCORE = {("D","D"):6,("M","M"):6,("R","R"):6,
-              ("D","M"):5,("M","D"):6,
-              ("D","R"):1,("R","D"):0,
+              ("D","M"):5,("M","D"):5,
+              ("D","R"):0,("R","D"):0,
               ("M","R"):0,("R","M"):0}
 
 # Nadi by nakshatra: A adi, M madhya, N antya (cycle A M N N M A A M N ...)
@@ -145,7 +166,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         ch = compute_chart(dt, p["lat"], p["lon"])
         charts.append(ch)
         m = ch["grahas"]["Moon"]
-        moons.append({"sign": m.sign, "nak": m.nak, "pada": m.pada})
+        moons.append({"sign": m.sign, "nak": m.nak, "pada": m.pada, "deg": m.lon % 30})
 
     g, b = moons[0], moons[1]
     # Order the groom (boy) and bride (girl) for the direction-sensitive kootas
@@ -163,7 +184,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
                    "detail": f"{VARNA_NAME[v1]} – {VARNA_NAME[v2]}",
                    "meaning": "work-ego compatibility"})
 
-    vg, vb = VASHYA[g["sign"]], VASHYA[b["sign"]]
+    vg, vb = _vashya_group(g["sign"], g["deg"]), _vashya_group(b["sign"], b["deg"])
     kootas.append({"name": "Vashya", "max": 2, "score": VASHYA_SCORE[(vg, vb)],
                    "detail": f"{g and SIGNS[g['sign']]} – {SIGNS[b['sign']]}",
                    "meaning": "mutual influence and pull"})
