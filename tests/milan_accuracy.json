@@ -1,0 +1,167 @@
+[
+  {
+    "pair": "Anshu & Nandini",
+    "p1": {
+      "name": "Anshu",
+      "dob": "1998-07-19",
+      "tob": "21:05",
+      "tz": 5.5,
+      "lat": 18.5167,
+      "lon": 73.85,
+      "gender": "male"
+    },
+    "p2": {
+      "name": "Nandini",
+      "dob": "2000-02-29",
+      "tob": "07:20",
+      "tz": 5.5,
+      "lat": 19.0667,
+      "lon": 72.8667,
+      "gender": "female"
+    },
+    "expected_kootas": {
+      "Varna": 0.0,
+      "Vashya": 1.0,
+      "Tara": 1.5,
+      "Yoni": 2.0,
+      "Graha Maitri": 0.5,
+      "Gana": 0.0,
+      "Bhakoot": 0.0,
+      "Nadi": 8.0
+    },
+    "expected_total": 13.0,
+    "source": "AstroSage MatchMakingPdf (Lahiri) 2026-08-06"
+  },
+  {
+    "pair": "Golu & Pooja",
+    "p1": {
+      "name": "Golu",
+      "dob": "1999-06-30",
+      "tob": "23:55",
+      "tz": 5.5,
+      "lat": 22.5667,
+      "lon": 88.3667,
+      "gender": "male"
+    },
+    "p2": {
+      "name": "Pooja",
+      "dob": "2000-01-01",
+      "tob": "00:10",
+      "tz": 5.5,
+      "lat": 19.0667,
+      "lon": 72.8667,
+      "gender": "female"
+    },
+    "expected_kootas": {
+      "Varna": 1.0,
+      "Vashya": 1.0,
+      "Tara": 1.5,
+      "Yoni": 2.0,
+      "Graha Maitri": 5.0,
+      "Gana": 5.0,
+      "Bhakoot": 7.0,
+      "Nadi": 0.0
+    },
+    "expected_total": 22.5,
+    "source": "AstroSage MatchMakingPdf (Lahiri) 2026-08-06"
+  },
+  {
+    "pair": "Rishi & Dimple",
+    "p1": {
+      "name": "Rishi",
+      "dob": "1994-05-21",
+      "tob": "12:00",
+      "tz": 5.5,
+      "lat": 26.9167,
+      "lon": 75.7833,
+      "gender": "male"
+    },
+    "p2": {
+      "name": "Dimple",
+      "dob": "1995-09-08",
+      "tob": "12:00",
+      "tz": 5.5,
+      "lat": 23.0167,
+      "lon": 72.6167,
+      "gender": "female"
+    },
+    "expected_kootas": {
+      "Varna": 1.0,
+      "Vashya": 2.0,
+      "Tara": 1.5,
+      "Yoni": 0.0,
+      "Graha Maitri": 4.0,
+      "Gana": 0.0,
+      "Bhakoot": 0.0,
+      "Nadi": 0.0
+    },
+    "expected_total": 8.5,
+    "source": "AstroSage MatchMakingPdf (Lahiri) 2026-08-06"
+  },
+  {
+    "pair": "Akash & Akansha",
+    "p1": {
+      "name": "Akash",
+      "dob": "1993-12-25",
+      "tob": "05:45",
+      "tz": 5.5,
+      "lat": 13.0833,
+      "lon": 80.2667,
+      "gender": "male"
+    },
+    "p2": {
+      "name": "Akansha",
+      "dob": "1992-04-17",
+      "tob": "12:00",
+      "tz": 5.5,
+      "lat": 12.9667,
+      "lon": 77.5833,
+      "gender": "female"
+    },
+    "expected_kootas": {
+      "Varna": 1.0,
+      "Vashya": 1.0,
+      "Tara": 1.5,
+      "Yoni": 1.0,
+      "Graha Maitri": 3.0,
+      "Gana": 0.0,
+      "Bhakoot": 7.0,
+      "Nadi": 0.0
+    },
+    "expected_total": 14.5,
+    "source": "AstroSage MatchMakingPdf (Lahiri) 2026-08-06"
+  },
+  {
+    "pair": "Vaibhav & Riya",
+    "p1": {
+      "name": "Vaibhav",
+      "dob": "1996-03-14",
+      "tob": "09:15",
+      "tz": 5.5,
+      "lat": 28.6667,
+      "lon": 77.2167,
+      "gender": "male"
+    },
+    "p2": {
+      "name": "Riya",
+      "dob": "1997-11-02",
+      "tob": "04:40",
+      "tz": 5.5,
+      "lat": 28.6667,
+      "lon": 77.2167,
+      "gender": "female"
+    },
+    "expected_kootas": {
+      "Varna": 0.0,
+      "Vashya": 1.0,
+      "Tara": 1.5,
+      "Yoni": 2.0,
+      "Graha Maitri": 5.0,
+      "Gana": 5.0,
+      "Bhakoot": 0.0,
+      "Nadi": 0.0
+    },
+    "expected_total": 14.5,
+    "source": "AstroSage MatchMakingPdf (Lahiri) 2026-08-06"
+  }
+]

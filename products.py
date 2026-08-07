@@ -14,7 +14,11 @@ VARNA = {3:3, 7:3, 11:3,  0:2, 4:2, 8:2,  1:1, 5:1, 9:1,  2:0, 6:0, 10:0}
 VARNA_NAME = {3:"Brahmin", 2:"Kshatriya", 1:"Vaishya", 0:"Shudra"}
 
 # Vashya group by moon sign: Q quadruped, M human, J water, V wild, K insect
-VASHYA = {0:"Q",1:"Q",2:"M",3:"J",4:"V",5:"M",6:"M",7:"K",8:"M",9:"J",10:"M",11:"J"}
+# Vashya class per sign. Capricorn (9) is classically split (Chatushpada first
+# half / Jalachar second); AstroSage — the reference our users compare against —
+# treats it as Chatushpada, so we map it to "Q" to match (verified against the
+# AstroSage MatchMaking reports in tests/test_milan_accuracy.py).
+VASHYA = {0:"Q",1:"Q",2:"M",3:"J",4:"V",5:"M",6:"M",7:"K",8:"M",9:"Q",10:"M",11:"J"}
 VASHYA_SCORE = {("Q","Q"):2,("Q","M"):1,("Q","J"):1,("Q","V"):0,("Q","K"):1,
                 ("M","Q"):1,("M","M"):2,("M","J"):.5,("M","V"):0,("M","K"):1,
                 ("J","Q"):1,("J","M"):.5,("J","J"):2,("J","V"):1,("J","K"):1,
@@ -67,9 +71,13 @@ GANA_NAME = {"D":"Deva","M":"Manushya","R":"Rakshasa"}
 # (groom_gana, bride_gana): a Manushya groom with a Deva bride scores 6, but a
 # Deva groom with a Manushya bride scores 5; a Rakshasa groom with a Deva/Manushya
 # bride scores 0. (Earlier table was symmetric and over-scored these cases.)
+# Gana koota — aligned to AstroSage's table (the reference our users compare
+# against): Manushya(groom)-Deva(bride) scores 5 (not 6), and Deva(groom)-
+# Rakshasa(bride) scores 0 (not 1). Verified against 5 AstroSage MatchMaking
+# reports (see tests/test_milan_accuracy.py).
 GANA_SCORE = {("D","D"):6,("M","M"):6,("R","R"):6,
-              ("D","M"):5,("M","D"):6,
-              ("D","R"):1,("R","D"):0,
+              ("D","M"):5,("M","D"):5,
+              ("D","R"):0,("R","D"):0,
               ("M","R"):0,("R","M"):0}
 
 # Nadi by nakshatra: A adi, M madhya, N antya (cycle A M N N M A A M N ...)
