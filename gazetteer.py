@@ -21,6 +21,7 @@ _STATE = {"01": "Andaman & Nicobar", "02": "Andhra Pradesh", "03": "Assam", "05"
 _CITIES = None          # loaded once
 _BY_ID = None
 _COUNTRY = None
+_NAME_IDX = None        # ascii-folded name/alias -> best (highest-pop) row
 
 # Suggest at city/district level, not sub-locality. MIN_POP drops tiny places;
 # _LOCALITY_RE drops cantonment/sub-locality entries that survive on population
@@ -348,6 +349,55 @@ def _public(r: dict) -> dict:
     if r.get("name_hi"):
         out["name_hi"] = r["name_hi"]
     return out
+
+
+def _build_name_index():
+    """Build (once) an ascii-folded name/alias -> (lat, lon) map over EVERY Indian
+    city GeoNames knows (~3.6k, population > 15k), independent of the autosuggest
+    display floor (MIN_POP=50k). The resolver should place any city a user types
+    — e.g. Leh (37k) — not just the ones shown in the dropdown. Highest-population
+    first + first-write-wins, so an ambiguous name resolves to its biggest city,
+    and old aliases (Bangalore->Bengaluru, Gurgaon->Gurugram) resolve correctly."""
+    global _NAME_IDX
+    if _NAME_IDX is not None:
+        return
+    from geonamescache import GeonamesCache
+    rows = []
+    for c in GeonamesCache().get_cities().values():
+        if c.get("countrycode") != "IN":
+            continue
+        rows.append((int(c.get("population", 0) or 0),
+                     round(float(c["latitude"]), 4), round(float(c["longitude"]), 4),
+                     c["name"], c.get("alternatenames") or []))
+    rows.sort(key=lambda t: -t[0])                 # most-populous first
+    idx = {}
+    for pop, lat, lon, name, alts in rows:
+        keys = {_ascii(name)}
+        for a in alts:
+            fa = _ascii(a)
+            if not fa:
+                continue
+            if _has_devanagari(a) or (fa.isascii() and all(ch.isalpha() or ch in " .-" for ch in fa)):
+                keys.add(fa)
+        for k in keys:
+            if k and k not in idx:
+                idx[k] = (lat, lon)
+    _NAME_IDX = idx
+
+
+def coords_for_name(place: str):
+    """Authoritative offline coordinates for an Indian place NAME, from the full
+    GeoNames India set (~3.6k cities, pop > 15k). Returns (lat, lon,
+    tz_offset_hours) for the best/highest-population match, or None. India is a
+    single timezone, so tz is +5.5 everywhere. This lets a city the user typed
+    resolve to its real coordinates instead of the server silently defaulting to
+    Delhi. Never raises."""
+    try:
+        _build_name_index()
+        r = _NAME_IDX.get(_ascii((place or "").split(",")[0]))
+        return (r[0], r[1], 5.5) if r else None
+    except Exception:
+        return None
 
 
 def suggest(q: str, limit: int = 8) -> list:

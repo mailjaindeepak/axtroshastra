@@ -26,9 +26,13 @@ import dbcompat
 import threading
 import urllib.parse
 import urllib.request
+import logging
 from datetime import datetime
 
+import gazetteer
 from cities_in import CITIES_IN
+
+logger = logging.getLogger(__name__)
 
 DELHI = (28.61, 77.21, 5.5)
 
@@ -140,12 +144,26 @@ def resolve_detailed(place: str) -> dict:
     if cached:
         la, lo, tz = cached
         return {"lat": la, "lon": lo, "tz": tz, "source": "geocache", "resolved": True}
+    # Authoritative offline gazetteer (geonamescache, ~3.6k Indian cities) BEFORE
+    # the flaky network geocoder. It is the SAME set the autosuggest offers, so a
+    # city the user actually picked resolves to its real coordinates here instead
+    # of silently falling through to Delhi. In-memory dict lookup (~0.00004 ms);
+    # the dataset is already loaded for autosuggest — no added network or startup.
+    g = gazetteer.coords_for_name(place)
+    if g:
+        la, lo, tzoff = g
+        return {"lat": la, "lon": lo, "tz": tzoff, "source": "geonames", "resolved": True}
     ext = _geocode_external(place)
     if ext:
         lat, lon, source = ext
         tz = _tz_for(lat, lon)
         _cache_put(key, lat, lon, tz, source)
         return {"lat": lat, "lon": lon, "tz": tz, "source": source, "resolved": True}
+    # Nothing matched. We still produce a chart (never hard-fail), but make the
+    # Delhi fallback LOUD: a wrong city flips the lagna for ~1 in 6 births, so
+    # these must be visible in logs / monitoring, not silently wrong.
+    logger.warning("[geocode] no match for place=%r — using Delhi fallback; "
+                   "ascendant/lagna may be wrong", place)
     return {"lat": DELHI[0], "lon": DELHI[1], "tz": DELHI[2],
             "source": "default_delhi", "resolved": False}
 
