@@ -1,0 +1,80 @@
+# Roll PRODUCTION back to ANY previously-saved version (not just the last one).
+# Elastic Beanstalk keeps every deployed version's bundle in S3; this redeploys
+# the one you choose. Use it when a bug has been live across several deploys and
+# you need to go back to a known-good version further in the past.
+#
+# HOW TO USE:
+#   1. Run "eb-list-versions" and copy the Version label you want.
+#   2. Run this workflow: paste that label + type AxtroShastraProd to confirm.
+#   3. It verifies the version exists, deploys it, and waits for Green.
+name: eb-rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_label:
+        description: "Version label to roll back to (copy from eb-list-versions)"
+        required: true
+      confirm_env:
+        description: "Type AxtroShastraProd to confirm changing PRODUCTION"
+        required: true
+
+concurrency:
+  group: eb-deploy          # never a deploy and a rollback at the same time
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION:    ap-south-1
+    steps:
+      - name: Safety — confirm this is intentional
+        run: |
+          if [ "${{ github.event.inputs.confirm_env }}" != "AxtroShastraProd" ]; then
+            echo "::error::Confirmation text did not match 'AxtroShastraProd'. Aborting — nothing changed."
+            exit 1
+          fi
+
+      - name: Record the version that is live now (in case you need to undo)
+        run: |
+          echo "Live BEFORE rollback:"
+          aws elasticbeanstalk describe-environments \
+            --environment-names AxtroShastraProd \
+            --query "Environments[0].VersionLabel" --output text
+
+      - name: Verify the requested version is actually saved
+        run: |
+          COUNT=$(aws elasticbeanstalk describe-application-versions \
+            --application-name AxtroShastra \
+            --version-labels "${{ github.event.inputs.version_label }}" \
+            --query "length(ApplicationVersions)" --output text)
+          if [ "$COUNT" != "1" ]; then
+            echo "::error::Version '${{ github.event.inputs.version_label }}' is not in the saved list. Run eb-list-versions and copy an exact label."
+            exit 1
+          fi
+
+      - name: Roll back — deploy the chosen version
+        run: |
+          echo "Rolling AxtroShastraProd back to: ${{ github.event.inputs.version_label }}"
+          aws elasticbeanstalk update-environment \
+            --environment-name AxtroShastraProd \
+            --version-label "${{ github.event.inputs.version_label }}"
+
+      - name: Wait for the environment to go Green
+        run: |
+          for i in $(seq 1 40); do
+            S=$(aws elasticbeanstalk describe-environments --environment-names AxtroShastraProd --query "Environments[0].Status" --output text)
+            H=$(aws elasticbeanstalk describe-environments --environment-names AxtroShastraProd --query "Environments[0].Health" --output text)
+            echo "attempt $i: status=$S health=$H"
+            if [ "$S" = "Ready" ] && [ "$H" = "Green" ]; then
+              echo "Rollback complete. Live version is now:"
+              aws elasticbeanstalk describe-environments --environment-names AxtroShastraProd --query "Environments[0].VersionLabel" --output text
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::warning::Did not reach Green within ~10 min — check the Elastic Beanstalk console."
+          exit 1
