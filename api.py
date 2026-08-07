@@ -303,15 +303,39 @@ RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
-MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
+MILAN_PRICE_PAISE = 49900                 # ₹499 — milan launch-offer (ON-window) price
+MILAN_FULL_PAISE  = 99900                 # ₹999 — milan regular price (offer OFF-window)
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
+
+# ---- Compatibility launch-offer cycle (server is the source of truth) --------
+# A GENUINE, repeating flash sale so the on-page countdown is never fake: the
+# offer is ON (₹499) for OFFER_ON_SEC of every OFFER_CYCLE_SEC, then OFF (₹999)
+# for the remainder, forever. The phase is a pure function of wall-clock time —
+# identical for every visitor (no per-user storage, nothing to reset on refresh)
+# — and it drives BOTH the price shown on the page and the amount actually
+# charged, so what the user sees is always what they pay.
+OFFER_CYCLE_SEC = 60 * 60                  # 1-hour cycle
+OFFER_ON_SEC    = 45 * 60                  # 45 min at ₹499, then 15 min at ₹999
+
+
+def milan_offer_status(now: float | None = None) -> dict:
+    """Current compatibility offer phase + prices, from the server clock."""
+    pos = int(time.time() if now is None else now) % OFFER_CYCLE_SEC
+    if pos < OFFER_ON_SEC:
+        return {"phase": "on", "price_paise": MILAN_PRICE_PAISE,
+                "full_paise": MILAN_FULL_PAISE, "seconds_left": OFFER_ON_SEC - pos}
+    return {"phase": "off", "price_paise": MILAN_FULL_PAISE,
+            "full_paise": MILAN_FULL_PAISE, "seconds_left": OFFER_CYCLE_SEC - pos}
 
 
 def _order_amount_paise(rec: dict) -> int:
     """The price actually charged for a report, by funnel variant. Single source
-    for both order creation and the server-side purchase-tracking value."""
+    for both order creation and the server-side purchase-tracking value. For the
+    compatibility funnels this follows the live launch-offer phase (₹499 / ₹999)."""
     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
-    return MILAN_PRICE_PAISE if variant in _MILAN_VARIANTS else PRICE_PAISE
+    if variant in _MILAN_VARIANTS:
+        return milan_offer_status()["price_paise"]
+    return PRICE_PAISE
 
 
 def _valid_admin_key(key: str) -> bool:
@@ -591,6 +615,22 @@ def _serve_page_with_nav(path: str, lang: str = "en"):
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
+
+
+@app.get("/api/offer_status")
+def api_offer_status(force: str | None = None):
+    """Public: the live compatibility launch-offer phase + prices, so the page's
+    countdown and price are driven by the same server clock that sets the charge.
+    `force=on|off` is a DEMO_MODE-only testing hook to pin the phase; it is
+    ignored in production and never affects the amount actually charged."""
+    if DEMO_MODE and force in ("on", "off"):
+        if force == "on":
+            return {"phase": "on", "price_paise": MILAN_PRICE_PAISE,
+                    "full_paise": MILAN_FULL_PAISE, "seconds_left": OFFER_ON_SEC}
+        return {"phase": "off", "price_paise": MILAN_FULL_PAISE,
+                "full_paise": MILAN_FULL_PAISE,
+                "seconds_left": OFFER_CYCLE_SEC - OFFER_ON_SEC}
+    return milan_offer_status()
 
 
 @app.get("/healthz", include_in_schema=False)
