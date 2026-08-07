@@ -197,6 +197,11 @@ section{padding:52px 0}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
 .sticky.kbd{display:none!important}
+.offer-timer{margin:14px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--gold-lt);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--head);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(201,163,78,.14)}
+.offer-timer b.clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--midnight);background:var(--haldi-soft);border:1px solid var(--gold-lt);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
+.offer-timer s{color:var(--muted)}
+.offer-timer .amt{color:var(--sindoor);font-weight:800}
+.sticky .l2 .clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--sindoor)}
 
 /* ---------- ANALYZING OVERLAY ---------- */
 .ax-analyzing{position:fixed;inset:0;z-index:9998;background:rgba(18,24,50,.97);color:#F3EFE4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
@@ -371,9 +376,10 @@ fbq('track', 'PageView');
       <div class="eb">आपका रिश्ता, एक साँस में</div>
       <div class="lb-wrap"><div class="lb-text" id="tv-breath"></div>
         <div class="lock"><div class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div></div></div>
-      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">पूरी रिपोर्ट अनलॉक करें <span class="amt">&mdash; &#8377;499</span></button>
+      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">पूरी रिपोर्ट अनलॉक करें <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span></button>
       <div class="subnote">सभी 8 क्षेत्रों के स्कोर · टकराव के बिंदु · मांगलिक और नाड़ी का फ़ैसला · एक्शन प्लान और भी बहुत कुछ।</div>
     </div>
+    <div class="offer-timer" id="offerTimer">🔥 लॉन्च ऑफ़र खत्म होने में <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </section>
 
@@ -391,18 +397,93 @@ fbq('track', 'PageView');
     <div class="revs" id="revsTrack">
       <div class="rev">
         <div class="stars">★★★★★</div>
-        <p>"अपने बॉयफ्रेंड के साथ मज़े के लिए किया 😭 और ये डरावना सच निकला — जिस एक बात पर हम हमेशा लड़ते हैं, उसे बिल्कुल पकड़ लिया। ₹499 वसूल।"</p>
-        <div class="who">— अनन्या, 24</div>
+        <p>"अपने बॉयफ्रेंड के साथ मज़े के लिए किया 😭 और ये डरावना सच निकला, जिस एक बात पर हम हमेशा लड़ते हैं, उसे बिल्कुल पकड़ लिया। ₹499 वसूल।"</p>
+        <div class="who">अनन्या, 24</div>
       </div>
       <div class="rev">
         <div class="stars">★★★★★</div>
         <p>"2 साल से साथ हैं और सोचते रहते थे कि हम सच में कम्पैटिबल हैं या बस आदत हो गई है। इसने रात 2 बजे की उलझन की जगह एक असली जवाब दिया।"</p>
-        <div class="who">— रोहन, 26</div>
+        <div class="who">रोहन, 26</div>
       </div>
       <div class="rev">
         <div class="stars">★★★★★</div>
         <p>"हमने इसे साथ में डेट नाइट पर किया, बड़ा मज़ा आया। एक बेतुके हाँ/ना के बजाय इसने हमें कपल के तौर पर काम करने लायक असली चीज़ें दीं। पक्का ग्रीन फ्लैग।"</p>
-        <div class="who">— स्नेहा और करण</div>
+        <div class="who">स्नेहा और करण</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"ngl हम छोटी छोटी बात पर लड़ते हैं 💀 रिपोर्ट ने बता दिया कि हमारा friction communication timing है, अब समझ आया। पैसा वसूल।"</p>
+        <div class="who">इशिता, 23</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"36 में से 28 गुण आए 👀 पर असली चीज़ थी वो हिस्सा जो बताता है हम clash क्यों करते हैं। bae को दिखाया तो पहली बार मान गया 🫠"</p>
+        <div class="who">आदित्य, 27</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"long distance से पहले हम दोनों ने किया 🥺 पता चला कहाँ patience रखना है। सच में couples therapy जैसा लगा वो भी ₹499 में 💯"</p>
+        <div class="who">मीरा और देव</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"मांगलिक वाली बात से बहुत डर लगता था 😭 रिपोर्ट ने डराने की जगह ठीक से समझाया। अब tension कम है fr।"</p>
+        <div class="who">प्रिया, 25</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"मैं और gf सोचते रहते थे कि compatible हैं या बस comfortable हो गए lol। इसने असली जवाब दिया। थोड़ा sad थोड़ा relief पर worth it ✨"</p>
+        <div class="who">अर्जुन, 28</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"situationship से clarity चाहिए थी 🫠 नाड़ी वाले हिस्से ने आँखें खोल दीं ngl। कम से कम अब पता है क्या काम करना है।"</p>
+        <div class="who">तन्वी, 22</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"अगले साल साथ रहने का प्लान है तो पहले ये किया 🙏 friction points वाला section इतना सही है कि दुख हुआ 😭 अच्छे तरीके से।"</p>
+        <div class="who">निखिल और रिया</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"सच में लगा ये सब fake होगा पर नहीं 💀 मेरे गुस्से और उसकी overthinking को बिल्कुल पकड़ा। हम हँसे फिर चुप हो गए fr।"</p>
+        <div class="who">कबीर, 26</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"लड़ने की जगह मैंने रिपोर्ट मम्मी को दिखाई 🥺 गुण स्कोर देखकर वो हमारे बारे में chill हो गईं। इस साल के best 499 ❤️"</p>
+        <div class="who">श्रेया, 24</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"action plan पढ़ने के बाद bf और मैंने लड़ना बंद कर दिया ngl 😭 इसने बता दिया रात 12 बजे कौन सा topic avoid करना है 💯"</p>
+        <div class="who">आयशा, 23</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"नाड़ी दोष का बहुत डर था 🫠 पर रिपोर्ट ने शांति से समझाया कि क्या करना है। पहली बार सुना गया महसूस हुआ। हर रुपया worth ✨"</p>
+        <div class="who">वरुण और नेहा</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"बड़ी लड़ाई वाले phase में किया था 😭 compatibility breakdown ने low key हमें ब्रेकअप से बचा लिया। सच में।"</p>
+        <div class="who">दीया, 25</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"3 साल साथ हैं फिर भी अपने clashes के बारे में नई चीज़ें पता चलीं 👀 रिपोर्ट detailed af है कोई generic हाँ/ना नहीं। पैसा वसूल 💯"</p>
+        <div class="who">रेहान, 29</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"date night idea > movie 🥺 हमने साथ में किया और घंटों बात की। friction वाला हिस्सा डरावना सच है ngl ❤️✨"</p>
+        <div class="who">पूजा और समीर</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"मांगलिक matching की टेंशन खत्म 🙏 रिपोर्ट ने कहा हम balanced हैं और rough patch कैसे संभालें बताया। असली सुकून fr 😭❤️"</p>
+        <div class="who">अनन्या, 27</div>
       </div>
     </div>
     <p class="revs-hint">← और देखने के लिए स्वाइप करें →</p>
@@ -511,7 +592,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">पूरी कम्पैटिबिलिटी रिपोर्ट</p>
-    <p class="l2">₹499 <s style="color:#B0B2C0">₹999</s> · तुरंत डिलीवरी</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बाकी</p>
   </div>
   <a class="btn" href="#milanForm" id="stickyBtn">फ़्री रिपोर्ट पाएँ</a>
 </div>
@@ -1159,5 +1240,21 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   b.addEventListener('click',function(){ [pre+'-hh',pre+'-mm2',pre+'-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById(pre+'-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 });})();
 </script>
+<script>(function(){
+  // सरल 30-मिनट लॉन्च-ऑफ़र काउंटडाउन। end-time sessionStorage में रखा है ताकि पेज
+  // REFRESH करने पर टाइमर रीसेट न हो; नए विज़िट (नया टैब/सेशन) पर 30:00 से नया शुरू।
+  var DUR = 30 * 60 * 1000, KEY = 'axs_milan_offer_end';
+  var end = +sessionStorage.getItem(KEY);
+  if (!end) { end = Date.now() + DUR; try { sessionStorage.setItem(KEY, String(end)); } catch(e){} }
+  var a = document.getElementById('otClock'), b = document.getElementById('otClockSticky');
+  function two(n){ return (n < 10 ? '0' : '') + n; }
+  function tick(){
+    var ms = end - Date.now(); if (ms < 0) ms = 0;
+    var t = two(Math.floor(ms/60000)) + ':' + two(Math.floor((ms%60000)/1000));
+    if (a) a.textContent = t; if (b) b.textContent = t;
+    if (ms > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();</script>
 </body>
 </html>

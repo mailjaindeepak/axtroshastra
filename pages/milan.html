@@ -197,6 +197,11 @@ section{padding:52px 0}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
 .sticky.kbd{display:none!important}
+.offer-timer{margin:14px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--gold-lt);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--head);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(201,163,78,.14)}
+.offer-timer b.clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--midnight);background:var(--haldi-soft);border:1px solid var(--gold-lt);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
+.offer-timer s{color:var(--muted)}
+.offer-timer .amt{color:var(--sindoor);font-weight:800}
+.sticky .l2 .clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--sindoor)}
 
 /* ---------- ANALYZING OVERLAY ---------- */
 .ax-analyzing{position:fixed;inset:0;z-index:9998;background:rgba(18,24,50,.97);color:#F3EFE4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
@@ -371,9 +376,10 @@ fbq('track', 'PageView');
       <div class="eb">Your relationship, in one breath</div>
       <div class="lb-wrap"><div class="lb-text" id="tv-breath"></div>
         <div class="lock"><div class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div></div></div>
-      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span class="amt">&mdash; &#8377;499</span></button>
+      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span></button>
       <div class="subnote">All 8 areas scored · friction points · Manglik &amp; Nadi verdicts · action plan &amp; more.</div>
     </div>
+    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </section>
 
@@ -391,18 +397,93 @@ fbq('track', 'PageView');
     <div class="revs" id="revsTrack">
       <div class="rev">
         <div class="stars">★★★★★</div>
-        <p>"Did this with my boyfriend as a fun thing 😭 and it was scary accurate — literally called out the one thing we keep fighting about. Worth ₹499."</p>
-        <div class="who">— Ananya, 24</div>
+        <p>"Did this with my boyfriend just for fun and it was scary accurate. It literally called out the one thing we keep fighting about. Worth ₹499."</p>
+        <div class="who">Ananya, 24</div>
       </div>
       <div class="rev">
         <div class="stars">★★★★★</div>
-        <p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me an actual answer instead of spiralling at 2am."</p>
-        <div class="who">— Rohan, 26</div>
+        <p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me a real answer instead of spiralling at 2am."</p>
+        <div class="who">Rohan, 26</div>
       </div>
       <div class="rev">
         <div class="stars">★★★★★</div>
-        <p>"We took it together on a date night lol. Instead of a vague yes/no it gave us real stuff to work on as a couple. Green flag fr."</p>
-        <div class="who">— Sneha &amp; Karan</div>
+        <p>"Date night pe humne saath me kiya. Vague yes/no ke bajaye report ne asli cheezein di jispe couple ki tarah kaam karna hai. Green flag fr 💚"</p>
+        <div class="who">Sneha &amp; Karan</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"We fight over the smallest things and the report said our friction is communication timing, so now we actually get it. Paisa vasool 💀"</p>
+        <div class="who">Ishita, 23</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"36 me se 28 guna aaye, but asli gold tha wo part jo samjhata hai hum kyun clash karte hain. Bae ko dikhaya aur usne ek baar toh maan liya 🫠"</p>
+        <div class="who">Aditya, 27</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"We did this before going long distance and it showed us exactly where we need patience. Sach me it felt like couples therapy but for ₹499 💯"</p>
+        <div class="who">Meera &amp; Dev</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"I was so scared about the manglik thing, but the report broke it down properly instead of just scaring us. Way less tension now."</p>
+        <div class="who">Priya, 25</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Mujhe aur gf ko doubt tha ki hum compatible hain ya bas comfortable. Report ne asli answer diya, thoda sad thoda relief, but worth it ✨"</p>
+        <div class="who">Arjun, 28</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Situationship se clarity chahiye thi. Nadi wale part ne aankhein khol di ngl, atleast ab pata hai kya kaam karna hai 🫠"</p>
+        <div class="who">Tanvi, 22</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"We're planning to move in together next year so we did this first. The friction points section is so accurate it hurt, in a good way."</p>
+        <div class="who">Nikhil &amp; Riya</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Honestly thought ye sab fake hoga but nope, it called out my temper and her overthinking exactly. We laughed then went quiet 💀"</p>
+        <div class="who">Kabir, 26</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Instead of arguing I just showed the report to my mom. The guna score actually helped her chill about us. Best ₹499 spent this year ❤️"</p>
+        <div class="who">Shreya, 24</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"My boyfriend and I stopped fighting after reading the action plan. It told us exactly which topic to avoid at midnight."</p>
+        <div class="who">Aisha, 23</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Nadi dosh ka darr bohot tha, but report ne calmly samjhaya ki karna kya hai. Ek baar ko sunn liya gaya aisa laga. Worth every rupee ✨"</p>
+        <div class="who">Varun &amp; Neha</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"We did it during a rough fight phase and the compatibility breakdown low key saved us from breaking up. Sach me 😭"</p>
+        <div class="who">Diya, 25</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"3 saal saath rehne ke baad bhi apne clashes ke baare me naya kuch pata chala. Report detailed hai, koi generic yes/no nahi. Paisa vasool 💯"</p>
+        <div class="who">Rehan, 29</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Date night idea better than a movie. We did this together and talked for hours. The friction part is scary accurate."</p>
+        <div class="who">Pooja &amp; Sameer</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"The manglik matching stress is finally khatam. The report said we're balanced and told us how to handle the rough patch. Actual peace ❤️"</p>
+        <div class="who">Ananya, 27</div>
       </div>
     </div>
     <p class="revs-hint">← swipe for more →</p>
@@ -511,7 +592,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Full Compatibility Report</p>
-    <p class="l2">₹499 <s style="color:#B0B2C0">₹999</s> · instant delivery</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#milanForm" id="stickyBtn">Get Free Report</a>
 </div>
@@ -820,7 +901,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span class="amt">&mdash; &#8377;499</span>'; btn.disabled = false;
+  btn.innerHTML = 'Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span>'; btn.disabled = false;
   alert('Your payment is processing — please refresh the page in a minute and your report will be ready.');
 }
 
@@ -1152,5 +1233,22 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   b.addEventListener('click',function(){ [pre+'-hh',pre+'-mm2',pre+'-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById(pre+'-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 });})();
 </script>
+<script>(function(){
+  // Simple 30-minute launch-offer countdown. The end-time is kept in sessionStorage
+  // so a page REFRESH doesn't restart it; a fresh visit (new tab/session) starts a
+  // new 30:00. Drives the inline banner (#otClock) and the sticky bar (#otClockSticky).
+  var DUR = 30 * 60 * 1000, KEY = 'axs_milan_offer_end';
+  var end = +sessionStorage.getItem(KEY);
+  if (!end) { end = Date.now() + DUR; try { sessionStorage.setItem(KEY, String(end)); } catch(e){} }
+  var a = document.getElementById('otClock'), b = document.getElementById('otClockSticky');
+  function two(n){ return (n < 10 ? '0' : '') + n; }
+  function tick(){
+    var ms = end - Date.now(); if (ms < 0) ms = 0;
+    var t = two(Math.floor(ms/60000)) + ':' + two(Math.floor((ms%60000)/1000));
+    if (a) a.textContent = t; if (b) b.textContent = t;
+    if (ms > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();</script>
 </body>
 </html>
