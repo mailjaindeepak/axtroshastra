@@ -1,20 +1,27 @@
-"""Health heartbeat watcher for the ops framework.
+"""Deep health watcher for the ops framework.
 
 A lightweight, dependency-free (stdlib only) probe that hits the RUNNING site
-over HTTP and reports a green/red verdict. Meant to run OUTSIDE the app (e.g. a
-GitHub Actions cron) so the monitor never depends on the thing it monitors.
+over HTTP and reports a green/red verdict. Meant to run OUTSIDE the app (a
+GitHub Actions cron, a FEW times a day) so the monitor never depends on the
+thing it monitors.
+
+This is deliberately NOT the fast "is it up?" pulse. That shallow liveness ping
+is handled for FREE by an EXTERNAL monitor (UptimeRobot, every 5 min against
+/healthz) so we don't burn GitHub Actions minutes. This watcher instead runs a
+few times a day and checks the DEEPER things UptimeRobot cannot see:
 
 Checks (all against config.TARGET_URL with config.HTTP_TIMEOUT):
-  1. GET /healthz                      -> 200 {"status":"ok"}         (liveness)
-  2. GET /healthz/db                    -> 200                         (DB write-durability)
-  3. GET /api/pdf_health?key=<KEY>      -> 200 & JSON render_ok==true  (PDF renderer)
-  4. GET /api/otp/health               -> 200 == ok; non-200 = WARN    (OTP provider)
+  1. GET /healthz/db                    -> 200                          (DB write-durability)
+  2. GET /api/pdf_health?key=<KEY>      -> 200 & JSON render_ok==true   (PDF renderer)
+  3. GET /api/otp/health               -> 200                           (OTP provider)
 
-Checks 1-3 are hard: any failure makes the overall verdict "red". Check 4 is
-warn-only — a non-200 there is noted but does not turn the site red.
+All three are HARD checks: any failure makes the overall verdict "red" and
+sends a 'critical' alert (email + WhatsApp) via ops.alerts.
 
 No check ever raises: a timeout / connection error / bad JSON is recorded as
 ok:False with the cause in `detail`, so run_checks() always returns a verdict.
+The process returns an exit code (0 = healthy, non-zero = unhealthy) so the
+workflow's own status reflects site health.
 """
 import json
 import sys
@@ -73,18 +80,6 @@ def _run_one(name, path, validate):
     }
 
 
-def _check_healthz(status, body):
-    if status != 200:
-        return False, "expected 200, got %s" % status
-    try:
-        data = json.loads(body)
-    except Exception:
-        return False, "200 but body was not JSON"
-    if data.get("status") == "ok":
-        return True, "status ok"
-    return False, "200 but status != 'ok': %r" % data.get("status")
-
-
 def _check_healthz_db(status, body):
     if status == 200:
         return True, "db write-durability ok"
@@ -104,29 +99,26 @@ def _check_pdf_health(status, body):
 
 
 def _check_otp_health(status, body):
-    # Warn-only check: 200 is healthy, anything else is a warning (handled by
-    # run_checks which excludes otp from the hard-failure set).
     if status == 200:
         return True, "otp provider ok"
     return False, "otp provider unhealthy (status %s)" % status
 
 
-# Names of checks whose failure turns the overall verdict red. otp is excluded.
-HARD_CHECKS = ("healthz", "healthz_db", "pdf_health")
+# Every deep check is a hard check: its failure turns the verdict red.
+HARD_CHECKS = ("healthz_db", "pdf_health", "otp_health")
 
 
 def run_checks() -> dict:
-    """Run every health check and return a verdict.
+    """Run every deep health check and return a verdict.
 
     Returns {"overall": "green"|"red", "checks": [...], "failures": [names]}.
-    overall is "red" iff any HARD check (1-3) failed. Never raises.
+    overall is "red" iff any HARD check failed. Never raises.
     """
     key = quote(config.STATS_KEY, safe="")
     results = [
-        _run_one("healthz", "/healthz", _check_healthz),
         _run_one("healthz_db", "/healthz/db", _check_healthz_db),
         _run_one("pdf_health", "/api/pdf_health?key=%s" % key, _check_pdf_health),
-        _run_one("otp_health", "/api/otp/health?key=%s" % key, _check_otp_health),
+        _run_one("otp_health", "/api/otp/health", _check_otp_health),
     ]
     failures = [c["name"] for c in results if not c["ok"]]
     hard_failed = [c["name"] for c in results
@@ -143,7 +135,7 @@ def _summarize(report):
         c = by_name.get(name, {})
         lines.append("- %s: status=%s %s (%sms)" % (
             name, c.get("status_code"), c.get("detail"), c.get("latency_ms")))
-    return "Site health is RED against %s\n\n%s" % (
+    return "Deep health check is RED against %s\n\n%s" % (
         config.TARGET_URL, "\n".join(lines) if lines else "(no detail)")
 
 
@@ -152,7 +144,8 @@ def main() -> int:
     print(json.dumps(report, indent=2))
     if report["overall"] == "red":
         try:
-            alerts.send_alert("Watcher: site unhealthy", _summarize(report), "critical")
+            alerts.send_alert("Watcher: deep health check failed",
+                              _summarize(report), "critical")
         except Exception as e:  # alerts already never-raise, but stay defensive
             print("alert dispatch failed: %s" % e, file=sys.stderr)
         return 1

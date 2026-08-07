@@ -1,14 +1,20 @@
-# T6 — Robot Customer bot. Every 4 hours it behaves like a real customer on the
-# LIVE site (desktop + mobile): fills the birth form, unlocks with a free test
-# pass (no real payment), and checks the paid report + PDF actually work. On any
-# failure it alerts the devs (email + WhatsApp). A routine failure here means
-# "something broke on a running site" — it does NOT roll back (that's only for
-# bad deploys; see ops-deploy-guard.yml).
+# T6 — Robot Customer bot. Three times a day it behaves like a real customer on
+# the LIVE site (desktop + mobile): fills the birth form, unlocks with a free
+# test pass (no real payment), and checks the paid report + PDF actually work. On
+# any failure it alerts the devs (email + WhatsApp) and records the run to the
+# ops history store. A routine failure here means "something broke on a running
+# site" — a SINGLE failure does NOT roll back. Only a 2nd CONSECUTIVE failure
+# even *attempts* an auto-rollback, and that attempt is DISARMED by default
+# (OPS_ROLLBACK_ARMED), so it merely alerts until Deepak arms it. Rolling back a
+# running site blindly is dangerous; the safe post-deploy rollback lives in
+# ops-deploy-guard.yml.
 name: ops-robot-customer
 
 on:
   schedule:
-    - cron: "0 */4 * * *"        # every 4 hours
+    # 00:30, 08:30, 16:30 UTC == 06:00, 14:00, 22:00 IST (UTC+5:30).
+    # i.e. a morning / afternoon / night check for Indian customers.
+    - cron: "30 0,8,16 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -18,29 +24,53 @@ concurrency:
 jobs:
   robot:
     runs-on: ubuntu-latest
+    env:
+      # Link to THIS run, reused by the history + alert steps below.
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # gh CLI (used by the 2-consecutive-failure guard) authenticates with this.
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      # Python is set up UP FRONT (not just on failure) so we can record the run
+      # to history on BOTH the pass and fail paths.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Install robot dependencies
         working-directory: ops/robot_customer
         run: |
           npm install
           npx playwright install --with-deps chromium
       - name: Run the robot customer against the live site
+        id: robot
         working-directory: ops/robot_customer
         env:
           OPS_TARGET_URL: ${{ secrets.OPS_TARGET_URL }}
           STATS_KEY:      ${{ secrets.STATS_KEY }}
         run: npx playwright test
 
-      # ---- On failure: alert the developers (email + WhatsApp) ----
-      - name: Set up Python for alerting
+      # ---- On SUCCESS: record a passing run to the ops history store. ----
+      - name: Record passing run to history
+        if: success()
+        run: |
+          python -m ops.history record-run \
+            --status pass \
+            --detail "Robot customer journey passed on the live site." \
+            --run-url "$RUN_URL"
+
+      # ---- On FAILURE: record a failing run to history, then alert. ----
+      - name: Record failing run to history
         if: failure()
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        run: |
+          python -m ops.history record-run \
+            --status fail \
+            --detail "Robot customer journey FAILED on the live site (form / unlock / report / PDF)." \
+            --run-url "$RUN_URL"
+
       - name: Alert developers
         if: failure()
         env:
@@ -54,7 +84,56 @@ jobs:
           TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           pip install --quiet twilio
           python -c "from ops import alerts; import os; alerts.send_alert('Robot customer FAILED', 'The end-to-end customer journey failed on the live site. Something is broken (form / unlock / report / PDF). Run: '+os.environ['RUN_URL'], 'critical')"
+
+      # ---- 2-consecutive-failure guard -> DISARMED auto-rollback ----
+      # A single robot failure is noise-prone (a flaky network, a Playwright
+      # timeout). Only when the PREVIOUS scheduled run ALSO failed do we treat it
+      # as a real, sustained outage worth an auto-rollback ATTEMPT.
+      #
+      # We ask the GitHub CLI (pre-installed on the runner) for the last two
+      # concluded runs of THIS workflow on THIS branch. Index [0] is the current
+      # (in-progress) run's history entry may or may not appear, so we look at
+      # the most recent *completed* conclusions: if a 'failure' precedes this
+      # failing run, this is the 2nd consecutive failure.
+      #
+      # The auto-rollback it calls is DISARMED by default (OPS_ROLLBACK_ARMED),
+      # so it only records + alerts — it will NOT redeploy until Deepak arms it.
+      - name: Auto-rollback guard (2 consecutive failures)
+        if: failure()
+        env:
+          # Alerting so the disarmed-skip notice reaches the devs.
+          OPS_ALERT_EMAILS:     ${{ secrets.OPS_ALERT_EMAILS }}
+          OPS_ALERT_WHATSAPP:   ${{ secrets.OPS_ALERT_WHATSAPP }}
+          SMTP_HOST:            ${{ secrets.SMTP_HOST }}
+          SMTP_PORT:            ${{ secrets.SMTP_PORT }}
+          SMTP_USER:            ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM:            ${{ secrets.SMTP_FROM }}
+          TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          # Rollback stays DISARMED unless Deepak sets this secret to "1".
+          OPS_ROLLBACK_ARMED:   ${{ secrets.OPS_ROLLBACK_ARMED }}
+          OPS_LAST_GOOD:        ${{ secrets.OPS_LAST_GOOD }}
+        run: |
+          pip install --quiet twilio
+          # Most recent completed run's conclusion for this workflow + branch.
+          # (The current run is still in progress, so the top completed entry is
+          # the PREVIOUS scheduled run.)
+          PREV=$(gh run list \
+                   --workflow ops-robot-customer.yml \
+                   --branch "${{ github.ref_name }}" \
+                   --limit 2 \
+                   --json conclusion \
+                   --jq '.[0].conclusion' 2>/dev/null || echo "")
+          echo "Previous run conclusion: '$PREV'"
+          if [ "$PREV" = "failure" ]; then
+            echo "2nd consecutive robot-customer failure — attempting (disarmed) auto-rollback."
+            python -m ops.mechanic auto-rollback \
+              --reason "2 consecutive robot-customer failures"
+          else
+            echo "First failure (previous run not a failure) — alert only, no rollback attempt."
+          fi

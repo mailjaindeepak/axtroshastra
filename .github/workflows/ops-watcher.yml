@@ -1,12 +1,17 @@
-# T6 — Watcher bot. The lightweight heartbeat: hourly health checks on the live
-# site. (The 5-minute uptime ping is a FREE external monitor — UptimeRobot — not
-# this, to stay inside GitHub's free minutes.) The watcher alerts by itself on a
-# red result (see ops/watcher.py).
+# T6 — Watcher bot. The DEEP health check: runs a few times a day and probes the
+# things the free 5-minute uptime ping cannot see — DB write-durability, the PDF
+# renderer, and the OTP provider. (The fast "is it up?" pulse is a FREE external
+# monitor — UptimeRobot, every 5 min against /healthz — NOT this, to stay inside
+# GitHub's free minutes.) The watcher alerts by itself ('critical') on a red
+# result (see ops/watcher.py).
 name: ops-watcher
 
 on:
   schedule:
-    - cron: "17 * * * *"        # hourly, offset 17 min to avoid the top-of-hour rush
+    # Deep-check 3x/day at 01:00, 09:00, 17:00 UTC — i.e. ~06:30, 14:30, 22:30
+    # IST. Deliberately offset from UptimeRobot's :30 pulse so the two monitors
+    # never fire in lockstep.
+    - cron: "0 1,9,17 * * *"
   workflow_dispatch:             # allow manual "check now"
 
 # Don't pile up runs if one is slow.

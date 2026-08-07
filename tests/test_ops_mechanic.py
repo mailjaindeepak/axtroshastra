@@ -31,6 +31,16 @@ def _record_alerts(monkeypatch):
     return calls
 
 
+def _record_history(monkeypatch):
+    """Replace mechanic.history.record_rollback with a recorder so nothing hits
+    disk; return the list of (from_label, to_label, reason) tuples."""
+    calls = []
+    monkeypatch.setattr(mechanic.history, "record_rollback",
+                        lambda from_label, to_label, reason="":
+                        calls.append((from_label, to_label, reason)) or True)
+    return calls
+
+
 # --------------------------------------------------------------------------- #
 # ROLLBACK
 # --------------------------------------------------------------------------- #
@@ -115,6 +125,94 @@ def test_rollback_never_raises_when_subprocess_throws(monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
+# AUTO-ROLLBACK  (armed/disarmed safety gate)
+# --------------------------------------------------------------------------- #
+def test_auto_rollback_disarmed_skips_and_records(monkeypatch):
+    # DISARMED (the safe default): must NOT redeploy, but must alert + record.
+    monkeypatch.setattr(config, "OPS_ROLLBACK_ARMED", False)
+    alert_calls = _record_alerts(monkeypatch)
+    hist_calls = _record_history(monkeypatch)
+
+    # current_version() is allowed to run; give it a benign fake.
+    monkeypatch.setattr(subprocess, "run",
+                        lambda cmd, **kw: _Proc(returncode=0, stdout="app-live\n"))
+    # If rollback were ever called it would also hit subprocess.run above, so
+    # guard by asserting no update-environment happened via the recorded history.
+    assert mechanic.auto_rollback_if_armed(reason="two failures") is False
+
+    # alerted at warning, mentioning the disarmed skip
+    assert len(alert_calls) == 1
+    assert alert_calls[0][2] == "warning"
+    assert "SKIPPED" in alert_calls[0][0]
+    # recorded a skipped rollback in history
+    assert len(hist_calls) == 1
+    assert hist_calls[0][1] == "(skipped-disarmed)"
+    assert hist_calls[0][2] == "two failures"
+
+
+def test_auto_rollback_armed_rolls_back_and_records(monkeypatch):
+    # ARMED: must redeploy the given last-good label and record from->to.
+    monkeypatch.setattr(config, "OPS_ROLLBACK_ARMED", True)
+    monkeypatch.setattr(config, "OPS_LAST_GOOD", "")
+    monkeypatch.setattr(config, "EB_ENV", "AxtroShastraProd")
+    monkeypatch.setattr(config, "AWS_REGION", "ap-south-1")
+    alert_calls = _record_alerts(monkeypatch)
+    hist_calls = _record_history(monkeypatch)
+
+    seen = []
+
+    def _fake_run(cmd, **kw):
+        seen.append(cmd)
+        # current_version() reads a label; update-environment just needs rc 0.
+        return _Proc(returncode=0, stdout="app-current-bad\n")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    assert mechanic.auto_rollback_if_armed("app-good-7",
+                                           reason="two failures") is True
+
+    # an actual update-environment (rollback) was issued to the good label
+    assert any("update-environment" in c and "app-good-7" in c for c in seen)
+    # rollback fired its critical alert
+    assert any(sev == "critical" for _, _, sev in alert_calls)
+    # history recorded current(bad) -> target(good)
+    assert len(hist_calls) == 1
+    assert hist_calls[0][0] == "app-current-bad"
+    assert hist_calls[0][1] == "app-good-7"
+
+
+def test_auto_rollback_armed_no_target_aborts(monkeypatch):
+    # ARMED but no label anywhere -> abort safely, alert critical, no rollback.
+    monkeypatch.setattr(config, "OPS_ROLLBACK_ARMED", True)
+    monkeypatch.setattr(config, "OPS_LAST_GOOD", "")
+    alert_calls = _record_alerts(monkeypatch)
+    hist_calls = _record_history(monkeypatch)
+
+    def _boom(*a, **k):
+        raise AssertionError("subprocess must not be called without a target")
+    monkeypatch.setattr(subprocess, "run", _boom)
+
+    assert mechanic.auto_rollback_if_armed(None, reason="two failures") is False
+    assert len(alert_calls) == 1
+    assert alert_calls[0][2] == "critical"
+    assert hist_calls == []  # nothing rolled back, nothing recorded
+
+
+def test_auto_rollback_uses_config_last_good_when_no_arg(monkeypatch):
+    # ARMED, no arg, but OPS_LAST_GOOD is set -> that label is used.
+    monkeypatch.setattr(config, "OPS_ROLLBACK_ARMED", True)
+    monkeypatch.setattr(config, "OPS_LAST_GOOD", "app-config-good")
+    monkeypatch.setattr(config, "EB_ENV", "AxtroShastraProd")
+    monkeypatch.setattr(config, "AWS_REGION", "ap-south-1")
+    _record_alerts(monkeypatch)
+    hist_calls = _record_history(monkeypatch)
+
+    monkeypatch.setattr(subprocess, "run",
+                        lambda cmd, **kw: _Proc(returncode=0, stdout="app-now\n"))
+    assert mechanic.auto_rollback_if_armed(reason="cfg") is True
+    assert hist_calls[0][1] == "app-config-good"
+
+
+# --------------------------------------------------------------------------- #
 # REMEDIATE
 # --------------------------------------------------------------------------- #
 class _FakeResp:
@@ -188,3 +286,24 @@ def test_cli_remediate_exit_codes(monkeypatch):
     monkeypatch.setattr(mechanic, "remediate",
                         lambda kind: {"ok": kind == "stuck_payments"})
     assert mechanic.main(["remediate", "--kind", "stuck_payments"]) == 0
+
+
+def test_cli_auto_rollback_exit_zero_regardless(monkeypatch):
+    # A disarmed skip is intended behaviour, so the CLI exits 0 whether the
+    # underlying call rolled back (True) or safely skipped (False).
+    seen = {}
+
+    def _fake(last_good=None, reason=""):
+        seen["last_good"] = last_good
+        seen["reason"] = reason
+        return False  # e.g. disarmed skip
+
+    monkeypatch.setattr(mechanic, "auto_rollback_if_armed", _fake)
+    assert mechanic.main(["auto-rollback", "--reason", "2 failures"]) == 0
+    assert seen["reason"] == "2 failures"
+    assert seen["last_good"] is None
+
+    monkeypatch.setattr(mechanic, "auto_rollback_if_armed",
+                        lambda last_good=None, reason="": True)
+    assert mechanic.main(["auto-rollback", "--reason", "x",
+                          "--last-good", "app-good"]) == 0

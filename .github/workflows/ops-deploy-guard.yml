@@ -53,12 +53,14 @@ jobs:
           node-version: "20"
       - run: pip install --quiet awsebcli awscli twilio
 
-      # 1) The version that is live RIGHT NOW is our rollback target.
-      - name: Record last-good version
+      # 1) The version that is live RIGHT NOW is our PRE-DEPLOY rollback target.
+      #    Captured BEFORE we deploy so that, if the new version turns out bad,
+      #    we can redeploy exactly what was known-good moments ago.
+      - name: Record last-good (pre-deploy) version
         id: lastgood
         run: |
           LG=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
-          echo "Current live (last-good) version: $LG"
+          echo "Current live (pre-deploy, last-good) version: $LG"
           echo "label=$LG" >> "$GITHUB_OUTPUT"
 
       # 2) Deploy the new version.
@@ -89,22 +91,39 @@ jobs:
           npx playwright install --with-deps chromium
           npx playwright test
 
-      # 5a) SUCCESS path.
+      # 5a) SUCCESS path -> record the passing run + alert.
       - name: Report success
         if: steps.green.outcome == 'success' && steps.smoke.outcome == 'success'
         run: |
+          python -m ops.history record-run \
+            --status pass \
+            --detail "Guarded deploy: new version went Green and passed the smoke test."
           python -c "from ops import alerts; import os; alerts.send_alert('Deploy OK', 'New version deployed and smoke test passed on the live site.', 'info')"
 
-      # 5b) FAILURE path -> automatic rollback to last-good + alert.
+      # 5b) FAILURE path -> automatic rollback to the PRE-DEPLOY last-good + alert.
+      #     This rollback is SAFE (a known-good label captured moments ago), so it
+      #     proceeds regardless of OPS_ROLLBACK_ARMED — but it still records the
+      #     failing run + the rollback in history and alerts.
       - name: Roll back on failure
         if: steps.green.outcome != 'success' || steps.smoke.outcome != 'success'
         run: |
           LG="${{ steps.lastgood.outputs.label }}"
-          echo "Deploy unhealthy — rolling back to: $LG"
+          echo "Deploy unhealthy — rolling back to pre-deploy version: $LG"
+          # Record the failing guarded-deploy run either way.
+          python -m ops.history record-run \
+            --status fail \
+            --detail "Guarded deploy: env never went Green or smoke test failed; rolling back."
           if [ -z "$LG" ] || [ "$LG" = "None" ]; then
             python -c "from ops import alerts; alerts.send_alert('Deploy FAILED — manual rollback needed', 'Smoke/health failed but no last-good version label was captured. Roll back manually in the EB console.', 'critical')"
             exit 1
           fi
+          # Capture the (bad) version we are rolling back FROM, for the history record.
+          BAD=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
           python -m ops.mechanic rollback --last-good "$LG"
-          # mechanic.rollback already alerts; fail the job so it shows red.
+          # mechanic.rollback already alerts; also record the rollback in history.
+          python -m ops.history record-rollback \
+            --from "$BAD" \
+            --to "$LG" \
+            --reason "Post-deploy guard: new version failed health/smoke — reverted to pre-deploy version."
+          # Fail the job so it shows red.
           exit 1

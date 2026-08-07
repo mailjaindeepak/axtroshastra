@@ -35,6 +35,18 @@ TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")
 EB_ENV = os.getenv("OPS_EB_ENV", "AxtroShastraProd")
 AWS_REGION = os.getenv("AWS_REGION") or os.getenv("OPS_AWS_REGION", "ap-south-1")
 
+# --- History store (append-only JSON-lines; the admin dashboard reads it) ---
+OPS_HISTORY_PATH = os.getenv("OPS_HISTORY_PATH", "ops_history.jsonl")
+
+# --- Auto-rollback safety switch -------------------------------------------- #
+# Auto-rollback is DISARMED by default: the robot-customer failure path is
+# allowed to alert but must NOT redeploy on its own until Deepak explicitly
+# arms it (OPS_ROLLBACK_ARMED=1). The post-deploy guard rolls back to a known
+# pre-deploy label and is safe regardless of this flag.
+OPS_ROLLBACK_ARMED = os.getenv("OPS_ROLLBACK_ARMED", "0") == "1"
+# Optional known-good version label to fall back to when no target is given.
+OPS_LAST_GOOD = os.getenv("OPS_LAST_GOOD", "")
+
 
 def alerts_configured():
     return bool((ALERT_EMAILS and SMTP_HOST) or (ALERT_WHATSAPP and TWILIO_SID))

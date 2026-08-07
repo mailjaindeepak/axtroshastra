@@ -26,7 +26,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-from ops import config, alerts
+from ops import config, alerts, history
 
 log = logging.getLogger("ops.mechanic")
 
@@ -103,6 +103,67 @@ def rollback(last_good_label: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
+# 1b) AUTO-ROLLBACK  (armed/disarmed wrapper around rollback — the SAFETY gate)
+# --------------------------------------------------------------------------- #
+def auto_rollback_if_armed(last_good_label: str = None, reason: str = "") -> bool:
+    """Roll back ONLY if auto-rollback is armed (config.OPS_ROLLBACK_ARMED).
+
+    This is the gate the unattended robot-customer failure path calls. Because a
+    blind auto-rollback on a *running* site (as opposed to a just-shipped bad
+    deploy) is dangerous, it is DISARMED by default: when disarmed we log, alert,
+    and record the skipped rollback in history, but do NOT touch the deployment.
+
+    Returns True only when an actual rollback was performed and succeeded.
+    ALWAYS records to history and alerts. Never raises."""
+    # --- Disarmed: the safe default. Observe, don't act. ---
+    if not config.OPS_ROLLBACK_ARMED:
+        log.warning("auto_rollback_if_armed: DISARMED — skipping rollback (%s)",
+                    reason)
+        try:
+            alerts.send_alert(
+                "Auto-rollback SKIPPED (disarmed)",
+                f"Auto-rollback is disarmed (OPS_ROLLBACK_ARMED != 1), so no "
+                f"redeploy was attempted.\n\nReason: {reason}\n\n"
+                f"Arm it by setting OPS_ROLLBACK_ARMED=1 once you trust the "
+                f"robot to roll the site back on its own.",
+                "warning")
+        except Exception as e:
+            log.error("auto_rollback_if_armed: alert failed: %s", e)
+        try:
+            history.record_rollback(from_label=current_version(),
+                                    to_label="(skipped-disarmed)",
+                                    reason=reason)
+        except Exception as e:
+            log.error("auto_rollback_if_armed: history failed: %s", e)
+        return False
+
+    # --- Armed: figure out where to roll back to. ---
+    target = last_good_label or config.OPS_LAST_GOOD
+    if not target:
+        log.error("auto_rollback_if_armed: ARMED but no last-good label")
+        try:
+            alerts.send_alert(
+                "Auto-rollback ABORTED (no last-good label)",
+                "Auto-rollback is armed but no last-good version label was "
+                "given (pass --last-good or set OPS_LAST_GOOD). Roll back "
+                "manually in the EB console.\n\n"
+                f"Reason: {reason}",
+                "critical")
+        except Exception as e:
+            log.error("auto_rollback_if_armed: alert failed: %s", e)
+        return False
+
+    current = current_version()
+    result = rollback(target)
+    try:
+        history.record_rollback(from_label=current, to_label=target,
+                                reason=reason)
+    except Exception as e:
+        log.error("auto_rollback_if_armed: history failed: %s", e)
+    return result
+
+
+# --------------------------------------------------------------------------- #
 # 2) REMEDIATE  (lightweight self-heal over HTTP — stdlib urllib only)
 # --------------------------------------------------------------------------- #
 def _post_json(path: str, params: dict) -> dict:
@@ -176,6 +237,13 @@ def main(argv=None) -> int:
     p_roll.add_argument("--last-good", required=True, dest="last_good",
                         help="VersionLabel to redeploy.")
 
+    p_auto = sub.add_parser(
+        "auto-rollback",
+        help="Roll back ONLY if armed (OPS_ROLLBACK_ARMED=1); else alert only.")
+    p_auto.add_argument("--reason", default="", help="Why it was triggered.")
+    p_auto.add_argument("--last-good", dest="last_good", default=None,
+                        help="VersionLabel to redeploy (else OPS_LAST_GOOD).")
+
     p_rem = sub.add_parser("remediate", help="Run a lightweight self-heal.")
     p_rem.add_argument("--kind", required=True, choices=sorted(_REMEDIES),
                        help="Which remediation to run.")
@@ -184,6 +252,11 @@ def main(argv=None) -> int:
 
     if args.cmd == "rollback":
         return 0 if rollback(args.last_good) else 1
+    if args.cmd == "auto-rollback":
+        # Exit 0 whether it rolled back OR safely skipped (disarmed) — a skip is
+        # the intended, non-error behaviour, so the workflow step stays green.
+        auto_rollback_if_armed(args.last_good, args.reason)
+        return 0
     if args.cmd == "remediate":
         return 0 if remediate(args.kind).get("ok") else 1
     return 1  # pragma: no cover — argparse enforces a subcommand
