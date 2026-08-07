@@ -121,4 +121,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ap-south-1
-        run: eb deploy AxtroShastraProd
+        run: |
+          # Name every deploy so rollback is easy to target later.
+          # Label = v<UTC date-time>-<short commit sha> (unique + sortable + maps to code);
+          # description = the commit subject. Without this, EB auto-labels deploys with an
+          # opaque timestamp and no message, which makes picking a rollback target guesswork.
+          LABEL="v$(date -u +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)"
+          MSG="$(git log -1 --pretty=%s)"
+          echo "Deploying as version: $LABEL — $MSG"
+          eb deploy AxtroShastraProd --label "$LABEL" --message "$MSG"
