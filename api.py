@@ -2088,6 +2088,21 @@ def marriage_hi():
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"), lang="hi")
 
 
+@app.get("/en/marriage-v2", include_in_schema=False)
+def marriage_v2_en():
+    """English marriage-timing landing — direct-to-payment A/B variant (v2) at
+    /en/marriage-v2. Runs ALONGSIDE /en/marriage (shaadi.html); does not replace
+    it. Funnel: form -> Razorpay -> WhatsApp, with an on-page benefit preview and
+    a full sample report in a modal."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v2.html"))
+
+
+@app.get("/hi/marriage-v2", include_in_schema=False)
+def marriage_v2_hi():
+    """Hindi (Devanagari) counterpart of /en/marriage-v2."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v2.hi.html"), lang="hi")
+
+
 @app.get("/shaadi", include_in_schema=False)
 def shaadi_redirect(request: Request):
     """Legacy /shaadi → /en/marriage (301 permanent). Preserves query string
