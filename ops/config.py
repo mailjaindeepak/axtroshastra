@@ -12,7 +12,7 @@ def _list(name):
 # --- Target: the deployment the bots watch (local / staging / prod) ---
 TARGET_URL = os.getenv("OPS_TARGET_URL", "https://www.axtroshastra.com").rstrip("/")
 STATS_KEY = os.getenv("STATS_KEY", "")          # admin key: /api/make_pass, /api/reconcile, /api/pdf_health, /api/stats
-HTTP_TIMEOUT = int(os.getenv("OPS_HTTP_TIMEOUT", "25"))
+HTTP_TIMEOUT = int(os.getenv("OPS_HTTP_TIMEOUT") or "25")
 
 # --- Who to alert ---
 ALERT_EMAILS = _list("OPS_ALERT_EMAILS")        # "dev1@x.com,dev2@x.com"
@@ -20,7 +20,7 @@ ALERT_WHATSAPP = _list("OPS_ALERT_WHATSAPP")    # "+9199...,+9198..." (E.164)
 
 # --- Email (same names delivery.py uses; the RELIABLE alert channel) ---
 SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_PORT = int(os.getenv("SMTP_PORT") or "587")
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM = os.getenv("SMTP_FROM") or SMTP_USER
