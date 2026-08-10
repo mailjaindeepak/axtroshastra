@@ -1,0 +1,12 @@
+{
+  "name": "axtroshastra-robot-customer",
+  "private": true,
+  "description": "Robot customer: drives the real funnel journey (compatibility + marriage) against a LIVE deployment and fails loudly if any step breaks.",
+  "scripts": {
+    "test": "playwright test",
+    "install-browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}
