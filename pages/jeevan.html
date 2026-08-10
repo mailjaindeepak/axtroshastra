@@ -586,7 +586,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     var data = await res.json();
     REPORT_ID = data.report_id;
     renderTeaser(data.teaser);
-    if(window.fbq) fbq('track','Lead');
+    if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
     alert(err.message + ' — dobara try kijiye.');
@@ -707,6 +707,11 @@ function axContactModal(onDone){
   setTimeout(function(){ try{ phone.focus(); }catch(e){} }, 60);
 }
 
+function _getCookie(name){
+  var m = document.cookie.match('(?:^|; )'+name+'=([^;]*)');
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
@@ -714,7 +719,8 @@ async function startPayment(){
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
-      phone: AX_CONTACT.phone, email: AX_CONTACT.email || null})});
+      phone: AX_CONTACT.phone, email: AX_CONTACT.email || null,
+      fbc: _getCookie('_fbc'), fbp: _getCookie('_fbp')})});
   if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }

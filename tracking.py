@@ -78,7 +78,9 @@ def _post_json(url: str, payload: dict):
         return resp.status, resp.read().decode("utf-8", "replace")
 
 
-def _meta_purchase(rid, value, currency, phone, email):
+def _meta_purchase(rid, value, currency, phone, email,
+                   fbc=None, fbp=None, client_user_agent=None,
+                   client_ip_address=None):
     if not META_CAPI_TOKEN:
         return
     user_data = {}
@@ -88,6 +90,14 @@ def _meta_purchase(rid, value, currency, phone, email):
     em = _sha256(email)
     if em:
         user_data["em"] = [em]
+    if fbc:
+        user_data["fbc"] = fbc
+    if fbp:
+        user_data["fbp"] = fbp
+    if client_user_agent:
+        user_data["client_user_agent"] = client_user_agent
+    if client_ip_address:
+        user_data["client_ip_address"] = client_ip_address
     payload = {
         "data": [{
             "event_name": "Purchase",
@@ -148,14 +158,18 @@ def _ga4_purchase(rid, value, currency, ga_client_id):
 
 
 def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
-                   ga_client_id=None):
+                   ga_client_id=None, fbc=None, fbp=None,
+                   client_user_agent=None, client_ip_address=None):
     """Fire a Purchase to Meta CAPI + GA4 MP. No-op unless a secret is set.
     Never raises — safe to hand to a payment background task. Do NOT call for
     free-pass unlocks (no real revenue; the browser skips them too)."""
     if not enabled():
         return
     try:
-        _meta_purchase(rid, value, currency, phone, email)
+        _meta_purchase(rid, value, currency, phone, email,
+                       fbc=fbc, fbp=fbp,
+                       client_user_agent=client_user_agent,
+                       client_ip_address=client_ip_address)
         _ga4_purchase(rid, value, currency, ga_client_id)
     except Exception as e:                          # never break the caller
         logger.error("[tracking] track_purchase failed for %s: %s", rid, e)

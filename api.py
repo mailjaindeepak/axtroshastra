@@ -392,6 +392,32 @@ def store_user_contact(rid, phone=None, email=None):
                               (json.dumps(payload), rid))
     return user_phone
 
+def _store_attribution(rid, fbc=None, fbp=None, ua="", ip=""):
+    """Persist Meta attribution cookies + request context in the report payload
+    so the server-side CAPI fire (webhook / verify) can forward them."""
+    fbc = (fbc or "").strip()
+    fbp = (fbp or "").strip()
+    ua = (ua or "").strip()
+    ip = (ip or "").strip()
+    if not (fbc or fbp or ua or ip):
+        return
+    with _lock, db() as c:
+        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
+        if not row:
+            return
+        payload = json.loads(row[0])
+        meta = payload.setdefault("meta", {})
+        if fbc:
+            meta["_fbc"] = fbc
+        if fbp:
+            meta["_fbp"] = fbp
+        if ua:
+            meta["_ua"] = ua
+        if ip:
+            meta["_ip"] = ip
+        c.execute("UPDATE reports SET payload=? WHERE id=?",
+                  (json.dumps(payload), rid))
+
 def save_narrative(rid, narr: dict):
     """Merge the LLM-written prose into the stored report payload so the renderer
     can read it (payload['narrative']). Re-reads the row under the lock so we don't
@@ -746,16 +772,20 @@ def create_kundli(inp: KundliIn):
 class OrderIn(BaseModel):
     """Body of POST /api/order. `phone`/`email` come from the pre-payment
     contact popup: phone is the buyer's WhatsApp/account number (stored in
-    reports.user_phone), email feeds meta._email for the PDF copy."""
+    reports.user_phone), email feeds meta._email for the PDF copy.
+    `fbc`/`fbp` are the Meta click/browser cookies forwarded by the checkout
+    JS so the server-side CAPI Purchase can attribute to the right ad click."""
     report_id: str | None = None
     pass_token: str | None = Field(default=None, alias="pass")
     phone: str | None = None
     email: str | None = None
+    fbc: str | None = None
+    fbp: str | None = None
     model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
 @app.post("/api/order")
-def create_order(body: OrderIn, background_tasks: BackgroundTasks):
+def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTasks):
     rid = body.report_id
     rec = get_report(rid)
     if not rec: raise HTTPException(404, "report not found")
@@ -768,6 +798,15 @@ def create_order(body: OrderIn, background_tasks: BackgroundTasks):
             user_phone = store_user_contact(rid, body.phone, body.email) or user_phone
         except Exception as e:
             logger.error("[contact] persist failed for %s: %s", rid, e)
+    # Persist Meta attribution data (fbc/fbp cookies + UA/IP) so the CAPI
+    # Purchase fired from the webhook/verify path can attribute to the ad click.
+    try:
+        _store_attribution(rid, body.fbc, body.fbp,
+                           request.headers.get("user-agent", ""),
+                           request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+                           or request.client.host)
+    except Exception as e:
+        logger.error("[attribution] persist failed for %s: %s", rid, e)
     if rec["paid"]:                              # already paid -> skip checkout
         return {"already_paid": True}
     tok = (body.pass_token or "").strip()
@@ -894,9 +933,13 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                     # keys are set). The reliable backstop for the browser Pixel/gtag
                     # fire, which is lost to ad-blockers / closed tabs. event_id/
                     # transaction_id = rid dedups it against the client fire.
+                    _meta = rec["payload"].get("meta", {})
                     background_tasks.add_task(
                         tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
-                        "INR", phone, pay_email)
+                        "INR", phone, pay_email,
+                        fbc=_meta.get("_fbc"), fbp=_meta.get("_fbp"),
+                        client_user_agent=_meta.get("_ua"),
+                        client_ip_address=_meta.get("_ip"))
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -968,9 +1011,13 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             if form_email:
                 background_tasks.add_task(email_report, form_email, rid, rec["payload"])
             # Mirror the webhook: server-side Purchase backstop (env-gated OFF).
+            _meta = rec["payload"].get("meta", {})
             background_tasks.add_task(
                 tracking.track_purchase, rid, _order_amount_paise(rec) / 100,
-                "INR", phone, pay_email or form_email or "")
+                "INR", phone, pay_email or form_email or "",
+                fbc=_meta.get("_fbc"), fbp=_meta.get("_fbp"),
+                client_user_agent=_meta.get("_ua"),
+                client_ip_address=_meta.get("_ip"))
     return {"ok": True, "report_id": rid}
 
 

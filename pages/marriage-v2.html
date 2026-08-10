@@ -871,7 +871,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     // the report is delivered to; no separate preview step, no contact popup.
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
-    if(window.fbq) fbq('track','Lead');
+    if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_direct'});
     kundliOk = true;
   }catch(err){
@@ -896,6 +896,11 @@ function axNormPhone(v){
   if(d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
   return (d.length === 10 && '6789'.indexOf(d.charAt(0)) >= 0) ? ('+91' + d) : null;
 }
+function _getCookie(name){
+  var m = document.cookie.match('(?:^|; )'+name+'=([^;]*)');
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 // POST /api/order -> Razorpay checkout -> poll -> report page. WhatsApp/email
 // contact is always AX_CONTACT set from the main form during submit above — there
 // is no separate popup here, so this always has what it needs by the time it runs.
@@ -904,7 +909,8 @@ async function startPayment(){
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
-      phone: AX_CONTACT.phone, email: AX_CONTACT.email || null})});
+      phone: AX_CONTACT.phone, email: AX_CONTACT.email || null,
+      fbc: _getCookie('_fbc'), fbp: _getCookie('_fbp')})});
   if(!res.ok){ alert('Payment setup issue — please try again in a moment.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
