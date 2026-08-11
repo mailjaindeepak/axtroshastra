@@ -50,10 +50,13 @@ def _whatsapp(text):
     try:
         from twilio.rest import Client
         client = Client(config.TWILIO_SID, config.TWILIO_TOKEN)
+        sender = config.TWILIO_WHATSAPP_FROM
+        if not sender.startswith("whatsapp:"):
+            sender = f"whatsapp:{sender}"
         for to in config.ALERT_WHATSAPP:
             num = to if to.startswith("+") else "+" + to
             try:
-                client.messages.create(from_=config.TWILIO_WHATSAPP_FROM,
+                client.messages.create(from_=sender,
                                         to=f"whatsapp:{num}", body=text)
                 sent = True
             except Exception as e:

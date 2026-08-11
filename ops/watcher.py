@@ -118,7 +118,7 @@ def run_checks() -> dict:
     results = [
         _run_one("healthz_db", "/healthz/db", _check_healthz_db),
         _run_one("pdf_health", "/api/pdf_health?key=%s" % key, _check_pdf_health),
-        _run_one("otp_health", "/api/otp/health", _check_otp_health),
+        _run_one("otp_health", "/api/otp/health?key=%s" % key, _check_otp_health),
     ]
     failures = [c["name"] for c in results if not c["ok"]]
     hard_failed = [c["name"] for c in results
@@ -139,9 +139,25 @@ def _summarize(report):
         config.TARGET_URL, "\n".join(lines) if lines else "(no detail)")
 
 
+def _check_wallet_balances():
+    """Low-balance alerting for the prepaid provider wallets, run on the
+    watcher's existing 3×/day schedule. Delegated to dashboard.money so the
+    wallet logic lives with the wallet data; imported lazily and fully guarded
+    so it can never affect the health verdict or raise. Sends at most one alert
+    (critical/warning) via ops.alerts.send_alert."""
+    try:
+        from dashboard import money
+        return money.check_low_balances(alerts.send_alert)
+    except Exception as e:  # never let a wallet-check hiccup break the watcher
+        print("wallet balance check skipped: %s" % e, file=sys.stderr)
+        return None
+
+
 def main() -> int:
     report = run_checks()
     print(json.dumps(report, indent=2))
+    # Independent of site health: warn/critical on any low prepaid balance.
+    _check_wallet_balances()
     if report["overall"] == "red":
         try:
             alerts.send_alert("Watcher: deep health check failed",
