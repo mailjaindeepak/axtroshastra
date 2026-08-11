@@ -137,6 +137,68 @@ def test_otp_non200_is_red_and_alerts(monkeypatch, record_alert):
     assert len(record_alert) == 1
 
 
+def test_otp_health_url_includes_stats_key(monkeypatch, record_alert):
+    """The otp_health endpoint is admin-gated: it requires ?key=<STATS_KEY>.
+    Without it the real server returns 403 and the check silently fails."""
+    monkeypatch.setattr(config, "STATS_KEY", "my-secret-key")
+
+    captured_urls = []
+
+    def spy_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        captured_urls.append(url)
+        return FakeResponse(200, json.dumps({"ok": True}))
+
+    monkeypatch.setattr(urllib.request, "urlopen", spy_urlopen)
+    watcher.run_checks()
+
+    otp_urls = [u for u in captured_urls if "/api/otp/health" in u]
+    assert otp_urls, "otp_health was never called"
+    assert "key=my-secret-key" in otp_urls[0]
+
+
+def test_pdf_health_url_includes_stats_key(monkeypatch, record_alert):
+    """Same admin-key gate applies to pdf_health."""
+    monkeypatch.setattr(config, "STATS_KEY", "admin-key-42")
+
+    captured_urls = []
+
+    def spy_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        captured_urls.append(url)
+        return FakeResponse(200, json.dumps({"render_ok": True}))
+
+    monkeypatch.setattr(urllib.request, "urlopen", spy_urlopen)
+    watcher.run_checks()
+
+    pdf_urls = [u for u in captured_urls if "/api/pdf_health" in u]
+    assert pdf_urls, "pdf_health was never called"
+    assert "key=admin-key-42" in pdf_urls[0]
+
+
+def test_stats_key_is_url_encoded(monkeypatch, record_alert):
+    """Special characters in the STATS_KEY must be percent-encoded so the
+    query string doesn't break."""
+    monkeypatch.setattr(config, "STATS_KEY", "a key&with=specials")
+
+    captured_urls = []
+
+    def spy_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        captured_urls.append(url)
+        return FakeResponse(200, json.dumps({"render_ok": True, "ok": True}))
+
+    monkeypatch.setattr(urllib.request, "urlopen", spy_urlopen)
+    watcher.run_checks()
+
+    for url in captured_urls:
+        if "key=" in url:
+            raw_key = url.split("key=", 1)[1]
+            assert "&" not in raw_key
+            assert "=" not in raw_key
+            assert " " not in raw_key
+
+
 def test_run_checks_never_raises_when_urlopen_throws(monkeypatch, record_alert):
     def boom(req, timeout=None):
         raise ConnectionError("network down")
