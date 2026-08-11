@@ -126,7 +126,8 @@ jobs:
           PREV=$(gh run list \
                    --workflow ops-robot-customer.yml \
                    --branch "${{ github.ref_name }}" \
-                   --limit 2 \
+                   --limit 3 \
+                   --status completed \
                    --json conclusion \
                    --jq '.[0].conclusion' 2>/dev/null || echo "")
           echo "Previous run conclusion: '$PREV'"
