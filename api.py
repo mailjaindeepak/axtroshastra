@@ -2066,6 +2066,17 @@ extensions.install(app, {                      # (#6)(#7)(#8)(#9) feature endpoi
     "render": _render_for, "valid_admin_key": _valid_admin_key,
 })
 
+# Admin dashboard plugin (self-contained; /admin + /api/admin/*). Wrapped so an
+# import/registration error can NEVER take down the rest of the app — the site
+# works exactly as before if this fails or STATS_KEY is unset.
+try:
+    import dashboard
+    dashboard.install(app, {"db": db, "get_report": get_report,
+                            "valid_admin_key": _valid_admin_key,
+                            "order_amount_paise": _order_amount_paise})
+except Exception as _e:  # pragma: no cover - defensive guard
+    logging.getLogger("api").warning("dashboard plugin not loaded: %s", _e)
+
 
 @app.get("/padhai", include_in_schema=False)
 def padhai_redirect(request: Request):
