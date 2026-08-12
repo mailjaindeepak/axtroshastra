@@ -438,12 +438,23 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div class="note" style="margin-top:6px"><b>Security:</b> the login code is <b>never shown here</b>, and for real logins it isn&rsquo;t even stored &mdash; Message Central generates and checks it. Showing codes would let anyone with admin access log in as any user, so we don&rsquo;t.</div>
 <div class="strip" id="otp-stat" style="margin-top:14px"></div>
 <div class="abovelink"><h3 class="serif">Recent login-code requests</h3><a class="xlink" href="https://console.messagecentral.com/studio/reports" target="_blank">&#8599; cross-check on Message Central · Reports</a></div>
+<div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
+  <label style="font-size:13px;color:var(--mute)">Show:</label>
+  <select id="otp-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+    <option value="all">All time</option>
+    <option value="today">Today</option>
+    <option value="week">This week</option>
+    <option value="month">This month</option>
+  </select>
+  <span id="otp-count" style="font-size:12px;color:var(--mute)"></span>
+</div>
 <div class="twrap"><table>
-<thead><tr><th>Time</th><th>Phone (masked)</th><th>Status</th><th>Provider</th><th>Attempts</th></tr></thead>
+<thead><tr><th>Time</th><th>Phone</th><th>Status</th><th>Provider</th><th>Attempts</th></tr></thead>
 <tbody id="otp-log"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
 </table></div>
+<div id="otp-pager" style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
 <p class="src1" id="otp-note"></p>
-<div class="how"><b>How to use this:</b> if a user says &ldquo;I never got my code&rdquo;, find their masked number here and check the status. <b>sent</b> = we handed it to the provider; <b>expired</b> = they waited too long (ask them to retry); <b>locked</b> = too many wrong tries. Connect the Message Central reports API to see true delivered/rejected status.</div>
+<div class="how"><b>How to use this:</b> this table shows that <b>we made the request</b> to Message Central &mdash; not that MC actually generated or delivered the OTP. To verify MC received and sent it, open <a href="https://console.messagecentral.com/studio/reports" target="_blank" style="color:var(--gold)">Message Central Reports &#8599;</a> and log in with your credentials. <b>sent</b> = we requested MC to send it; <b>expired</b> = they waited too long (ask them to retry); <b>locked</b> = too many wrong tries (5+).</div>
 </section>
 
 <!-- ============ CUSTOMERS ============ -->
@@ -868,18 +879,52 @@ function otpStatusBadge(st){
   var cls = (s==="delivered"||s==="sent") ? "b-ok" : (s==="rejected"||s==="expired"||s==="locked") ? "b-crit" : "b-warn";
   return '<span class="badge '+cls+'">'+esc(s||"—")+'</span>';
 }
+var _otpAll = [], _otpPage = 0, _otpPerPage = 15;
+function _otpFiltered(){
+  var f = document.getElementById("otp-filter").value;
+  if(f==="all") return _otpAll;
+  var now = new Date(), cutoff;
+  if(f==="today"){ cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if(f==="week"){ cutoff = new Date(now.getTime() - 7*864e5); }
+  else { cutoff = new Date(now.getFullYear(), now.getMonth(), 1); }
+  return _otpAll.filter(function(r){ return new Date(r.time) >= cutoff; });
+}
+function _otpRenderPage(){
+  var rows = _otpFiltered();
+  var total = rows.length, pages = Math.ceil(total / _otpPerPage) || 1;
+  if(_otpPage >= pages) _otpPage = pages - 1;
+  if(_otpPage < 0) _otpPage = 0;
+  var start = _otpPage * _otpPerPage, slice = rows.slice(start, start + _otpPerPage);
+  var tb = document.getElementById("otp-log");
+  tb.innerHTML = slice.length ? slice.map(function(r){
+    var ago = timeAgo(r.time);
+    return "<tr><td>"+fmtTime(r.time)+(ago?"<br><small style=\"color:var(--mute)\">"+ago+"</small>":"")+"</td><td>"+esc(r.phone||"—")+"</td><td>"+
+      otpStatusBadge(r.status)+"</td><td>"+esc(r.provider)+"</td><td>"+(r.attempts||0)+"</td></tr>";
+  }).join("") : emptyRow(5, "No login-code requests yet.");
+  var countEl = document.getElementById("otp-count");
+  if(countEl) countEl.textContent = total ? (start+1)+"–"+Math.min(start+_otpPerPage, total)+" of "+total : "";
+  var pager = document.getElementById("otp-pager");
+  if(pager){
+    if(pages <= 1){ pager.innerHTML = ""; return; }
+    var h = '<button onclick="_otpPage=0;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_otpPage--;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mute)">Page '+(_otpPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_otpPage++;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_otpPage='+(pages-1)+';_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    pager.innerHTML = h;
+  }
+}
 function loadOtp(){
   api("/api/admin/otp_logins").then(function(d){
-    var rows = d.logins || [];
+    _otpAll = d.logins || [];
+    _otpPage = 0;
     var ce = d.cost_estimate || {};
     document.getElementById("otp-stat").innerHTML =
       chip("OTP logins this month: " + (d.month_count||0), "ok") +
       chip((ce.line || "~₹0.30/OTP (est)"), "warn");
-    var tb = document.getElementById("otp-log");
-    tb.innerHTML = rows.length ? rows.map(function(r){
-      return "<tr><td>"+fmtTime(r.time)+"</td><td>"+esc(r.phone_masked)+"</td><td>"+
-        otpStatusBadge(r.status)+"</td><td>"+esc(r.provider)+"</td><td>"+(r.attempts||0)+"</td></tr>";
-    }).join("") : emptyRow(5, "No login-code requests in flight right now.");
+    var filterEl = document.getElementById("otp-filter");
+    if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _otpPage=0; _otpRenderPage(); }); }
+    _otpRenderPage();
     document.getElementById("otp-note").innerHTML = esc(d.note || "");
   }).catch(showError);
 }

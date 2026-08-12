@@ -545,13 +545,12 @@ def install(app, ctx):
         """Login-OTP delivery log built from our own `login_otps` rows (who
         requested / when / attempts). SECURITY: the OTP code is NEVER stored for
         real (Message Central) logins and is NEVER returned here — we do not
-        select code_hash, so no code can leak. Phones are masked to their last 2
-        digits.
+        select code_hash, so no code can leak.
 
         Message Central owns generation+verification; we only hold
-        mc_verification_id. If MC reporting creds are present we *could* enrich
-        rows with delivered/rejected from MC's reports API — until that is wired
-        we return our metadata plus a flag note."""
+        mc_verification_id. Status is derived from our local data only:
+        sent = we asked MC to send it, expired = TTL passed, locked = 5+ fails.
+        MC does not expose a delivery-status API."""
         _gate(request, key)
         mc_ready = _mc_configured()
         now_iso = datetime.utcnow().isoformat()
@@ -581,7 +580,7 @@ def install(app, ctx):
             if (req_time or "")[:7] == this_month:
                 month_count += 1
             out.append({
-                "phone_masked": _mask_phone(mobile),
+                "phone": mobile or "",
                 "time": req_time,
                 "status": status,
                 "provider": provider,
