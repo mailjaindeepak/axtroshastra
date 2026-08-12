@@ -459,6 +459,15 @@ def install(app, ctx):
         sr = dict(cfg.get("spend_revenue") or {})
         sr["ledger"] = db_ledger + (sr.get("ledger") or [])
         cfg["spend_revenue"] = sr
+        llm_stats = store.llm_log_stats(db)
+        llm_recent = store.llm_log_recent(db, limit=30)
+        llm = dict(cfg.get("llm") or {})
+        llm["live_today"] = llm_stats["live_today"]
+        llm["fallbacks"] = llm_stats["fallbacks"]
+        llm["avg_gen_s"] = llm_stats["avg_gen_s"]
+        llm["slowest_s"] = llm_stats["slowest_s"]
+        llm["recent"] = llm_recent
+        cfg["llm"] = llm
         return JSONResponse({"config": cfg, "site_base": SITE_BASE})
 
     @app.get("/api/admin/twilio_balance")

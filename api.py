@@ -441,6 +441,12 @@ def _generate_narrative_task(rid):
         rec = get_report(rid)
         if rec:
             save_narrative(rid, narrative.generate_narrative(rec["payload"]))
+            if narrative.last_generation:
+                try:
+                    from dashboard.store import llm_log_add
+                    llm_log_add(db, rid, narrative.last_generation)
+                except Exception:
+                    pass
     except Exception as e:
         logger.error("[narrative] task failed for %s: %s", rid, e)
 

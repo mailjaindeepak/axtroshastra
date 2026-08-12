@@ -1,6 +1,8 @@
 branch-defaults:
   aws-mysql:
     environment: AxtroShastraProd
+  feature/t6-ops-framework:
+    environment: AxtroShastraProd
   fix/overlay-translucency:
     environment: AxtroShastraProd
 environment-defaults:
