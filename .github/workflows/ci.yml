@@ -124,9 +124,17 @@ jobs:
         run: |
           # Name every deploy so rollback is easy to target later.
           # Label = v<UTC date-time>-<short commit sha> (unique + sortable + maps to code);
-          # description = the commit subject. Without this, EB auto-labels deploys with an
-          # opaque timestamp and no message, which makes picking a rollback target guesswork.
+          # description = the PR title (from merge commit body) so you can tell
+          # what each version contains when picking a rollback target.
+          # GitHub merge commits: subject = "Merge pull request #N from ...",
+          # body = the actual PR title. We use the body when available, else subject.
           LABEL="v$(date -u +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)"
-          MSG="$(git log -1 --pretty=%s)"
+          BODY="$(git log -1 --pretty=%b | head -1 | xargs)"
+          SUBJECT="$(git log -1 --pretty=%s)"
+          if [ -n "$BODY" ]; then
+            MSG="$BODY"
+          else
+            MSG="$SUBJECT"
+          fi
           echo "Deploying as version: $LABEL — $MSG"
           eb deploy AxtroShastraProd --label "$LABEL" --message "$MSG"

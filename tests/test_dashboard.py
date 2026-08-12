@@ -208,15 +208,18 @@ def test_team_passcode_gate(client, monkeypatch):
     assert client.get(f"/api/admin/team?key={KEY}&pass={KEY}").status_code == 403
 
 
-# 12. OTP login log: gated, phone masked, NEVER exposes the code --------------
-def _seed_otp(mobile, vid="", attempts=0, minutes_ahead=5):
-    from datetime import datetime, timedelta
-    exp = (datetime.utcnow() + timedelta(minutes=minutes_ahead)).isoformat()
-    with api._lock, api.db() as c:
-        c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        c.execute("INSERT INTO login_otps(mobile,code_hash,mc_verification_id,"
-                  "expires_at,attempts) VALUES(?,?,?,?,?)",
-                  (mobile, "SECRETHASH", vid, exp, attempts))
+# 12. OTP login log: gated, NEVER exposes the code ----------------------------
+def _seed_otp_log(mobile, provider="Message Central", status="sent", attempts=0):
+    """Seed dash_otp_log (the primary source for the OTP logins endpoint)."""
+    from dashboard import store
+    store._ensure_otp_log(api.db)
+    now = datetime.utcnow().isoformat()
+    with api.db() as c:
+        c.execute(
+            "INSERT INTO dash_otp_log(mobile,provider,status,attempts,created_at) "
+            "VALUES(?,?,?,?,?)",
+            (mobile, provider, status, attempts, now),
+        )
 
 
 def test_otp_logins_requires_key(client):
@@ -224,29 +227,50 @@ def test_otp_logins_requires_key(client):
     assert client.get("/api/admin/otp_logins?key=wrong").status_code == 403
 
 
-def test_otp_logins_shows_full_phone_and_never_returns_code(client):
-    _seed_otp("+919876500011", vid="vid-abc", attempts=1)
+def test_otp_logins_shows_data_from_dash_otp_log(client):
+    _seed_otp_log("+919876500011", provider="Message Central", status="verified", attempts=1)
     d = client.get(f"/api/admin/otp_logins?key={KEY}").json()
     assert "logins" in d and d["logins"]
     row = next(r for r in d["logins"] if "9876500011" in r["phone"])
     assert row["phone"] == "+919876500011"
-    assert row["provider"] == "Message Central"     # mc_verification_id present
-    # the response must carry NO code / code_hash — not as a field, not anywhere
+    assert row["provider"] == "Message Central"
+    assert row["status"] == "verified"
     assert "code" not in row and "code_hash" not in row
-    assert "SECRETHASH" not in json.dumps(d)
-    # cost estimate present and clearly flagged estimated
     assert d["cost_estimate"]["estimated"] is True
     assert d["month_count"] >= 1
 
 
 def test_otp_logins_count_reflects_seeded_rows(client):
-    _seed_otp("+919000000031")
-    _seed_otp("+919000000032")
+    _seed_otp_log("+919000000031")
+    _seed_otp_log("+919000000032")
     d = client.get(f"/api/admin/otp_logins?key={KEY}").json()
     phones = [r["phone"] for r in d["logins"]]
     assert any("9000000031" in p for p in phones)
     assert any("9000000032" in p for p in phones)
     assert d["month_count"] >= 2
+
+
+def test_otp_log_store_functions():
+    """Verify dash_otp_log store helpers round-trip correctly."""
+    from dashboard import store
+    store.otp_log_add(api.db, "+919999900041", "Message Central")
+    rows = store.otp_log_recent(api.db, limit=5)
+    match = [r for r in rows if "9999900041" in r["phone"]]
+    assert match and match[0]["status"] == "sent"
+    store.otp_log_update_status(api.db, "+919999900041", "verified")
+    rows = store.otp_log_recent(api.db, limit=5)
+    match = [r for r in rows if "9999900041" in r["phone"]]
+    assert match[0]["status"] == "verified"
+
+
+def test_otp_log_update_with_attempts():
+    from dashboard import store
+    store.otp_log_add(api.db, "+919999900042", "Message Central")
+    store.otp_log_update_status(api.db, "+919999900042", "locked", attempts=5)
+    rows = store.otp_log_recent(api.db, limit=5)
+    match = [r for r in rows if "9999900042" in r["phone"]]
+    assert match[0]["status"] == "locked"
+    assert match[0]["attempts"] == 5
 
 
 # 13. Twilio live balance endpoint (gated, never raises) ----------------------
@@ -555,3 +579,68 @@ def test_llm_log_appears_in_config(client):
     llm = cfg["llm"]
     assert llm["live_today"] >= 1
     assert any(r["rid"] == "test-rid-002" for r in llm["recent"])
+
+
+# 23. Ops log: store functions + event endpoint --------------------------------
+def test_ops_log_roundtrip():
+    from dashboard.store import ops_log_add, ops_log_recent, ops_log_last
+    ops_log_add(api.db, "watcher", status="pass", detail="all checks green",
+                run_url="https://github.com/actions/runs/1", severity="info")
+    ops_log_add(api.db, "robot", status="fail", detail="payment flow broken",
+                run_url="https://github.com/actions/runs/2", severity="critical")
+    ops_log_add(api.db, "rollback", status="triggered", detail="2 failures",
+                from_ver="v12", to_ver="v11", severity="critical")
+    watchers = ops_log_recent(api.db, limit=5, kind="watcher")
+    assert any(r["status"] == "pass" and r["detail"] == "all checks green" for r in watchers)
+    robots = ops_log_recent(api.db, limit=5, kind="robot")
+    assert any(r["status"] == "fail" and r["detail"] == "payment flow broken" for r in robots)
+    rbs = ops_log_recent(api.db, limit=5, kind="rollback")
+    assert any(r["from_ver"] == "v12" and r["to_ver"] == "v11" for r in rbs)
+    last = ops_log_last(api.db, "watcher")
+    assert last is not None and last["status"] == "pass"
+
+
+def test_ops_event_requires_key(client):
+    r = client.post("/api/admin/ops_event",
+                    json={"kind": "watcher", "status": "pass"})
+    assert r.status_code == 403
+
+
+def test_ops_event_records_watcher(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "watcher", "status": "pass",
+                          "detail": "DB + PDF + OTP all green",
+                          "run_url": "https://github.com/actions/runs/99"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
+def test_ops_event_records_robot(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "robot", "status": "pass",
+                          "detail": "E2E journey passed",
+                          "run_url": "https://github.com/actions/runs/100"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
+def test_ops_event_rejects_bad_kind(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "invalid"})
+    assert r.status_code == 422
+
+
+def test_ops_health_requires_key(client):
+    r = client.get("/api/admin/ops_health")
+    assert r.status_code == 403
+
+
+def test_ops_health_returns_structure(client):
+    r = client.get(f"/api/admin/ops_health?key={KEY}")
+    assert r.status_code == 200
+    d = r.json()
+    assert "checks" in d
+    assert "all_ok" in d
+    assert "watcher_events" in d
+    assert "robot_events" in d
+    assert "rollbacks" in d

@@ -53,19 +53,35 @@ jobs:
           STATS_KEY:      ${{ secrets.STATS_KEY }}
         run: npx playwright test
 
-      # ---- On SUCCESS: record a passing run to the ops history store. ----
-      - name: Record passing run to history
+      # ---- On SUCCESS: record to dashboard + local history. ----
+      - name: Record passing run to dashboard
         if: success()
+        env:
+          OPS_TARGET_URL: ${{ secrets.OPS_TARGET_URL }}
+          STATS_KEY:      ${{ secrets.STATS_KEY }}
         run: |
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"robot\",\"status\":\"pass\",\"detail\":\"Robot customer journey passed on the live site.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"info\"}" \
+            || echo "dashboard record failed (non-fatal)"
           python -m ops.history record-run \
             --status pass \
             --detail "Robot customer journey passed on the live site." \
             --run-url "$RUN_URL"
 
-      # ---- On FAILURE: record a failing run to history, then alert. ----
-      - name: Record failing run to history
+      # ---- On FAILURE: record to dashboard + local history, then alert. ----
+      - name: Record failing run to dashboard
         if: failure()
+        env:
+          OPS_TARGET_URL: ${{ secrets.OPS_TARGET_URL }}
+          STATS_KEY:      ${{ secrets.STATS_KEY }}
         run: |
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"robot\",\"status\":\"fail\",\"detail\":\"Robot customer journey FAILED on the live site (form / unlock / report / PDF).\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
           python -m ops.history record-run \
             --status fail \
             --detail "Robot customer journey FAILED on the live site (form / unlock / report / PDF)." \
@@ -118,6 +134,9 @@ jobs:
           # Rollback stays DISARMED unless Deepak sets this secret to "1".
           OPS_ROLLBACK_ARMED:   ${{ secrets.OPS_ROLLBACK_ARMED }}
           OPS_LAST_GOOD:        ${{ secrets.OPS_LAST_GOOD }}
+          # Dashboard recording
+          OPS_TARGET_URL:       ${{ secrets.OPS_TARGET_URL }}
+          STATS_KEY:            ${{ secrets.STATS_KEY }}
         run: |
           pip install --quiet twilio
           # Most recent completed run's conclusion for this workflow + branch.
@@ -135,6 +154,12 @@ jobs:
             echo "2nd consecutive robot-customer failure — attempting (disarmed) auto-rollback."
             python -m ops.mechanic auto-rollback \
               --reason "2 consecutive robot-customer failures"
+            # Record the rollback event to the dashboard
+            curl -sf -X POST \
+              "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "{\"kind\":\"rollback\",\"status\":\"triggered\",\"detail\":\"2 consecutive robot-customer failures\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+              || echo "dashboard record failed (non-fatal)"
           else
             echo "First failure (previous run not a failure) — alert only, no rollback attempt."
           fi
