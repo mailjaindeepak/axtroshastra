@@ -275,7 +275,7 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <h2>Ops status <span style="font-size:13px;color:var(--gold)">&mdash; the three robots</span> <span class="badge b-warn">manual</span></h2>
 <p class="pageintro">The site is watched around the clock. If something critical breaks, it rolls back on its own and tells you. Values read from <code>dashboard/config.py</code> until UptimeRobot + GitHub Actions are wired.</p>
 <div class="cards trio" id="ops-cards"></div>
-<div class="abovelink"><h3 class="serif">Robot run history</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on GitHub · Actions</a></div>
+<div class="abovelink"><h3 class="serif">Robot run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions" target="_blank">&#8599; cross-check on GitHub · Actions</a></div>
 <div class="twrap"><table>
 <thead><tr><th>Run</th><th>Funnels</th><th>CTAs</th><th>Previews</th><th>Payment</th><th>Responsive</th><th>Result</th></tr></thead>
 <tbody id="ops-runs"></tbody>
@@ -293,7 +293,7 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div class="rowbtwn"><h2>Payments</h2><button class="csv" onclick="openTeam()">&#9881; Manage team exclusions</button></div>
 <p class="pageintro">Every captured report payment. Real-customer revenue only &mdash; pre-launch team gateway tests and allowlisted team members are separated out (shown muted, tagged with why). Cross-check totals on the Razorpay dashboard.</p>
 <div class="cards trio" id="pay-cards"></div>
-<div class="abovelink"><h3 class="serif">By funnel variant</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on Razorpay · Payments</a></div>
+<div class="abovelink"><h3 class="serif">By funnel variant</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay · Payments</a></div>
 <div class="twrap"><table>
 <thead><tr><th>Funnel / page</th><th>Kundlis created</th><th>Paid reports</th><th>Revenue</th></tr></thead>
 <tbody id="pay-variants"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
@@ -368,11 +368,11 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <p class="pageintro">Live visitors, where they came from (including paid ads), and how far they get through the funnel. GA4 numbers read from <code>dashboard/config.py</code> until the GA4 Data API is wired.</p>
 <div class="cards trio" id="traffic-cards"></div>
 
-<div class="abovelink"><h3 class="serif">Where visitors came from &middot; last 7 days</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on GA4 · Acquisition</a></div>
+<div class="abovelink"><h3 class="serif">Where visitors came from &middot; last 7 days</h3><a class="xlink" href="https://analytics.google.com/" target="_blank">&#8599; cross-check on GA4 · Acquisition</a></div>
 <p class="pageintro">Paid-ad traffic shows here (GA source/medium). If the ad bar grows but purchases don&rsquo;t, the ads aren&rsquo;t converting.</p>
 <div class="srcbox" id="traffic-sources"></div>
 
-<div class="abovelink"><h3 class="serif">Conversion funnel &middot; last 7 days</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on GA4 · Funnel</a></div>
+<div class="abovelink"><h3 class="serif">Conversion funnel &middot; last 7 days</h3><a class="xlink" href="https://analytics.google.com/" target="_blank">&#8599; cross-check on GA4 · Funnel</a></div>
 <div class="gafunnel" id="traffic-funnel"></div>
 <div class="how"><b>How to read this:</b> the tall drop from Landings to Form-filled is where most people leave &mdash; your biggest lever. The &ldquo;where from&rdquo; bars tell you if paid ads are sending people who actually convert.</div>
 
@@ -389,14 +389,25 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 
 <!-- ============ LLM ============ -->
 <section class="tabpage" id="p-llm">
-<h2>LLM calls <span style="font-size:13px;color:var(--gold)">&mdash; logs + Claude credit together</span> <span class="badge b-warn">manual</span></h2>
-<p class="pageintro">Proof that Claude actually writes each report (not the fallback), plus how much Claude credit is left. Values read from <code>dashboard/config.py</code> until the Anthropic usage API is wired.</p>
+<h2>LLM calls <span style="font-size:13px;color:var(--gold)">&mdash; logs + Claude credit together</span> <span class="badge b-warn" id="llm-badge">manual</span></h2>
+<p class="pageintro">Proof that Claude actually writes each report (not the fallback), plus how much Claude credit is left. Generation log fills automatically when customers buy reports.</p>
 <div class="cards" id="llm-cards"></div>
-<div class="abovelink"><h3 class="serif">Recent report generations (the LLM log)</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on Anthropic · Usage</a></div>
+<div class="abovelink"><h3 class="serif">Recent report generations (the LLM log)</h3><a class="xlink" href="https://console.anthropic.com/settings/usage" target="_blank">&#8599; cross-check on Anthropic · Usage</a></div>
+<div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
+  <label style="font-size:13px;color:var(--mute)">Show:</label>
+  <select id="llm-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+    <option value="all">All time</option>
+    <option value="today">Today</option>
+    <option value="week">This week</option>
+    <option value="month">This month</option>
+  </select>
+  <span id="llm-count" style="font-size:12px;color:var(--mute)"></span>
+</div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Report</th><th>Mode</th><th>Latency</th><th>Tokens</th></tr></thead>
 <tbody id="llm-log"></tbody>
 </table></div>
+<div id="llm-pager" style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
 <div class="how"><b>How to use this:</b> every row saying &ldquo;live Claude&rdquo; means the AI wrote that report. If rows start saying &ldquo;fallback&rdquo;, the Claude calls are failing &mdash; first check the credit card above, then open the Anthropic console.</div>
 </section>
 
@@ -405,7 +416,7 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <h2>Report delivery log</h2>
 <p class="pageintro">Every PAID report and whether it actually reached the customer&rsquo;s WhatsApp &mdash; on the number they typed in the popup. For any that failed, a ready-to-forward message with the report links.</p>
 <div class="cards trio" id="dl-cards"></div>
-<div class="abovelink"><h3 class="serif">Paid reports &mdash; delivery status</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on Twilio · Messaging logs</a></div>
+<div class="abovelink"><h3 class="serif">Paid reports &mdash; delivery status</h3><a class="xlink" href="https://console.twilio.com/us1/monitor/logs/messaging" target="_blank">&#8599; cross-check on Twilio · Messaging logs</a></div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Paid via (Razorpay #)</th><th>Sent to (popup #)</th><th>Report ID</th><th>Status</th><th>Action</th></tr></thead>
 <tbody id="dl-log"><tr><td colspan="6">Loading&hellip;</td></tr></tbody>
@@ -426,7 +437,7 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <p class="pageintro">Who requested a login code, when, and whether it went out. We use this to spot delivery problems &mdash; never to read anyone&rsquo;s code.</p>
 <div class="note" style="margin-top:6px"><b>Security:</b> the login code is <b>never shown here</b>, and for real logins it isn&rsquo;t even stored &mdash; Message Central generates and checks it. Showing codes would let anyone with admin access log in as any user, so we don&rsquo;t.</div>
 <div class="strip" id="otp-stat" style="margin-top:14px"></div>
-<div class="abovelink"><h3 class="serif">Recent login-code requests</h3><a class="xlink" href="#" onclick="return false">&#8599; cross-check on Message Central · Reports</a></div>
+<div class="abovelink"><h3 class="serif">Recent login-code requests</h3><a class="xlink" href="https://console.messagecentral.com/studio/reports" target="_blank">&#8599; cross-check on Message Central · Reports</a></div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Phone (masked)</th><th>Status</th><th>Provider</th><th>Attempts</th></tr></thead>
 <tbody id="otp-log"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
@@ -540,6 +551,21 @@ function fmtTime(iso){
   var d = new Date(iso);
   if(isNaN(d)) return esc(iso);
   return d.toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+}
+function timeAgo(iso){
+  if(!iso) return "";
+  var d = new Date(iso);
+  if(isNaN(d)) return "";
+  var s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if(s < 60) return "just now";
+  var m = Math.floor(s / 60);
+  if(m < 60) return m + (m===1 ? " min ago" : " mins ago");
+  var h = Math.floor(m / 60);
+  if(h < 24) return h + (h===1 ? " hr ago" : " hrs ago");
+  var dy = Math.floor(h / 24);
+  if(dy < 30) return dy + (dy===1 ? " day ago" : " days ago");
+  var mo = Math.floor(dy / 30);
+  return mo + (mo===1 ? " month ago" : " months ago");
 }
 function api(path){
   return fetch(withKey(path), {credentials: "same-origin"}).then(function(r){
@@ -1058,23 +1084,66 @@ function renderFbPixel(c){
     '<div class="rvtleg"><span><i style="background:var(--chip)"></i>PageView</span>'+
     '<span><i style="background:var(--gold)"></i>Lead · Checkout · Purchase</span></div>';
 }
+var _llmAll = [], _llmPage = 0, _llmPerPage = 15;
+function _llmFiltered(){
+  var f = document.getElementById("llm-filter").value;
+  if(f==="all") return _llmAll;
+  var now = new Date(), cutoff;
+  if(f==="today"){ cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if(f==="week"){ cutoff = new Date(now.getTime() - 7*864e5); }
+  else { cutoff = new Date(now.getFullYear(), now.getMonth(), 1); }
+  return _llmAll.filter(function(g){ return new Date(g.time) >= cutoff; });
+}
+function _llmRenderPage(){
+  var rows = _llmFiltered();
+  var total = rows.length, pages = Math.ceil(total / _llmPerPage) || 1;
+  if(_llmPage >= pages) _llmPage = pages - 1;
+  if(_llmPage < 0) _llmPage = 0;
+  var start = _llmPage * _llmPerPage, slice = rows.slice(start, start + _llmPerPage);
+  var log = document.getElementById("llm-log");
+  log.innerHTML = slice.length ? slice.map(function(g){
+    var modeCls = (g.mode==="live Claude") ? "b-ok" : "b-crit";
+    var tokens = ((g.input_tokens||0)+(g.output_tokens||0)) || "—";
+    var label = esc(g.product||"report") + " · " + esc(g.rid||"").substring(0,8);
+    var ago = timeAgo(g.time);
+    return "<tr><td>"+fmtTime(g.time)+(ago?"<br><small style=\"color:var(--mute)\">"+ago+"</small>":"")+"</td><td>"+label+"</td><td><span class=\"badge "+modeCls+"\">"+esc(g.mode||"—")+
+      "</span></td><td>"+(g.latency_s||"—")+"s</td><td>"+tokens+"</td></tr>";
+  }).join("") : emptyRow(5, "No report generations logged yet. The table fills automatically when a customer buys a report.");
+  var countEl = document.getElementById("llm-count");
+  if(countEl) countEl.textContent = total ? (start+1)+"–"+Math.min(start+_llmPerPage, total)+" of "+total : "";
+  var pager = document.getElementById("llm-pager");
+  if(pager){
+    if(pages <= 1){ pager.innerHTML = ""; return; }
+    var h = '<button onclick="_llmPage=0;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_llmPage--;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mute)">Page '+(_llmPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_llmPage++;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_llmPage='+(pages-1)+';_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    pager.innerHTML = h;
+  }
+}
 function renderLlm(c){
   var l = c.llm || {};
+  _llmAll = l.recent || [];
+  _llmPage = 0;
+  var hasLog = _llmAll.length;
+  var srcTag = hasLog ? "live" : "manual";
+  var llmBadge = document.getElementById("llm-badge");
+  if(llmBadge){ llmBadge.textContent = hasLog ? "live" : "manual"; llmBadge.className = "badge " + (hasLog ? "b-ok" : "b-warn"); }
   var live = (l.live_today==null) ? "—" : l.live_today;
+  var fbState = (l.fallbacks && l.fallbacks > 0) ? "warn" : "ok";
   document.getElementById("llm-cards").innerHTML =
-    cardSrc("Live Claude", "today", "manual", live, "reports used the real LLM", (l.live_today==null?"—":"100%"), "ok") +
-    cardSrc("Fallbacks", "deterministic", "manual", (l.fallbacks==null?"—":l.fallbacks), "0 = healthy", (l.fallbacks?"check":"good"), "ok") +
-    cardSrc("Avg generate time", "per report", "manual", (l.avg_gen_s==null?"—":l.avg_gen_s+"<small>s</small>"), "slowest today", (l.slowest_s==null?"—":l.slowest_s+"s"), "ok") +
+    cardSrc("Live Claude", "today", srcTag, live, "reports used the real LLM", (l.live_today==null?"—":"100%"), "ok") +
+    cardSrc("Fallbacks", "deterministic", srcTag, (l.fallbacks==null?"—":l.fallbacks), "0 = healthy", (l.fallbacks?"check":"good"), fbState) +
+    cardSrc("Avg generate time", "per report", srcTag, (l.avg_gen_s==null?"—":l.avg_gen_s+"<small>s</small>"), "slowest today", (l.slowest_s==null?"—":l.slowest_s+"s"), "ok") +
     ('<div class="card ok"><h3>Claude credit <span class="src">Anthropic</span><span class="badge b-warn">manual</span></h3>'+
      '<div class="big">'+esc(l.credit_left||"—")+' <small>left</small></div>'+
      '<div class="meter"><i style="--fill:var(--ok);width:'+(l.pct||0)+'%"></i></div>'+
      '<div class="kv"><span>Spent this month</span><b>'+esc(l.spent_month||"—")+'</b></div>'+
-     '<a class="xlink" href="https://console.anthropic.com" target="_blank">&#8599; Anthropic · Usage</a></div>');
-  var log = document.getElementById("llm-log");
-  log.innerHTML = (l.recent && l.recent.length) ? l.recent.map(function(g){
-    return "<tr><td>"+esc(g.time)+"</td><td>"+esc(g.report)+"</td><td><span class=\"badge b-ok\">"+esc(g.mode||"live Claude")+
-      "</span></td><td>"+esc(g.latency)+"</td><td>"+esc(g.tokens)+"</td></tr>";
-  }).join("") : emptyRow(5, "manual — no LLM log source wired yet (fill llm.recent in config.py)");
+     '<a class="xlink" href="https://console.anthropic.com/settings/usage" target="_blank">&#8599; Anthropic · Usage</a></div>');
+  var filterEl = document.getElementById("llm-filter");
+  if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _llmPage=0; _llmRenderPage(); }); }
+  _llmRenderPage();
 }
 function renderOps(c){
   var o = c.ops || {};

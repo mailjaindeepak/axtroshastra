@@ -185,3 +185,83 @@ def ledger_all(db):
         ).fetchall()
     return [{"service": r[0], "entry": r[1], "amount": r[2],
              "date": r[3], "note": r[4]} for r in rows]
+
+
+# --------------------------------------------------------------------------- #
+# dash_llm_log — one row per Claude call for report narrative generation.
+# Captures timing, token usage, mode (live/fallback/error), model, and product.
+# --------------------------------------------------------------------------- #
+def _ensure_llm_log(db):
+    with db() as c:
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS dash_llm_log(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rid TEXT,
+                product TEXT,
+                mode TEXT,
+                model TEXT,
+                latency_s REAL,
+                input_tokens INTEGER,
+                output_tokens INTEGER,
+                sections INTEGER,
+                total_sections INTEGER,
+                created_at TEXT)"""
+        )
+
+
+def llm_log_add(db, rid, meta):
+    _ensure_llm_log(db)
+    now = datetime.utcnow().isoformat()
+    with db() as c:
+        c.execute(
+            "INSERT INTO dash_llm_log(rid,product,mode,model,latency_s,"
+            "input_tokens,output_tokens,sections,total_sections,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (rid, (meta.get("product") or ""),
+             (meta.get("mode") or ""),
+             (meta.get("model") or ""),
+             meta.get("latency_s", 0),
+             meta.get("input_tokens", 0),
+             meta.get("output_tokens", 0),
+             meta.get("sections", 0),
+             meta.get("total_sections", 0),
+             now),
+        )
+
+
+def llm_log_recent(db, limit=50):
+    _ensure_llm_log(db)
+    with db() as c:
+        rows = c.execute(
+            "SELECT rid, product, mode, model, latency_s, "
+            "input_tokens, output_tokens, sections, total_sections, created_at "
+            "FROM dash_llm_log ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [{"rid": r[0], "product": r[1], "mode": r[2], "model": r[3],
+             "latency_s": r[4], "input_tokens": r[5], "output_tokens": r[6],
+             "sections": r[7], "total_sections": r[8], "time": r[9]} for r in rows]
+
+
+def llm_log_stats(db):
+    """Summary stats for the LLM tab cards: today's count, fallback count,
+    average latency, slowest call."""
+    _ensure_llm_log(db)
+    today = datetime.utcnow().date().isoformat()
+    with db() as c:
+        rows = c.execute(
+            "SELECT mode, latency_s FROM dash_llm_log WHERE created_at >= ?",
+            (today,),
+        ).fetchall()
+    if not rows:
+        return {"live_today": 0, "fallbacks": 0, "avg_gen_s": None,
+                "slowest_s": None}
+    live = sum(1 for r in rows if r[0] == "live Claude")
+    fallbacks = sum(1 for r in rows if r[0] != "live Claude")
+    latencies = [r[1] for r in rows if r[1] and r[1] > 0]
+    return {
+        "live_today": live,
+        "fallbacks": fallbacks,
+        "avg_gen_s": round(sum(latencies) / len(latencies), 1) if latencies else None,
+        "slowest_s": round(max(latencies), 1) if latencies else None,
+    }

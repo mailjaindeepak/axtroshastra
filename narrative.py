@@ -42,6 +42,7 @@ import json
 import logging
 import os
 import re
+import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timedelta
@@ -54,6 +55,9 @@ OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 ANTHROPIC_VERSION = "2023-06-01"
 
 MAX_SECTION_CHARS = 1600     # a runaway section is dropped (fallback to bank)
+
+_last_call_meta = {"input_tokens": 0, "output_tokens": 0, "model": ""}
+last_generation = {}         # populated after each generate_narrative() call
 
 # --------------------------------------------------------------------------- #
 # config (read at call time so a dashboard/env change needs no redeploy)
@@ -201,7 +205,11 @@ SECTION_SPECS = {
 # --------------------------------------------------------------------------- #
 def generate_narrative(payload: dict) -> dict:
     """Return {section_key: escaped_prose} for this report, or {} to fall back to
-    the deterministic banks. Never raises."""
+    the deterministic banks. Never raises.
+    After each call, `last_generation` is populated with timing and token metadata
+    so callers can log it (see dashboard/store.llm_log_add)."""
+    global last_generation
+    last_generation = {}
     if not enabled():
         return {}
     product = (payload.get("product")
@@ -209,16 +217,23 @@ def generate_narrative(payload: dict) -> dict:
     spec = SECTION_SPECS.get(product)
     if not spec:
         return {}
+    _last_call_meta.update(input_tokens=0, output_tokens=0, model="")
+    t0 = time.time()
     try:
         facts = _facts_for_llm(payload, product)
         system = _system_prompt(product, spec, _resolve_lang(payload))
         user = _user_prompt(facts, spec)
         raw = _call(system, user, _max_tokens(product), _timeout(product))
+        elapsed = round(time.time() - t0, 2)
         if not raw:
+            last_generation = {"mode": "fallback", "latency_s": elapsed,
+                               "product": product, "sections": 0}
             return {}
         data = _parse_json(raw)
         if not isinstance(data, dict):
             logger.warning("[narrative] non-dict output for %s", product)
+            last_generation = {"mode": "fallback", "latency_s": elapsed,
+                               "product": product, "sections": 0}
             return {}
         out = {}
         allowed = _allowed_numbers(facts)
@@ -238,18 +253,27 @@ def generate_narrative(payload: dict) -> dict:
                 logger.warning("[narrative] section %r dropped: chart-contradicting placement", key)
                 continue
             if out_lang == "hi" and not _devanagari_ok(val):
-                # English/Hinglish prose can NEVER be localized downstream (the
-                # localizers are exact-match) — better the Hindi bank than a
-                # Roman-script section in a Devanagari report.
                 logger.warning("[narrative] section %r dropped: not Devanagari", key)
                 continue
             out[key] = html.escape(val)
         logger.info("[narrative] %s/%s lang=%s model=%s -> %d/%d sections generated",
                     _provider(), product, _resolve_lang(payload), _model(), len(out), len(spec))
+        last_generation = {
+            "mode": "live Claude" if out else "fallback",
+            "latency_s": elapsed,
+            "product": product,
+            "sections": len(out),
+            "total_sections": len(spec),
+            "input_tokens": _last_call_meta.get("input_tokens", 0),
+            "output_tokens": _last_call_meta.get("output_tokens", 0),
+            "model": _last_call_meta.get("model", ""),
+        }
         return out
     except Exception as e:
         logger.error("[narrative] generation failed (%s/%s): %s",
                      _provider(), product, e)
+        last_generation = {"mode": "error", "latency_s": round(time.time() - t0, 2),
+                           "product": product, "sections": 0}
         return {}
 
 
@@ -579,6 +603,12 @@ def _call_anthropic(system: str, user: str, max_tokens: int = DEFAULT_MAX_TOKENS
     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
     if not text:
         return ""
+    usage = out.get("usage") or {}
+    _last_call_meta.update(
+        input_tokens=usage.get("input_tokens", 0),
+        output_tokens=usage.get("output_tokens", 0),
+        model=out.get("model", model),
+    )
     return "{" + text if prefill else text
 
 

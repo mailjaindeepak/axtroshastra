@@ -529,3 +529,31 @@ def test_ledger_entries_appear_in_config(client):
     cfg = client.get(f"/api/admin/config?key={KEY}").json()["config"]
     ledger = cfg.get("spend_revenue", {}).get("ledger", [])
     assert any(e["service"] == "Twilio" and e["amount"] == "$20" for e in ledger)
+
+
+# 22. LLM log: write, read, stats, config merge --------------------------------
+def test_llm_log_roundtrip(client):
+    from dashboard.store import llm_log_add, llm_log_recent, llm_log_stats
+    llm_log_add(api.db, "test-rid-001", {
+        "mode": "live Claude", "latency_s": 4.2, "product": "marriage",
+        "model": "claude-sonnet-5", "input_tokens": 1200,
+        "output_tokens": 800, "sections": 28, "total_sections": 32,
+    })
+    recent = llm_log_recent(api.db, limit=5)
+    assert any(r["rid"] == "test-rid-001" and r["mode"] == "live Claude" for r in recent)
+    stats = llm_log_stats(api.db)
+    assert stats["live_today"] >= 1
+    assert stats["avg_gen_s"] is not None
+
+
+def test_llm_log_appears_in_config(client):
+    from dashboard.store import llm_log_add
+    llm_log_add(api.db, "test-rid-002", {
+        "mode": "live Claude", "latency_s": 3.1, "product": "career",
+        "model": "claude-sonnet-5", "input_tokens": 900,
+        "output_tokens": 600, "sections": 10, "total_sections": 12,
+    })
+    cfg = client.get(f"/api/admin/config?key={KEY}").json()["config"]
+    llm = cfg["llm"]
+    assert llm["live_today"] >= 1
+    assert any(r["rid"] == "test-rid-002" for r in llm["recent"])
