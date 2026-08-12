@@ -224,14 +224,12 @@ def test_otp_logins_requires_key(client):
     assert client.get("/api/admin/otp_logins?key=wrong").status_code == 403
 
 
-def test_otp_logins_masks_phone_and_never_returns_code(client):
+def test_otp_logins_shows_full_phone_and_never_returns_code(client):
     _seed_otp("+919876500011", vid="vid-abc", attempts=1)
     d = client.get(f"/api/admin/otp_logins?key={KEY}").json()
     assert "logins" in d and d["logins"]
-    row = next(r for r in d["logins"] if r["phone_masked"].endswith("11"))
-    # only the last 2 digits are revealed — the full number never appears
-    assert "9876500011" not in row["phone_masked"]
-    assert row["phone_masked"].endswith("11")
+    row = next(r for r in d["logins"] if "9876500011" in r["phone"])
+    assert row["phone"] == "+919876500011"
     assert row["provider"] == "Message Central"     # mc_verification_id present
     # the response must carry NO code / code_hash — not as a field, not anywhere
     assert "code" not in row and "code_hash" not in row
@@ -245,9 +243,9 @@ def test_otp_logins_count_reflects_seeded_rows(client):
     _seed_otp("+919000000031")
     _seed_otp("+919000000032")
     d = client.get(f"/api/admin/otp_logins?key={KEY}").json()
-    masks = [r["phone_masked"] for r in d["logins"]]
-    assert any(m.endswith("31") for m in masks)
-    assert any(m.endswith("32") for m in masks)
+    phones = [r["phone"] for r in d["logins"]]
+    assert any("9000000031" in p for p in phones)
+    assert any("9000000032" in p for p in phones)
     assert d["month_count"] >= 2
 
 
