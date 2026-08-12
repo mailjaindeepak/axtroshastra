@@ -272,20 +272,65 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 
 <!-- ============ OPS ============ -->
 <section class="tabpage" id="p-ops">
-<h2>Ops status <span style="font-size:13px;color:var(--gold)">&mdash; the three robots</span> <span class="badge b-warn">manual</span></h2>
-<p class="pageintro">The site is watched around the clock. If something critical breaks, it rolls back on its own and tells you. Values read from <code>dashboard/config.py</code> until UptimeRobot + GitHub Actions are wired.</p>
+<h2>Ops status <span style="font-size:13px;color:var(--gold)">&mdash; the three robots</span></h2>
+<p class="pageintro">Three automated bots watch the site around the clock. Each one checks a different layer. If something critical breaks, you get an alert and (when armed) the site rolls back on its own.</p>
 <div class="cards trio" id="ops-cards"></div>
-<div class="abovelink"><h3 class="serif">Robot run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions" target="_blank">&#8599; cross-check on GitHub · Actions</a></div>
+
+<!-- ---- UptimeRobot ---- -->
+<div style="margin-top:18px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+<h3 class="serif" style="margin:0 0 6px">UptimeRobot <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; external uptime monitor &middot; every 5 minutes</span></h3>
+<p style="margin:0 0 8px;color:var(--mut);font-size:13px">An <b>external service</b> (not our code) that pings the site every 5 minutes to check &ldquo;is the site alive?&rdquo; If the server is completely down &mdash; crash, DNS failure, AWS outage &mdash; UptimeRobot alerts you. It only checks if the homepage responds; it cannot see whether internal systems (database, PDF, OTP) are actually working. That deeper check is done by the Watcher below.</p>
+<a class="xlink" href="https://dashboard.uptimerobot.com/monitors" target="_blank" style="font-size:13px">&#8599; Open UptimeRobot dashboard</a>
+</div>
+
+<!-- ---- Watcher ---- -->
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+<h3 class="serif" style="margin:0 0 6px">1. Watcher <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; deep health probe &middot; runs 3&times;/day via GitHub Actions</span></h3>
+<p style="margin:0 0 10px;color:var(--mut);font-size:13px">Checks the <b>internal systems</b> that UptimeRobot cannot see: can the database write and read back? Can the PDF engine render a report? Are the OTP provider credentials still valid? If any check fails, it sends you an email + WhatsApp alert. It does <b>not</b> fix anything &mdash; it only reports.</p>
+<div id="ops-health-lights" style="margin:0 0 10px;display:flex;gap:12px;flex-wrap:wrap"></div>
+<p style="margin:0;font-size:12px;color:var(--mut)">The lights above are <b>live checks run right now</b> (same endpoints the watcher probes). The table below shows the watcher&rsquo;s scheduled run history from GitHub Actions.</p>
+</div>
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Watcher run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-watcher.yml" target="_blank">&#8599; GitHub Actions</a>
+<select id="ops-watcher-filter" onchange="_opsWatcherPage=0;renderOpsWatcher()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
+</select></div>
 <div class="twrap"><table>
-<thead><tr><th>Run</th><th>Funnels</th><th>CTAs</th><th>Previews</th><th>Payment</th><th>Responsive</th><th>Result</th></tr></thead>
-<tbody id="ops-runs"></tbody>
+<thead><tr><th>When</th><th>Status</th><th>Detail</th><th>Severity</th><th>Actions link</th></tr></thead>
+<tbody id="ops-watcher-rows"></tbody>
 </table></div>
-<div class="abovelink"><h3 class="serif">Rollback &amp; alert history</h3></div>
+<div id="ops-watcher-pag" style="text-align:center;padding:8px 0"></div>
+
+<!-- ---- Robot customer ---- -->
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+<h3 class="serif" style="margin:0 0 6px">2. Robot customer <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; end-to-end journey test &middot; runs 3&times;/day via GitHub Actions</span></h3>
+<p style="margin:0;color:var(--mut);font-size:13px">Opens a <b>real browser</b> on the live site and walks the entire customer journey: fills the birth form, unlocks a report with a test pass (no real payment), then checks the paid report page and PDF download actually work. If any step breaks, it alerts you. Two consecutive failures trigger the Mechanic (below).</p>
+</div>
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Robot customer run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-robot-customer.yml" target="_blank">&#8599; GitHub Actions</a>
+<select id="ops-robot-filter" onchange="_opsRobotPage=0;renderOpsRobot()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
+</select></div>
 <div class="twrap"><table>
-<thead><tr><th>When</th><th>Event</th><th>From &rarr; To</th><th>Why</th><th>Alerted</th></tr></thead>
+<thead><tr><th>When</th><th>Status</th><th>Detail</th><th>Severity</th><th>Actions link</th></tr></thead>
+<tbody id="ops-robot-rows"></tbody>
+</table></div>
+<div id="ops-robot-pag" style="text-align:center;padding:8px 0"></div>
+
+<!-- ---- Mechanic ---- -->
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+<h3 class="serif" style="margin:0 0 6px">3. Mechanic <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; auto-rollback &middot; triggered by 2 consecutive robot failures</span></h3>
+<p style="margin:0;color:var(--mut);font-size:13px">The only bot that <b>acts</b>. If the robot customer fails twice in a row (not just once &mdash; one failure could be a flaky network), the mechanic rolls the site back to the last known good version. Currently <b>disarmed</b> (<code>OPS_ROLLBACK_ARMED=0</code>) &mdash; even on 2 consecutive failures it only alerts you. You arm it yourself when you are confident.</p>
+</div>
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Rollback &amp; alert history</h3>
+<select id="ops-rb-filter" onchange="_opsRbPage=0;renderOpsRollbacks()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
+</select></div>
+<div class="twrap"><table>
+<thead><tr><th>When</th><th>Status</th><th>From &rarr; To</th><th>Detail</th><th>Severity</th></tr></thead>
 <tbody id="ops-rollbacks"></tbody>
 </table></div>
-<div class="how"><b>How to use this:</b> you mostly don&rsquo;t touch this tab &mdash; it works on its own. If a row says &ldquo;rolled back&rdquo;, the site is already safe on the last good version; your job is to read the alert, fix the bug, and redeploy.</div>
+<div id="ops-rb-pag" style="text-align:center;padding:8px 0"></div>
+
+<div class="how"><b>How to use this:</b> you mostly don&rsquo;t touch this tab &mdash; it works on its own. If a row says &ldquo;rolled back&rdquo;, the site is already safe on the last good version; your job is to read the alert, fix the bug, and redeploy. UptimeRobot (external, every 5 min) handles the basic &ldquo;is the site alive?&rdquo; ping separately.</div>
 </section>
 
 <!-- ============ PAYMENTS ============ -->
@@ -934,7 +979,7 @@ function renderStaticTabs(){
   renderMoney(c);
   renderTraffic(c);
   renderLlm(c);
-  renderOps(c);
+  renderOps();
 }
 // plain, non-technical purpose per service (jargon-free)
 var ACCOUNT_PURPOSE = {
@@ -1190,22 +1235,103 @@ function renderLlm(c){
   if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _llmPage=0; _llmRenderPage(); }); }
   _llmRenderPage();
 }
-function renderOps(c){
-  var o = c.ops || {};
-  var w = o.watcher||{}, rb = o.robot||{}, m = o.mechanic||{};
+var _opsWatcher=[], _opsRobot=[], _opsRollbacks=[], _opsWatcherPage=0, _opsRobotPage=0, _opsRbPage=0, _opsPerPage=15;
+function _opsFilter(arr, filterId){
+  var f = document.getElementById(filterId).value;
+  if(f==="all") return arr;
+  var now = new Date(), cutoff;
+  if(f==="today"){ cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if(f==="week"){ cutoff = new Date(now.getTime() - 7*864e5); }
+  else { cutoff = new Date(now.getFullYear(), now.getMonth(), 1); }
+  return arr.filter(function(r){ return new Date(r.time) >= cutoff; });
+}
+function _opsRunRow(r){
+  var link = r.run_url ? '<a href="'+esc(r.run_url)+'" target="_blank" class="xlink">Actions</a>' : "—";
+  return "<tr><td>"+esc(timeAgo(r.time))+"<br><small style='color:var(--mut)'>"+esc(fmtTime(r.time))+"</small></td>"+
+    "<td>"+statusBadge(r.status)+"</td><td>"+esc(r.detail||"—")+"</td>"+
+    "<td>"+esc(r.severity||"—")+"</td><td>"+link+"</td></tr>";
+}
+function _opsPag(page, total, prevFn, nextFn, disablePrev, disableNext){
+  if(total<=1) return "";
+  return '<button onclick="'+prevFn+'" '+(disablePrev?'disabled':'')+'>&#8592;</button>'+
+    ' <span style="margin:0 8px">'+(page+1)+' / '+total+'</span> '+
+    '<button onclick="'+nextFn+'" '+(disableNext?'disabled':'')+'>&#8594;</button>';
+}
+function renderOpsWatcher(){
+  var filtered = _opsFilter(_opsWatcher, "ops-watcher-filter");
+  var start = _opsWatcherPage * _opsPerPage;
+  var page = filtered.slice(start, start + _opsPerPage);
+  document.getElementById("ops-watcher-rows").innerHTML = page.length ? page.map(_opsRunRow).join("") : emptyRow(5, "No watcher events recorded yet.");
+  var total = Math.ceil(filtered.length / _opsPerPage);
+  document.getElementById("ops-watcher-pag").innerHTML = _opsPag(_opsWatcherPage, total,
+    "_opsWatcherPage=Math.max(0,_opsWatcherPage-1);renderOpsWatcher()",
+    "_opsWatcherPage=Math.min("+(total-1)+",_opsWatcherPage+1);renderOpsWatcher()",
+    start===0, start+_opsPerPage>=filtered.length);
+}
+function renderOpsRobot(){
+  var filtered = _opsFilter(_opsRobot, "ops-robot-filter");
+  var start = _opsRobotPage * _opsPerPage;
+  var page = filtered.slice(start, start + _opsPerPage);
+  document.getElementById("ops-robot-rows").innerHTML = page.length ? page.map(_opsRunRow).join("") : emptyRow(5, "No robot customer events recorded yet.");
+  var total = Math.ceil(filtered.length / _opsPerPage);
+  document.getElementById("ops-robot-pag").innerHTML = _opsPag(_opsRobotPage, total,
+    "_opsRobotPage=Math.max(0,_opsRobotPage-1);renderOpsRobot()",
+    "_opsRobotPage=Math.min("+(total-1)+",_opsRobotPage+1);renderOpsRobot()",
+    start===0, start+_opsPerPage>=filtered.length);
+}
+function renderOpsRollbacks(){
+  var filtered = _opsFilter(_opsRollbacks, "ops-rb-filter");
+  var start = _opsRbPage * _opsPerPage;
+  var page = filtered.slice(start, start + _opsPerPage);
+  document.getElementById("ops-rollbacks").innerHTML = page.length ? page.map(function(r){
+    var ver = (r.from_ver||r.to_ver) ? esc(r.from_ver||"?")+" → "+esc(r.to_ver||"?") : "—";
+    return "<tr><td>"+esc(timeAgo(r.time))+"<br><small style='color:var(--mut)'>"+esc(fmtTime(r.time))+"</small></td>"+
+      "<td>"+statusBadge(r.status)+"</td><td>"+ver+"</td>"+
+      "<td>"+esc(r.detail||"—")+"</td><td>"+esc(r.severity||"—")+"</td></tr>";
+  }).join("") : emptyRow(5, "No rollback or alert events recorded yet.");
+  var total = Math.ceil(filtered.length / _opsPerPage);
+  document.getElementById("ops-rb-pag").innerHTML = _opsPag(_opsRbPage, total,
+    "_opsRbPage=Math.max(0,_opsRbPage-1);renderOpsRollbacks()",
+    "_opsRbPage=Math.min("+(total-1)+",_opsRbPage+1);renderOpsRollbacks()",
+    start===0, start+_opsPerPage>=filtered.length);
+}
+function renderOps(){
   document.getElementById("ops-cards").innerHTML =
-    cardSrc("Watcher", "uptime", "manual", String(w.state||"—").toUpperCase(), "Last ping", esc(w.last_ping||"manual"), (w.state||"warn")) +
-    cardSrc("Robot customer", "3×/day", "manual", esc(rb.last_run||"manual"), "Next run", esc(rb.next_run||"manual"), (rb.state||"warn")) +
-    cardSrc("Mechanic", "auto-rollback", "manual", esc(m.live_version||"manual"), "Trigger", "2 failed runs", (m.state||"warn"));
-  var runs = document.getElementById("ops-runs");
-  runs.innerHTML = (o.run_history && o.run_history.length) ? o.run_history.map(function(r){
-    var chk = (r.checks||[]).map(function(x){ return "<td>"+(x?"✓":"✗")+"</td>"; }).join("");
-    return "<tr><td>"+esc(r.run)+"</td>"+chk+"<td>"+statusBadge(r.result)+"</td></tr>";
-  }).join("") : emptyRow(7, "manual — no run history wired yet (fill ops.run_history in config.py)");
-  var rbk = document.getElementById("ops-rollbacks");
-  rbk.innerHTML = (o.rollback_history && o.rollback_history.length) ? o.rollback_history.map(function(r){
-    return "<tr><td>"+esc(r.when)+"</td><td>"+esc(r.event)+"</td><td>"+esc(r.from_to)+"</td><td>"+esc(r.why)+"</td><td>"+esc(r.alerted)+"</td></tr>";
-  }).join("") : emptyRow(5, "manual — no rollback history wired yet (fill ops.rollback_history in config.py)");
+    cardSrc("Watcher", "deep health · 3×/day", "", "—", "Checks", "DB, PDF, OTP", "warn") +
+    cardSrc("Robot customer", "E2E · 3×/day", "", "—", "Last run", "loading…", "warn") +
+    cardSrc("Mechanic", "auto-rollback", "", "—", "Armed", "no", "warn");
+  document.getElementById("ops-health-lights").innerHTML = '<span style="color:var(--mut)">Running live health checks…</span>';
+  document.getElementById("ops-watcher-rows").innerHTML = emptyRow(5, "Loading…");
+  document.getElementById("ops-robot-rows").innerHTML = emptyRow(5, "Loading…");
+  document.getElementById("ops-rollbacks").innerHTML = emptyRow(5, "Loading…");
+  api("/api/admin/ops_health").then(function(d){
+    var lights = (d.checks||[]).map(function(ch){
+      var col = ch.ok ? "var(--ok)" : "var(--crit)";
+      var label = ch.ok ? "OK" : "DOWN";
+      return '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border)">'+
+        '<span style="width:10px;height:10px;border-radius:50%;background:'+col+'"></span>'+
+        '<b>'+esc(ch.name)+'</b> <span style="font-size:12px;color:'+col+'">'+label+'</span></span>';
+    }).join("");
+    document.getElementById("ops-health-lights").innerHTML = lights || '<span style="color:var(--mut)">No health endpoints configured</span>';
+    var allOk = d.all_ok;
+    var lw = d.last_watcher;
+    var lr = d.last_robot;
+    var lrb = d.last_rollback;
+    document.getElementById("ops-cards").innerHTML =
+      cardSrc("Watcher", "deep health · 3×/day", "", allOk ? "ALL OK" : "ISSUE", "Live check right now", allOk ? "all checks pass" : "one or more failing", allOk ? "ok" : "crit") +
+      cardSrc("Robot customer", "E2E · 3×/day", "", lr ? esc(lr.status||"—") : "no runs", "Last run", lr ? timeAgo(lr.time) : "never", lr && lr.status==="pass" ? "ok" : "warn") +
+      cardSrc("Mechanic", "auto-rollback", "", lrb ? esc(lrb.status||"—") : "no rollbacks", "Last rollback", lrb ? timeAgo(lrb.time) : "never", lrb ? "warn" : "ok");
+    _opsWatcher = d.watcher_events || [];
+    _opsRobot = d.robot_events || [];
+    _opsRollbacks = d.rollbacks || [];
+    renderOpsWatcher();
+    renderOpsRobot();
+    renderOpsRollbacks();
+  }).catch(function(e){
+    document.getElementById("ops-health-lights").innerHTML = '<span style="color:var(--crit)">Could not load ops health: '+esc(e.message)+'</span>';
+    document.getElementById("ops-runs").innerHTML = emptyRow(5, "Could not load run history.");
+    document.getElementById("ops-rollbacks").innerHTML = emptyRow(5, "Could not load rollback history.");
+  });
 }
 function setCur(cur){
   var iv = STATE.invest; if(!iv) return;
@@ -1238,6 +1364,7 @@ function showTab(name){
   pages.forEach(function(x){ x.classList.remove("active"); });
   var p = document.getElementById("p-"+name); if(p) p.classList.add("active");
   window.scrollTo({top:0,behavior:"smooth"});
+  if(name==="ops") renderOps();
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeCust(); });
 document.addEventListener("DOMContentLoaded", function(){

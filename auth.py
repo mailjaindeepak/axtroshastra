@@ -330,6 +330,11 @@ def _mc_send_otp(db, mobile: str) -> dict:
         c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
         c.execute("INSERT INTO login_otps(mobile,code_hash,mc_verification_id,"
                   "expires_at,attempts) VALUES(?,?,?,?,0)", (mobile, "", vid, expires))
+    try:
+        from dashboard.store import otp_log_add
+        otp_log_add(db, mobile, "Message Central")
+    except Exception:
+        pass
     return {"ok": True, "channel": "sms"}
 
 
@@ -370,6 +375,16 @@ def _mc_check_otp(db, mobile: str, code: str) -> bool:
         else:
             c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
                       (attempts + 1, mobile))
+    try:
+        from dashboard.store import otp_log_update_status
+        if ok:
+            otp_log_update_status(db, mobile, "verified")
+        elif attempts + 1 >= OTP_MAX_ATTEMPTS:
+            otp_log_update_status(db, mobile, "locked", attempts + 1)
+        else:
+            otp_log_update_status(db, mobile, "sent", attempts + 1)
+    except Exception:
+        pass
     return ok
 
 

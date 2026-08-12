@@ -62,12 +62,6 @@ def _payload_email(payload):
     return ((payload or {}).get("meta") or {}).get("_email") or ""
 
 
-# OTP TTL used by auth.py's _send paths (login_otps has no request-time column,
-# so we derive it as expires_at − TTL). Kept as a local constant to avoid
-# importing auth just for a number.
-_OTP_TTL_MINUTES = 10
-
-
 def _mask_phone(mobile):
     """Reveal ONLY the last 2 digits (privacy-first). '+919876543211' ->
     '+91 •••••••• 11'. Never returns more than the trailing 2 digits."""
@@ -79,17 +73,6 @@ def _mask_phone(mobile):
         cc = digits[:len(digits) - 10]
         return "+" + cc + " •••••••• " + last2
     return "•••••••• " + last2
-
-
-def _otp_request_time(expires_at):
-    """Approximate the request time as expires_at − OTP TTL."""
-    if not expires_at:
-        return ""
-    try:
-        return (datetime.fromisoformat(expires_at)
-                - timedelta(minutes=_OTP_TTL_MINUTES)).isoformat()
-    except ValueError:
-        return expires_at
 
 
 def _mc_configured():
@@ -478,6 +461,58 @@ def install(app, ctx):
         _gate(request, key)
         return providers.twilio_balance()
 
+    # ------------------------------------------------ ops event recording + live health
+    @app.post("/api/admin/ops_event")
+    def admin_ops_event(request: Request, body: dict, key: str = ""):
+        """Record an ops event (run/rollback/alert). Called by GitHub Actions
+        workflows after each watcher or robot-customer run."""
+        _gate(request, key)
+        kind = (body or {}).get("kind", "")
+        if kind not in ("watcher", "robot", "rollback", "alert"):
+            raise HTTPException(422, "kind must be watcher, robot, rollback, or alert")
+        row = store.ops_log_add(db, kind,
+                                status=(body or {}).get("status", ""),
+                                detail=(body or {}).get("detail", ""),
+                                run_url=(body or {}).get("run_url", ""),
+                                from_ver=(body or {}).get("from_ver", ""),
+                                to_ver=(body or {}).get("to_ver", ""),
+                                severity=(body or {}).get("severity", ""))
+        return {"ok": True, "row": row}
+
+    @app.get("/api/admin/ops_health")
+    def admin_ops_health(request: Request, key: str = ""):
+        """Live health check — hits the app's own healthz endpoints and returns
+        green/red per check. Called when the Ops tab opens."""
+        _gate(request, key)
+        import urllib.request
+        base = str(request.base_url).rstrip("/")
+        checks = []
+        for name, path in [("DB liveness", "/healthz"),
+                           ("DB write-durability", "/healthz/db")]:
+            try:
+                r = urllib.request.urlopen(base + path, timeout=10)
+                ok = r.status == 200
+            except Exception:
+                ok = False
+            checks.append({"name": name, "ok": ok})
+        try:
+            otp_url = base + "/api/otp/health?key=" + (_admin_secret() or "")
+            r = urllib.request.urlopen(otp_url, timeout=10)
+            otp_ok = r.status == 200
+        except Exception:
+            otp_ok = False
+        checks.append({"name": "OTP provider", "ok": otp_ok})
+        return {
+            "checks": checks,
+            "all_ok": all(c["ok"] for c in checks),
+            "last_watcher": store.ops_log_last(db, "watcher"),
+            "last_robot": store.ops_log_last(db, "robot"),
+            "last_rollback": store.ops_log_last(db, "rollback"),
+            "watcher_events": store.ops_log_recent(db, limit=50, kind="watcher"),
+            "robot_events": store.ops_log_recent(db, limit=50, kind="robot"),
+            "rollbacks": store.ops_log_recent(db, limit=20, kind="rollback"),
+        }
+
     # ------------------------------------------------ team exclusion allowlist
     def _valid_pass(passcode):
         """Team-management passcode. Order: DASH_TEAM_PASSCODE, else ADMIN_KEY,
@@ -542,57 +577,26 @@ def install(app, ctx):
     # ------------------------------------------------ OTP login delivery log
     @app.get("/api/admin/otp_logins")
     def admin_otp_logins(request: Request, key: str = ""):
-        """Login-OTP delivery log built from our own `login_otps` rows (who
-        requested / when / attempts). SECURITY: the OTP code is NEVER stored for
-        real (Message Central) logins and is NEVER returned here — we do not
-        select code_hash, so no code can leak.
+        """Login-OTP log from dash_otp_log (append-only — every OTP send is
+        recorded and never deleted). The old login_otps table is a pending-OTP
+        store (PK on mobile, deletes on verify) so it's useless for history.
 
-        Message Central owns generation+verification; we only hold
-        mc_verification_id. Status is derived from our local data only:
-        sent = we asked MC to send it, expired = TTL passed, locked = 5+ fails.
-        MC does not expose a delivery-status API."""
+        SECURITY: the OTP code is NEVER stored or returned here.
+        Status reflects what we recorded at send/verify time:
+        sent = we asked MC to send it, verified = user entered correct code,
+        locked = 5+ wrong attempts."""
         _gate(request, key)
         mc_ready = _mc_configured()
-        now_iso = datetime.utcnow().isoformat()
-        this_month = now_iso[:7]   # 'YYYY-MM'
-        # NOTE: deliberately no code_hash / code in this SELECT.
-        with db() as c:
-            try:
-                rows = c.execute(
-                    "SELECT mobile, mc_verification_id, expires_at, attempts "
-                    "FROM login_otps ORDER BY expires_at DESC"
-                ).fetchall()
-            except Exception:
-                rows = []   # login_otps may not exist yet (auth.ensure_tables not run)
-        out = []
-        month_count = 0
-        for mobile, vid, expires_at, attempts in rows:
-            req_time = _otp_request_time(expires_at)
-            provider = "Message Central" if vid else "dev"
-            # our-side status only — we never expose the code, and we don't call
-            # MC's reports API here, so this reflects what we know locally.
-            if expires_at and expires_at < now_iso:
-                status = "expired"
-            elif (attempts or 0) >= 5:
-                status = "locked"
-            else:
-                status = "sent"
-            if (req_time or "")[:7] == this_month:
-                month_count += 1
-            out.append({
-                "phone": mobile or "",
-                "time": req_time,
-                "status": status,
-                "provider": provider,
-                "attempts": attempts or 0,
-            })
+        this_month = datetime.utcnow().isoformat()[:7]
+        logins = store.otp_log_recent(db, limit=200)
+        month_count = sum(1 for r in logins if (r.get("time") or "")[:7] == this_month)
         est_inr = round(month_count * 0.30, 2)
         note = ("Connect Message Central API for delivered/rejected status."
                 if not mc_ready else
                 "Message Central configured — wire its reports API for "
                 "delivered/rejected status.")
         return {
-            "logins": out,
+            "logins": logins,
             "month_count": month_count,
             "cost_estimate": {
                 "per_otp_inr": 0.30,

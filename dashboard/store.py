@@ -265,3 +265,129 @@ def llm_log_stats(db):
         "avg_gen_s": round(sum(latencies) / len(latencies), 1) if latencies else None,
         "slowest_s": round(max(latencies), 1) if latencies else None,
     }
+
+
+# --------------------------------------------------------------------------- #
+# dash_otp_log — append-only log of every OTP send request. Unlike login_otps
+# (which is a pending-OTP table with PRIMARY KEY on mobile — rows get deleted on
+# successful verification), this table NEVER deletes rows, so the dashboard
+# always has a complete history of every OTP we asked MC to send.
+# --------------------------------------------------------------------------- #
+def _ensure_otp_log(db):
+    with db() as c:
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS dash_otp_log(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mobile TEXT,
+                provider TEXT,
+                status TEXT,
+                attempts INTEGER DEFAULT 0,
+                created_at TEXT)"""
+        )
+
+
+def otp_log_add(db, mobile, provider="Message Central"):
+    _ensure_otp_log(db)
+    now = datetime.utcnow().isoformat()
+    with db() as c:
+        c.execute(
+            "INSERT INTO dash_otp_log(mobile,provider,status,attempts,created_at) "
+            "VALUES(?,?,?,0,?)",
+            (mobile or "", provider, "sent", now),
+        )
+
+
+def otp_log_update_status(db, mobile, status, attempts=None):
+    _ensure_otp_log(db)
+    with db() as c:
+        if attempts is not None:
+            c.execute(
+                "UPDATE dash_otp_log SET status=?, attempts=? "
+                "WHERE mobile=? AND id=(SELECT MAX(id) FROM dash_otp_log WHERE mobile=?)",
+                (status, attempts, mobile, mobile),
+            )
+        else:
+            c.execute(
+                "UPDATE dash_otp_log SET status=? "
+                "WHERE mobile=? AND id=(SELECT MAX(id) FROM dash_otp_log WHERE mobile=?)",
+                (status, mobile, mobile),
+            )
+
+
+def otp_log_recent(db, limit=200):
+    _ensure_otp_log(db)
+    with db() as c:
+        rows = c.execute(
+            "SELECT mobile, provider, status, attempts, created_at "
+            "FROM dash_otp_log ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [{"phone": r[0], "provider": r[1], "status": r[2],
+             "attempts": r[3], "time": r[4]} for r in rows]
+
+
+# --------------------------------------------------------------------------- #
+# dash_ops_log — ops event store (run results, rollbacks, alerts).
+# Replaces the ephemeral ops_history.jsonl with a durable DB table that the
+# dashboard can query directly. GitHub Actions workflows POST events here.
+# --------------------------------------------------------------------------- #
+def _ensure_ops_log(db):
+    with db() as c:
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS dash_ops_log(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                kind TEXT,
+                status TEXT,
+                detail TEXT,
+                run_url TEXT,
+                from_ver TEXT,
+                to_ver TEXT,
+                severity TEXT,
+                created_at TEXT)"""
+        )
+
+
+def ops_log_add(db, kind, **kwargs):
+    _ensure_ops_log(db)
+    now = datetime.utcnow().isoformat()
+    with db() as c:
+        c.execute(
+            "INSERT INTO dash_ops_log(kind,status,detail,run_url,"
+            "from_ver,to_ver,severity,created_at) VALUES(?,?,?,?,?,?,?,?)",
+            (kind,
+             (kwargs.get("status") or ""),
+             (kwargs.get("detail") or ""),
+             (kwargs.get("run_url") or ""),
+             (kwargs.get("from_ver") or ""),
+             (kwargs.get("to_ver") or ""),
+             (kwargs.get("severity") or ""),
+             now),
+        )
+    return {"kind": kind, "created_at": now}
+
+
+def ops_log_recent(db, limit=50, kind=None):
+    _ensure_ops_log(db)
+    with db() as c:
+        if kind:
+            rows = c.execute(
+                "SELECT kind, status, detail, run_url, from_ver, to_ver, "
+                "severity, created_at FROM dash_ops_log "
+                "WHERE kind=? ORDER BY created_at DESC LIMIT ?",
+                (kind, limit),
+            ).fetchall()
+        else:
+            rows = c.execute(
+                "SELECT kind, status, detail, run_url, from_ver, to_ver, "
+                "severity, created_at FROM dash_ops_log "
+                "ORDER BY created_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+    return [{"kind": r[0], "status": r[1], "detail": r[2], "run_url": r[3],
+             "from_ver": r[4], "to_ver": r[5], "severity": r[6],
+             "time": r[7]} for r in rows]
+
+
+def ops_log_last(db, kind):
+    rows = ops_log_recent(db, limit=1, kind=kind)
+    return rows[0] if rows else None
