@@ -27,7 +27,7 @@ Email is the **reliable** alert channel; WhatsApp is **best-effort**. If the
 Twilio secrets are missing or wrong, alerts still go out by email and nothing
 raises (see `ops/alerts.py`).
 
-## Additionally required for the guarded deploy + auto-rollback (`ops-deploy-guard.yml`)
+## Additionally required for the guarded deploy + auto-rollback (`ci.yml` deploy job)
 
 | Secret | What it is |
 |---|---|
@@ -50,11 +50,12 @@ alerts — they gate the **auto-rollback** behaviour and the history log.
 | Secret / env | What it is | Default |
 |---|---|---|
 | `OPS_ROLLBACK_ARMED` | Master safety switch. `'1'` = auto-rollback ARMED; anything else = DISARMED (alert only, never redeploys on its own). **Leave unset / `'0'` until the fire-drill in `RUNBOOK.md` passes.** | `0` (disarmed) |
+| `OPS_LAST_GOOD` | Fallback version label for auto-rollback when no `--last-good` is passed. Used by `mechanic.auto_rollback_if_armed()`. | `""` (empty) |
 | `OPS_HISTORY_PATH` | Where the append-only JSON-lines run history is written (the admin dashboard reads it) | `ops_history.jsonl` |
 
-> The post-deploy guard (`ops-deploy-guard.yml`) rolls back to the version that
-> was live *before its own deploy* and is safe regardless of `OPS_ROLLBACK_ARMED`.
-> The flag only governs whether a *routine* (non-deploy) failure is allowed to
+> The CI deploy guard (`ci.yml`) rolls back to the version that was live *before
+> its own deploy* and is safe regardless of `OPS_ROLLBACK_ARMED`. The flag only
+> governs whether a *routine* monitor failure (2 consecutive) is allowed to
 > redeploy on its own.
 
 ## The free 5-minute heartbeat (external — not GitHub)
@@ -73,6 +74,7 @@ the pre-arming fire drill are in **`ops/RUNBOOK.md`**.
 
 | Workflow | Trigger | Cost |
 |---|---|---|
-| `ops-watcher.yml` | 3×/day (01:00, 09:00, 17:00 UTC) + manual | ~free (short) |
-| `ops-robot-customer.yml` | 3&times;/day (6 AM / 2 PM / 10 PM IST) + manual | within GitHub's free minutes |
-| `ops-deploy-guard.yml` | **manual** (opt-in; deploy + auto-rollback) | only when you deploy |
+| `ci.yml` (Unit 3) | Push/PR (tests only); manual dispatch on aws-mysql (deploy + rollback) | only when you deploy |
+| `ops-monitor.yml` (Unit 1) | 3×/day (06:00, 14:00, 22:00 IST) + manual dispatch | within GitHub's free minutes |
+| `eb-rollback.yml` | Manual dispatch (roll back to any saved version) | only when you rollback |
+| `ops-deploy-guard.yml` | Manual dispatch (emergency deploy-only, skips tests) | **Superseded** by ci.yml |

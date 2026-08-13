@@ -6,9 +6,7 @@ Nothing here touches the core reports table's write paths; the only new storage
 is dash_delivery (see store.py), and the whole surface is locked whenever
 STATS_KEY is unset (valid_admin_key -> False).
 """
-from . import routes
-
-
 def install(app, ctx):
     """ctx keys: db, get_report, valid_admin_key, order_amount_paise."""
+    from . import routes
     routes.install(app, ctx)

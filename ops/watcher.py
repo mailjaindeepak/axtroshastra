@@ -11,11 +11,13 @@ is handled for FREE by an EXTERNAL monitor (UptimeRobot, every 5 min against
 few times a day and checks the DEEPER things UptimeRobot cannot see:
 
 Checks (all against config.TARGET_URL with config.HTTP_TIMEOUT):
-  1. GET /healthz/db                    -> 200                          (DB write-durability)
-  2. GET /api/pdf_health?key=<KEY>      -> 200 & JSON render_ok==true   (PDF renderer)
-  3. GET /api/otp/health               -> 200                           (OTP provider)
+  1. GET /healthz/db                           -> 200                   (DB write-durability)
+  2. GET /api/pdf_health?key=<KEY>             -> 200 & render_ok==true (PDF renderer)
+  3. GET /api/otp/health?key=<KEY>             -> 200                   (OTP provider)
+  4. GET /api/admin/llm_health?key=<KEY>       -> 200 & ok==true        (LLM reachability)
+  5. GET /api/admin/razorpay_health?key=<KEY>  -> 200 & ok==true        (Razorpay creds)
 
-All three are HARD checks: any failure makes the overall verdict "red" and
+All five are HARD checks: any failure makes the overall verdict "red" and
 sends a 'critical' alert (email + WhatsApp) via ops.alerts.
 
 No check ever raises: a timeout / connection error / bad JSON is recorded as
@@ -104,8 +106,21 @@ def _check_otp_health(status, body):
     return False, "otp provider unhealthy (status %s)" % status
 
 
+def _check_json_ok(status, body):
+    """Generic validator for endpoints that return {"ok": true/false, ...}."""
+    if status != 200:
+        return False, "expected 200, got %s" % status
+    try:
+        data = json.loads(body)
+    except Exception:
+        return False, "200 but body was not JSON"
+    if data.get("ok") is True:
+        return True, data.get("note", "ok")
+    return False, "ok != true: %s" % data.get("error", "(no detail)")
+
+
 # Every deep check is a hard check: its failure turns the verdict red.
-HARD_CHECKS = ("healthz_db", "pdf_health", "otp_health")
+HARD_CHECKS = ("healthz_db", "pdf_health", "otp_health", "llm_health", "razorpay_health")
 
 
 def run_checks() -> dict:
@@ -119,6 +134,8 @@ def run_checks() -> dict:
         _run_one("healthz_db", "/healthz/db", _check_healthz_db),
         _run_one("pdf_health", "/api/pdf_health?key=%s" % key, _check_pdf_health),
         _run_one("otp_health", "/api/otp/health?key=%s" % key, _check_otp_health),
+        _run_one("llm_health", "/api/admin/llm_health?key=%s" % key, _check_json_ok),
+        _run_one("razorpay_health", "/api/admin/razorpay_health?key=%s" % key, _check_json_ok),
     ]
     failures = [c["name"] for c in results if not c["ok"]]
     hard_failed = [c["name"] for c in results

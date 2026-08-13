@@ -1,9 +1,9 @@
 name: CI
 
-# Tests run on every push (any branch) and every PR, so both teammates get the
-# same feedback. Production deploy is NOT automatic — it only runs when a human
-# manually triggers this workflow ("Run workflow" in the Actions tab), and even
-# then only if the tests pass. That's the deliberate "check it, then ship it" gate.
+# Tests run on every push and PR. Production deploy only runs when a human
+# manually triggers "Run workflow" from the Actions tab on the aws-mysql branch,
+# AND both test suites pass. The deploy step includes a post-deploy smoke test
+# and auto-rollback — the old ops-deploy-guard.yml merged in.
 on:
   push:
   pull_request:
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"   # matches the Elastic Beanstalk platform
+          python-version: "3.12"
           cache: pip
 
       - name: Install dependencies
@@ -28,9 +28,6 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run test suite (incl. engine regression guard)
-        # NOTE: do not set STATS_KEY / RAZORPAY_WEBHOOK_SECRET / DB_PATH here.
-        # tests/conftest.py sets the exact values the tests expect (via setdefault);
-        # overriding them from the workflow makes the admin-auth tests fail.
         run: pytest -q
 
   e2e:
@@ -89,52 +86,175 @@ jobs:
           retention-days: 14
 
   # ---------------------------------------------------------------------------
-  # Production deploy — the ENFORCEMENT step.
-  #   * needs: [test, e2e]  -> cannot run unless BOTH test suites pass (red = no deploy)
-  #   * workflow_dispatch only -> deploy happens ONLY when a human clicks "Run workflow"
-  #     (Actions tab), never automatically on push. That's the human "ship it" gate.
-  #   * ref must be aws-mysql -> you can only dispatch a prod deploy from the prod branch.
-  #   * environment: production -> if you later move to GitHub Pro/Team, add "Required
-  #     reviewers" here for a second per-deploy approval; harmless until then.
-  # Requires repo secrets AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+  # Guarded production deploy — the ONE button.
+  #
+  #   pytest (458) ──┐
+  #                  ├── all green ──► deploy ──► wait Green ──► smoke test
+  #   E2E (21) ─────┘                                               │
+  #                                                        pass ◄───┤───► fail
+  #                                                         │              │
+  #                                                     record OK    rollback + alert
+  #
+  #   * needs: [test, e2e]  -> blocked unless BOTH suites pass
+  #   * workflow_dispatch + aws-mysql only -> human "ship it" gate
+  #   * environment: production -> add Required Reviewers on Pro/Team
+  #   * concurrency: eb-deploy -> never two deploys at once
+  #   * Rollback is ALWAYS armed (pre-deploy version captured 5 min ago)
+  #
+  # Replaces the old standalone ops-deploy-guard.yml.
   deploy:
-    name: Deploy to production (manual, only if tests pass)
+    name: Guarded deploy (manual, tests must pass)
     needs: [test, e2e]
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/aws-mysql'
     runs-on: ubuntu-latest
     environment: production
+    concurrency:
+      group: eb-deploy
+      cancel-in-progress: false
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # AWS
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION:    ap-south-1
+      AWS_REGION:            ${{ secrets.AWS_REGION }}
+      OPS_EB_ENV:            ${{ secrets.OPS_EB_ENV }}
+      # Alerting + smoke test
+      OPS_TARGET_URL:        ${{ secrets.OPS_TARGET_URL }}
+      STATS_KEY:             ${{ secrets.STATS_KEY }}
+      OPS_ALERT_EMAILS:      ${{ secrets.OPS_ALERT_EMAILS }}
+      OPS_ALERT_WHATSAPP:    ${{ secrets.OPS_ALERT_WHATSAPP }}
+      SMTP_HOST:             ${{ secrets.SMTP_HOST }}
+      SMTP_PORT:             ${{ secrets.SMTP_PORT }}
+      SMTP_USER:             ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD:         ${{ secrets.SMTP_PASSWORD }}
+      SMTP_FROM:             ${{ secrets.SMTP_FROM }}
+      TWILIO_ACCOUNT_SID:    ${{ secrets.TWILIO_ACCOUNT_SID }}
+      TWILIO_AUTH_TOKEN:     ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_WHATSAPP_FROM:  ${{ secrets.TWILIO_WHATSAPP_FROM }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # eb deploy archives the git tree
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install EB CLI
-        run: pip install --upgrade pip awsebcli
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install tools
+        run: pip install --quiet awsebcli awscli twilio
+
+      # ---- STAGE 1: Snapshot + Deploy ----
+
+      - name: Record last-good (pre-deploy) version
+        id: lastgood
+        run: |
+          LG=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
+          echo "Current live (rollback target): $LG"
+          echo "label=$LG" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Elastic Beanstalk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-south-1
         run: |
-          # Name every deploy so rollback is easy to target later.
-          # Label = v<UTC date-time>-<short commit sha> (unique + sortable + maps to code);
-          # description = the PR title (from merge commit body) so you can tell
-          # what each version contains when picking a rollback target.
-          # GitHub merge commits: subject = "Merge pull request #N from ...",
-          # body = the actual PR title. We use the body when available, else subject.
           LABEL="v$(date -u +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)"
           BODY="$(git log -1 --pretty=%b | head -1 | xargs)"
           SUBJECT="$(git log -1 --pretty=%s)"
-          if [ -n "$BODY" ]; then
-            MSG="$BODY"
-          else
-            MSG="$SUBJECT"
-          fi
+          MSG="${BODY:-$SUBJECT}"
           echo "Deploying as version: $LABEL — $MSG"
-          eb deploy AxtroShastraProd --label "$LABEL" --message "$MSG"
+          eb deploy "${OPS_EB_ENV:-AxtroShastraProd}" --label "$LABEL" --message "$MSG"
+
+      # ---- STAGE 2: Verify ----
+
+      - name: Wait for Green (up to 10 min)
+        id: green
+        continue-on-error: true
+        run: |
+          REGION="${AWS_REGION:-ap-south-1}"
+          ENV="${OPS_EB_ENV:-AxtroShastraProd}"
+          for i in $(seq 1 40); do
+            H=$(aws elasticbeanstalk describe-environments \
+                  --environment-names "$ENV" --region "$REGION" \
+                  --query 'Environments[0].Health' --output text)
+            echo "attempt $i: health=$H"
+            [ "$H" = "Green" ] && exit 0
+            sleep 15
+          done
+          echo "environment did not reach Green"; exit 1
+
+      - name: Smoke test (robot customer on live site)
+        id: smoke
+        if: steps.green.outcome == 'success'
+        continue-on-error: true
+        working-directory: ops/robot_customer
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      # ---- STAGE 3a: SUCCESS ----
+
+      - name: Report success
+        if: steps.green.outcome == 'success' && steps.smoke.outcome == 'success'
+        run: |
+          python -m ops.history record-run \
+            --status pass \
+            --detail "CI deploy: tests passed, deployed, Green + smoke test passed." \
+            --run-url "$RUN_URL"
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"deploy\",\"status\":\"pass\",\"detail\":\"CI deploy succeeded — tests green, env Green, smoke test passed.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"info\"}" \
+            || echo "dashboard record failed (non-fatal)"
+          python -c "from ops import alerts; alerts.send_alert('Deploy OK', 'Tests passed, new version deployed, smoke test passed on the live site.', 'info')"
+
+      # ---- STAGE 3b: FAILURE -> rollback ----
+
+      - name: Roll back on failure
+        if: always() && steps.lastgood.outcome == 'success' && (steps.green.outcome != 'success' || steps.smoke.outcome != 'success')
+        run: |
+          LG="${{ steps.lastgood.outputs.label }}"
+          echo "Deploy unhealthy — rolling back to: $LG"
+
+          python -m ops.history record-run \
+            --status fail \
+            --detail "CI deploy: env not Green or smoke test failed; rolling back." \
+            --run-url "$RUN_URL"
+
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"deploy\",\"status\":\"fail\",\"detail\":\"CI deploy FAILED — env not Green or smoke test failed.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
+
+          if [ -z "$LG" ] || [ "$LG" = "None" ]; then
+            python -c "from ops import alerts; alerts.send_alert('Deploy FAILED — manual rollback needed', 'Smoke/health failed but no last-good version was captured. Roll back manually in the EB console.', 'critical')"
+            exit 1
+          fi
+
+          BAD=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
+
+          if [ "$BAD" = "$LG" ]; then
+            echo "Deploy command failed before changing the version — live site unchanged."
+            python -c "from ops import alerts; alerts.send_alert('CI Deploy command FAILED', 'The eb deploy command itself failed. No new version was deployed — live site is unchanged. Check the Actions log: ${{ env.RUN_URL }}', 'critical')"
+            exit 1
+          fi
+
+          python -m ops.mechanic rollback --last-good "$LG"
+
+          python -m ops.history record-rollback \
+            --from "$BAD" \
+            --to "$LG" \
+            --reason "CI deploy guard: new version failed health/smoke — reverted."
+
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"rollback\",\"status\":\"triggered\",\"detail\":\"CI deploy guard rollback: ${BAD} -> ${LG}\",\"run_url\":\"${RUN_URL}\",\"from_ver\":\"${BAD}\",\"to_ver\":\"${LG}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
+
+          exit 1

@@ -5,8 +5,8 @@ canned responses keyed by URL, and monkeypatch alerts.send_alert to record
 calls. No real HTTP is ever made.
 
 The watcher runs the DEEP checks UptimeRobot can't (DB write-durability, the PDF
-renderer, the OTP provider). All three are hard checks: any failure is red and
-fires a 'critical' alert.
+renderer, the OTP provider, LLM reachability, Razorpay creds). All five are hard
+checks: any failure is red and fires a 'critical' alert.
 """
 import io
 import json
@@ -42,6 +42,8 @@ def _routes_all_green():
         "/healthz/db": (200, {"status": "ok", "db": "write-read-verified"}),
         "/api/pdf_health": (200, {"render_ok": True}),
         "/api/otp/health": (200, {"ok": True}),
+        "/api/admin/llm_health": (200, {"ok": True, "model": "claude-haiku-4-5-20251001", "note": "API responded: OK"}),
+        "/api/admin/razorpay_health": (200, {"ok": True, "note": "credentials accepted (1 payment(s) returned)"}),
     }
 
 
@@ -80,7 +82,7 @@ def test_all_green(monkeypatch, record_alert):
     assert report["overall"] == "green"
     assert report["failures"] == []
     assert {c["name"] for c in report["checks"]} == {
-        "healthz_db", "pdf_health", "otp_health"}
+        "healthz_db", "pdf_health", "otp_health", "llm_health", "razorpay_health"}
     for c in report["checks"]:
         assert c["ok"] is True
         assert "latency_ms" in c and isinstance(c["latency_ms"], int)
@@ -197,6 +199,32 @@ def test_stats_key_is_url_encoded(monkeypatch, record_alert):
             assert "&" not in raw_key
             assert "=" not in raw_key
             assert " " not in raw_key
+
+
+def test_llm_health_failure_is_red(monkeypatch, record_alert):
+    routes = _routes_all_green()
+    routes["/api/admin/llm_health"] = (200, {"ok": False, "error": "ANTHROPIC_API_KEY not set"})
+    monkeypatch.setattr(urllib.request, "urlopen", _make_urlopen(routes))
+
+    report = watcher.run_checks()
+
+    assert report["overall"] == "red"
+    assert "llm_health" in report["failures"]
+    assert watcher.main() == 1
+    assert len(record_alert) == 1
+
+
+def test_razorpay_health_failure_is_red(monkeypatch, record_alert):
+    routes = _routes_all_green()
+    routes["/api/admin/razorpay_health"] = (200, {"ok": False, "error": "RAZORPAY_KEY_ID not set"})
+    monkeypatch.setattr(urllib.request, "urlopen", _make_urlopen(routes))
+
+    report = watcher.run_checks()
+
+    assert report["overall"] == "red"
+    assert "razorpay_health" in report["failures"]
+    assert watcher.main() == 1
+    assert len(record_alert) == 1
 
 
 def test_run_checks_never_raises_when_urlopen_throws(monkeypatch, record_alert):

@@ -30,6 +30,7 @@ coverage.xml
 
 # ---- Node / Playwright (E2E) ----
 node_modules/
+test-results/
 tests/e2e/playwright-report/
 tests/e2e/test-results/
 tests/e2e/blob-report/
