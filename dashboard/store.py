@@ -24,7 +24,13 @@ def norm_email(value):
     return (value or "").strip().lower()
 
 
+_delivery_ready = False
+
+
 def _ensure(db):
+    global _delivery_ready
+    if _delivery_ready:
+        return
     with db() as c:
         c.execute(
             """CREATE TABLE IF NOT EXISTS dash_delivery(
@@ -33,6 +39,7 @@ def _ensure(db):
                 note TEXT,
                 updated_at TEXT)"""
         )
+    _delivery_ready = True
 
 
 def get_status(db, rid):
@@ -82,15 +89,27 @@ def all_statuses(db):
 # Phones are stored as their last-10-digits; emails lowercased+stripped, so the
 # stored value is directly comparable to a normalised lookup key.
 # --------------------------------------------------------------------------- #
+_team_ready = False
+
+
 def _ensure_team(db):
+    global _team_ready
+    if _team_ready:
+        return
     with db() as c:
         c.execute(
             """CREATE TABLE IF NOT EXISTS dash_team(
                 value TEXT PRIMARY KEY,
                 kind TEXT,
                 label TEXT,
-                added_at TEXT)"""
+                added_at TEXT,
+                linked_to TEXT)"""
         )
+        try:
+            c.execute("ALTER TABLE dash_team ADD COLUMN linked_to TEXT")
+        except Exception:
+            pass
+    _team_ready = True
 
 
 def team_add(db, kind, value, label=""):
@@ -122,15 +141,48 @@ def team_remove(db, value):
 
 
 def team_all(db):
-    """Return {"phones":[{value,label}], "emails":[{value,label}]}."""
+    """Return {"phones":[{value,label,linked_to}], "emails":[{value,label}]}."""
     _ensure_team(db)
     with db() as c:
-        rows = c.execute("SELECT value,kind,label FROM dash_team").fetchall()
+        rows = c.execute("SELECT value,kind,label,linked_to FROM dash_team").fetchall()
     out = {"phones": [], "emails": []}
-    for value, kind, label in rows:
+    for value, kind, label, linked_to in rows:
         bucket = "phones" if kind == "phone" else "emails"
-        out[bucket].append({"value": value, "label": label or ""})
+        entry = {"value": value, "label": label or ""}
+        if kind == "phone" and linked_to:
+            entry["linked_to"] = linked_to
+        out[bucket].append(entry)
     return out
+
+
+def team_link(db, secondary, primary):
+    """Link a secondary phone to a primary phone. Both must already exist in
+    dash_team. The primary must not itself be linked to another number."""
+    _ensure_team(db)
+    sec = norm_phone(secondary)
+    pri = norm_phone(primary)
+    if not sec or not pri or sec == pri:
+        raise ValueError("need two distinct phone numbers")
+    with db() as c:
+        s_row = c.execute("SELECT kind, linked_to FROM dash_team WHERE value=?", (sec,)).fetchone()
+        p_row = c.execute("SELECT kind, linked_to FROM dash_team WHERE value=?", (pri,)).fetchone()
+        if not s_row:
+            raise ValueError(f"{sec} not in team list")
+        if not p_row:
+            raise ValueError(f"{pri} not in team list")
+        if p_row[1]:
+            raise ValueError(f"{pri} is already linked to {p_row[1]} — unlink it first")
+        c.execute("UPDATE dash_team SET linked_to=? WHERE value=?", (pri, sec))
+    return {"secondary": sec, "primary": pri}
+
+
+def team_unlink(db, value):
+    """Remove the linked_to pointer from a phone number."""
+    _ensure_team(db)
+    norm = norm_phone(value)
+    with db() as c:
+        c.execute("UPDATE dash_team SET linked_to=NULL WHERE value=?", (norm,))
+    return {"unlinked": norm}
 
 
 def team_sets(db):
@@ -391,3 +443,35 @@ def ops_log_recent(db, limit=50, kind=None):
 def ops_log_last(db, kind):
     rows = ops_log_recent(db, limit=1, kind=kind)
     return rows[0] if rows else None
+
+
+# --------------------------------------------------------------------------- #
+# Robot cleanup — remove all reports created by the robot customer.
+# Robot reports are identified by payload containing 'Robot Customer',
+# 'Robot Student', 'Robot Aisha', or 'Robot Arjun'.
+# --------------------------------------------------------------------------- #
+_ROBOT_PATTERNS = ["%Robot Customer%", "%Robot Student%", "%Robot Aisha%", "%Robot Arjun%"]
+
+
+def robot_report_count(db):
+    with db() as c:
+        clauses = " OR ".join(["payload LIKE ?" for _ in _ROBOT_PATTERNS])
+        row = c.execute(
+            "SELECT COUNT(*) FROM reports WHERE " + clauses,
+            tuple(_ROBOT_PATTERNS),
+        ).fetchone()
+    return row[0] if row else 0
+
+
+def robot_cleanup(db, dry_run=True):
+    clauses = " OR ".join(["payload LIKE ?" for _ in _ROBOT_PATTERNS])
+    params = tuple(_ROBOT_PATTERNS)
+    with db() as c:
+        count = c.execute(
+            "SELECT COUNT(*) FROM reports WHERE " + clauses, params
+        ).fetchone()[0]
+        if dry_run:
+            return {"deleted": 0, "would_delete": count, "dry_run": True}
+        if count:
+            c.execute("DELETE FROM reports WHERE " + clauses, params)
+    return {"deleted": count, "would_delete": count, "dry_run": False}

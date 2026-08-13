@@ -83,9 +83,11 @@ def _mc_configured():
 
 
 def _classify_exclusion(created_at, deliver_phone, pay_phone, email,
-                        team_phones, team_emails):
+                        team_phones, team_emails, payment_id=""):
     """Why (if at all) this paid row is excluded from real revenue.
-    Returns "pre-launch" | "team" | "" (empty = a real customer)."""
+    Returns "pre-launch" | "team" | "pass" | "" (empty = a real customer)."""
+    if (payment_id or "").startswith("free_pass:") or payment_id == "demo":
+        return "pass"
     if (created_at or "") < REVENUE_START:
         return "pre-launch"
     if store.norm_phone(deliver_phone) in team_phones or \
@@ -94,6 +96,29 @@ def _classify_exclusion(created_at, deliver_phone, pay_phone, email,
     if email and store.norm_email(email) in team_emails:
         return "team"
     return ""
+
+
+def _team_label_map_from(team_data):
+    """Build {normalized_value: label} from team_all() result."""
+    labels = {}
+    for p in team_data.get("phones", []):
+        if p.get("label"):
+            labels[p["value"]] = p["label"]
+    for e in team_data.get("emails", []):
+        if e.get("label"):
+            labels[e["value"]] = e["label"]
+    return labels
+
+
+def _phone_tag(deliver_phone, pay_phone, team_labels, team_phones=None):
+    """Return the team label for this phone, or '' if not a team member."""
+    dp = store.norm_phone(deliver_phone)
+    pp = store.norm_phone(pay_phone)
+    tag = team_labels.get(dp) or team_labels.get(pp) or ""
+    if not tag and team_phones:
+        if dp in team_phones or pp in team_phones:
+            tag = "team"
+    return tag
 
 
 def _forward_message(payload, rid, amount_inr):
@@ -192,19 +217,21 @@ def install(app, ctx):
         """All PAID reports, newest-first, joined with any manual delivery
         status. Returns a list of fully-shaped row dicts ready for the UI.
 
-        A row is flagged is_test (excluded from real revenue) when it was paid
-        before REVENUE_START (pre-launch gateway testing) OR its phone/email is
-        on the dash_team allowlist (ongoing team/admin test purchases). The team
-        sets are loaded once here and tested in-memory."""
+        A row is flagged is_test (excluded from real revenue) when:
+        - it was unlocked with a free pass (payment_id starts with free_pass:)
+        - it was paid before REVENUE_START (pre-launch gateway testing)
+        - its phone/email is on the dash_team allowlist (team purchases)
+        The team sets are loaded once here and tested in-memory."""
         statuses = store.all_statuses(db)
         team_phones, team_emails = store.team_sets(db)
+        team_labels = _team_label_map_from(store.team_all(db))
         with db() as c:
             rows = c.execute(
-                "SELECT id, created_at, payload, phone, user_phone "
+                "SELECT id, created_at, payload, phone, user_phone, payment_id "
                 "FROM reports WHERE paid=1 ORDER BY created_at DESC"
             ).fetchall()
         out = []
-        for rid, created_at, payload_json, pay_phone, deliver_phone in rows:
+        for rid, created_at, payload_json, pay_phone, deliver_phone, payment_id in rows:
             try:
                 payload = json.loads(payload_json) if payload_json else {}
             except (TypeError, ValueError):
@@ -213,16 +240,20 @@ def install(app, ctx):
             st = statuses.get(rid) or {}
             reason = _classify_exclusion(created_at, deliver_phone, pay_phone,
                                          _payload_email(payload),
-                                         team_phones, team_emails)
+                                         team_phones, team_emails,
+                                         payment_id)
+            tag = _phone_tag(deliver_phone, pay_phone, team_labels, team_phones)
             out.append({
                 "rid": rid,
                 "created_at": created_at or "",
                 "product": _product_label(payload),
                 "amount_inr": amount_inr,
                 "is_test": bool(reason),
-                "exclude_reason": reason,   # "pre-launch" | "team" | ""
-                "pay_phone": pay_phone or "",         # Razorpay's captured number
-                "deliver_phone": deliver_phone or "",  # popup number — delivery target
+                "exclude_reason": reason,
+                "payment_id": payment_id or "",
+                "pay_phone": pay_phone or "",
+                "deliver_phone": deliver_phone or "",
+                "team_tag": tag,
                 "status": st.get("status") or "pending",
                 "note": st.get("note") or "",
                 "report_url": f"/report/{rid}",
@@ -274,7 +305,8 @@ def install(app, ctx):
         rows = _paid_rows()
         real = [r for r in rows if not r["is_test"]]
         test = [r for r in rows if r["is_test"]]
-        # revenue + "needs manual send" count REAL customers only (post go-live)
+        passes = [r for r in rows if r["exclude_reason"] == "pass"]
+        team = [r for r in rows if r["exclude_reason"] == "team"]
         pending = sum(1 for r in real if r["status"] in ("pending", "failed"))
         revenue = sum(r["amount_inr"] for r in real)
         return {
@@ -284,6 +316,8 @@ def install(app, ctx):
                 "pending_count": pending,
                 "test_count": len(test),
                 "test_revenue_inr": sum(r["amount_inr"] for r in test),
+                "pass_count": len(passes),
+                "team_count": len(team),
                 "revenue_start": REVENUE_START,
             },
             "revenue_7d": _revenue_7d(real),
@@ -319,6 +353,8 @@ def install(app, ctx):
                 "created_at": r["created_at"],
                 "is_test": r["is_test"],
                 "exclude_reason": r["exclude_reason"],
+                "payment_id": r["payment_id"],
+                "team_tag": r["team_tag"],
                 "forward_message": r["forward_message"],
                 "report_url": r["report_url"],
                 "pdf_url": r["pdf_url"],
@@ -327,28 +363,36 @@ def install(app, ctx):
 
     @app.get("/api/admin/customers")
     def admin_customers(request: Request, key: str = "", q: str = ""):
+        """Three-category customer list:
+        - customers: phone has ANY report with paid=1 (real paying user)
+        - testers:   phone has reports but none with paid=1
+        - developers: manually added to dash_team exclusion list
+        Team-excluded phones are skipped from both customers and testers.
+        """
         _gate(request, key)
         q = (q or "").strip()
         like = f"%{q}%"
+        team_phones, team_emails = store.team_sets(db)
+        team_data = store.team_all(db)
+        team_labels = _team_label_map_from(team_data)
         with db() as c:
             if q:
                 rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid "
+                    "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
                     "FROM reports WHERE user_phone LIKE ? OR phone LIKE ? "
                     "ORDER BY created_at DESC",
                     (like, like),
                 ).fetchall()
             else:
                 rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid "
+                    "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
                     "FROM reports WHERE "
                     "(user_phone IS NOT NULL AND user_phone <> '') "
                     "OR (phone IS NOT NULL AND phone <> '') "
                     "ORDER BY created_at DESC"
                 ).fetchall()
-        # de-duplicate by delivery number (fall back to pay number)
-        by_phone = {}
-        for rid, created_at, payload_json, pay_phone, deliver_phone, paid in rows:
+        all_phones = {}
+        for rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id in rows:
             phone = (deliver_phone or pay_phone or "").strip()
             if not phone:
                 continue
@@ -356,17 +400,118 @@ def install(app, ctx):
                 payload = json.loads(payload_json) if payload_json else {}
             except (TypeError, ValueError):
                 payload = {}
-            cust = by_phone.setdefault(phone, {
+            dp = store.norm_phone(deliver_phone)
+            pp = store.norm_phone(pay_phone)
+            em = store.norm_email(_payload_email(payload))
+            is_team = (dp in team_phones or pp in team_phones
+                       or (em and em in team_emails))
+            if is_team:
+                continue
+            tag = _phone_tag(deliver_phone, pay_phone, team_labels, team_phones)
+            is_real_pay = (bool(paid)
+                          and not ((payment_id or "").startswith("free_pass:") or payment_id == "demo")
+                          and (created_at or "") >= REVENUE_START)
+            entry = all_phones.setdefault(phone, {
                 "phone": phone, "name": "", "reports": 0, "paid": 0,
-                "spend_inr": 0, "last_at": created_at or "",
+                "spend_inr": 0, "last_at": created_at or "", "team_tag": tag,
+                "_has_real_pay": False,
             })
-            if not cust["name"]:
-                cust["name"] = _display_name(payload)
-            cust["reports"] += 1
+            if not entry["name"]:
+                entry["name"] = _display_name(payload)
+            entry["reports"] += 1
             if paid:
-                cust["paid"] += 1
-                cust["spend_inr"] += order_amount_paise({"payload": payload}) // 100
-        return {"customers": list(by_phone.values())}
+                entry["paid"] += 1
+            if is_real_pay:
+                entry["_has_real_pay"] = True
+                entry["spend_inr"] += order_amount_paise({"payload": payload}) // 100
+        customers = []
+        testers = []
+        for e in all_phones.values():
+            has_pay = e.pop("_has_real_pay")
+            if has_pay:
+                customers.append(e)
+            else:
+                testers.append(e)
+        dev_spend = {}
+        if team_phones:
+            with db() as c:
+                likes = []
+                params = []
+                for tp in team_phones:
+                    likes.append("(user_phone LIKE ? OR phone LIKE ?)")
+                    params.extend([f"%{tp}%", f"%{tp}%"])
+                params.append("pay_%")
+                rp = c.execute(
+                    "SELECT user_phone, phone, payload FROM reports "
+                    "WHERE (" + " OR ".join(likes) + ") "
+                    "AND payment_id LIKE ?",
+                    tuple(params),
+                ).fetchall()
+                for uph, pph, payload_json in rp:
+                    matched = None
+                    for tp in team_phones:
+                        if tp in (uph or "") or tp in (pph or ""):
+                            matched = tp
+                            break
+                    if not matched:
+                        continue
+                    try:
+                        pl = json.loads(payload_json) if payload_json else {}
+                    except (TypeError, ValueError):
+                        pl = {}
+                    amt = order_amount_paise({"payload": pl}) // 100
+                    entry = dev_spend.setdefault(matched, {"spend_inr": 0, "paid_count": 0})
+                    entry["spend_inr"] += amt
+                    entry["paid_count"] += 1
+        linked_map = {}
+        for p in team_data.get("phones", []):
+            lt = p.get("linked_to", "")
+            if lt:
+                linked_map.setdefault(lt, []).append(p["value"])
+        developers = []
+        seen_linked = set()
+        for p in team_data.get("phones", []):
+            val = p["value"]
+            lt = p.get("linked_to", "")
+            if lt:
+                seen_linked.add(val)
+                continue
+            sp = dev_spend.get(val) or {}
+            total_spend = sp.get("spend_inr", 0)
+            total_paid = sp.get("paid_count", 0)
+            linked_phones = linked_map.get(val, [])
+            for lp in linked_phones:
+                seen_linked.add(lp)
+                lsp = dev_spend.get(lp) or {}
+                total_spend += lsp.get("spend_inr", 0)
+                total_paid += lsp.get("paid_count", 0)
+            entry = {
+                "value": val, "kind": "phone",
+                "label": p.get("label", ""), "added_at": p.get("added_at", ""),
+                "spend_inr": total_spend,
+                "paid_count": total_paid,
+            }
+            if linked_phones:
+                linked_labels = []
+                for lp in linked_phones:
+                    ll = next((x.get("label", "") for x in team_data["phones"]
+                               if x["value"] == lp), "")
+                    linked_labels.append({"value": lp, "label": ll,
+                                          "spend_inr": (dev_spend.get(lp) or {}).get("spend_inr", 0),
+                                          "paid_count": (dev_spend.get(lp) or {}).get("paid_count", 0)})
+                entry["linked"] = linked_labels
+            developers.append(entry)
+        for e in team_data.get("emails", []):
+            developers.append({
+                "value": e["value"], "kind": "email",
+                "label": e.get("label", ""), "added_at": e.get("added_at", ""),
+                "spend_inr": 0, "paid_count": 0,
+            })
+        return {
+            "customers": customers,
+            "testers": testers,
+            "developers": developers,
+        }
 
     @app.get("/api/admin/customer")
     def admin_customer(request: Request, key: str = "", phone: str = ""):
@@ -375,8 +520,11 @@ def install(app, ctx):
         if not phone:
             raise HTTPException(422, "phone required")
         like = f"%{phone}%"
+        team_data = store.team_all(db)
+        team_phones = {p["value"] for p in team_data["phones"]}
+        team_emails = {e["value"] for e in team_data["emails"]}
+        team_labels = _team_label_map_from(team_data)
         statuses = store.all_statuses(db)
-        team_phones, team_emails = store.team_sets(db)
         with db() as c:
             rows = c.execute(
                 "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
@@ -394,7 +542,9 @@ def install(app, ctx):
             st = statuses.get(rid) or {}
             reason = _classify_exclusion(created_at, deliver_phone, pay_phone,
                                          _payload_email(payload),
-                                         team_phones, team_emails) if paid else ""
+                                         team_phones, team_emails,
+                                         payment_id) if paid else ""
+            tag = _phone_tag(deliver_phone, pay_phone, team_labels, team_phones)
             history.append({
                 "rid": rid,
                 "created_at": created_at or "",
@@ -406,6 +556,7 @@ def install(app, ctx):
                 "payment_id": payment_id or "",
                 "pay_phone": pay_phone or "",
                 "deliver_phone": deliver_phone or "",
+                "team_tag": tag,
                 "status": st.get("status") or ("pending" if paid else "unpaid"),
                 "report_url": f"/report/{rid}",
                 "pdf_url": f"/report/{rid}.pdf",
@@ -461,6 +612,57 @@ def install(app, ctx):
         _gate(request, key)
         return providers.twilio_balance()
 
+    @app.get("/api/admin/payments")
+    def admin_payments(request: Request, key: str = ""):
+        """Live Razorpay payment history. Returns only captured (real money)
+        payments, with team exclusion tags and pass-vs-real classification."""
+        _gate(request, key)
+        rzp = providers.razorpay_payments(limit=200)
+        team_phones, team_emails = store.team_sets(db)
+        team_labels = _team_label_map_from(store.team_all(db))
+        payments = []
+        real_revenue = 0
+        team_revenue = 0
+        for p in rzp.get("payments", []):
+            contact = p.get("contact") or ""
+            email = p.get("email") or ""
+            tag = ""
+            is_team = False
+            normed = store.norm_phone(contact)
+            normed_email = store.norm_email(email)
+            if normed in team_phones:
+                is_team = True
+                tag = team_labels.get(normed) or "team"
+            elif normed_email and normed_email in team_emails:
+                is_team = True
+                tag = team_labels.get(normed_email) or "team"
+            if not is_team:
+                real_revenue += p.get("amount_inr", 0)
+            else:
+                team_revenue += p.get("amount_inr", 0)
+            payments.append({
+                "id": p.get("id", ""),
+                "amount_inr": p.get("amount_inr", 0),
+                "contact": contact,
+                "email": p.get("email", ""),
+                "method": p.get("method", ""),
+                "created_at": p.get("created_at", ""),
+                "order_id": p.get("order_id", ""),
+                "report_id": (p.get("notes") or {}).get("report_id", ""),
+                "is_team": is_team,
+                "team_tag": tag,
+            })
+        return {
+            "live": rzp.get("live", False),
+            "payments": payments,
+            "real_revenue": real_revenue,
+            "team_revenue": team_revenue,
+            "total_count": len(payments),
+            "real_count": sum(1 for p in payments if not p["is_team"]),
+            "team_count": sum(1 for p in payments if p["is_team"]),
+            "note": rzp.get("note", ""),
+        }
+
     # ------------------------------------------------ ops event recording + live health
     @app.post("/api/admin/ops_event")
     def admin_ops_event(request: Request, body: dict, key: str = ""):
@@ -468,8 +670,8 @@ def install(app, ctx):
         workflows after each watcher or robot-customer run."""
         _gate(request, key)
         kind = (body or {}).get("kind", "")
-        if kind not in ("watcher", "robot", "rollback", "alert"):
-            raise HTTPException(422, "kind must be watcher, robot, rollback, or alert")
+        if kind not in ("watcher", "robot", "rollback", "alert", "deploy"):
+            raise HTTPException(422, "kind must be watcher, robot, rollback, alert, or deploy")
         row = store.ops_log_add(db, kind,
                                 status=(body or {}).get("status", ""),
                                 detail=(body or {}).get("detail", ""),
@@ -508,10 +710,115 @@ def install(app, ctx):
             "last_watcher": store.ops_log_last(db, "watcher"),
             "last_robot": store.ops_log_last(db, "robot"),
             "last_rollback": store.ops_log_last(db, "rollback"),
+            "last_deploy": store.ops_log_last(db, "deploy"),
             "watcher_events": store.ops_log_recent(db, limit=50, kind="watcher"),
             "robot_events": store.ops_log_recent(db, limit=50, kind="robot"),
             "rollbacks": store.ops_log_recent(db, limit=20, kind="rollback"),
+            "deploy_events": store.ops_log_recent(db, limit=20, kind="deploy"),
         }
+
+    # ------------------------------------------------ LLM health
+    @app.get("/api/admin/llm_health")
+    def admin_llm_health(request: Request, key: str = ""):
+        """Verify the Anthropic API key is set AND accepted by the API.
+
+        Sends a single tiny prompt ("Reply OK") to claude-haiku-4-5-20251001
+        with max_tokens=5 — cost per call is well under $0.001. Never raises;
+        always returns JSON with ``ok`` true/false."""
+        _gate(request, key)
+        import json as _json, urllib.error, urllib.request
+
+        api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+        if not api_key:
+            return {"ok": False, "error": "ANTHROPIC_API_KEY not set"}
+
+        model = "claude-haiku-4-5-20251001"
+        body = _json.dumps({
+            "model": model,
+            "max_tokens": 5,
+            "messages": [{"role": "user", "content": "Reply OK"}],
+        }).encode()
+        headers = {
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=body, headers=headers, method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = _json.loads(resp.read().decode())
+            reply = "".join(
+                p.get("text", "") for p in (data.get("content") or [])
+                if p.get("type") == "text"
+            )
+            return {"ok": True, "model": model,
+                    "note": f"API responded: {reply[:40]}"}
+        except urllib.error.HTTPError as e:
+            detail = ""
+            try:
+                detail = e.read().decode()[:200]
+            except Exception:
+                pass
+            return {"ok": False, "model": model,
+                    "error": f"HTTP {e.code}", "detail": detail}
+        except Exception as e:
+            return {"ok": False, "model": model,
+                    "error": f"{type(e).__name__}: {e}"}
+
+    # ------------------------------------------------ Razorpay health
+    @app.get("/api/admin/razorpay_health")
+    def admin_razorpay_health(request: Request, key: str = ""):
+        """Verify Razorpay credentials are set AND accepted by the API.
+
+        Fetches a single payment (count=1) using Basic auth — the lightest
+        authenticated call available. Never raises; always returns JSON with
+        ``ok`` true/false."""
+        _gate(request, key)
+        import json as _json, urllib.error, urllib.request
+
+        key_id = os.getenv("RAZORPAY_KEY_ID", "").strip()
+        key_secret = os.getenv("RAZORPAY_KEY_SECRET", "").strip()
+        if not key_id:
+            return {"ok": False, "error": "RAZORPAY_KEY_ID not set"}
+        if not key_secret:
+            return {"ok": False, "error": "RAZORPAY_KEY_SECRET not set"}
+
+        auth = base64.b64encode(f"{key_id}:{key_secret}".encode()).decode()
+        req = urllib.request.Request(
+            "https://api.razorpay.com/v1/payments?count=1",
+            headers={"Authorization": "Basic " + auth},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = _json.loads(resp.read().decode())
+            count = len(data.get("items") or [])
+            return {"ok": True,
+                    "note": f"credentials accepted ({count} payment(s) returned)"}
+        except urllib.error.HTTPError as e:
+            detail = ""
+            try:
+                detail = e.read().decode()[:200]
+            except Exception:
+                pass
+            return {"ok": False,
+                    "error": f"HTTP {e.code}", "detail": detail}
+        except Exception as e:
+            return {"ok": False,
+                    "error": f"{type(e).__name__}: {e}"}
+
+    # ------------------------------------------------ robot cleanup
+    @app.get("/api/admin/robot_cleanup")
+    def admin_robot_preview(request: Request, key: str = ""):
+        _gate(request, key)
+        return store.robot_cleanup(db, dry_run=True)
+
+    @app.post("/api/admin/robot_cleanup")
+    def admin_robot_cleanup(request: Request, key: str = ""):
+        _gate(request, key)
+        return store.robot_cleanup(db, dry_run=False)
 
     # ------------------------------------------------ team exclusion allowlist
     def _valid_pass(passcode):
@@ -551,6 +858,26 @@ def install(app, ctx):
         if not value:
             raise HTTPException(422, "value required")
         return {"ok": True, "removed": store.team_remove(db, value)}
+
+    @app.post("/api/admin/team/link")
+    def admin_team_link(request: Request, body: dict, key: str = "", passcode: str = Query("", alias="pass")):
+        _team_gate(request, key, passcode)
+        secondary = (body or {}).get("secondary", "")
+        primary = (body or {}).get("primary", "")
+        if not secondary or not primary:
+            raise HTTPException(422, "secondary and primary required")
+        try:
+            return {"ok": True, **store.team_link(db, secondary, primary)}
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+    @app.post("/api/admin/team/unlink")
+    def admin_team_unlink(request: Request, body: dict, key: str = "", passcode: str = Query("", alias="pass")):
+        _team_gate(request, key, passcode)
+        value = (body or {}).get("value", "")
+        if not value:
+            raise HTTPException(422, "value required")
+        return {"ok": True, **store.team_unlink(db, value)}
 
     # ------------------------------------------------ ledger (manual top-ups)
     @app.get("/api/admin/ledger")

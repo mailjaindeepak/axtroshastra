@@ -45,6 +45,7 @@ def _translate_ddl_types(sql: str) -> str:
     # Order matters: handle "TEXT PRIMARY KEY" before the generic TEXT rule.
     sql = re.sub(r"\bTEXT\s+PRIMARY\s+KEY\b", "VARCHAR(255) PRIMARY KEY", sql, flags=re.IGNORECASE)
     sql = re.sub(r"\bTEXT\b", "LONGTEXT", sql, flags=re.IGNORECASE)
+    sql = re.sub(r"\bAUTOINCREMENT\b", "AUTO_INCREMENT", sql, flags=re.IGNORECASE)
     sql = re.sub(r"\bINTEGER\b", "BIGINT", sql, flags=re.IGNORECASE)
     sql = re.sub(r"\bREAL\b", "DOUBLE", sql, flags=re.IGNORECASE)
     return sql
