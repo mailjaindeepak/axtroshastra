@@ -2088,6 +2088,34 @@ def marriage_hi():
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"), lang="hi")
 
 
+@app.get("/en/marriage2", include_in_schema=False)
+def marriage2_en():
+    """English marriage-timing landing, direct-to-payment variant (WhatsApp number
+    collected in-form, sample report shown on-page, no free-teaser step) at
+    /en/marriage2. A/B variant alongside /en/marriage — does not replace it."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage.html"))
+
+
+@app.get("/hi/marriage2", include_in_schema=False)
+def marriage2_hi():
+    """Hindi (Devanagari) counterpart of /en/marriage2."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage.hi.html"), lang="hi")
+
+
+@app.get("/en/marriage-parent", include_in_schema=False)
+def marriage_parent_en():
+    """V3 review-only variant of /en/marriage2, copy-adapted for a parent
+    asking about their child's marriage timing. Not linked from the live
+    site; for internal review/sharing only."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage_parent.html"))
+
+
+@app.get("/hi/marriage-parent", include_in_schema=False)
+def marriage_parent_hi():
+    """Hindi (Devanagari) counterpart of /en/marriage-parent."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage_parent.hi.html"), lang="hi")
+
+
 @app.get("/shaadi", include_in_schema=False)
 def shaadi_redirect(request: Request):
     """Legacy /shaadi → /en/marriage (301 permanent). Preserves query string
