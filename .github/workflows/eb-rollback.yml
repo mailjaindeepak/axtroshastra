@@ -78,3 +78,17 @@ jobs:
           done
           echo "::warning::Did not reach Green within ~10 min — check the Elastic Beanstalk console."
           exit 1
+
+      - name: Record manual rollback to dashboard
+        if: always()
+        env:
+          OPS_TARGET_URL: ${{ secrets.OPS_TARGET_URL }}
+          STATS_KEY:      ${{ secrets.STATS_KEY }}
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TARGET="${{ github.event.inputs.version_label }}"
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"rollback\",\"status\":\"triggered\",\"detail\":\"Manual rollback to ${TARGET}\",\"run_url\":\"${RUN_URL}\",\"to_ver\":\"${TARGET}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"

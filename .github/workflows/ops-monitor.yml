@@ -1,0 +1,171 @@
+# Combined Watcher + Robot Customer — one bot, one button.
+#
+# Phase A: Deep health checks (watcher) — DB, PDF, OTP, LLM, Razorpay, wallets.
+#          If ANY check fails → skip Phase B (site is broken) → go to Phase C.
+# Phase B: Robot customer — page health, funnel smoke tests, SEO (Playwright).
+#          Cleans up after itself (/api/admin/robot_cleanup).
+# Phase C: Record results to dashboard + ops history. Alert on failure.
+#          2-consecutive-failure guard → (disarmed) auto-rollback.
+#
+# Replaces the old ops-watcher.yml + ops-robot-customer.yml.
+name: ops-monitor
+
+on:
+  schedule:
+    - cron: "30 0,8,16 * * *"   # 06:00, 14:00, 22:00 IST
+  workflow_dispatch:              # manual "check now"
+
+concurrency:
+  group: ops-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      GH_TOKEN: ${{ github.token }}
+      # Site target
+      OPS_TARGET_URL:       ${{ secrets.OPS_TARGET_URL }}
+      STATS_KEY:            ${{ secrets.STATS_KEY }}
+      # Alerting (email + WhatsApp)
+      OPS_ALERT_EMAILS:     ${{ secrets.OPS_ALERT_EMAILS }}
+      OPS_ALERT_WHATSAPP:   ${{ secrets.OPS_ALERT_WHATSAPP }}
+      SMTP_HOST:            ${{ secrets.SMTP_HOST }}
+      SMTP_PORT:            ${{ secrets.SMTP_PORT }}
+      SMTP_USER:            ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
+      SMTP_FROM:            ${{ secrets.SMTP_FROM }}
+      TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
+      TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+      # Auto-rollback (disarmed by default)
+      OPS_ROLLBACK_ARMED:   ${{ secrets.OPS_ROLLBACK_ARMED }}
+      OPS_LAST_GOOD:        ${{ secrets.OPS_LAST_GOOD }}
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION:            ${{ secrets.AWS_REGION }}
+      OPS_EB_ENV:            ${{ secrets.OPS_EB_ENV }}
+    steps:
+      # ---- Setup ----
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Python dependencies
+        run: pip install --quiet twilio
+
+      # ================================================================
+      # PHASE A — Deep health checks (watcher)
+      # ================================================================
+      - name: "Phase A — Deep health checks"
+        id: watcher
+        continue-on-error: true
+        run: python -m ops.watcher
+
+      - name: Record watcher result to dashboard
+        if: always()
+        run: |
+          if [ "${{ steps.watcher.outcome }}" = "success" ]; then
+            STATUS="pass"; DETAIL="All deep health checks passed."; SEV="info"
+          else
+            STATUS="fail"; DETAIL="Deep health check failed — see run log."; SEV="critical"
+          fi
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"watcher\",\"status\":\"${STATUS}\",\"detail\":\"${DETAIL}\",\"run_url\":\"${RUN_URL}\",\"severity\":\"${SEV}\"}" \
+            || echo "dashboard record failed (non-fatal)"
+
+      # ================================================================
+      # PHASE B — Robot customer (only if watcher passed)
+      # ================================================================
+      - name: Install robot dependencies
+        if: steps.watcher.outcome == 'success'
+        continue-on-error: true
+        working-directory: ops/robot_customer
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: "Phase B — Robot customer smoke test"
+        id: robot
+        if: steps.watcher.outcome == 'success'
+        continue-on-error: true
+        working-directory: ops/robot_customer
+        run: npx playwright test
+
+      # ================================================================
+      # PHASE C — Record results, alert, guard
+      # ================================================================
+
+      # ---- All passed (watcher green + robot green) ----
+      - name: Record monitor pass
+        if: steps.watcher.outcome == 'success' && steps.robot.outcome == 'success'
+        run: |
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"robot\",\"status\":\"pass\",\"detail\":\"Robot customer journey passed on the live site.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"info\"}" \
+            || echo "dashboard record failed (non-fatal)"
+          python -m ops.history record-run \
+            --status pass \
+            --detail "Monitor: watcher + robot passed." \
+            --run-url "$RUN_URL"
+
+      # ---- Robot failed (watcher green, robot red) ----
+      - name: Record robot failure + alert
+        if: steps.watcher.outcome == 'success' && steps.robot.outcome != 'success'
+        run: |
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"robot\",\"status\":\"fail\",\"detail\":\"Robot customer journey FAILED on the live site (form / unlock / report / PDF).\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
+          python -m ops.history record-run \
+            --status fail \
+            --detail "Monitor: robot customer FAILED on the live site." \
+            --run-url "$RUN_URL"
+          python -c "from ops import alerts; import os; alerts.send_alert('Robot customer FAILED', 'The end-to-end customer journey failed on the live site. Something is broken (form / unlock / report / PDF). Run: '+os.environ['RUN_URL'], 'critical')"
+
+      # ---- Watcher failed (robot was skipped) ----
+      - name: Record watcher failure to history
+        if: steps.watcher.outcome != 'success'
+        run: |
+          python -m ops.history record-run \
+            --status fail \
+            --detail "Monitor: watcher health checks FAILED — robot skipped." \
+            --run-url "$RUN_URL"
+
+      # ---- 2-consecutive-failure guard ----
+      - name: Auto-rollback guard (2 consecutive failures)
+        if: steps.watcher.outcome != 'success' || (steps.watcher.outcome == 'success' && steps.robot.outcome != 'success')
+        run: |
+          PREV=$(gh run list \
+                   --workflow ops-monitor.yml \
+                   --branch "${{ github.ref_name }}" \
+                   --limit 3 \
+                   --status completed \
+                   --json conclusion \
+                   --jq '.[0].conclusion' 2>/dev/null || echo "")
+          echo "Previous run conclusion: '$PREV'"
+          if [ "$PREV" = "failure" ]; then
+            echo "2nd consecutive monitor failure — attempting (disarmed) auto-rollback."
+            python -m ops.mechanic auto-rollback \
+              --reason "2 consecutive monitor failures"
+            curl -sf -X POST \
+              "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "{\"kind\":\"rollback\",\"status\":\"triggered\",\"detail\":\"2 consecutive monitor failures\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+              || echo "dashboard record failed (non-fatal)"
+          else
+            echo "First failure (previous run not a failure) — alert only, no rollback attempt."
+          fi
+
+      # ---- Fail the job so GitHub shows it red ----
+      - name: Fail job on any failure
+        if: steps.watcher.outcome != 'success' || (steps.watcher.outcome == 'success' && steps.robot.outcome != 'success')
+        run: exit 1

@@ -1,16 +1,18 @@
-# T6 — Guarded deploy with AUTOMATIC ROLLBACK (Method B: redeploy last-good).
+# SUPERSEDED — the CI workflow (ci.yml) now includes the deploy guard steps
+# inside its deploy job (pytest → E2E → deploy → wait Green → smoke test →
+# auto-rollback). Use the CI "Run workflow" button for normal deploys.
 #
-# Use this INSTEAD of a manual `eb deploy` when you want a bad deploy to revert
-# itself. The exact steps:
-#   1. Record the CURRENT live version  -> this is the rollback target ("last good").
+# This standalone file is kept as an EMERGENCY "deploy-only" option: it skips
+# re-running pytest/E2E and just deploys + verifies + rolls back. Use it when
+# tests already passed in a prior CI run and you need to redeploy quickly.
+#
+# Original description:
+# Guarded deploy with AUTOMATIC ROLLBACK (Method B: redeploy last-good).
+#   1. Record the CURRENT live version -> rollback target.
 #   2. Deploy the new version.
-#   3. Wait for the environment to report Green (Enhanced health).
-#   4. Run the robot-customer smoke test against the live site.
-#   5. If the env never goes Green OR the smoke test fails -> roll back to the
-#      last-good version and alert. Otherwise: success (the new version stays).
-#
-# Opt-in: it's manual (workflow_dispatch) until Deepak sets the AWS secrets and is
-# happy to let CI deploy. To auto-run on merges, uncomment the `push:` trigger.
+#   3. Wait for Green.
+#   4. Run smoke test.
+#   5. If not Green or smoke fails -> roll back and alert.
 name: ops-deploy-guard
 
 on:
@@ -19,7 +21,7 @@ on:
   #   branches: [ aws-mysql ]
 
 concurrency:
-  group: ops-deploy            # never allow two deploys/rollbacks at once
+  group: eb-deploy             # never allow two deploys/rollbacks at once
   cancel-in-progress: false
 
 jobs:
@@ -91,39 +93,63 @@ jobs:
           npx playwright install --with-deps chromium
           npx playwright test
 
-      # 5a) SUCCESS path -> record the passing run + alert.
+      # 5a) SUCCESS path -> record the passing run + alert + dashboard.
       - name: Report success
         if: steps.green.outcome == 'success' && steps.smoke.outcome == 'success'
         run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           python -m ops.history record-run \
             --status pass \
-            --detail "Guarded deploy: new version went Green and passed the smoke test."
+            --detail "Guarded deploy: new version went Green and passed the smoke test." \
+            --run-url "$RUN_URL"
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"deploy\",\"status\":\"pass\",\"detail\":\"Guarded deploy succeeded — Green + smoke test passed.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"info\"}" \
+            || echo "dashboard record failed (non-fatal)"
           python -c "from ops import alerts; import os; alerts.send_alert('Deploy OK', 'New version deployed and smoke test passed on the live site.', 'info')"
 
-      # 5b) FAILURE path -> automatic rollback to the PRE-DEPLOY last-good + alert.
+      # 5b) FAILURE path -> automatic rollback to the PRE-DEPLOY last-good + alert + dashboard.
       #     This rollback is SAFE (a known-good label captured moments ago), so it
       #     proceeds regardless of OPS_ROLLBACK_ARMED — but it still records the
       #     failing run + the rollback in history and alerts.
       - name: Roll back on failure
-        if: steps.green.outcome != 'success' || steps.smoke.outcome != 'success'
+        if: always() && steps.lastgood.outcome == 'success' && (steps.green.outcome != 'success' || steps.smoke.outcome != 'success')
         run: |
           LG="${{ steps.lastgood.outputs.label }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "Deploy unhealthy — rolling back to pre-deploy version: $LG"
           # Record the failing guarded-deploy run either way.
           python -m ops.history record-run \
             --status fail \
-            --detail "Guarded deploy: env never went Green or smoke test failed; rolling back."
+            --detail "Guarded deploy: env never went Green or smoke test failed; rolling back." \
+            --run-url "$RUN_URL"
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"deploy\",\"status\":\"fail\",\"detail\":\"Guarded deploy FAILED — env not Green or smoke test failed.\",\"run_url\":\"${RUN_URL}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
           if [ -z "$LG" ] || [ "$LG" = "None" ]; then
             python -c "from ops import alerts; alerts.send_alert('Deploy FAILED — manual rollback needed', 'Smoke/health failed but no last-good version label was captured. Roll back manually in the EB console.', 'critical')"
             exit 1
           fi
           # Capture the (bad) version we are rolling back FROM, for the history record.
           BAD=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
+          if [ "$BAD" = "$LG" ]; then
+            echo "Deploy command failed before changing the version — live site unchanged."
+            python -c "from ops import alerts; alerts.send_alert('Deploy command FAILED', 'The eb deploy command itself failed. No new version was deployed — live site is unchanged. Check the Actions log: ${RUN_URL}', 'critical')"
+            exit 1
+          fi
           python -m ops.mechanic rollback --last-good "$LG"
           # mechanic.rollback already alerts; also record the rollback in history.
           python -m ops.history record-rollback \
             --from "$BAD" \
             --to "$LG" \
             --reason "Post-deploy guard: new version failed health/smoke — reverted to pre-deploy version."
+          curl -sf -X POST \
+            "${OPS_TARGET_URL}/api/admin/ops_event?key=${STATS_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"kind\":\"rollback\",\"status\":\"triggered\",\"detail\":\"Post-deploy guard rollback: ${BAD} -> ${LG}\",\"run_url\":\"${RUN_URL}\",\"from_ver\":\"${BAD}\",\"to_ver\":\"${LG}\",\"severity\":\"critical\"}" \
+            || echo "dashboard record failed (non-fatal)"
           # Fail the job so it shows red.
           exit 1

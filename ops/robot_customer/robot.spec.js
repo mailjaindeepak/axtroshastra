@@ -1,70 +1,69 @@
-// Robot customer — an A–Z live health check against a LIVE deployment.
+// Robot customer v2 — live site health check, four phases.
 //
-// This behaves like a real buyer against every funnel, in both languages, on
-// both a desktop and a mobile viewport (Playwright "projects", see
-// playwright.config.js). It never pays: it unlocks with a FREE pass
-// (GET /api/make_pass -> POST /api/order {report_id, pass_token, phone, email},
-// the site's free-pass branch in api.py) so it stays $0 while exercising the
-// whole paid path.
+// Unlike v1, this robot NEVER calls /api/make_pass or /api/order, NEVER
+// triggers LLM generation, and NEVER creates PDF reports. It exercises the
+// form-to-teaser pipeline only — proving the site works without burning
+// Claude API credits or cluttering the database with fake paid reports.
 //
-// What it asserts, per the ops framework:
-//   1. FUNNELS load       — every product in BOTH languages returns 200, the
-//                           birth form fills, and the free teaser/preview renders.
-//   2. FREE-PASS UNLOCK    — make_pass -> order(pass_token) -> /report/{id}
-//                           renders the PAID report -> /report/{id}.pdf is 200,
-//                           application/pdf and non-empty (compat + marriage +
-//                           career, English).
-//   3. CTAs               — the primary CTA(s) exist, are visible + enabled, and
-//                           target the right action (form submit; #unlockBtn ->
-//                           startPayment()).
-//   4. PREVIEWS           — the teaser snapshot renders after submit.
-//   5. RESPONSIVE         — on the mobile project, funnel pages have no
-//                           horizontal overflow (scrollWidth <= innerWidth+tol).
-//   6. NO CONSOLE ERRORS  — every page gets console(error) + pageerror listeners;
-//                           an uncaught throw fails the test (a small denylist
-//                           absorbs known third-party/network noise on console).
-//   7. PAYMENT HEALTH     — GET /api/pdf_health?key=STATS_KEY reports render_ok
-//                           true, and the free-pass order returns success.
+// Phases (from ops/ARCHITECTURE.md):
+//   B1 — PAGE HEALTH     Every page returns 200, no JS errors, no horizontal
+//                         overflow, loads in < 5 seconds.
+//   B2 — FUNNEL SMOKE    Each product funnel's form loads, fills, submits,
+//                         and the teaser/preview renders with a REPORT_ID.
+//                         Stops BEFORE payment. No /api/order. No LLM.
+//   B3 — SEO CHECKS      Every page has <title>, <meta description>, <h1>,
+//                         canonical URL, and images have alt text.
+//   B4 — CLEANUP         POST /api/admin/robot_cleanup to delete any reports
+//                         the robot created during form submission.
 //
-// Selectors/flow mirror tests/e2e/{shaadi,padhai,checkout}.spec.js. Marriage &
-// career use the single-person #kundliForm (#f-* ids; career adds a required
-// #f-stage and has no gender field); compatibility uses the two-person
-// #milanForm (p1-*/p2-* ids, gender inferred by role — no gender field).
-//
-// Any failed assertion fails the test, which makes `npx playwright test` exit
-// non-zero — the loud signal CI / the on-call mechanic reacts to.
+// Runs against OPS_TARGET_URL on both mobile + desktop viewports (see
+// playwright.config.js). Any failed assertion makes `npx playwright test`
+// exit non-zero — the loud signal CI / the on-call mechanic reacts to.
 
 const { test, expect } = require('@playwright/test');
 
 // ---- Env / preconditions -------------------------------------------------
 const TARGET = process.env.OPS_TARGET_URL;
-const STATS_KEY = process.env.STATS_KEY;
+const ADMIN_KEY = process.env.ADMIN_KEY || process.env.STATS_KEY;
 
 test.beforeAll(() => {
   if (!TARGET) throw new Error('OPS_TARGET_URL is not set — point the robot at a deployment.');
-  if (!STATS_KEY) throw new Error('STATS_KEY is not set — needed to mint a free unlock pass.');
+  if (!ADMIN_KEY) throw new Error('ADMIN_KEY / STATS_KEY is not set — needed for cleanup.');
 });
 
-// A valid 10-digit Indian mobile, UNIQUE per call so we never collide with a
-// prior robot account in the shared prod DB (mobile is the account key, and the
-// app de-dupes contacts by mobile). Date.now()+counter+random keeps it unique
-// even for two journeys that start within the same millisecond.
-let _phoneSeq = 0;
-function testPhone() {
-  const suffix = String(Date.now() + _phoneSeq++ + Math.floor(Math.random() * 1000)).slice(-9);
-  return '9' + suffix;
-}
-function testEmail() {
-  return `robot-${Date.now()}-${Math.floor(Math.random() * 1e6)}@axtroshastra.test`;
-}
+// ---- Page list -----------------------------------------------------------
+// Hardcoded from `ls pages/` + the server's URL routes. Structured so
+// swapping to a dynamic fetch is a one-line change:
+//   const ALL_PAGES = await fetch(`${TARGET}/api/admin/sitemap`).then(r => r.json());
+const ALL_PAGES = [
+  { path: '/',                  label: 'Home (EN)' },
+  { path: '/hi',                label: 'Home (HI)' },
+  { path: '/en/compatibility',  label: 'Compatibility (EN)' },
+  { path: '/hi/compatibility',  label: 'Compatibility (HI)' },
+  { path: '/en/marriage',       label: 'Marriage (EN)' },
+  { path: '/hi/marriage',       label: 'Marriage (HI)' },
+  { path: '/en/marriage-v2',    label: 'Marriage V2 (EN)' },
+  { path: '/hi/marriage-v2',    label: 'Marriage V2 (HI)' },
+  { path: '/career',            label: 'Career (EN)' },
+  { path: '/hinglish/career',   label: 'Career (Hinglish)' },
+  { path: '/jeevan',            label: 'Jeevan' },
+  { path: '/login',             label: 'Login' },
+  { path: '/about',             label: 'About' },
+  { path: '/privacy',           label: 'Privacy' },
+  { path: '/terms',             label: 'Terms' },
+  { path: '/refunds',           label: 'Refunds' },
+  { path: '/blog',              label: 'Blog Index' },
+  { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
+  { path: '/blog/kundli-milan-36-gun',                 label: 'Blog: 36 Gun' },
+  { path: '/blog/manglik-dosha-cancellation',           label: 'Blog: Manglik' },
+  { path: '/blog/shaadi-kab-hogi-marriage-timing',      label: 'Blog: Marriage Timing' },
+  { path: '/blog/vimshottari-dasha-life-phases',        label: 'Blog: Dasha Phases' },
+];
 
-// Full valid birth time using option values the pages actually build:
-//   hour  -> "1".."12"      minute -> "00","05",... ,"55"      ap -> "AM"/"PM"
-const TIME = { hh: '10', mm: '30', ap: 'AM' };
-
-// Console-noise denylist: known-benign console.error sources on a live site
-// (third-party beacons, favicon, ResizeObserver chatter). pageerror (an actual
-// uncaught JS throw) is NEVER ignored — those are real bugs.
+// ---- Console-noise denylist ----------------------------------------------
+// Known-benign console.error sources on a live site (third-party beacons,
+// favicon, ResizeObserver chatter). pageerror (an actual uncaught JS throw)
+// is NEVER ignored — those are real bugs.
 const BENIGN_CONSOLE = [
   /favicon/i,
   /ResizeObserver loop/i,
@@ -73,8 +72,10 @@ const BENIGN_CONSOLE = [
   /net::ERR_|ERR_BLOCKED_BY_CLIENT|Failed to load resource/i,
 ];
 
-// Attach error listeners; returns an object whose .assertClean() fails the test
-// if anything genuinely broke. Call at the very top of a test, before goto.
+// ---- Shared helpers ------------------------------------------------------
+
+// Attach error listeners; returns an object whose .assertClean() fails the
+// test if anything genuinely broke. Call at the top of a test, before goto.
 function watchErrors(page) {
   const pageErrors = [];
   const consoleErrors = [];
@@ -109,10 +110,23 @@ async function assertNoHorizontalOverflow(page) {
   ).toBeLessThanOrEqual(metrics.innerWidth + tol);
 }
 
+// ---- Unique phone (valid Indian mobile) ----------------------------------
+// UNIQUE per call so we never collide with a prior robot account in the
+// shared prod DB (mobile is the account key). Date.now()+counter+random
+// keeps it unique even within the same millisecond.
+let _phoneSeq = 0;
+function testPhone() {
+  const suffix = String(Date.now() + _phoneSeq++ + Math.floor(Math.random() * 1000)).slice(-9);
+  return '9' + suffix;
+}
+
+// Birth time using option values the pages actually build:
+//   hour -> "1".."12"    minute -> "00","05",...,"55"    ap -> "AM"/"PM"
+const TIME = { hh: '10', mm: '30', ap: 'AM' };
+
 // ---- City autosuggest (identical to the e2e specs) -----------------------
-// Type it, wait for the matching `.ci` row under <prefix>-place-list, then click
-// (a plain fill leaves the report un-geocoded and /api/kundli 422s with
-// "city_not_selected").
+// Type it, wait for the matching `.ci` row under <prefix>-place-list, then
+// click (a plain fill leaves the report un-geocoded and the API 422s).
 async function pickCity(page, prefix, city) {
   const input = page.locator(`#${prefix}-place`);
   await input.scrollIntoViewIfNeeded();
@@ -122,15 +136,17 @@ async function pickCity(page, prefix, city) {
   await item.click();
 }
 
-// ---- Form fillers (copied from the e2e specs) ----------------------------
+// ---- Form fillers --------------------------------------------------------
+// Names use "Smoke" / "Test" prefixes so they're obviously fake but NOT
+// "Robot"-prefixed (the cleanup endpoint can target these if needed).
 
-// Marriage / shaadi: single person on #kundliForm (has a gender field).
+// Marriage (shaadi): single person, #kundliForm, has gender field.
 async function fillMarriage(page) {
-  await page.fill('#f-name', 'Robot Customer');
-  await page.selectOption('#f-gender', 'male');
-  await page.fill('#f-dd', '15');
-  await page.selectOption('#f-mm', '06');
-  await page.fill('#f-yy', '1992');
+  await page.fill('#f-name', 'Smoke Priya');
+  await page.selectOption('#f-gender', 'female');
+  await page.fill('#f-dd', '12');
+  await page.selectOption('#f-mm', '03');
+  await page.fill('#f-yy', '1995');
   await page.selectOption('#f-hh', TIME.hh);
   await page.selectOption('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
@@ -138,28 +154,30 @@ async function fillMarriage(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
-// Career / padhai(=career) / vidyarthi: single person on #kundliForm with a
-// required #f-stage and NO gender field. "10th" needs no field-of-study reveal.
-async function fillCareer(page) {
-  await page.fill('#f-name', 'Robot Student');
-  await page.selectOption('#f-stage', '10th');
-  await page.fill('#f-dd', '15');
-  await page.selectOption('#f-mm', '08');
-  await page.fill('#f-yy', '2008');
+// Marriage V2: single person, #kundliForm, has gender + WhatsApp fields.
+// V2 goes STRAIGHT to Razorpay after /api/kundli (no teaser step).
+// The /api/order route is blocked by the test harness.
+async function fillMarriageV2(page) {
+  await page.fill('#f-name', 'Test Meera');
+  await page.selectOption('#f-gender', 'female');
+  await page.fill('#f-dd', '22');
+  await page.selectOption('#f-mm', '07');
+  await page.fill('#f-yy', '1996');
   await page.selectOption('#f-hh', TIME.hh);
   await page.selectOption('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Delhi');
+  await page.fill('#f-whatsapp', testPhone());
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
-// Compatibility / milan: two people (p1 = GIRL, p2 = BOY) on #milanForm.
+// Compatibility (milan): two people, #milanForm (p1 = girl, p2 = boy).
 async function fillCompatibility(page) {
   for (const p of ['p1', 'p2']) {
-    await page.fill(`#${p}-name`, p === 'p1' ? 'Robot Aisha' : 'Robot Arjun');
-    await page.fill(`#${p}-dd`, '15');
-    await page.selectOption(`#${p}-mm`, '06');
-    await page.fill(`#${p}-yy`, p === 'p1' ? '1994' : '1992');
+    await page.fill(`#${p}-name`, p === 'p1' ? 'Smoke Nisha' : 'Test Rahul');
+    await page.fill(`#${p}-dd`, '18');
+    await page.selectOption(`#${p}-mm`, '04');
+    await page.fill(`#${p}-yy`, p === 'p1' ? '1994' : '1993');
     await page.selectOption(`#${p}-hh`, TIME.hh);
     await page.selectOption(`#${p}-mm2`, TIME.mm);
     await page.selectOption(`#${p}-ap`, TIME.ap);
@@ -168,146 +186,217 @@ async function fillCompatibility(page) {
   await page.locator('#milanForm button[type="submit"]').click();
 }
 
-// ---- Funnels, parametrised -----------------------------------------------
-// `en`/`hi` are the two language routes for each product. NOTE: career has no
-// Devanagari /hi/career; its second-language variant is the Hinglish page at
-// /hinglish/career (see assumptions in the task summary). `form` is the CSS id
-// of the birth form, used for the pre-submit CTA (submit-button) assertion.
+// Career: single person, #kundliForm, has #f-stage, NO gender field.
+// "10th" avoids revealing the field-of-study sub-select.
+async function fillCareer(page) {
+  await page.fill('#f-name', 'Test Vikram');
+  await page.selectOption('#f-stage', '10th');
+  await page.fill('#f-dd', '05');
+  await page.selectOption('#f-mm', '11');
+  await page.fill('#f-yy', '2008');
+  await page.selectOption('#f-hh', TIME.hh);
+  await page.selectOption('#f-mm2', TIME.mm);
+  await page.selectOption('#f-ap', TIME.ap);
+  await pickCity(page, 'f', 'Mumbai');
+  await page.locator('#kundliForm button[type="submit"]').click();
+}
+
+// ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
-  { name: 'compatibility', en: '/en/compatibility', hi: '/hi/compatibility', form: '#milanForm', fill: fillCompatibility },
-  { name: 'marriage',      en: '/en/marriage',      hi: '/hi/marriage',      form: '#kundliForm', fill: fillMarriage },
-  { name: 'career',        en: '/career',           hi: '/hinglish/career',  form: '#kundliForm', fill: fillCareer },
+  {
+    name: 'marriage',
+    paths: { en: '/en/marriage', hi: '/hi/marriage' },
+    form: '#kundliForm',
+    fill: fillMarriage,
+    hasTeaser: true,
+  },
+  {
+    name: 'marriage-v2',
+    paths: { en: '/en/marriage-v2', hi: '/hi/marriage-v2' },
+    form: '#kundliForm',
+    fill: fillMarriageV2,
+    hasTeaser: false,   // v2 goes straight to Razorpay; no teaser step
+  },
+  {
+    name: 'compatibility',
+    paths: { en: '/en/compatibility', hi: '/hi/compatibility' },
+    form: '#milanForm',
+    fill: fillCompatibility,
+    hasTeaser: true,
+  },
+  {
+    name: 'career',
+    paths: { en: '/career', hi: '/hinglish/career' },
+    form: '#kundliForm',
+    fill: fillCareer,
+    hasTeaser: true,
+  },
 ];
 
 // ==========================================================================
-// 1/3/4/5/6 — Funnel loads, CTAs, preview renders, responsive, no console errors.
-// Runs for every product in BOTH languages, and (via projects) on BOTH the
-// mobile and desktop viewport.
+// Phase B1 — Page health
+// For EVERY page on the site: HTTP 200, no JS errors, no horizontal
+// overflow, loads in < 5 seconds.
 // ==========================================================================
-for (const funnel of FUNNELS) {
-  for (const lang of ['en', 'hi']) {
-    const path = funnel[lang];
-    test(`${funnel.name} [${lang}] loads, CTAs healthy, preview renders, responsive, no console errors`, async ({ page }) => {
+test.describe('B1 — Page health', () => {
+  for (const pg of ALL_PAGES) {
+    test(`${pg.label} (${pg.path}): 200, no errors, no overflow, < 5s`, async ({ page }) => {
       const errors = watchErrors(page);
 
-      // (1) The page loads with a 2xx/3xx.
-      const resp = await page.goto(path);
-      expect(resp, `no response for ${path}`).toBeTruthy();
-      expect(resp.status(), `${path} HTTP ${resp.status()}`).toBeLessThan(400);
+      const t0 = Date.now();
+      const resp = await page.goto(pg.path, { waitUntil: 'load' });
+      const loadMs = Date.now() - t0;
 
-      // (3) Pre-submit CTA: the form's submit button is visible + enabled.
-      const submitBtn = page.locator(`${funnel.form} button[type="submit"]`).first();
-      await expect(submitBtn, 'form submit CTA missing').toBeVisible();
-      await expect(submitBtn, 'form submit CTA disabled').toBeEnabled();
+      // HTTP 200 (or 2xx/3xx — anything below 400).
+      expect(resp, `no response for ${pg.path}`).toBeTruthy();
+      expect(resp.status(), `${pg.path} returned HTTP ${resp.status()}`).toBeLessThan(400);
 
-      // (5) No horizontal overflow (strict on mobile).
+      // Loads in under 5 seconds.
+      expect(loadMs, `${pg.path} took ${loadMs}ms (limit 5000ms)`).toBeLessThan(5000);
+
+      // No horizontal overflow (strict on mobile).
       await assertNoHorizontalOverflow(page);
 
-      // (1/4) Fill + submit; the free teaser/preview must render.
-      await funnel.fill(page);
-      await expect(page.locator('#teaser'), 'free teaser/preview never appeared after submit')
-        .toBeVisible({ timeout: 30_000 });
-
-      // The page stashes the persisted report id on window after /api/kundli.
-      const rid = await page.evaluate(() => window.REPORT_ID);
-      expect(rid, 'window.REPORT_ID was not set — /api/kundli did not persist').toBeTruthy();
-
-      // (3) Post-submit CTA: the primary Unlock button is visible, enabled, and
-      // wired to the payment action (onclick -> startPayment()).
-      const unlock = page.locator('#unlockBtn');
-      await unlock.scrollIntoViewIfNeeded();
-      await expect(unlock, 'primary unlock CTA missing').toBeVisible();
-      await expect(unlock, 'primary unlock CTA disabled').toBeEnabled();
-      const onclick = await unlock.getAttribute('onclick');
-      expect(onclick || '', 'unlock CTA not wired to startPayment()').toMatch(/startPayment/);
-
-      // (5) Still no overflow once the teaser + CTAs have expanded the page.
-      await assertNoHorizontalOverflow(page);
-
-      // (6) No uncaught JS / console errors across the whole journey.
+      // No uncaught JS or console errors.
       errors.assertClean();
     });
   }
-}
+});
 
 // ==========================================================================
-// 2/7 — Free-pass unlock end-to-end -> paid report + PDF. English funnels.
-// Also proves the free-pass order returns success (part of payment health).
+// Phase B2 — Funnel smoke
+// For each funnel (marriage, marriage-v2, compatibility, career) in both
+// languages: fill form, submit, verify teaser/REPORT_ID, stop. NO payment.
 // ==========================================================================
-for (const funnel of FUNNELS) {
-  test(`${funnel.name}: free-pass unlock renders a paid report + PDF`, async ({ page, request }) => {
-    const errors = watchErrors(page);
+test.describe('B2 — Funnel smoke', () => {
+  for (const funnel of FUNNELS) {
+    for (const lang of ['en', 'hi']) {
+      const path = funnel.paths[lang];
 
-    // 1) Mint a one-time free unlock token via the admin route.
-    const passResp = await request.get(`/api/make_pass?key=${encodeURIComponent(STATS_KEY)}&n=1`);
-    expect(passResp.ok(), `make_pass HTTP ${passResp.status()}`).toBeTruthy();
-    const passBody = await passResp.json();
-    expect(Array.isArray(passBody.passes)).toBeTruthy();
-    const token = passBody.passes && passBody.passes[0];
-    expect(token, 'make_pass returned no token').toBeTruthy();
+      test(`${funnel.name} [${lang}] form -> submit -> pipeline works (no payment)`, async ({ page }) => {
+        const errors = watchErrors(page);
 
-    // 2) Real browser: open the funnel, fill the birth form, submit, see teaser.
-    await page.goto(funnel.en);
-    await funnel.fill(page);
-    await expect(page.locator('#teaser'), 'free teaser never appeared after submit')
-      .toBeVisible({ timeout: 30_000 });
+        // --- Safety net: block payment routes so no charge can ever occur ---
+        // /api/order: return a response that makes startPayment() exit cleanly
+        // (the "invalid_pass" error path shows an alert and returns — no
+        // Razorpay, no redirect, no uncaught error).
+        await page.route('**/api/order', (route) =>
+          route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'invalid_pass' }),
+          }),
+        );
+        await page.route('**/api/make_pass**', (route) => route.abort());
 
-    const rid = await page.evaluate(() => window.REPORT_ID);
-    expect(rid, 'window.REPORT_ID was not set — /api/kundli did not persist').toBeTruthy();
+        // Dismiss any alert dialogs (from the blocked /api/order in v2).
+        page.on('dialog', (d) => d.dismiss());
 
-    // 3) Redeem the pass WITHOUT paying — the exact call the site makes for a
-    //    free pass (api.py /api/order pass_token branch). Success is either a
-    //    fresh free unlock ({free:true}) or an already-paid report.
-    const orderResp = await request.post('/api/order', {
-      data: {
-        report_id: rid,
-        pass_token: token,
-        phone: testPhone(),
-        email: testEmail(),
-      },
+        // 1) Load the funnel page.
+        const resp = await page.goto(path);
+        expect(resp, `no response for ${path}`).toBeTruthy();
+        expect(resp.status(), `${path} returned HTTP ${resp.status()}`).toBeLessThan(400);
+
+        // 2) Form is present; submit button is visible + enabled.
+        const submitBtn = page.locator(`${funnel.form} button[type="submit"]`).first();
+        await expect(submitBtn, 'form submit CTA missing').toBeVisible();
+        await expect(submitBtn, 'form submit CTA disabled').toBeEnabled();
+
+        // 3) Fill and submit the form (this triggers /api/kundli or /api/milan
+        //    on the backend — a real ephemeris calc, but NO LLM call).
+        await funnel.fill(page);
+
+        // 4) For funnels with a teaser step, the free preview must render.
+        if (funnel.hasTeaser) {
+          await expect(
+            page.locator('#teaser'),
+            'teaser/preview never appeared after submit',
+          ).toBeVisible({ timeout: 30_000 });
+        }
+
+        // 5) REPORT_ID must be set — proves the backend processed the chart.
+        //    Marriage-v2 has a 9s min-wait animation; milan has 7s; shaadi and
+        //    career have 9s. 30s timeout covers all cases comfortably.
+        await page.waitForFunction(() => window.REPORT_ID != null, { timeout: 30_000 });
+        const rid = await page.evaluate(() => window.REPORT_ID);
+        expect(rid, 'window.REPORT_ID was not set — backend did not persist').toBeTruthy();
+
+        // 6) No horizontal overflow after the form/teaser expanded the page.
+        await assertNoHorizontalOverflow(page);
+
+        // 7) No uncaught JS / console errors across the whole journey.
+        errors.assertClean();
+      });
+    }
+  }
+});
+
+// ==========================================================================
+// Phase B3 — SEO checks
+// For EVERY page: <title>, <meta description>, <h1>, canonical URL, and
+// all images have alt text.
+// ==========================================================================
+test.describe('B3 — SEO checks', () => {
+  for (const pg of ALL_PAGES) {
+    test(`${pg.label} (${pg.path}): SEO tags present`, async ({ page }) => {
+      await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
+
+      // <title> exists and is non-empty.
+      const title = await page.evaluate(() => {
+        const el = document.querySelector('title');
+        return el ? el.textContent.trim() : '';
+      });
+      expect(title, `${pg.path} missing <title>`).toBeTruthy();
+
+      // <meta name="description"> exists and has content.
+      const description = await page.evaluate(() => {
+        const el = document.querySelector('meta[name="description"]');
+        return el ? (el.getAttribute('content') || '').trim() : '';
+      });
+      expect(description, `${pg.path} missing <meta name="description">`).toBeTruthy();
+
+      // At least one <h1> exists.
+      const h1Count = await page.evaluate(() => document.querySelectorAll('h1').length);
+      expect(h1Count, `${pg.path} has no <h1>`).toBeGreaterThan(0);
+
+      // <link rel="canonical"> exists.
+      const canonical = await page.evaluate(() => {
+        const el = document.querySelector('link[rel="canonical"]');
+        return el ? (el.getAttribute('href') || '').trim() : '';
+      });
+      expect(canonical, `${pg.path} missing <link rel="canonical">`).toBeTruthy();
+
+      // Every <img> has a non-empty alt attribute.
+      // Decorative images should use alt="" (empty but present); missing alt
+      // attribute entirely is the SEO failure we flag.
+      const missingAlt = await page.evaluate(() => {
+        const imgs = Array.from(document.querySelectorAll('img'));
+        return imgs
+          .filter((img) => !img.hasAttribute('alt'))
+          .map((img) => img.src || img.outerHTML.slice(0, 120));
+      });
+      expect(
+        missingAlt,
+        `${pg.path} has ${missingAlt.length} image(s) without alt:\n${missingAlt.join('\n')}`,
+      ).toEqual([]);
     });
-    expect(orderResp.ok(), `/api/order HTTP ${orderResp.status()}`).toBeTruthy();
-    const order = await orderResp.json();
-    expect(order.error, `/api/order rejected the pass: ${order.error}`).toBeFalsy();
-    expect(
-      order.free === true || order.already_paid === true,
-      `pass was not redeemed (order response: ${JSON.stringify(order)})`,
-    ).toBeTruthy();
+  }
+});
 
-    // 4) Load the report page: it must be the real PAID report, not the
-    //    "payment pending" 404 stub. A non-durable write shows up loudly here.
-    const reportResp = await page.goto(`/report/${rid}`);
-    expect(reportResp.status(), `report page HTTP ${reportResp.status()} (payment pending?)`)
-      .toBeLessThan(400);
-    await expect(page.locator('body')).not.toContainText(/Report not found|payment pending/i);
-    await expect(page.locator('body')).not.toBeEmpty();
-
-    // 5) The PDF must be fetchable: 200 + a PDF content-type + non-empty body.
-    const pdfResp = await request.get(`/report/${rid}.pdf`);
-    expect(pdfResp.status(), `PDF HTTP ${pdfResp.status()}`).toBe(200);
-    expect(
-      (pdfResp.headers()['content-type'] || '').toLowerCase(),
-      'PDF response was not application/pdf',
-    ).toContain('pdf');
-    const pdfBody = await pdfResp.body();
-    expect(pdfBody.length, 'PDF body was empty').toBeGreaterThan(1000);
-    expect(pdfBody.slice(0, 4).toString('latin1'), 'not a real PDF (missing %PDF header)').toBe('%PDF');
-
-    errors.assertClean();
+// ==========================================================================
+// Phase B4 — Cleanup
+// Delete any reports the robot created during B2 form submissions.
+// Runs AFTER all other tests (Playwright runs tests in file order).
+// ==========================================================================
+test.describe('B4 — Cleanup', () => {
+  test('robot_cleanup deletes smoke-test reports', async ({ request }) => {
+    const resp = await request.post(
+      `/api/admin/robot_cleanup?key=${encodeURIComponent(ADMIN_KEY)}`,
+    );
+    expect(resp.ok(), `robot_cleanup HTTP ${resp.status()}`).toBeTruthy();
+    const body = await resp.json();
+    // The endpoint should return a summary; log it for visibility.
+    // eslint-disable-next-line no-console
+    console.log('[B4] robot_cleanup response:', JSON.stringify(body));
   });
-}
-
-// ==========================================================================
-// 7 — Payment / render-pipeline health (no real charge).
-// The PDF-maker (headless Chrome) is what WhatsApp delivery downloads; a URL
-// health check makes its status visible without SSH.
-// ==========================================================================
-test('payment health: pdf_health reports render_ok', async ({ request }) => {
-  const resp = await request.get(`/api/pdf_health?key=${encodeURIComponent(STATS_KEY)}`);
-  expect(resp.ok(), `pdf_health HTTP ${resp.status()}`).toBeTruthy();
-  const body = await resp.json();
-  expect(
-    body.render_ok === true,
-    `PDF pipeline unhealthy: ${JSON.stringify(body)}`,
-  ).toBeTruthy();
 });
