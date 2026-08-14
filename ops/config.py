@@ -10,7 +10,7 @@ def _list(name):
 
 
 # --- Target: the deployment the bots watch (local / staging / prod) ---
-TARGET_URL = os.getenv("OPS_TARGET_URL", "https://www.axtroshastra.com").rstrip("/")
+TARGET_URL = (os.getenv("OPS_TARGET_URL") or "https://www.axtroshastra.com").rstrip("/")
 STATS_KEY = os.getenv("STATS_KEY", "")          # admin key: /api/make_pass, /api/reconcile, /api/pdf_health, /api/stats
 HTTP_TIMEOUT = int(os.getenv("OPS_HTTP_TIMEOUT") or "25")
 
@@ -32,7 +32,7 @@ TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")
 
 # --- Elastic Beanstalk (Method B rollback: redeploy last-good version) ---
-EB_ENV = os.getenv("OPS_EB_ENV", "AxtroShastraProd")
+EB_ENV = os.getenv("OPS_EB_ENV", "") or "AxtroShastraProd"
 AWS_REGION = os.getenv("AWS_REGION") or os.getenv("OPS_AWS_REGION", "ap-south-1")
 
 # --- History store (append-only JSON-lines; the admin dashboard reads it) ---
