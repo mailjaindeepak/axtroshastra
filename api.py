@@ -20,8 +20,11 @@ Razorpay dashboard prerequisites:
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
 import hashlib, hmac, json, logging, os, secrets, sqlite3, threading, time
-from dotenv import load_dotenv
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
