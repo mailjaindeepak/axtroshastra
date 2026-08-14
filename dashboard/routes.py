@@ -161,12 +161,12 @@ def install(app, ctx):
         return os.getenv("ADMIN_KEY", "") or os.getenv("STATS_KEY", "")
 
     def _valid_admin_secret(key):
-        """Constant-time check of a submitted key against ADMIN_KEY (if set),
-        else against STATS_KEY via the app's own validator (which honours any
-        api.STATS_KEY override in tests)."""
+        """Constant-time check: accept ADMIN_KEY (if set) OR STATS_KEY.
+        Both are valid admin credentials — ADMIN_KEY is an optional override,
+        not a replacement for STATS_KEY."""
         admin_key = os.getenv("ADMIN_KEY", "")
-        if admin_key:
-            return hmac.compare_digest(key or "", admin_key)
+        if admin_key and hmac.compare_digest(key or "", admin_key):
+            return True
         return valid_admin_key(key)
 
     def _b64(raw):
