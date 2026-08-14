@@ -4,7 +4,7 @@
 
 | Layer | What | Runs against | When | Question it answers |
 |-------|------|-------------|------|-------------------|
-| **Pytest** (458 tests) | Python backend logic | Local SQLite, DEMO_MODE | Before deploy (CI) | "Is the code correct?" |
+| **Pytest** (459 tests) | Python backend logic | Local SQLite, DEMO_MODE | Before deploy (CI) | "Is the code correct?" |
 | **E2E Playwright** (21 tests) | Browser experience | Local server, DEMO_MODE | Before deploy (CI) | "Does the website work?" |
 | **Robot Customer** | Live site availability | Production (real data) | 3x/day + after deploy | "Is the live site healthy NOW?" |
 
@@ -128,7 +128,7 @@ UNIT 3: CI + Deploy Guard (ci.yml — one workflow, one button)
   ┌──────────────────────────────────────────────────────────┐
   │ STAGE 1 — CI (pre-deploy verification)                   │
   │                                                          │
-  │   Job A: Run pytest (458 tests) ──┐                      │
+  │   Job A: Run pytest (459 tests) ──┐                      │
   │          local SQLite, DEMO_MODE  │                      │
   │                                   ├─ both must pass      │
   │   Job B: Run E2E (21 tests) ─────┘                      │

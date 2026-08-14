@@ -88,7 +88,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # Guarded production deploy — the ONE button.
   #
-  #   pytest (458) ──┐
+  #   pytest (459) ──┐
   #                  ├── all green ──► deploy ──► wait Green ──► smoke test
   #   E2E (21) ─────┘                                               │
   #                                                        pass ◄───┤───► fail

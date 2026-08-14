@@ -5,3 +5,4 @@
 -r requirements.build.txt
 pytest>=8.0
 httpx>=0.27        # required by fastapi.testclient
+pyyaml>=6.0        # tests/test_ops_workflows.py parses workflow YAML

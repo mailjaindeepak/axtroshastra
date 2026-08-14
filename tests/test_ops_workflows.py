@@ -5,6 +5,7 @@ found were violated — concurrency group alignment, always() on failure paths,
 continue-on-error on setup steps, and comment accuracy.  They run as part of
 the normal pytest suite so regressions are caught before push."""
 import re
+import sys
 from pathlib import Path
 
 import yaml
@@ -94,4 +95,85 @@ def test_ci_comment_test_count_matches_architecture():
     assert ci_counts[0] == arch_counts[0], (
         f"ci.yml says pytest({ci_counts[0]}) but ARCHITECTURE.md says "
         f"pytest({arch_counts[0]}); keep them in sync"
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Guard — every third-party import used by test files must be declared in
+#          requirements-dev.txt (or its -r includes) so CI doesn't break.
+# --------------------------------------------------------------------------- #
+_REPO = Path(__file__).resolve().parents[1]
+_STDLIB = set(sys.stdlib_module_names) if hasattr(sys, "stdlib_module_names") else set()
+
+
+def _third_party_imports(path):
+    """Return top-level non-stdlib, non-local import names from a .py file."""
+    found = set()
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if line.startswith("import "):
+            mod = line.split()[1].split(".")[0].split(",")[0]
+            found.add(mod)
+        elif line.startswith("from ") and "import" in line:
+            mod = line.split()[1].split(".")[0]
+            if mod == ".":
+                continue
+            found.add(mod)
+    local = {p.stem for p in _REPO.glob("*.py")} | {
+        p.name for p in _REPO.iterdir() if p.is_dir() and (p / "__init__.py").exists()
+    } | {"tests"}
+    return found - _STDLIB - local - {"__future__"}
+
+
+def _declared_packages():
+    """Package names declared across all requirements files CI installs."""
+    declared = set()
+    todo = [_REPO / "requirements-dev.txt"]
+    seen = set()
+    while todo:
+        f = todo.pop()
+        if f in seen or not f.exists():
+            continue
+        seen.add(f)
+        for line in f.read_text().splitlines():
+            line = line.split("#")[0].strip()
+            if line.startswith("-r "):
+                todo.append(f.parent / line[3:].strip())
+                continue
+            if not line or line.startswith("-"):
+                continue
+            name = re.split(r"[>=<!\[]", line)[0].strip().lower().replace("-", "_")
+            declared.add(name)
+    return declared
+
+
+# Map PyPI package names to their importable module names when they differ
+_IMPORT_TO_PACKAGE = {
+    "yaml": "pyyaml",
+    "cv2": "opencv_python",
+    "PIL": "pillow",
+    "bs4": "beautifulsoup4",
+    "attr": "attrs",
+    "dateutil": "python_dateutil",
+    "dotenv": "python_dotenv",
+    "mysql": "pymysql",
+    "xhtml2pdf": "xhtml2pdf",
+    "_pytest": "pytest",
+}
+
+
+def test_test_imports_declared_in_requirements():
+    """Every third-party import in tests/ must appear in requirements-dev.txt."""
+    if not _STDLIB:
+        pytest.skip("sys.stdlib_module_names unavailable (Python < 3.10)")
+    declared = _declared_packages()
+    missing = {}
+    for test_file in sorted((_REPO / "tests").glob("*.py")):
+        for mod in _third_party_imports(test_file):
+            pkg = _IMPORT_TO_PACKAGE.get(mod, mod).lower().replace("-", "_")
+            if pkg not in declared:
+                missing.setdefault(pkg, []).append(test_file.name)
+    assert not missing, (
+        "Test files import packages not in requirements-dev.txt: "
+        + "; ".join(f"{pkg} (used by {', '.join(fs)})" for pkg, fs in missing.items())
     )
