@@ -98,7 +98,8 @@ def find_recoverable(db, limit: int = 200) -> list:
                 out.append({"rid": rid, "order_id": order_id,
                             "payment_id": pay.get("id"),
                             "contact": pay.get("contact") or "",
-                            "email": pay.get("email") or ""})
+                            "email": pay.get("email") or "",
+                            "amount": pay.get("amount")})
         except Exception:
             continue
     return out
