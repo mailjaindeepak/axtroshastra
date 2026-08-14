@@ -69,6 +69,8 @@ def _ensure_report_columns(c):
     for col in ("user_id", "user_phone"):
         if not _column_exists(c, "reports", col):
             c.execute("ALTER TABLE reports ADD COLUMN %s TEXT" % col)
+    if not _column_exists(c, "reports", "amount_paise"):
+        c.execute("ALTER TABLE reports ADD COLUMN amount_paise INTEGER")
 
 
 def ensure_tables(db):

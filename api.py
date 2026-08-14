@@ -838,7 +838,7 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
             row = conn.execute("SELECT used FROM passes WHERE token=?", (tok,)).fetchone()
             if row and row[0] == 0:
                 conn.execute("UPDATE passes SET used=1 WHERE token=?", (tok,))
-                conn.execute("UPDATE reports SET paid=1, payment_id=? WHERE id=?",
+                conn.execute("UPDATE reports SET paid=1, payment_id=?, amount_paise=0 WHERE id=?",
                              ("free_pass:" + tok, rid))
                 freed = True
         if freed:
@@ -877,6 +877,9 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         "amount": amount_paise, "currency": "INR",
         "receipt": rid, "notes": {"report_id": rid}})
     set_order(rid, order["id"])
+    with _lock, db() as c:
+        c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
+                  (amount_paise, rid))
     return {"razorpay_order_id": order["id"], "amount": order["amount"],
             "currency": "INR", "key_id": RZP_KEY}
 
@@ -921,6 +924,11 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                 # (already_processed) above, which only guards the webhook
                 # re-sending the SAME event, not webhook-vs-verify races.
                 if payments.claim_paid(db, rid, ent.get("id"), pay_phone):
+                    rzp_amount = ent.get("amount")
+                    if rzp_amount is not None:
+                        with _lock, db() as _c:
+                            _c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
+                                       (int(rzp_amount), rid))
                     # PDF first, then WhatsApp: background tasks run in order, so
                     # the message can attach the freshly cached PDF.
                     background_tasks.add_task(_pregenerate_pdf_task, rid)
@@ -1009,6 +1017,14 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         # claim_paid also stores payment_id + the Razorpay contact, so there is
         # no separate mark_paid here.
         if payments.claim_paid(db, rid, pid, pay_phone):
+            try:
+                rzp_amount = ent.get("amount") if ent else None
+            except NameError:
+                rzp_amount = None
+            if rzp_amount is not None:
+                with _lock, db() as _c:
+                    _c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
+                               (int(rzp_amount), rid))
             # Account keeps the fallback; the REPORT goes only to the popup number.
             phone = rec.get("user_phone") or pay_phone
             wa_phone = rec.get("user_phone") or ""
@@ -1105,6 +1121,11 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
             # False and we skip: NO re-delivery.
             if not payments.claim_paid(db, rid, cand["payment_id"], cand["contact"]):
                 continue
+            rzp_amount = cand.get("amount")
+            if rzp_amount is not None:
+                with _lock, db() as _c:
+                    _c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
+                               (int(rzp_amount), rid))
             try:
                 _deliver_report(rid)
             except Exception as e:

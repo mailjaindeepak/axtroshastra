@@ -275,26 +275,26 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 
 <!-- ============ OPS ============ -->
 <section class="tabpage" id="p-ops">
-<h2>Ops status <span style="font-size:13px;color:var(--gold)">&mdash; the three robots</span></h2>
-<p class="pageintro">Three automated bots watch the site around the clock. Each one checks a different layer. If something critical breaks, you get an alert and (when armed) the site rolls back on its own.</p>
+<h2>Ops status <span style="font-size:13px;color:var(--gold)">&mdash; the monitor</span></h2>
+<p class="pageintro">One automated monitor watches the site around the clock in two phases: a deep health check (Phase A) and an end-to-end customer journey test (Phase B). If something critical breaks, you get an alert and (when armed) the site rolls back on its own.</p>
 <div class="cards trio" id="ops-cards"></div>
 
 <!-- ---- UptimeRobot ---- -->
-<div style="margin-top:18px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+<div style="margin-top:18px;padding:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line)">
 <h3 class="serif" style="margin:0 0 6px">UptimeRobot <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; external uptime monitor &middot; every 5 minutes</span></h3>
-<p style="margin:0 0 8px;color:var(--mut);font-size:13px">An <b>external service</b> (not our code) that pings the site every 5 minutes to check &ldquo;is the site alive?&rdquo; If the server is completely down &mdash; crash, DNS failure, AWS outage &mdash; UptimeRobot alerts you. It only checks if the homepage responds; it cannot see whether internal systems (database, PDF, OTP) are actually working. That deeper check is done by the Watcher below.</p>
+<p style="margin:0 0 8px;color:var(--mut);font-size:13px">An <b>external service</b> (not our code) that pings the site every 5 minutes to check &ldquo;is the site alive?&rdquo; If the server is completely down &mdash; crash, DNS failure, AWS outage &mdash; UptimeRobot alerts you. It only checks if the homepage responds; it cannot see whether internal systems (database, PDF, OTP) are actually working. That deeper check is the Monitor&rsquo;s Phase A below.</p>
 <a class="xlink" href="https://dashboard.uptimerobot.com/monitors" target="_blank" style="font-size:13px">&#8599; Open UptimeRobot dashboard</a>
 </div>
 
 <!-- ---- Watcher ---- -->
-<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
-<h3 class="serif" style="margin:0 0 6px">1. Watcher <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; deep health probe &middot; runs 3&times;/day via GitHub Actions</span></h3>
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line)">
+<h3 class="serif" style="margin:0 0 6px">Monitor &mdash; Phase A <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; deep health probe</span></h3>
 <p style="margin:0 0 10px;color:var(--mut);font-size:13px">Checks the <b>internal systems</b> that UptimeRobot cannot see: can the database write and read back? Can the PDF engine render a report? Are the OTP provider credentials still valid? If any check fails, it sends you an email + WhatsApp alert. It does <b>not</b> fix anything &mdash; it only reports.</p>
 <div id="ops-health-lights" style="margin:0 0 10px;display:flex;gap:12px;flex-wrap:wrap"></div>
 <p style="margin:0;font-size:12px;color:var(--mut)">The lights above are <b>live checks run right now</b> (same endpoints the watcher probes). The table below shows the watcher&rsquo;s scheduled run history from GitHub Actions.</p>
 </div>
-<div class="abovelink" style="margin-top:12px"><h3 class="serif">Watcher run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-watcher.yml" target="_blank">&#8599; GitHub Actions</a>
-<select id="ops-watcher-filter" onchange="_opsWatcherPage=0;renderOpsWatcher()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Monitor Phase A &mdash; health check history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-monitor.yml" target="_blank">&#8599; GitHub Actions</a>
+<select id="ops-watcher-filter" onchange="_opsWatcherPage=0;renderOpsWatcher()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12px">
 <option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
 </select></div>
 <div class="twrap"><table>
@@ -304,12 +304,12 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div id="ops-watcher-pag" style="text-align:center;padding:8px 0"></div>
 
 <!-- ---- Robot customer ---- -->
-<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
-<h3 class="serif" style="margin:0 0 6px">2. Robot customer <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; end-to-end journey test &middot; runs 3&times;/day via GitHub Actions</span></h3>
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line)">
+<h3 class="serif" style="margin:0 0 6px">Monitor &mdash; Phase B <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; end-to-end journey test</span></h3>
 <p style="margin:0;color:var(--mut);font-size:13px">Opens a <b>real browser</b> on the live site and walks the entire customer journey: fills the birth form, unlocks a report with a test pass (no real payment), then checks the paid report page and PDF download actually work. If any step breaks, it alerts you. Two consecutive failures trigger the Mechanic (below).</p>
 </div>
-<div class="abovelink" style="margin-top:12px"><h3 class="serif">Robot customer run history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-robot-customer.yml" target="_blank">&#8599; GitHub Actions</a>
-<select id="ops-robot-filter" onchange="_opsRobotPage=0;renderOpsRobot()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Monitor Phase B &mdash; journey test history</h3><a class="xlink" href="https://github.com/mailjaindeepak/axtroshastra/actions/workflows/ops-monitor.yml" target="_blank">&#8599; GitHub Actions</a>
+<select id="ops-robot-filter" onchange="_opsRobotPage=0;renderOpsRobot()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12px">
 <option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
 </select></div>
 <div class="twrap"><table>
@@ -319,12 +319,12 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div id="ops-robot-pag" style="text-align:center;padding:8px 0"></div>
 
 <!-- ---- Mechanic ---- -->
-<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
-<h3 class="serif" style="margin:0 0 6px">3. Mechanic <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; auto-rollback &middot; triggered by 2 consecutive robot failures</span></h3>
-<p style="margin:0;color:var(--mut);font-size:13px">The only bot that <b>acts</b>. If the robot customer fails twice in a row (not just once &mdash; one failure could be a flaky network), the mechanic rolls the site back to the last known good version. Currently <b>disarmed</b> (<code>OPS_ROLLBACK_ARMED=0</code>) &mdash; even on 2 consecutive failures it only alerts you. You arm it yourself when you are confident.</p>
+<div style="margin-top:24px;padding:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line)">
+<h3 class="serif" style="margin:0 0 6px">3. Mechanic <span style="font-size:12px;color:var(--mut);font-weight:normal">&mdash; auto-rollback &middot; triggered by 2 consecutive monitor failures</span></h3>
+<p style="margin:0;color:var(--mut);font-size:13px">The only bot that <b>acts</b>. If the monitor fails twice in a row (not just once &mdash; one failure could be a flaky network), the mechanic rolls the site back to the last known good version. Currently <b>disarmed</b> (<code>OPS_ROLLBACK_ARMED=0</code>) &mdash; even on 2 consecutive failures it only alerts you. You arm it yourself when you are confident.</p>
 </div>
 <div class="abovelink" style="margin-top:12px"><h3 class="serif">Rollback &amp; alert history</h3>
-<select id="ops-rb-filter" onchange="_opsRbPage=0;renderOpsRollbacks()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:12px">
+<select id="ops-rb-filter" onchange="_opsRbPage=0;renderOpsRollbacks()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12px">
 <option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
 </select></div>
 <div class="twrap"><table>
@@ -333,23 +333,29 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 </table></div>
 <div id="ops-rb-pag" style="text-align:center;padding:8px 0"></div>
 
+<!-- ---- Deploy events ---- -->
+<div class="abovelink" style="margin-top:12px"><h3 class="serif">Deploy history</h3>
+<select id="ops-deploy-filter" onchange="_opsDeployPage=0;renderOpsDeploys()" style="margin-left:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12px">
+<option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option>
+</select></div>
+<div class="twrap"><table>
+<thead><tr><th>When</th><th>Status</th><th>Version</th><th>Detail</th><th>Severity</th></tr></thead>
+<tbody id="ops-deploy-rows"></tbody>
+</table></div>
+<div id="ops-deploy-pag" style="text-align:center;padding:8px 0"></div>
+
 <div class="how"><b>How to use this:</b> you mostly don&rsquo;t touch this tab &mdash; it works on its own. If a row says &ldquo;rolled back&rdquo;, the site is already safe on the last good version; your job is to read the alert, fix the bug, and redeploy. UptimeRobot (external, every 5 min) handles the basic &ldquo;is the site alive?&rdquo; ping separately.</div>
 </section>
 
 <!-- ============ PAYMENTS ============ -->
 <section class="tabpage" id="p-payments">
 <div class="rowbtwn"><h2>Payments</h2><button class="csv" onclick="openTeam()">&#9881; Manage team exclusions</button></div>
-<p class="pageintro">Live payment history from Razorpay (captured payments only). Team members are tagged and excluded from real revenue. Cross-check on the Razorpay dashboard.</p>
+<p class="pageintro">Payment history from the reports DB (same source as Overview). Team members are tagged and excluded from real revenue. Cross-check on the Razorpay dashboard.</p>
 <div class="cards trio" id="pay-cards"></div>
-<div class="abovelink"><h3 class="serif">By funnel variant</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay · Payments</a></div>
-<div class="twrap"><table>
-<thead><tr><th>Funnel / page</th><th>Kundlis created</th><th>Paid reports</th><th>Revenue</th></tr></thead>
-<tbody id="pay-variants"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
-</table></div>
-<div class="abovelink"><h3 class="serif">Razorpay payment history &mdash; captured</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay</a></div>
+<div class="abovelink"><h3 class="serif">Payment history</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay</a></div>
 <div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
-  <label style="font-size:13px;color:var(--mute)">Show:</label>
-  <select id="pay-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+  <label style="font-size:13px;color:var(--mut)">Show:</label>
+  <select id="pay-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);font-size:13px;cursor:pointer">
     <option value="all">All</option>
     <option value="real">Customers only</option>
     <option value="team">Team only</option>
@@ -357,14 +363,19 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
     <option value="week">This week</option>
     <option value="month">This month</option>
   </select>
-  <span id="pay-count" style="font-size:12px;color:var(--mute)"></span>
+  <span id="pay-count" style="font-size:12px;color:var(--mut)"></span>
 </div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Amount</th><th>Method</th><th>Contact</th><th>Payment ID</th></tr></thead>
 <tbody id="pay-history"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
 </table></div>
 <div id="pay-pager" style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
-<div class="how"><b>How to use this:</b> the cards split <b>real</b> revenue from team-member payments. The history is every captured Razorpay payment (newest first). Team members show a tag badge next to their contact number. Cross-check against Razorpay when a number looks off.</div>
+<div class="abovelink"><h3 class="serif">By funnel variant</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay &middot; Payments</a></div>
+<div class="twrap"><table>
+<thead><tr><th>Funnel / page</th><th>Kundlis created</th><th>Paid reports</th><th>Revenue</th></tr></thead>
+<tbody id="pay-variants"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
+</table></div>
+<div class="how"><b>How to use this:</b> the cards split <b>real</b> revenue from team-member payments. The history is every paid report (newest first). Team members show a tag badge next to their contact number. Cross-check against Razorpay when a number looks off.</div>
 </section>
 
 <!-- ============ MONEY & FEASIBILITY ============ -->
@@ -455,14 +466,14 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div class="cards" id="llm-cards"></div>
 <div class="abovelink"><h3 class="serif">Recent report generations (the LLM log)</h3><a class="xlink" href="https://console.anthropic.com/settings/usage" target="_blank">&#8599; cross-check on Anthropic · Usage</a></div>
 <div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
-  <label style="font-size:13px;color:var(--mute)">Show:</label>
-  <select id="llm-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+  <label style="font-size:13px;color:var(--mut)">Show:</label>
+  <select id="llm-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);font-size:13px;cursor:pointer">
     <option value="all">All time</option>
     <option value="today">Today</option>
     <option value="week">This week</option>
     <option value="month">This month</option>
   </select>
-  <span id="llm-count" style="font-size:12px;color:var(--mute)"></span>
+  <span id="llm-count" style="font-size:12px;color:var(--mut)"></span>
 </div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Report</th><th>Mode</th><th>Latency</th><th>Tokens</th></tr></thead>
@@ -500,14 +511,14 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <div class="strip" id="otp-stat" style="margin-top:14px"></div>
 <div class="abovelink"><h3 class="serif">Recent login-code requests</h3><a class="xlink" href="https://console.messagecentral.com/studio/reports" target="_blank">&#8599; cross-check on Message Central · Reports</a></div>
 <div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
-  <label style="font-size:13px;color:var(--mute)">Show:</label>
-  <select id="otp-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+  <label style="font-size:13px;color:var(--mut)">Show:</label>
+  <select id="otp-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);font-size:13px;cursor:pointer">
     <option value="all">All time</option>
     <option value="today">Today</option>
     <option value="week">This week</option>
     <option value="month">This month</option>
   </select>
-  <span id="otp-count" style="font-size:12px;color:var(--mute)"></span>
+  <span id="otp-count" style="font-size:12px;color:var(--mut)"></span>
 </div>
 <div class="twrap"><table>
 <thead><tr><th>Time</th><th>Phone</th><th>Status</th><th>Provider</th><th>Attempts</th></tr></thead>
@@ -778,7 +789,7 @@ function renderOverview(){
   document.getElementById("ov-cards").innerHTML =
     card("On site now", onsiteConnected ? cfg.on_site_now : "—",
          "Connect GA4 for live visitors", '<span class="badge b-warn">not connected</span>', "ok") +
-    card("Revenue today", inr(t.revenue_inr), "Real paid reports", t.paid_count, "ok") +
+    card("Revenue (since launch)", inr(t.revenue_inr), "Real paid reports", t.paid_count, "ok") +
     card("Reports", t.paid_count, "Real paid (test excl.)", t.test_count||0, "ok") +
     card("Shortest runway", low ? ("runs out "+esc(low.sustain_date||("~"+low.runway_days+"d"))) : "—",
          low?esc(low.name):"—", low?esc(low.balance):"—", lowState);
@@ -837,7 +848,7 @@ function runsumHtml(){
 function loadDeliveries(){
   api("/api/admin/deliveries").then(function(d){
     var all = d.deliveries || [];
-    var rows = all.filter(function(r){ return r.exclude_reason !== "team" && r.exclude_reason !== "pass"; });
+    var rows = all.filter(function(r){ return !r.is_test; });
     var teamCount = all.length - rows.length;
     var delivered = rows.filter(function(r){ return r.status==="delivered"||r.status==="read"||r.status==="sent"; }).length;
     var pending = rows.filter(function(r){ return r.status==="pending"||r.status==="failed"; }).length;
@@ -902,36 +913,63 @@ function _payRenderPage(){
   var pager = document.getElementById("pay-pager");
   if(pager){
     if(pages <= 1){ pager.innerHTML = ""; return; }
-    var h = '<button onclick="_payPage=0;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#171;</button>';
-    h += '<button onclick="_payPage--;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#8249; Prev</button>';
-    h += '<span style="color:var(--mute)">Page '+(_payPage+1)+' / '+pages+'</span>';
-    h += '<button onclick="_payPage++;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
-    h += '<button onclick="_payPage='+(pages-1)+';_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    var h = '<button onclick="_payPage=0;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_payPage--;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mut)">Page '+(_payPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_payPage++;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_payPage='+(pages-1)+';_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>&#187;</button>';
     pager.innerHTML = h;
   }
 }
 function loadPayments(){
-  api("/api/admin/payments").then(function(d){
-    var live = d.live;
-    var srcLabel = live ? "live" : "offline";
-    document.getElementById("pay-cards").innerHTML =
-      cardSrc("Real revenue", "Razorpay", srcLabel, (d.real_count||0)+' <small>· '+inr(d.real_revenue)+'</small>', "Customers only", inr(d.real_revenue), "ok") +
-      cardSrc("Team payments", "excluded", srcLabel, (d.team_count||0)+' <small>· '+inr(d.team_revenue)+'</small>', "Not counted as revenue", inr(d.team_revenue), "warn") +
-      cardSrc("Total captured", "Razorpay", srcLabel, (d.total_count||0)+' <small>· '+inr((d.real_revenue||0)+(d.team_revenue||0))+'</small>', "All captured payments", "", "ok");
-    _payAll = d.payments || [];
-    _payPage = 0;
-    var filterEl = document.getElementById("pay-filter");
-    if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _payPage=0; _payRenderPage(); }); }
-    _payRenderPage();
-  }).catch(function(){ document.getElementById("pay-cards").innerHTML = '<div class="src1">Razorpay data unavailable.</div>'; });
-  api("/api/stats").then(function(d){
-    var vs = d.variants || [];
-    var vt = document.getElementById("pay-variants");
-    vt.innerHTML = vs.length ? vs.map(function(v){
-      return "<tr><td>"+esc(v.page)+"</td><td>"+(v.kundlis_created||0)+"</td><td>"+
-        (v.paid_reports||0)+"</td><td>"+inr(v.revenue_inr||0)+"</td></tr>";
-    }).join("") : emptyRow(4, "No data yet.");
-  }).catch(function(){ document.getElementById("pay-variants").innerHTML = emptyRow(4, "stats unavailable"); });
+  var ov = STATE.overview;
+  if(!ov || !ov.reports) return;
+  var rows = ov.reports;
+  var real = rows.filter(function(r){ return !r.is_test; });
+  var team = rows.filter(function(r){ return r.is_test; });
+  var real_revenue = real.reduce(function(s,r){ return s + (r.amount_inr||0); }, 0);
+  var team_revenue = team.reduce(function(s,r){ return s + (r.amount_inr||0); }, 0);
+
+  document.getElementById("pay-cards").innerHTML =
+    cardSrc("Real revenue", "DB", "live", real.length+' <small>· '+inr(real_revenue)+'</small>', "Customers only", inr(real_revenue), "ok") +
+    cardSrc("Team payments", "excluded", "live", team.length+' <small>· '+inr(team_revenue)+'</small>', "Not counted as revenue", inr(team_revenue), "warn") +
+    cardSrc("Total captured", "all paid", "live", rows.length+' <small>· '+inr(real_revenue+team_revenue)+'</small>', "All paid reports", "", "ok");
+
+  // Payment history — use DB rows, map to the format _payRenderPage expects
+  _payAll = rows.map(function(r){
+    return {
+      id: r.payment_id || "",
+      amount_inr: r.amount_inr || 0,
+      contact: r.deliver_phone || r.pay_phone || "",
+      method: r.payment_id && r.payment_id.indexOf("pay_")===0 ? "Razorpay" : (r.payment_id && r.payment_id.indexOf("free_pass:")===0 ? "free pass" : "—"),
+      created_at: r.created_at || "",
+      is_team: r.is_test,
+      team_tag: r.team_tag || "",
+      report_id: r.rid
+    };
+  });
+  _payPage = 0;
+  var filterEl = document.getElementById("pay-filter");
+  if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _payPage=0; _payRenderPage(); }); }
+  _payRenderPage();
+
+  // Funnel variant — compute from same DB data, consistent filters
+  var variantMap = {};
+  rows.forEach(function(r){
+    var v = r.product || "direct";
+    if(!variantMap[v]) variantMap[v] = {page: v, kundlis_created: 0, paid_reports: 0, revenue_inr: 0};
+    variantMap[v].kundlis_created += 1;
+    if(!r.is_test){
+      variantMap[v].paid_reports += 1;
+      variantMap[v].revenue_inr += (r.amount_inr || 0);
+    }
+  });
+  var vs = Object.keys(variantMap).map(function(k){ return variantMap[k]; });
+  var vt = document.getElementById("pay-variants");
+  vt.innerHTML = vs.length ? vs.map(function(v){
+    return "<tr><td>"+esc(v.page)+"</td><td>"+v.kundlis_created+"</td><td>"+
+      v.paid_reports+"</td><td>"+inr(v.revenue_inr)+"</td></tr>";
+  }).join("") : emptyRow(4, "No data yet.");
 }
 
 // ---------------------------------------------------------------- Customers
@@ -976,11 +1014,11 @@ function _custRenderPager(key){
   if(pager){
     if(pages <= 1){ pager.innerHTML = ""; return; }
     var pg = _custPage[key];
-    var h = '<button onclick="_custPage.'+key+'=0;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#171;</button>';
-    h += '<button onclick="_custPage.'+key+'--;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#8249; Prev</button>';
-    h += '<span style="color:var(--mute)">'+(start+1)+'–'+Math.min(start+_custPerPage, total)+' of '+total+' · Page '+(pg+1)+' / '+pages+'</span>';
-    h += '<button onclick="_custPage.'+key+'++;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
-    h += '<button onclick="_custPage.'+key+'='+(pages-1)+';_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>&#187;</button>';
+    var h = '<button onclick="_custPage.'+key+'=0;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_custPage.'+key+'--;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mut)">'+(start+1)+'–'+Math.min(start+_custPerPage, total)+' of '+total+' · Page '+(pg+1)+' / '+pages+'</span>';
+    h += '<button onclick="_custPage.'+key+'++;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_custPage.'+key+'='+(pages-1)+';_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>&#187;</button>';
     pager.innerHTML = h;
   }
 }
@@ -1082,7 +1120,7 @@ function openCust(phone){
   var linked = dev ? (dev.linked || []) : [];
   document.getElementById("cmTitle").textContent = phone + (dev ? " (" + (dev.label||"developer") + ")" : "");
   document.getElementById("cmSub").textContent = "Loading...";
-  document.getElementById("cmBody").innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--mute)"><div style="display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite"></div><p style="margin:10px 0 0;font-size:13px">Fetching report history...</p></div>';
+  document.getElementById("cmBody").innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--mut)"><div style="display:inline-block;width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite"></div><p style="margin:10px 0 0;font-size:13px">Fetching report history...</p></div>';
   document.getElementById("custModal").classList.add("open");
   document.body.style.overflow = "hidden";
   var fetches = [api("/api/admin/customer?phone=" + encodeURIComponent(phone))];
@@ -1135,7 +1173,7 @@ function _otpRenderPage(){
   var tb = document.getElementById("otp-log");
   tb.innerHTML = slice.length ? slice.map(function(r){
     var ago = timeAgo(r.time);
-    return "<tr><td>"+fmtTime(r.time)+(ago?"<br><small style=\"color:var(--mute)\">"+ago+"</small>":"")+"</td><td>"+esc(r.phone||"—")+"</td><td>"+
+    return "<tr><td>"+fmtTime(r.time)+(ago?"<br><small style=\"color:var(--mut)\">"+ago+"</small>":"")+"</td><td>"+esc(r.phone||"—")+"</td><td>"+
       otpStatusBadge(r.status)+"</td><td>"+esc(r.provider)+"</td><td>"+(r.attempts||0)+"</td></tr>";
   }).join("") : emptyRow(5, "No login-code requests yet.");
   var countEl = document.getElementById("otp-count");
@@ -1143,11 +1181,11 @@ function _otpRenderPage(){
   var pager = document.getElementById("otp-pager");
   if(pager){
     if(pages <= 1){ pager.innerHTML = ""; return; }
-    var h = '<button onclick="_otpPage=0;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#171;</button>';
-    h += '<button onclick="_otpPage--;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#8249; Prev</button>';
-    h += '<span style="color:var(--mute)">Page '+(_otpPage+1)+' / '+pages+'</span>';
-    h += '<button onclick="_otpPage++;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
-    h += '<button onclick="_otpPage='+(pages-1)+';_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    var h = '<button onclick="_otpPage=0;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_otpPage--;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_otpPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mut)">Page '+(_otpPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_otpPage++;_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_otpPage='+(pages-1)+';_otpRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_otpPage>=pages-1)?' disabled':'')+'>&#187;</button>';
     pager.innerHTML = h;
   }
 }
@@ -1388,7 +1426,7 @@ function _llmRenderPage(){
     var tokens = ((g.input_tokens||0)+(g.output_tokens||0)) || "—";
     var label = esc(g.product||"report") + " · " + esc(g.rid||"").substring(0,8);
     var ago = timeAgo(g.time);
-    return "<tr><td>"+fmtTime(g.time)+(ago?"<br><small style=\"color:var(--mute)\">"+ago+"</small>":"")+"</td><td>"+label+"</td><td><span class=\"badge "+modeCls+"\">"+esc(g.mode||"—")+
+    return "<tr><td>"+fmtTime(g.time)+(ago?"<br><small style=\"color:var(--mut)\">"+ago+"</small>":"")+"</td><td>"+label+"</td><td><span class=\"badge "+modeCls+"\">"+esc(g.mode||"—")+
       "</span></td><td>"+(g.latency_s||"—")+"s</td><td>"+tokens+"</td></tr>";
   }).join("") : emptyRow(5, "No report generations logged yet. The table fills automatically when a customer buys a report.");
   var countEl = document.getElementById("llm-count");
@@ -1396,11 +1434,11 @@ function _llmRenderPage(){
   var pager = document.getElementById("llm-pager");
   if(pager){
     if(pages <= 1){ pager.innerHTML = ""; return; }
-    var h = '<button onclick="_llmPage=0;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#171;</button>';
-    h += '<button onclick="_llmPage--;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#8249; Prev</button>';
-    h += '<span style="color:var(--mute)">Page '+(_llmPage+1)+' / '+pages+'</span>';
-    h += '<button onclick="_llmPage++;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
-    h += '<button onclick="_llmPage='+(pages-1)+';_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    var h = '<button onclick="_llmPage=0;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_llmPage--;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_llmPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mut)">Page '+(_llmPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_llmPage++;_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_llmPage='+(pages-1)+';_llmRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--body);cursor:pointer"'+((_llmPage>=pages-1)?' disabled':'')+'>&#187;</button>';
     pager.innerHTML = h;
   }
 }
@@ -1427,7 +1465,7 @@ function renderLlm(c){
   if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _llmPage=0; _llmRenderPage(); }); }
   _llmRenderPage();
 }
-var _opsWatcher=[], _opsRobot=[], _opsRollbacks=[], _opsWatcherPage=0, _opsRobotPage=0, _opsRbPage=0, _opsPerPage=15;
+var _opsWatcher=[], _opsRobot=[], _opsRollbacks=[], _opsDeploys=[], _opsWatcherPage=0, _opsRobotPage=0, _opsRbPage=0, _opsDeployPage=0, _opsPerPage=15;
 function _opsFilter(arr, filterId){
   var f = document.getElementById(filterId).value;
   if(f==="all") return arr;
@@ -1487,20 +1525,37 @@ function renderOpsRollbacks(){
     "_opsRbPage=Math.min("+(total-1)+",_opsRbPage+1);renderOpsRollbacks()",
     start===0, start+_opsPerPage>=filtered.length);
 }
+function renderOpsDeploys(){
+  var filtered = _opsFilter(_opsDeploys, "ops-deploy-filter");
+  var start = _opsDeployPage * _opsPerPage;
+  var page = filtered.slice(start, start + _opsPerPage);
+  document.getElementById("ops-deploy-rows").innerHTML = page.length ? page.map(function(r){
+    var ver = r.version || r.to_ver || "—";
+    return "<tr><td>"+esc(timeAgo(r.time))+"<br><small style='color:var(--mut)'>"+esc(fmtTime(r.time))+"</small></td>"+
+      "<td>"+statusBadge(r.status)+"</td><td>"+esc(ver)+"</td>"+
+      "<td>"+esc(r.detail||"—")+"</td><td>"+esc(r.severity||"—")+"</td></tr>";
+  }).join("") : emptyRow(5, "No deploy events recorded yet.");
+  var total = Math.ceil(filtered.length / _opsPerPage);
+  document.getElementById("ops-deploy-pag").innerHTML = _opsPag(_opsDeployPage, total,
+    "_opsDeployPage=Math.max(0,_opsDeployPage-1);renderOpsDeploys()",
+    "_opsDeployPage=Math.min("+(total-1)+",_opsDeployPage+1);renderOpsDeploys()",
+    start===0, start+_opsPerPage>=filtered.length);
+}
 function renderOps(){
   document.getElementById("ops-cards").innerHTML =
-    cardSrc("Watcher", "deep health · 3×/day", "", "—", "Checks", "DB, PDF, OTP", "warn") +
-    cardSrc("Robot customer", "E2E · 3×/day", "", "—", "Last run", "loading…", "warn") +
+    cardSrc("Monitor — Phase A", "deep health", "", "—", "Checks", "DB, PDF, OTP", "warn") +
+    cardSrc("Monitor — Phase B", "E2E journey", "", "—", "Last run", "loading…", "warn") +
     cardSrc("Mechanic", "auto-rollback", "", "—", "Armed", "no", "warn");
   document.getElementById("ops-health-lights").innerHTML = '<span style="color:var(--mut)">Running live health checks…</span>';
   document.getElementById("ops-watcher-rows").innerHTML = emptyRow(5, "Loading…");
   document.getElementById("ops-robot-rows").innerHTML = emptyRow(5, "Loading…");
   document.getElementById("ops-rollbacks").innerHTML = emptyRow(5, "Loading…");
+  document.getElementById("ops-deploy-rows").innerHTML = emptyRow(5, "Loading…");
   api("/api/admin/ops_health").then(function(d){
     var lights = (d.checks||[]).map(function(ch){
       var col = ch.ok ? "var(--ok)" : "var(--crit)";
       var label = ch.ok ? "OK" : "DOWN";
-      return '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border)">'+
+      return '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line)">'+
         '<span style="width:10px;height:10px;border-radius:50%;background:'+col+'"></span>'+
         '<b>'+esc(ch.name)+'</b> <span style="font-size:12px;color:'+col+'">'+label+'</span></span>';
     }).join("");
@@ -1510,19 +1565,23 @@ function renderOps(){
     var lr = d.last_robot;
     var lrb = d.last_rollback;
     document.getElementById("ops-cards").innerHTML =
-      cardSrc("Watcher", "deep health · 3×/day", "", allOk ? "ALL OK" : "ISSUE", "Live check right now", allOk ? "all checks pass" : "one or more failing", allOk ? "ok" : "crit") +
-      cardSrc("Robot customer", "E2E · 3×/day", "", lr ? esc(lr.status||"—") : "no runs", "Last run", lr ? timeAgo(lr.time) : "never", lr && lr.status==="pass" ? "ok" : "warn") +
+      cardSrc("Monitor — Phase A", "deep health", "", allOk ? "ALL OK" : "ISSUE", "Live check right now", allOk ? "all checks pass" : "one or more failing", allOk ? "ok" : "crit") +
+      cardSrc("Monitor — Phase B", "E2E journey", "", lr ? esc(lr.status||"—") : "no runs", "Last run", lr ? timeAgo(lr.time) : "never", lr && lr.status==="pass" ? "ok" : "warn") +
       cardSrc("Mechanic", "auto-rollback", "", lrb ? esc(lrb.status||"—") : "no rollbacks", "Last rollback", lrb ? timeAgo(lrb.time) : "never", lrb ? "warn" : "ok");
     _opsWatcher = d.watcher_events || [];
     _opsRobot = d.robot_events || [];
     _opsRollbacks = d.rollbacks || [];
+    _opsDeploys = d.deploy_events || [];
     renderOpsWatcher();
     renderOpsRobot();
     renderOpsRollbacks();
+    renderOpsDeploys();
   }).catch(function(e){
     document.getElementById("ops-health-lights").innerHTML = '<span style="color:var(--crit)">Could not load ops health: '+esc(e.message)+'</span>';
-    document.getElementById("ops-runs").innerHTML = emptyRow(5, "Could not load run history.");
+    document.getElementById("ops-watcher-rows").innerHTML = emptyRow(5, "Could not load run history.");
+    document.getElementById("ops-robot-rows").innerHTML = emptyRow(5, "Could not load run history.");
     document.getElementById("ops-rollbacks").innerHTML = emptyRow(5, "Could not load rollback history.");
+    document.getElementById("ops-deploy-rows").innerHTML = emptyRow(5, "Could not load deploy history.");
   });
 }
 function setCur(cur){

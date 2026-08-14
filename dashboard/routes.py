@@ -237,16 +237,22 @@ def install(app, ctx):
         team_labels = _team_label_map_from(store.team_all(db))
         with db() as c:
             rows = c.execute(
-                "SELECT id, created_at, payload, phone, user_phone, payment_id "
+                "SELECT id, created_at, payload, phone, user_phone, payment_id, "
+                "amount_paise "
                 "FROM reports WHERE paid=1 ORDER BY created_at DESC"
             ).fetchall()
         out = []
-        for rid, created_at, payload_json, pay_phone, deliver_phone, payment_id in rows:
+        for row in rows:
+            rid, created_at, payload_json, pay_phone, deliver_phone, payment_id = row[:6]
+            stored_amount = row[6] if len(row) > 6 else None
             try:
                 payload = json.loads(payload_json) if payload_json else {}
             except (TypeError, ValueError):
                 payload = {}
-            amount_inr = order_amount_paise({"payload": payload}) // 100
+            if stored_amount is not None:
+                amount_inr = stored_amount // 100
+            else:
+                amount_inr = order_amount_paise({"payload": payload}) // 100
             st = statuses.get(rid) or {}
             reason = _classify_exclusion(created_at, deliver_phone, pay_phone,
                                          _payload_email(payload),
@@ -388,21 +394,25 @@ def install(app, ctx):
         with db() as c:
             if q:
                 rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
+                    "SELECT id, created_at, payload, phone, user_phone, paid, "
+                    "payment_id, amount_paise "
                     "FROM reports WHERE user_phone LIKE ? OR phone LIKE ? "
                     "ORDER BY created_at DESC",
                     (like, like),
                 ).fetchall()
             else:
                 rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
+                    "SELECT id, created_at, payload, phone, user_phone, paid, "
+                    "payment_id, amount_paise "
                     "FROM reports WHERE "
                     "(user_phone IS NOT NULL AND user_phone <> '') "
                     "OR (phone IS NOT NULL AND phone <> '') "
                     "ORDER BY created_at DESC"
                 ).fetchall()
         all_phones = {}
-        for rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id in rows:
+        for row in rows:
+            rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id = row[:7]
+            stored_amount = row[7] if len(row) > 7 else None
             phone = (deliver_phone or pay_phone or "").strip()
             if not phone:
                 continue
@@ -433,7 +443,10 @@ def install(app, ctx):
                 entry["paid"] += 1
             if is_real_pay:
                 entry["_has_real_pay"] = True
-                entry["spend_inr"] += order_amount_paise({"payload": payload}) // 100
+                if stored_amount is not None:
+                    entry["spend_inr"] += stored_amount // 100
+                else:
+                    entry["spend_inr"] += order_amount_paise({"payload": payload}) // 100
         customers = []
         testers = []
         for e in all_phones.values():
@@ -452,12 +465,12 @@ def install(app, ctx):
                     params.extend([f"%{tp}%", f"%{tp}%"])
                 params.append("pay_%")
                 rp = c.execute(
-                    "SELECT user_phone, phone, payload FROM reports "
+                    "SELECT user_phone, phone, payload, amount_paise FROM reports "
                     "WHERE (" + " OR ".join(likes) + ") "
                     "AND payment_id LIKE ?",
                     tuple(params),
                 ).fetchall()
-                for uph, pph, payload_json in rp:
+                for uph, pph, payload_json, dev_stored_amt in rp:
                     matched = None
                     for tp in team_phones:
                         if tp in (uph or "") or tp in (pph or ""):
@@ -465,11 +478,14 @@ def install(app, ctx):
                             break
                     if not matched:
                         continue
-                    try:
-                        pl = json.loads(payload_json) if payload_json else {}
-                    except (TypeError, ValueError):
-                        pl = {}
-                    amt = order_amount_paise({"payload": pl}) // 100
+                    if dev_stored_amt is not None:
+                        amt = dev_stored_amt // 100
+                    else:
+                        try:
+                            pl = json.loads(payload_json) if payload_json else {}
+                        except (TypeError, ValueError):
+                            pl = {}
+                        amt = order_amount_paise({"payload": pl}) // 100
                     entry = dev_spend.setdefault(matched, {"spend_inr": 0, "paid_count": 0})
                     entry["spend_inr"] += amt
                     entry["paid_count"] += 1
@@ -537,18 +553,24 @@ def install(app, ctx):
         statuses = store.all_statuses(db)
         with db() as c:
             rows = c.execute(
-                "SELECT id, created_at, payload, phone, user_phone, paid, payment_id "
+                "SELECT id, created_at, payload, phone, user_phone, paid, "
+                "payment_id, amount_paise "
                 "FROM reports WHERE user_phone LIKE ? OR phone LIKE ? "
                 "ORDER BY created_at DESC",
                 (like, like),
             ).fetchall()
         history = []
-        for rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id in rows:
+        for row in rows:
+            rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id = row[:7]
+            stored_amount = row[7] if len(row) > 7 else None
             try:
                 payload = json.loads(payload_json) if payload_json else {}
             except (TypeError, ValueError):
                 payload = {}
-            amount_inr = order_amount_paise({"payload": payload}) // 100
+            if stored_amount is not None:
+                amount_inr = stored_amount // 100
+            else:
+                amount_inr = order_amount_paise({"payload": payload}) // 100
             st = statuses.get(rid) or {}
             reason = _classify_exclusion(created_at, deliver_phone, pay_phone,
                                          _payload_email(payload),
@@ -714,6 +736,22 @@ def install(app, ctx):
         except Exception:
             otp_ok = False
         checks.append({"name": "OTP provider", "ok": otp_ok})
+        try:
+            pdf_url = base + "/api/pdf_health?key=" + (_admin_secret() or "")
+            r = urllib.request.urlopen(pdf_url, timeout=15)
+            pdf_data = json.loads(r.read().decode())
+            pdf_ok = pdf_data.get("render_ok", False)
+        except Exception:
+            pdf_ok = False
+        checks.append({"name": "PDF engine", "ok": pdf_ok})
+        try:
+            llm_url = base + "/api/admin/llm_health?key=" + (_admin_secret() or "")
+            r = urllib.request.urlopen(llm_url, timeout=15)
+            llm_data = json.loads(r.read().decode())
+            llm_ok = llm_data.get("ok", False)
+        except Exception:
+            llm_ok = False
+        checks.append({"name": "LLM (Anthropic)", "ok": llm_ok})
         return {
             "checks": checks,
             "all_ok": all(c["ok"] for c in checks),
@@ -910,6 +948,52 @@ def install(app, ctx):
         except ValueError as e:
             raise HTTPException(422, str(e))
         return {"ok": True, "row": row}
+
+    @app.post("/api/admin/backfill_amounts")
+    def admin_backfill_amounts(request: Request, key: str = ""):
+        """One-shot backfill: for every paid report that has a Razorpay payment_id
+        but no stored amount_paise, fetch the amount from Razorpay and store it.
+        Free passes get amount_paise=0. Demo gets amount_paise=0."""
+        _gate(request, key)
+        with db() as c:
+            rows = c.execute(
+                "SELECT id, payment_id FROM reports "
+                "WHERE paid=1 AND amount_paise IS NULL"
+            ).fetchall()
+        updated = 0
+        errors = 0
+        for rid, payment_id in rows:
+            pid = payment_id or ""
+            if pid.startswith("free_pass:") or pid == "demo":
+                with db() as c:
+                    c.execute("UPDATE reports SET amount_paise=0 WHERE id=?", (rid,))
+                updated += 1
+                continue
+            if not pid.startswith("pay_"):
+                with db() as c:
+                    c.execute("UPDATE reports SET amount_paise=0 WHERE id=?", (rid,))
+                updated += 1
+                continue
+            try:
+                import razorpay as _rzp_mod
+                key_id = os.getenv("RAZORPAY_KEY_ID", "") or os.getenv("RZP_KEY_ID", "")
+                key_secret = os.getenv("RAZORPAY_KEY_SECRET", "") or os.getenv("RZP_KEY_SECRET", "")
+                if not (key_id and key_secret):
+                    errors += 1
+                    continue
+                client = _rzp_mod.Client(auth=(key_id, key_secret))
+                pay = client.payment.fetch(pid)
+                amt = pay.get("amount")
+                if amt is not None:
+                    with db() as c:
+                        c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
+                                  (int(amt), rid))
+                    updated += 1
+                else:
+                    errors += 1
+            except Exception:
+                errors += 1
+        return {"backfilled": updated, "errors": errors, "total": len(rows)}
 
     # ------------------------------------------------ OTP login delivery log
     @app.get("/api/admin/otp_logins")
