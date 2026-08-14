@@ -14,6 +14,9 @@ os.environ.setdefault("RATE_LIMIT_ENABLED", "0")
 os.environ.setdefault("DB_PATH", os.path.join(tempfile.mkdtemp(), "reports.db"))
 os.environ.setdefault("RAZORPAY_WEBHOOK_SECRET", "test-webhook-secret")
 os.environ.setdefault("STATS_KEY", "test-stats-key")
+os.environ["ADMIN_KEY"] = ""
+os.environ["DB_HOST"] = ""
+os.environ.setdefault("NARRATIVE_ENABLED", "0")
 
 import pytest
 from fastapi.testclient import TestClient
