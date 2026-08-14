@@ -82,12 +82,22 @@ def _mc_configured():
                 or os.getenv("MESSAGECENTRAL_CUSTOMER_ID", "").strip())
 
 
+def _is_razorpay_id(payment_id):
+    """True only for genuine Razorpay payment IDs (pay_ + 14 alphanumeric)."""
+    pid = payment_id or ""
+    return (pid.startswith("pay_")
+            and len(pid) >= 18
+            and all(c.isalnum() or c in "-_" for c in pid[4:]))
+
+
 def _classify_exclusion(created_at, deliver_phone, pay_phone, email,
                         team_phones, team_emails, payment_id=""):
     """Why (if at all) this paid row is excluded from real revenue.
-    Returns "pre-launch" | "team" | "pass" | "" (empty = a real customer)."""
+    Returns "pre-launch" | "team" | "pass" | "test" | "" (real customer)."""
     if (payment_id or "").startswith("free_pass:") or payment_id == "demo":
         return "pass"
+    if payment_id and not _is_razorpay_id(payment_id):
+        return "test"
     if (created_at or "") < REVENUE_START:
         return "pre-launch"
     if store.norm_phone(deliver_phone) in team_phones or \
@@ -161,12 +171,12 @@ def install(app, ctx):
         return os.getenv("ADMIN_KEY", "") or os.getenv("STATS_KEY", "")
 
     def _valid_admin_secret(key):
-        """Constant-time check of a submitted key against ADMIN_KEY (if set),
-        else against STATS_KEY via the app's own validator (which honours any
-        api.STATS_KEY override in tests)."""
+        """Constant-time check: accept ADMIN_KEY (if set) OR STATS_KEY.
+        Both are valid admin credentials — ADMIN_KEY is an optional override,
+        not a replacement for STATS_KEY."""
         admin_key = os.getenv("ADMIN_KEY", "")
-        if admin_key:
-            return hmac.compare_digest(key or "", admin_key)
+        if admin_key and hmac.compare_digest(key or "", admin_key):
+            return True
         return valid_admin_key(key)
 
     def _b64(raw):
@@ -409,7 +419,7 @@ def install(app, ctx):
                 continue
             tag = _phone_tag(deliver_phone, pay_phone, team_labels, team_phones)
             is_real_pay = (bool(paid)
-                          and not ((payment_id or "").startswith("free_pass:") or payment_id == "demo")
+                          and _is_razorpay_id(payment_id)
                           and (created_at or "") >= REVENUE_START)
             entry = all_phones.setdefault(phone, {
                 "phone": phone, "name": "", "reports": 0, "paid": 0,

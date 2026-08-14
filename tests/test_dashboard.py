@@ -30,7 +30,8 @@ def _make_paid(rid, deliver_phone, pay_phone="9111100001", variant="/milan"):
     """Directly stamp a report paid with a distinct popup (delivery) number vs
     the Razorpay (pay) number, via the app's own module-level helpers."""
     api.store_user_contact(rid, phone=deliver_phone)   # -> reports.user_phone
-    api.mark_paid(rid, payment_id="pay_" + rid[:8], phone=pay_phone)  # -> reports.phone
+    slug = rid.replace("-", "")[:10]
+    api.mark_paid(rid, payment_id=f"pay_TEST{slug}", phone=pay_phone)  # -> reports.phone
     # tag the funnel variant so the price/label logic has something to read
     with api._lock, api.db() as c:
         row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
@@ -49,7 +50,7 @@ def test_site_still_serves_existing_route(client):
 def test_admin_routes_locked_without_key(client):
     for path in ("/api/admin/overview", "/api/admin/deliveries",
                  "/api/admin/customers", "/api/admin/customer?phone=9",
-                 "/api/admin/config"):
+                 "/api/admin/payments", "/api/admin/config"):
         assert client.get(path).status_code == 403, path
         assert client.get(path + ("&" if "?" in path else "?") + "key=wrong").status_code == 403, path
     # POST route too
@@ -169,13 +170,14 @@ def test_team_allowlist_excludes_by_phone(client):
     r = client.post(f"/api/admin/team?key={KEY}&pass={KEY}",
                     json={"kind": "phone", "value": "+91 93123-00071", "label": "Dev"})
     assert r.status_code == 200 and r.json()["ok"] is True
-    after = client.get(f"/api/admin/overview?key={KEY}").json()
-    row = next(r for r in after["reports"] if r["rid"] == rid)
-    assert row["is_test"] is True
-    assert row["exclude_reason"] == "team"
-    assert after["totals"]["revenue_inr"] == rev_before - 499   # dropped from revenue
-    # cleanup so the shared DB doesn't carry the entry into other tests
-    client.post(f"/api/admin/team/remove?key={KEY}&pass={KEY}", json={"value": "9312300071"})
+    try:
+        after = client.get(f"/api/admin/overview?key={KEY}").json()
+        row = next(r for r in after["reports"] if r["rid"] == rid)
+        assert row["is_test"] is True
+        assert row["exclude_reason"] == "team"
+        assert after["totals"]["revenue_inr"] == rev_before - 499
+    finally:
+        client.post(f"/api/admin/team/remove?key={KEY}&pass={KEY}", json={"value": "9312300071"})
 
 
 # 10. team add/remove round-trips through the endpoints ----------------------
@@ -536,7 +538,7 @@ def test_forward_message_contains_https_links(client):
 # 20. Customer page empty-query returns reports with only pay-phone (no user_phone)
 def test_customer_empty_query_includes_pay_phone_only(client):
     rid = _new_report(client)
-    api.mark_paid(rid, payment_id="pay_payonly", phone="9700000401")
+    api.mark_paid(rid, payment_id="pay_TEST00payonly0", phone="9700000401")
     cs = client.get(f"/api/admin/customers?key={KEY}").json()["customers"]
     phones = [c["phone"] for c in cs]
     assert any("9700000401" in p for p in phones), \
@@ -644,3 +646,200 @@ def test_ops_health_returns_structure(client):
     assert "watcher_events" in d
     assert "robot_events" in d
     assert "rollbacks" in d
+    assert "deploy_events" in d
+
+
+# ---- Payments (Razorpay) endpoint -------------------------------------------
+def test_payments_endpoint_returns_structure(client):
+    r = client.get(f"/api/admin/payments?key={KEY}")
+    assert r.status_code == 200
+    d = r.json()
+    assert "payments" in d
+    assert "real_revenue" in d
+    assert "team_revenue" in d
+    assert "total_count" in d
+    assert "real_count" in d
+    assert "team_count" in d
+    assert isinstance(d["live"], bool)
+
+
+def test_payments_endpoint_locked(client):
+    assert client.get("/api/admin/payments").status_code == 403
+
+
+# ---- Customers 3-category endpoint -----------------------------------------
+def test_customers_returns_three_categories(client):
+    rid = _new_report(client, phone="9877700001")
+    _make_paid(rid, deliver_phone="9877700002")
+    r = client.get(f"/api/admin/customers?key={KEY}")
+    assert r.status_code == 200
+    d = r.json()
+    assert "customers" in d
+    assert "testers" in d
+    assert "developers" in d
+
+
+def test_customers_pass_users_appear_as_testers(client):
+    rid = _new_report(client, phone="9877700010")
+    api.store_user_contact(rid, phone="9877700011")
+    api.mark_paid(rid, payment_id="free_pass:abc123", phone="9877700010")
+    r = client.get(f"/api/admin/customers?key={KEY}")
+    d = r.json()
+    testers = d["testers"]
+    assert any("9877700011" in t["phone"] for t in testers)
+
+
+def test_customers_team_exclusion_in_developers(client):
+    from dashboard import store
+    store.team_add(api.db, "phone", "9877700020", "TestDev")
+    try:
+        r = client.get(f"/api/admin/customers?key={KEY}")
+        d = r.json()
+        dev_values = [dev["value"] for dev in d["developers"]]
+        assert "9877700020" in dev_values
+    finally:
+        store.team_remove(api.db, "9877700020")
+
+
+def test_deliveries_include_team_tag(client):
+    from dashboard import store
+    store.team_add(api.db, "phone", "9877700030", "QA-lead")
+    try:
+        rid = _new_report(client, phone="9877700030")
+        _make_paid(rid, deliver_phone="9877700030", pay_phone="9877700030")
+        r = client.get(f"/api/admin/deliveries?key={KEY}")
+        rows = r.json()["deliveries"]
+        tagged = [d for d in rows if d.get("team_tag") == "QA-lead"]
+        assert len(tagged) >= 1
+    finally:
+        store.team_remove(api.db, "9877700030")
+
+
+def test_customer_detail_includes_team_tag(client):
+    from dashboard import store
+    store.team_add(api.db, "phone", "9877700040", "Backend")
+    try:
+        rid = _new_report(client, phone="9877700040")
+        _make_paid(rid, deliver_phone="9877700040", pay_phone="9877700040")
+        r = client.get(f"/api/admin/customer?key={KEY}&phone=9877700040")
+        history = r.json()["history"]
+        assert any(h.get("team_tag") == "Backend" for h in history)
+    finally:
+        store.team_remove(api.db, "9877700040")
+
+
+# ---- Robot cleanup endpoint --------------------------------------------------
+
+def test_robot_cleanup_dry_run(client):
+    r = client.get(f"/api/admin/robot_cleanup?key={KEY}")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["dry_run"] is True
+    assert "would_delete" in d
+
+
+def test_robot_cleanup_execute(client):
+    rid = _new_report(client, name="Robot Customer TestBot")
+    r = client.post(f"/api/admin/robot_cleanup?key={KEY}")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["dry_run"] is False
+    assert d["deleted"] >= 1
+
+
+def test_robot_cleanup_requires_key(client):
+    assert client.post("/api/admin/robot_cleanup").status_code == 403
+
+
+# ---- Team link/unlink endpoints ---------------------------------------------
+
+def test_team_link_and_unlink(client):
+    from dashboard import store
+    store.team_add(api.db, "phone", "9877700050", "Primary")
+    store.team_add(api.db, "phone", "9877700051", "Secondary")
+    try:
+        r = client.post(f"/api/admin/team/link?key={KEY}&pass={KEY}",
+                        json={"secondary": "9877700051", "primary": "9877700050"})
+        assert r.status_code == 200
+        assert r.json()["ok"] is True
+        lst = client.get(f"/api/admin/team?key={KEY}&pass={KEY}").json()
+        sec_entry = next(p for p in lst["phones"] if p["value"] == "9877700051")
+        assert sec_entry["linked_to"] == "9877700050"
+        r2 = client.post(f"/api/admin/team/unlink?key={KEY}&pass={KEY}",
+                         json={"value": "9877700051"})
+        assert r2.status_code == 200
+        lst2 = client.get(f"/api/admin/team?key={KEY}&pass={KEY}").json()
+        sec2 = next(p for p in lst2["phones"] if p["value"] == "9877700051")
+        assert sec2.get("linked_to") is None
+    finally:
+        store.team_remove(api.db, "9877700050")
+        store.team_remove(api.db, "9877700051")
+
+
+def test_team_link_rejects_missing_phone(client):
+    r = client.post(f"/api/admin/team/link?key={KEY}&pass={KEY}",
+                    json={"secondary": "0000000000", "primary": "0000000001"})
+    assert r.status_code == 422
+
+
+def test_team_unlink_requires_value(client):
+    r = client.post(f"/api/admin/team/unlink?key={KEY}&pass={KEY}",
+                    json={"value": ""})
+    assert r.status_code == 422
+
+
+# ---- ops_event: kind=rollback, alert, deploy ---------------------------------
+
+def test_ops_event_records_deploy(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "deploy", "status": "pass",
+                          "detail": "Guarded deploy succeeded",
+                          "run_url": "https://github.com/actions/runs/200",
+                          "severity": "info"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
+def test_ops_event_records_rollback(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "rollback", "status": "triggered",
+                          "detail": "2 consecutive failures",
+                          "from_ver": "v20260810", "to_ver": "v20260809",
+                          "severity": "critical"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
+def test_ops_event_records_alert(client):
+    r = client.post(f"/api/admin/ops_event?key={KEY}",
+                    json={"kind": "alert", "status": "sent",
+                          "detail": "test alert event",
+                          "severity": "warning"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
+# ---- Email-based team exclusion from revenue ---------------------------------
+
+def test_team_email_exclusion_from_revenue(client):
+    from dashboard import store
+    rid = _new_report(client)
+    _make_paid(rid, deliver_phone="9312300081", pay_phone="9312300082")
+    with api._lock, api.db() as c:
+        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-07-01T00:00:00", rid))
+        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
+        import json as _json
+        payload = _json.loads(row[0])
+        payload.setdefault("meta", {})["_email"] = "teamtest@example.com"
+        c.execute("UPDATE reports SET payload=? WHERE id=?", (_json.dumps(payload), rid))
+    before = client.get(f"/api/admin/overview?key={KEY}").json()
+    row_b = next(r for r in before["reports"] if r["rid"] == rid)
+    assert row_b["is_test"] is False
+    store.team_add(api.db, "email", "teamtest@example.com", "QA email")
+    try:
+        after = client.get(f"/api/admin/overview?key={KEY}").json()
+        row_a = next(r for r in after["reports"] if r["rid"] == rid)
+        assert row_a["is_test"] is True
+        assert row_a["exclude_reason"] == "team"
+    finally:
+        store.team_remove(api.db, "teamtest@example.com")

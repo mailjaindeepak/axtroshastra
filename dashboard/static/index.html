@@ -32,6 +32,7 @@ h3{font-size:15px;margin:0}
 .tabpage{display:none;animation:fade .18s ease}
 .tabpage.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
 section.tabpage>h2{margin-top:22px}
 .pageintro{color:var(--mut);font-size:13.5px;max-width:74ch;margin:4px 0 4px}
 .strip{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
@@ -197,10 +198,12 @@ tr:last-child td{border-bottom:0}
 .accbody.open{display:block}
 .crow{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;box-shadow:0 3px 14px rgba(90,60,20,.05)}
 .crow:hover{border-color:var(--gold)}
+.crow .cwho{flex:1;min-width:0;cursor:pointer}
 .crow .cwho b{color:var(--ink);font-size:14px}
 .crow .cwho small{display:block;color:var(--mut);font-size:12px}
-.crow .badge{margin-left:auto}
+.crow .badge{flex-shrink:0}
 .crow .arrow{color:var(--gold);font-size:15px}
+.cat-shift{font-size:11px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);border-radius:7px;padding:4px 6px;cursor:pointer;min-width:0;flex-shrink:0}
 .modal{position:fixed;inset:0;z-index:200;display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;background:rgba(30,20,10,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .modal.open{display:flex}
 .modalcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;width:min(720px,96vw);max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(40,25,10,.4)}
@@ -336,19 +339,32 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 <!-- ============ PAYMENTS ============ -->
 <section class="tabpage" id="p-payments">
 <div class="rowbtwn"><h2>Payments</h2><button class="csv" onclick="openTeam()">&#9881; Manage team exclusions</button></div>
-<p class="pageintro">Every captured report payment. Real-customer revenue only &mdash; pre-launch team gateway tests and allowlisted team members are separated out (shown muted, tagged with why). Cross-check totals on the Razorpay dashboard.</p>
+<p class="pageintro">Live payment history from Razorpay (captured payments only). Team members are tagged and excluded from real revenue. Cross-check on the Razorpay dashboard.</p>
 <div class="cards trio" id="pay-cards"></div>
 <div class="abovelink"><h3 class="serif">By funnel variant</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay · Payments</a></div>
 <div class="twrap"><table>
 <thead><tr><th>Funnel / page</th><th>Kundlis created</th><th>Paid reports</th><th>Revenue</th></tr></thead>
 <tbody id="pay-variants"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
 </table></div>
-<div class="abovelink"><h3 class="serif">Payment history &mdash; captured reports</h3></div>
+<div class="abovelink"><h3 class="serif">Razorpay payment history &mdash; captured</h3><a class="xlink" href="https://dashboard.razorpay.com/app/payments" target="_blank">&#8599; cross-check on Razorpay</a></div>
+<div style="display:flex;align-items:center;gap:12px;margin:8px 0 4px">
+  <label style="font-size:13px;color:var(--mute)">Show:</label>
+  <select id="pay-filter" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:13px;cursor:pointer">
+    <option value="all">All</option>
+    <option value="real">Customers only</option>
+    <option value="team">Team only</option>
+    <option value="today">Today</option>
+    <option value="week">This week</option>
+    <option value="month">This month</option>
+  </select>
+  <span id="pay-count" style="font-size:12px;color:var(--mute)"></span>
+</div>
 <div class="twrap"><table>
-<thead><tr><th>Time</th><th>Amount</th><th>Product</th><th>Status</th><th>Contact (popup #)</th></tr></thead>
+<thead><tr><th>Time</th><th>Amount</th><th>Method</th><th>Contact</th><th>Payment ID</th></tr></thead>
 <tbody id="pay-history"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
 </table></div>
-<div class="how"><b>How to use this:</b> the cards split <b>real</b> revenue from team gateway-testing. The funnel table shows which page drives paid reports; the history is every captured report (newest first). Cross-check against Razorpay when a number looks off.</div>
+<div id="pay-pager" style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
+<div class="how"><b>How to use this:</b> the cards split <b>real</b> revenue from team-member payments. The history is every captured Razorpay payment (newest first). Team members show a tag badge next to their contact number. Cross-check against Razorpay when a number looks off.</div>
 </section>
 
 <!-- ============ MONEY & FEASIBILITY ============ -->
@@ -504,11 +520,21 @@ footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(
 
 <!-- ============ CUSTOMERS ============ -->
 <section class="tabpage" id="p-customers">
-<h2>Customers &mdash; look up by number</h2>
-<p class="pageintro">Search a phone number, then tap a customer to open their full history &mdash; every payment, every report, and whether they actually received it. Matches both the popup number and the Razorpay number.</p>
+<h2>Customers</h2>
+<p class="pageintro">Three categories: real paying customers (Razorpay), testers (free-pass unlocks), and developers (team exclusion list). Search by phone number across all categories.</p>
 <div class="searchbar"><input id="cust-q" type="text" placeholder="🔍  Search by phone number (e.g. 9967124332)"></div>
-<div class="acc" id="cust-list"></div>
-<div class="how"><b>How to use this:</b> type a number &rarr; tap the customer &rarr; a popup opens over a blurred background with their full history (payment, report, delivery status). Forward any report, or confirm whether a &ldquo;didn&rsquo;t receive&rdquo; complaint is genuine.</div>
+<div class="tabs" style="margin-top:10px;border:0;padding:0">
+  <button class="tab active" data-ct="customers" onclick="switchCustTab(this)">Customers</button>
+  <button class="tab" data-ct="testers" onclick="switchCustTab(this)">Testers</button>
+  <button class="tab" data-ct="developers" onclick="switchCustTab(this)">Developers</button>
+</div>
+<div id="cust-customers" class="acc"></div>
+<div id="cust-customers-pager" style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
+<div id="cust-testers" class="acc" style="display:none"></div>
+<div id="cust-testers-pager" style="display:none;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
+<div id="cust-developers" class="acc" style="display:none"></div>
+<div id="cust-developers-pager" style="display:none;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font-size:13px"></div>
+<div class="how"><b>How to use this:</b> <b>Customers</b> = real Razorpay payers (not team). <b>Testers</b> = unlocked via free pass (no payment). <b>Developers</b> = phone/email on the team exclusion list. Tap any row to open their full history.</div>
 <div class="modal" id="custModal" onclick="if(event.target===this)closeCust()">
   <div class="modalcard">
     <div class="modalhead"><div><b id="cmTitle"></b><small id="cmSub"></small></div><button class="modalclose" onclick="closeCust()" aria-label="Close">&times;</button></div>
@@ -639,6 +665,10 @@ function excludeTag(r){
   var why = r.exclude_reason || "test";
   return ' <span class="badge b-warn">'+esc(why)+'</span>';
 }
+function teamBadge(tag){
+  if(!tag) return "";
+  return ' <span class="badge b-warn">'+esc(tag)+'</span>';
+}
 function copyBtn(rid, msg){
   return '<a class="xlink" href="#" onclick="copyMsg(this);return false;" data-rid="'+esc(rid)+'" '+
          'data-msg="'+esc(msg)+'">Copy message &#8599;</a>';
@@ -731,12 +761,11 @@ function renderOverview(){
     '<small>'+t.paid_count+' real paid · '+(t.test_count||0)+' team gateway tests excluded</small></div></div>';
   document.getElementById("ov-attn").innerHTML = r1 + r2 + r3;
 
-  // --- Paid but NOT delivered table (test rows muted + tagged, not counted) ---
+  // --- Paid but NOT delivered table (team/pass excluded, only real customers) ---
   var tb = document.getElementById("ov-undelivered");
-  tb.innerHTML = undelivered.length ? undelivered.map(function(r){
-    var mute = r.is_test ? ' style="opacity:.5"' : "";
-    return "<tr"+mute+"><td>"+fmtTime(r.created_at)+"</td><td>"+esc(r.deliver_phone||"—")+"</td><td>"+
-      esc(r.rid)+excludeTag(r)+"</td><td>"+statusBadge(r.status)+"</td><td>"+
+  tb.innerHTML = realUndeliv.length ? realUndeliv.map(function(r){
+    return "<tr><td>"+fmtTime(r.created_at)+"</td><td>"+esc(r.deliver_phone||"—")+teamBadge(r.team_tag)+"</td><td>"+
+      esc(r.rid)+"</td><td>"+statusBadge(r.status)+"</td><td>"+
       copyBtn(r.rid, r.forward_message)+" &middot; "+markBtns(r.rid)+"</td></tr>";
   }).join("") : emptyRow(5, "Nothing pending — all real paid reports are delivered.");
 
@@ -807,20 +836,23 @@ function runsumHtml(){
 // ---------------------------------------------------------------- Delivery
 function loadDeliveries(){
   api("/api/admin/deliveries").then(function(d){
-    var rows = d.deliveries || [];
+    var all = d.deliveries || [];
+    var rows = all.filter(function(r){ return r.exclude_reason !== "team" && r.exclude_reason !== "pass"; });
+    var teamCount = all.length - rows.length;
     var delivered = rows.filter(function(r){ return r.status==="delivered"||r.status==="read"||r.status==="sent"; }).length;
-    var pending = rows.filter(function(r){ return (r.status==="pending"||r.status==="failed") && !r.is_test; }).length;
+    var pending = rows.filter(function(r){ return r.status==="pending"||r.status==="failed"; }).length;
     document.getElementById("dl-cards").innerHTML =
-      cardSrc("Delivered", "Twilio", "", delivered, "of "+rows.length+" paid", delivered, "ok") +
+      cardSrc("Delivered", "Twilio", "", delivered, "of "+rows.length+" real", delivered, "ok") +
       cardSrc("Awaiting send", "need manual send", "", pending, "customers paid, no report", pending?"action":"none", pending?"crit":"ok") +
-      cardSrc("Delivery target", "always popup #", "", "user_phone", "never the Razorpay number", "rule", "warn");
+      cardSrc("Delivery target", "always popup #", "", "user_phone", "never the Razorpay number", "rule", "warn") +
+      (teamCount ? cardSrc("Team excluded", "hidden here", "", teamCount, "team/pass deliveries filtered out", "", "ok") : "");
     var tb = document.getElementById("dl-log");
     var firstPending = null;
     tb.innerHTML = rows.length ? rows.map(function(r){
-      if(!firstPending && (r.status==="pending"||r.status==="failed") && !r.is_test) firstPending = r;
-      var mute = r.is_test ? ' style="opacity:.5"' : "";
-      return "<tr"+mute+"><td>"+fmtTime(r.created_at)+"</td><td>"+esc(r.pay_phone||"—")+"</td><td>"+
-        esc(r.deliver_phone||"—")+"</td><td>"+esc(r.rid)+excludeTag(r)+"</td><td>"+
+      if(!firstPending && (r.status==="pending"||r.status==="failed")) firstPending = r;
+      var tag = teamBadge(r.team_tag);
+      return "<tr><td>"+fmtTime(r.created_at)+"</td><td>"+esc(r.pay_phone||"—")+tag+"</td><td>"+
+        esc(r.deliver_phone||"—")+tag+"</td><td>"+esc(r.rid)+"</td><td>"+
         statusBadge(r.status)+"</td><td>"+copyBtn(r.rid, r.forward_message)+" &middot; "+markBtns(r.rid)+"</td></tr>";
     }).join("") : emptyRow(6, "No paid reports yet.");
     // auto-fill the ready-to-forward card with the first pending row
@@ -839,23 +871,59 @@ function loadDeliveries(){
 function copyFwd(){ if(STATE.fwd && navigator.clipboard) navigator.clipboard.writeText(STATE.fwd); }
 
 // ---------------------------------------------------------------- Payments
-function loadPayments(){
-  var ov = STATE.overview;
-  var t = (ov && ov.totals) || {};
-  document.getElementById("pay-cards").innerHTML =
-    cardSrc("Captured (real)", "post go-live", "", (t.paid_count||0)+' <small>· '+inr(t.revenue_inr)+'</small>', "Real customers", inr(t.revenue_inr), "ok") +
-    cardSrc("Team gateway tests", "excluded", "", (t.test_count||0)+' <small>· '+inr(t.test_revenue_inr)+'</small>', "Not counted as revenue", inr(t.test_revenue_inr), "warn") +
-    cardSrc("Delivery target", "popup #", "", "user_phone", "never the Razorpay number", "rule", "ok");
-  // history table = real captured reports (live)
-  var rows = (ov && ov.reports) || [];
+var _payAll = [], _payPage = 0, _payPerPage = 15;
+function _payFiltered(){
+  var f = document.getElementById("pay-filter").value;
+  var rows = _payAll;
+  if(f==="real") return rows.filter(function(p){ return !p.is_team; });
+  if(f==="team") return rows.filter(function(p){ return p.is_team; });
+  if(f==="all") return rows;
+  var now = new Date(), cutoff;
+  if(f==="today"){ cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if(f==="week"){ cutoff = new Date(now.getTime() - 7*864e5); }
+  else { cutoff = new Date(now.getFullYear(), now.getMonth(), 1); }
+  return rows.filter(function(p){ return new Date(p.created_at) >= cutoff; });
+}
+function _payRenderPage(){
+  var rows = _payFiltered();
+  var total = rows.length, pages = Math.ceil(total / _payPerPage) || 1;
+  if(_payPage >= pages) _payPage = pages - 1;
+  if(_payPage < 0) _payPage = 0;
+  var start = _payPage * _payPerPage, slice = rows.slice(start, start + _payPerPage);
   var tb = document.getElementById("pay-history");
-  tb.innerHTML = rows.length ? rows.map(function(r){
-    var mute = r.is_test ? ' style="opacity:.5"' : "";
-    return "<tr"+mute+"><td>"+fmtTime(r.created_at)+"</td><td>"+inr(r.amount_inr)+"</td><td>"+
-      esc(r.product)+excludeTag(r)+"</td><td><span class=\"badge b-ok\">captured</span></td><td>"+
-      esc(r.deliver_phone||"—")+"</td></tr>";
-  }).join("") : emptyRow(5, "No captured reports yet.");
-  // funnel-variant breakdown (live, /api/stats)
+  tb.innerHTML = slice.length ? slice.map(function(p){
+    var mute = p.is_team ? ' style="opacity:.5"' : "";
+    var contact = esc(p.contact||"—") + teamBadge(p.team_tag);
+    return "<tr"+mute+"><td>"+fmtTime(p.created_at)+"</td><td>"+inr(p.amount_inr)+"</td><td>"+
+      esc(p.method||"—")+"</td><td>"+contact+"</td><td>"+esc(p.id||"—")+"</td></tr>";
+  }).join("") : emptyRow(5, "No payments match this filter.");
+  var countEl = document.getElementById("pay-count");
+  if(countEl) countEl.textContent = total ? (start+1)+"–"+Math.min(start+_payPerPage, total)+" of "+total : "";
+  var pager = document.getElementById("pay-pager");
+  if(pager){
+    if(pages <= 1){ pager.innerHTML = ""; return; }
+    var h = '<button onclick="_payPage=0;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_payPage--;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mute)">Page '+(_payPage+1)+' / '+pages+'</span>';
+    h += '<button onclick="_payPage++;_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_payPage='+(pages-1)+';_payRenderPage()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((_payPage>=pages-1)?' disabled':'')+'>&#187;</button>';
+    pager.innerHTML = h;
+  }
+}
+function loadPayments(){
+  api("/api/admin/payments").then(function(d){
+    var live = d.live;
+    var srcLabel = live ? "live" : "offline";
+    document.getElementById("pay-cards").innerHTML =
+      cardSrc("Real revenue", "Razorpay", srcLabel, (d.real_count||0)+' <small>· '+inr(d.real_revenue)+'</small>', "Customers only", inr(d.real_revenue), "ok") +
+      cardSrc("Team payments", "excluded", srcLabel, (d.team_count||0)+' <small>· '+inr(d.team_revenue)+'</small>', "Not counted as revenue", inr(d.team_revenue), "warn") +
+      cardSrc("Total captured", "Razorpay", srcLabel, (d.total_count||0)+' <small>· '+inr((d.real_revenue||0)+(d.team_revenue||0))+'</small>', "All captured payments", "", "ok");
+    _payAll = d.payments || [];
+    _payPage = 0;
+    var filterEl = document.getElementById("pay-filter");
+    if(filterEl && !filterEl._bound){ filterEl._bound = true; filterEl.addEventListener("change", function(){ _payPage=0; _payRenderPage(); }); }
+    _payRenderPage();
+  }).catch(function(){ document.getElementById("pay-cards").innerHTML = '<div class="src1">Razorpay data unavailable.</div>'; });
   api("/api/stats").then(function(d){
     var vs = d.variants || [];
     var vt = document.getElementById("pay-variants");
@@ -868,6 +936,10 @@ function loadPayments(){
 
 // ---------------------------------------------------------------- Customers
 var CUST_TIMER = null;
+var CUST_ACTIVE_TAB = "customers";
+var _custData = {customers:[], testers:[], developers:[]};
+var _custPage = {customers:0, testers:0, developers:0};
+var _custPerPage = 15;
 function bindCustomerSearch(){
   var inp = document.getElementById("cust-q");
   inp.addEventListener("input", function(){
@@ -876,41 +948,161 @@ function bindCustomerSearch(){
   });
   loadCustomers("");
 }
+function switchCustTab(btn){
+  var tabs = btn.parentNode.querySelectorAll(".tab");
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove("active");
+  btn.classList.add("active");
+  var key = btn.getAttribute("data-ct");
+  CUST_ACTIVE_TAB = key;
+  ["customers","testers","developers"].forEach(function(k){
+    document.getElementById("cust-"+k).style.display = k===key ? "" : "none";
+    document.getElementById("cust-"+k+"-pager").style.display = k===key ? "flex" : "none";
+  });
+}
+function _custRenderPager(key){
+  var items = _custData[key] || [];
+  var total = items.length, pages = Math.ceil(total / _custPerPage) || 1;
+  if(_custPage[key] >= pages) _custPage[key] = pages - 1;
+  if(_custPage[key] < 0) _custPage[key] = 0;
+  var start = _custPage[key] * _custPerPage;
+  var slice = items.slice(start, start + _custPerPage);
+  var container = document.getElementById("cust-"+key);
+  if(key === "developers") renderDevList(container, slice);
+  else {
+    var emptyMsg = key === "customers" ? "No customers found." : "No testers found.";
+    renderCustList(container, slice, emptyMsg, key);
+  }
+  var pager = document.getElementById("cust-"+key+"-pager");
+  if(pager){
+    if(pages <= 1){ pager.innerHTML = ""; return; }
+    var pg = _custPage[key];
+    var h = '<button onclick="_custPage.'+key+'=0;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#171;</button>';
+    h += '<button onclick="_custPage.'+key+'--;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg===0)?' disabled':'')+'>&#8249; Prev</button>';
+    h += '<span style="color:var(--mute)">'+(start+1)+'–'+Math.min(start+_custPerPage, total)+' of '+total+' · Page '+(pg+1)+' / '+pages+'</span>';
+    h += '<button onclick="_custPage.'+key+'++;_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>Next &#8250;</button>';
+    h += '<button onclick="_custPage.'+key+'='+(pages-1)+';_custRenderPager(\''+key+'\')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer"'+((pg>=pages-1)?' disabled':'')+'>&#187;</button>';
+    pager.innerHTML = h;
+  }
+}
+function renderCustList(container, items, emptyMsg, category){
+  if(!items.length){ container.innerHTML = '<div class="src1" style="padding:8px">'+esc(emptyMsg)+'</div>'; return; }
+  container.innerHTML = items.map(function(c){
+    var badge;
+    if(category === "testers"){
+      badge = c.paid ? '<span class="badge" style="background:#e8d5b7;color:#6b4d1e">'+c.paid+' free pass</span>' : '<span class="badge b-warn">teaser only</span>';
+    } else {
+      badge = c.paid ? '<span class="badge b-ok">'+c.paid+' paid</span>' : '<span class="badge b-warn">unpaid</span>';
+    }
+    var tag = teamBadge(c.team_tag);
+    var moveBtn = '<select class="cat-shift" onchange="shiftCategory(this,\''+esc(c.phone)+'\')" title="Move to another category">' +
+      '<option value="">Move to&hellip;</option>' +
+      '<option value="developer">Developer</option>' +
+      '<option value="tester">Tester</option></select>';
+    return '<div class="crow">'+
+      '<div class="cwho" onclick="openCust(\''+esc(c.phone)+'\')"><b>'+esc(c.phone)+'</b>'+tag+'<small>'+esc(c.name||"—")+' · '+
+      c.reports+' report'+(c.reports>1?"s":"")+' · '+inr(c.spend_inr)+' spent</small></div>'+
+      badge+moveBtn+'<span class="arrow" onclick="openCust(\''+esc(c.phone)+'\')">&#9656;</span></div>';
+  }).join("");
+}
+function renderDevList(container, items){
+  if(!items.length){ container.innerHTML = '<div class="src1" style="padding:8px">No developers in team exclusion list.</div>'; return; }
+  container.innerHTML = items.map(function(d){
+    var icon = d.kind==="email" ? "&#9993;" : "&#9742;";
+    var lbl = d.label ? ' <span class="badge b-warn">'+esc(d.label)+'</span>' : ' <span class="badge" style="background:var(--panel2);color:var(--mut)">no name</span>';
+    var linked = d.linked || [];
+    var linkBadge = linked.length ? ' <span class="badge" style="background:var(--gold);color:#000">+'+linked.length+' linked</span>' : "";
+    var spendLine = d.spend_inr ? ' · <b style="color:var(--gold)">'+inr(d.spend_inr)+' real paid</b> ('+d.paid_count+' Razorpay payment'+(d.paid_count>1?"s":"")+')'  : "";
+    var removeBtn = '<button class="wbtn" onclick="shiftCategory(null,\''+esc(d.value)+'\',\'remove\')" title="Remove from team exclusion" style="font-size:12px;padding:4px 10px">Remove</button>';
+    return '<div class="crow">'+
+      '<div class="cwho" onclick="openCust(\''+esc(d.value)+'\')"><b>'+icon+" "+esc(d.value)+'</b>'+lbl+linkBadge+'<small>'+esc(d.kind)+
+      spendLine+
+      (d.added_at ? " · added "+fmtTime(d.added_at) : "")+'</small></div>'+removeBtn+'</div>';
+  }).join("");
+}
+function shiftCategory(sel, value, action){
+  var target = action || (sel ? sel.value : "");
+  if(!target){ return; }
+  if(sel) sel.value = "";
+  if(target === "developer"){
+    var label = prompt("Label for this team member (e.g. name):", "");
+    if(label === null) return;
+    if(!TEAM_PASS){ TEAM_PASS = prompt("Enter team passcode:",""); if(!TEAM_PASS) return; }
+    fetch("/api/admin/team?" + teamQuery(), {
+      method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({kind:"phone", value:value, label:label})
+    }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(){ loadCustomers(document.getElementById("cust-q").value.trim()); })
+      .catch(function(e){ alert("Could not move: "+e.message); });
+  } else if(target === "remove"){
+    if(!confirm("Remove "+value+" from team exclusion?")) return;
+    if(!TEAM_PASS){ TEAM_PASS = prompt("Enter team passcode:",""); if(!TEAM_PASS) return; }
+    fetch("/api/admin/team/remove?" + teamQuery(), {
+      method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({value:value})
+    }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(){ loadCustomers(document.getElementById("cust-q").value.trim()); })
+      .catch(function(e){ alert("Could not remove: "+e.message); });
+  } else if(target === "tester"){
+    alert("Testers are identified by free-pass payment IDs in the database. To make someone a tester, issue them a free pass.");
+  }
+}
 function loadCustomers(q){
   api("/api/admin/customers?q=" + encodeURIComponent(q)).then(function(d){
-    var list = document.getElementById("cust-list");
-    var cs = d.customers || [];
-    if(!cs.length){ list.innerHTML = '<div class="src1" style="padding:8px">No customers found.</div>'; return; }
-    list.innerHTML = cs.map(function(c){
-      var badge = c.paid ? '<span class="badge b-ok">'+c.paid+' paid</span>' : '<span class="badge b-warn">unpaid</span>';
-      return '<div class="crow" onclick="openCust(\''+esc(c.phone)+'\')">'+
-        '<div class="cwho"><b>'+esc(c.phone)+'</b><small>'+esc(c.name||"—")+' · '+
-        c.reports+' report'+(c.reports>1?"s":"")+' · '+inr(c.spend_inr)+' spent</small></div>'+
-        badge+'<span class="arrow">&#9656;</span></div>';
-    }).join("");
+    _custData.customers = d.customers||[];
+    _custData.testers = d.testers||[];
+    _custData.developers = d.developers||[];
+    _custPage.customers = 0; _custPage.testers = 0; _custPage.developers = 0;
+    _custRenderPager("customers");
+    _custRenderPager("testers");
+    _custRenderPager("developers");
   }).catch(showError);
 }
-function openCust(phone){
-  api("/api/admin/customer?phone=" + encodeURIComponent(phone)).then(function(d){
+function _renderCustModal(phone, d){
     var h = d.history || [];
-    document.getElementById("cmTitle").textContent = phone;
-    document.getElementById("cmSub").textContent = h.length + " report" + (h.length!==1?"s":"");
     var rows = h.map(function(r){
       var act = '<a class="xlink" href="'+esc(r.report_url)+'" target="_blank">View</a> &middot; '+
         '<a class="xlink" href="'+esc(r.pdf_url)+'" target="_blank">PDF</a>';
       if(r.paid) act += ' &middot; ' + copyBtn(r.rid, r.forward_message);
       var mute = r.is_test ? ' style="opacity:.5"' : "";
+      var tag = teamBadge(r.team_tag);
       return "<tr"+mute+"><td>"+fmtTime(r.created_at)+"</td><td>"+esc(r.product)+excludeTag(r)+"</td><td>"+inr(r.amount_inr)+
         "</td><td>"+esc(r.payment_id||"—")+"</td><td>"+esc(r.rid)+"</td><td>"+
-        (r.paid?statusBadge(r.status):'<span class="badge b-warn">unpaid</span>')+"</td><td>"+act+"</td></tr>";
+        (r.paid?statusBadge(r.status):'<span class="badge b-warn">unpaid</span>')+"</td><td>"+
+        esc(r.deliver_phone||"—")+tag+"</td><td>"+act+"</td></tr>";
     }).join("");
-    document.getElementById("cmBody").innerHTML =
-      '<div class="twrap"><table style="min-width:760px"><thead><tr><th>Paid on</th><th>Product</th>'+
-      '<th>Amount</th><th>Payment ID</th><th>Report ID</th><th>Received?</th><th>Action</th></tr></thead>'+
-      '<tbody>'+(rows||'<tr><td colspan="7">No history.</td></tr>')+'</tbody></table></div>';
-    document.getElementById("custModal").classList.add("open");
-    document.body.style.overflow = "hidden";
-  }).catch(showError);
+    return '<div class="twrap"><table style="min-width:860px"><thead><tr><th>Paid on</th><th>Product</th>'+
+      '<th>Amount</th><th>Payment ID</th><th>Report ID</th><th>Received?</th><th>Contact</th><th>Action</th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="8">No history.</td></tr>')+'</tbody></table></div>';
+}
+function openCust(phone){
+  var dev = null;
+  (_custData.developers||[]).forEach(function(d){
+    if(d.value === phone) dev = d;
+  });
+  var linked = dev ? (dev.linked || []) : [];
+  document.getElementById("cmTitle").textContent = phone + (dev ? " (" + (dev.label||"developer") + ")" : "");
+  document.getElementById("cmSub").textContent = "Loading...";
+  document.getElementById("cmBody").innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--mute)"><div style="display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite"></div><p style="margin:10px 0 0;font-size:13px">Fetching report history...</p></div>';
+  document.getElementById("custModal").classList.add("open");
+  document.body.style.overflow = "hidden";
+  var fetches = [api("/api/admin/customer?phone=" + encodeURIComponent(phone))];
+  linked.forEach(function(lk){
+    fetches.push(api("/api/admin/customer?phone=" + encodeURIComponent(lk.value)));
+  });
+  Promise.all(fetches).then(function(results){
+    var mainData = results[0];
+    var totalReports = (mainData.history||[]).length;
+    linked.forEach(function(lk, i){ totalReports += (results[i+1].history||[]).length; });
+    document.getElementById("cmSub").textContent = totalReports + " report" + (totalReports!==1?"s":"") + (linked.length ? " across " + (1+linked.length) + " numbers" : "");
+    var body = '<h4 style="margin:0 0 6px;font-size:14px">&#9742; ' + esc(phone) + '</h4>' + _renderCustModal(phone, mainData);
+    linked.forEach(function(lk, i){
+      var lkLabel = lk.label ? " ("+esc(lk.label)+")" : "";
+      body += '<h4 style="margin:16px 0 6px;font-size:14px">&#8627; Linked: &#9742; ' + esc(lk.value) + lkLabel +
+        (lk.spend_inr ? ' · <b style="color:var(--gold)">'+inr(lk.spend_inr)+'</b>' : "") + '</h4>' +
+        _renderCustModal(lk.value, results[i+1]);
+    });
+    document.getElementById("cmBody").innerHTML = body;
+  }).catch(function(e){ showError(e); closeCust(); });
 }
 function closeCust(){
   document.getElementById("custModal").classList.remove("open");
@@ -1359,7 +1551,7 @@ function showError(e){
 
 // ---------------------------------------------------------------- tabs + boot
 function showTab(name){
-  var tabs = document.querySelectorAll(".tab"), pages = document.querySelectorAll(".tabpage");
+  var tabs = document.querySelectorAll(".tab[data-t]"), pages = document.querySelectorAll(".tabpage");
   tabs.forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-t")===name); });
   pages.forEach(function(x){ x.classList.remove("active"); });
   var p = document.getElementById("p-"+name); if(p) p.classList.add("active");
@@ -1368,7 +1560,7 @@ function showTab(name){
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeCust(); });
 document.addEventListener("DOMContentLoaded", function(){
-  document.querySelectorAll(".tab").forEach(function(b){
+  document.querySelectorAll(".tab[data-t]").forEach(function(b){
     b.addEventListener("click", function(){ showTab(b.getAttribute("data-t")); });
   });
   bindCustomerSearch();
@@ -1476,18 +1668,54 @@ function teamRefresh(){
 }
 function renderTeam(data){
   data = data || { phones: [], emails: [] };
-  function section(title, items){
-    var rows = (items||[]).map(function(it){
+  var phones = data.phones || [];
+  function phoneSection(){
+    if(!phones.length) return '<h3 class="serif" style="margin:10px 0 6px">Phones</h3><div class="src1">None yet.</div>';
+    var rows = phones.map(function(it){
+      var linkInfo = it.linked_to ? ' <span class="badge" style="background:var(--gold);color:#000">linked → '+esc(it.linked_to)+'</span>' : "";
+      var linkOpts = phones.filter(function(p){ return p.value !== it.value; }).map(function(p){
+        return '<option value="'+esc(p.value)+'">'+esc(p.value)+(p.label?" ("+esc(p.label)+")":"")+'</option>';
+      }).join("");
+      var linkDrop = phones.length > 1 ? '<select class="cat-shift" onchange="teamLink(this,\''+esc(it.value)+'\')" style="margin-left:6px"><option value="">Link to&hellip;</option>'+linkOpts+'</select>' : "";
+      var unlinkBtn = it.linked_to ? ' <button class="wbtn" onclick="teamUnlinkPhone(\''+esc(it.value)+'\')" style="font-size:11px;padding:3px 8px">Unlink</button>' : "";
+      return '<div class="accrow" style="cursor:default"><div class="cwho"><b>'+esc(it.value)+
+        '</b><small>'+esc(it.label||"—")+linkInfo+'</small>'+linkDrop+unlinkBtn+'</div>'+
+        '<button class="modalclose" style="width:30px;height:30px;font-size:16px" title="Remove" '+
+        'onclick="teamRemove(\''+esc(it.value)+'\')">&times;</button></div>';
+    }).join("");
+    return '<h3 class="serif" style="margin:10px 0 6px">Phones</h3>'+rows;
+  }
+  function emailSection(){
+    var items = data.emails || [];
+    var rows = items.map(function(it){
       return '<div class="accrow" style="cursor:default"><div class="cwho"><b>'+esc(it.value)+
         '</b><small>'+esc(it.label||"—")+'</small></div>'+
         '<button class="modalclose" style="width:30px;height:30px;font-size:16px" title="Remove" '+
         'onclick="teamRemove(\''+esc(it.value)+'\')">&times;</button></div>';
     }).join("");
-    return '<h3 class="serif" style="margin:10px 0 6px">'+title+'</h3>'+
-      (rows || '<div class="src1">None yet.</div>');
+    return '<h3 class="serif" style="margin:10px 0 6px">Emails</h3>'+(rows||'<div class="src1">None yet.</div>');
   }
-  document.getElementById("teamList").innerHTML =
-    section("Phones", data.phones) + section("Emails", data.emails);
+  document.getElementById("teamList").innerHTML = phoneSection() + emailSection();
+}
+function teamLink(sel, secondary){
+  var primary = sel.value; sel.value = "";
+  if(!primary) return;
+  if(!confirm("Link "+secondary+" under "+primary+"?")) return;
+  fetch("/api/admin/team/link?" + teamQuery(), {
+    method:"POST", credentials:"same-origin", headers:teamHeaders(),
+    body: JSON.stringify({secondary:secondary, primary:primary})
+  }).then(function(r){ if(!r.ok) return r.json().then(function(d){ throw new Error(d.detail||r.status); }); return r.json(); })
+    .then(function(){ teamRefresh(); })
+    .catch(function(e){ alert("Could not link: "+e.message); });
+}
+function teamUnlinkPhone(value){
+  if(!confirm("Unlink "+value+"?")) return;
+  fetch("/api/admin/team/unlink?" + teamQuery(), {
+    method:"POST", credentials:"same-origin", headers:teamHeaders(),
+    body: JSON.stringify({value:value})
+  }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(){ teamRefresh(); })
+    .catch(function(e){ alert("Could not unlink: "+e.message); });
 }
 function teamAdd(){
   var kind = document.getElementById("teamKind").value;

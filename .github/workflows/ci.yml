@@ -155,8 +155,13 @@ jobs:
       - name: Record last-good (pre-deploy) version
         id: lastgood
         run: |
-          LG=$(python -c "from ops import mechanic; print(mechanic.current_version() or '')")
+          LG=$(python -c "import logging; logging.basicConfig(level=logging.DEBUG); from ops import mechanic; print(mechanic.current_version() or '')")
           echo "Current live (rollback target): $LG"
+          if [ -z "$LG" ] || [ "$LG" = "None" ]; then
+            echo "::error::Cannot capture current EB version — refusing to deploy without a rollback target."
+            echo "Check that OPS_EB_ENV and AWS credentials are set correctly in repo secrets."
+            exit 1
+          fi
           echo "label=$LG" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Elastic Beanstalk

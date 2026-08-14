@@ -20,6 +20,8 @@ Razorpay dashboard prerequisites:
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
 import hashlib, hmac, json, logging, os, secrets, sqlite3, threading, time
+from dotenv import load_dotenv
+load_dotenv()
 import dbcompat
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
@@ -157,6 +159,16 @@ def _pdf_is_fetchable(rid: str) -> bool:
         return False
 
 
+def _mark_sent(rid: str):
+    """Auto-record 'sent' in dash_delivery so the dashboard doesn't show 'pending'
+    for reports that Twilio actually accepted."""
+    try:
+        from dashboard.store import set_status
+        set_status(db, rid, "sent", "auto: Twilio accepted")
+    except Exception:
+        pass
+
+
 def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marriage"):
     """Fire-and-forget WhatsApp delivery after payment. Never raises.
 
@@ -223,6 +235,7 @@ def send_whatsapp_report(phone: str, rid: str, name: str, product: str = "marria
                     + "\n\nKoi bhi sawaal ho — bas reply kijiye.")
             client.messages.create(from_=TWILIO_FROM, to=f"whatsapp:{to}",
                                    body=body, **kwargs)
+        _mark_sent(rid)
     except Exception as e:                            # delivery must never break the webhook
         logger.error("[twilio] send failed for %s: %s", rid, e)
 
