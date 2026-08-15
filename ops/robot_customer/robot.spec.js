@@ -44,6 +44,8 @@ const ALL_PAGES = [
   { path: '/hi/marriage',       label: 'Marriage (HI)' },
   { path: '/en/marriage-v2',    label: 'Marriage V2 (EN)' },
   { path: '/hi/marriage-v2',    label: 'Marriage V2 (HI)' },
+  { path: '/en/marriage-v3',    label: 'Marriage V3 Parent (EN)' },
+  { path: '/hi/marriage-v3',    label: 'Marriage V3 Parent (HI)' },
   { path: '/career',            label: 'Career (EN)' },
   { path: '/hinglish/career',   label: 'Career (Hinglish)' },
   { path: '/jeevan',            label: 'Jeevan' },
@@ -216,6 +218,13 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillMarriageV2,
     hasTeaser: false,   // v2 goes straight to Razorpay; no teaser step
+  },
+  {
+    name: 'marriage-v3',
+    paths: { en: '/en/marriage-v3', hi: '/hi/marriage-v3' },
+    form: '#kundliForm',
+    fill: fillMarriageV2,   // identical form structure/IDs to v2 — only copy differs
+    hasTeaser: false,       // same straight-to-Razorpay funnel as v2
   },
   {
     name: 'compatibility',

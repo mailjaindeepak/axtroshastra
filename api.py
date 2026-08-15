@@ -2204,6 +2204,20 @@ def marriage_v2_hi():
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v2.hi.html"), lang="hi")
 
 
+@app.get("/en/marriage-v3", include_in_schema=False)
+def marriage_v3_en():
+    """English marriage-timing landing — parent-voice variant (v3) at
+    /en/marriage-v3. Same direct-to-payment funnel as /en/marriage-v2, copy
+    rewritten for a parent asking about their child's marriage timing."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v3.html"))
+
+
+@app.get("/hi/marriage-v3", include_in_schema=False)
+def marriage_v3_hi():
+    """Hindi (Devanagari) counterpart of /en/marriage-v3."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v3.hi.html"), lang="hi")
+
+
 @app.get("/shaadi", include_in_schema=False)
 def shaadi_redirect(request: Request):
     """Legacy /shaadi → /en/marriage (301 permanent). Preserves query string
