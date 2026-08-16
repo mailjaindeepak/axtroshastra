@@ -1670,7 +1670,8 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career", "/blog",
+    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
+            "/career-business-growth", "/hi/career-business-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -2216,6 +2217,15 @@ def marriage_v3_en():
 def marriage_v3_hi():
     """Hindi (Devanagari) counterpart of /en/marriage-v3."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v3.hi.html"), lang="hi")
+
+
+@app.get("/hi/career-business-growth", include_in_schema=False)
+def career_business_growth_hi():
+    """Hindi (Devanagari) Vyapar (business-growth) landing. The English default
+    is served by the generic /<slug> route (pages/career-business-growth.html);
+    there is no generic /hi/<slug>, so the Devanagari twin needs this explicit
+    route to set lang="hi" (Devanagari nav + report language)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "career-business-growth.hi.html"), lang="hi")
 
 
 @app.get("/shaadi", include_in_schema=False)
