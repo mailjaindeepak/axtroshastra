@@ -241,3 +241,197 @@ WEAK_PERIOD_ACTION = {
         "Don't force a decision that doesn't feel right just because time is passing.",
     ],
 }
+
+# ============================================================ VYAPAR (business)
+# All tables below are authored, deterministic classical framings for the
+# business-growth report (products.compute_vyapar). No LLM, no randomness —
+# same style as WEALTH_2L / HEALTH_6 above.
+
+# ---- Business temperament by lagna / moon sign (0-11) ----
+# type: the one-line temperament label; work: how they run a business (lagna
+# line); gut: money/emotional instinct (moon line); weak: the one weak-spot
+# habit; solo: natural leaning ("solo" or "partner").
+BIZ_TEMPERAMENT = {
+0:{"type":"First-mover operator",
+   "work":"you start fast and lead from the front — you'd rather launch and fix than plan and wait",
+   "gut":"you buy and sell on instinct and speed; boredom, not risk, is your real enemy",
+   "weak":"you start more than you finish — three half-built ventures instead of one completed",
+   "solo":"solo"},
+1:{"type":"Steady value-builder",
+   "work":"you build slowly, hold what you build and compound — patience is your whole edge",
+   "gut":"you trust tangible assets, stock and cash-in-hand over paper promises",
+   "weak":"you hold too long — you miss the exit because letting go feels like loss",
+   "solo":"solo"},
+2:{"type":"Deal-making communicator",
+   "work":"you live on information, contacts and quick turns — you trade ideas as easily as goods",
+   "gut":"you chase many small margins over one big bet; variety keeps you sharp",
+   "weak":"you spread thin — too many deals open, none closed all the way",
+   "solo":"partner"},
+3:{"type":"People-first trader",
+   "work":"you build a business like a family — loyalty, care and repeat customers are your moat",
+   "gut":"your money mood swings with the room; you hoard cash when anxious",
+   "weak":"you take business personally — one harsh client can sink a good week",
+   "solo":"partner"},
+4:{"type":"Brand-led leader",
+   "work":"you lead from the front and put your name on it — reputation is your real product",
+   "gut":"you spend to look the part; visible success matters as much as the balance sheet",
+   "weak":"ego runs the P&L — you resist advice that dents the image",
+   "solo":"solo"},
+5:{"type":"Systems-and-service operator",
+   "work":"you improve everything you touch — process, quality and detail are your advantage",
+   "gut":"you save carefully and cost every rupee; you distrust flash",
+   "weak":"you over-perfect and under-price — you polish while the window closes",
+   "solo":"partner"},
+6:{"type":"Partnership dealmaker",
+   "work":"you think in deals and relationships — you're strongest with the right co-owner beside you",
+   "gut":"you weigh both sides so long the decision passes; fairness is your instinct",
+   "weak":"you avoid the hard 'no' — a bad partner or client stays too long",
+   "solo":"partner"},
+7:{"type":"All-in strategist",
+   "work":"you go deep, play the long game and out-last rivals — you transform a business, not tweak it",
+   "gut":"you keep your cards hidden and your reserves deeper than you admit",
+   "weak":"you hold grudges and secrets — control tightens until it chokes growth",
+   "solo":"solo"},
+8:{"type":"Big-vision expander",
+   "work":"you scale on belief and reach — new markets, new places, bigger swings",
+   "gut":"you bet on growth and worry about the details later; optimism is both fuel and trap",
+   "weak":"you over-promise and over-extend — the vision outruns the cash",
+   "solo":"partner"},
+9:{"type":"Long-game builder",
+   "work":"you climb in decades, not days — structure, discipline and durable assets are your play",
+   "gut":"you're frugal to a fault and plan for the downside first",
+   "weak":"you move too slow and trust too little — caution costs you the early lead",
+   "solo":"solo"},
+10:{"type":"Unconventional systems-builder",
+   "work":"you build at network scale — platforms, communities and models others haven't tried",
+   "gut":"you detach from money emotionally, which helps you take risk but can blur urgency",
+   "weak":"you're so early or so different that the market takes years to arrive",
+   "solo":"partner"},
+11:{"type":"Intuitive creative trader",
+   "work":"you flow with the market and sense demand before the data shows it — imagination is your asset",
+   "gut":"money slips through easily; you give discounts your margins can't afford",
+   "weak":"boundaries blur — you mix generosity with the ledger and lose track",
+   "solo":"partner"}}
+
+# ---- Fitting business sector by 10th lord (career-action planet). ----
+# label: the line-of-work headline; sub: one-line why; types: 3 business
+# families that suit; avoid: what to steer clear of. Keyed by the 7 classical
+# planets (sign lords are always one of these).
+BIZ_SECTOR_10L = {
+"Sun":{"label":"Leadership, Brand or Public-facing work",
+  "sub":"your name and authority carry the sale — put yourself in front of the business",
+  "types":[
+    {"title":"Premium brand & retail","body":"Building a name-led label — where the brand and your reputation ARE the product."},
+    {"title":"Leadership & consulting","body":"Advisory, management or a firm run under your own name and standing."},
+    {"title":"Civic & institution-facing supply","body":"Government-linked contracts, public projects and authority-facing trade."}],
+  "avoid":"silent-partner roles where your name is hidden — you underperform out of the spotlight"},
+"Moon":{"label":"Public, Food or Care businesses",
+  "sub":"you thrive serving the everyday needs of ordinary people, with repeat custom",
+  "types":[
+    {"title":"Food & daily essentials","body":"FMCG, groceries, restaurants — steady demand that renews every day."},
+    {"title":"Care, wellness & hospitality","body":"Services that look after people — health, comfort, guest-facing work."},
+    {"title":"Public-facing retail","body":"Shops and outlets built on loyalty and repeat customers, not one-off deals."}],
+  "avoid":"cold, purely transactional B2B where relationships don't compound over time"},
+"Mars":{"label":"Technical, Property or Competitive trades",
+  "sub":"you win where energy, skill and nerve decide the outcome",
+  "types":[
+    {"title":"Engineering & manufacturing","body":"Tools, machinery, workshops — hands-on trades that reward technical skill."},
+    {"title":"Real estate & construction","body":"Building, developing and dealing in property and land."},
+    {"title":"High-competition trades","body":"Sports, security, or fast trading — arenas where drive and nerve pay."}],
+  "avoid":"slow, consensus-heavy partnerships that blunt your drive and pace"},
+"Mercury":{"label":"Trade, Communication or Advisory",
+  "sub":"buying-selling, information and quick turns are your natural home",
+  "types":[
+    {"title":"Trading & distribution","body":"Wholesale, import-export, dealerships — margin on movement and turnover."},
+    {"title":"Media & communication","body":"Content, marketing, publishing and communication-led services."},
+    {"title":"Advisory & brokerage","body":"Accounting, agency, consulting and brokerage — you sell know-how and access."}],
+  "avoid":"capital-heavy, slow-cycle businesses that punish your restlessness"},
+"Jupiter":{"label":"Advisory, Education or Finance",
+  "sub":"knowledge, trust and counsel are what people pay you for",
+  "types":[
+    {"title":"Education & training","body":"Coaching, courses, institutes — turning what you know into a business."},
+    {"title":"Finance & consulting","body":"Advisory, wealth, finance — trades built on expertise and trust."},
+    {"title":"Publishing, law & ethics-led trade","body":"Reputation-first enterprises where integrity is the moat."}],
+  "avoid":"grey-area, cut-corner trades — reputational risk hits you hardest of all"},
+"Venus":{"label":"Creative, Luxury or Lifestyle trade",
+  "sub":"beauty, comfort and taste are what you sell best",
+  "types":[
+    {"title":"Fashion, jewellery & beauty","body":"Luxury and lifestyle goods where aesthetics drive the price."},
+    {"title":"Design, arts & events","body":"Creative services, entertainment and experience-led businesses."},
+    {"title":"Hospitality & lifestyle retail","body":"Wellness, décor, fine dining — selling comfort and refinement."}],
+  "avoid":"grim, aesthetic-blind commodity trades that drain your spark"},
+"Saturn":{"label":"Manufacturing, Infrastructure or Long-cycle trade",
+  "sub":"you build slow, durable machines that pay out for decades",
+  "types":[
+    {"title":"Manufacturing & supply chain","body":"Heavy industry, production and the long backbone of the economy."},
+    {"title":"Infrastructure & raw materials","body":"Real estate, mining, materials — patient capital, durable returns."},
+    {"title":"Long-contract service","body":"Labour-led and long-tenure service businesses that compound over years."}],
+  "avoid":"fast-fashion, hype-driven bets — you compound, you don't sprint"}}
+
+# ---- Partnership read by 7th lord (partner/other-party planet). ----
+BIZ_PARTNERSHIP_7L = {
+"Sun":{"verdict":"Partner only with a clear pecking order",
+  "blessing":"a partner adds reach and public weight to your name",
+  "caution":"two egos, one throne — power struggles surface if roles blur",
+  "who":"someone senior or complementary who won't compete for the spotlight"},
+"Moon":{"verdict":"Partnership suits you emotionally",
+  "blessing":"a trusted partner steadies your moods and shares the daily load",
+  "caution":"you pick partners with your heart — vet them with your head too",
+  "who":"a calm, loyal partner who grounds your swings"},
+"Mars":{"verdict":"Partner with caution — you run hot",
+  "blessing":"the right co-founder matches your drive and pace",
+  "caution":"friction and control fights are the real risk here",
+  "who":"a disciplined partner who absorbs your intensity, not one who feeds it"},
+"Mercury":{"verdict":"Partnership is a natural fit",
+  "blessing":"a partner covers the follow-through you tend to skip",
+  "caution":"keep every term in writing — loose deals sour good friendships",
+  "who":"a detail-strong, steady partner to balance your quick mind"},
+"Jupiter":{"verdict":"Partnership is favoured and fortunate",
+  "blessing":"a good partner multiplies trust and opens doors",
+  "caution":"your generosity can be over-trusting — verify before you commit",
+  "who":"an honest, values-aligned partner who shares the vision"},
+"Venus":{"verdict":"Partnership is one of your strengths",
+  "blessing":"you're at your best paired — shared taste and harmony compound",
+  "caution":"you avoid hard conversations, so a bad partner lingers too long",
+  "who":"an equal with complementary skills and matching standards"},
+"Saturn":{"verdict":"Go solo, or partner very carefully",
+  "blessing":"a disciplined partner can shoulder a heavy, slow build with you",
+  "caution":"delays and mistrust strain partnerships; loyalty is tested by time",
+  "who":"a proven, patient partner earned over years — not a quick handshake"}}
+
+# ---- Business obstacle by afflicting planet (paired with REMEDY_7L / REMEDY_NODE). ----
+BIZ_OBSTACLE = {
+"Sun":"authority clashes and ego-driven calls that stall the business",
+"Moon":"mood-driven decisions and an unstable cash-mood cycle",
+"Mars":"conflict, haste and burnt bridges with partners or staff",
+"Mercury":"scattered focus — too many deals, weak follow-through",
+"Jupiter":"over-optimism and over-extension beyond what the cash allows",
+"Venus":"over-spending on comfort and image, leaving margins thin",
+"Saturn":"delay, slow cash cycles and self-doubt that freezes decisions",
+"Rahu":"restless over-reach and shortcut temptation that invites risk",
+"Ketu":"detachment and half-hearted follow-through that stalls momentum"}
+
+# ---- Business meaning of a mahadasha / antardasha period, by lord. ----
+# tone feeds the good/warn/neutral verdicts and the strong-window search.
+BIZ_DASHA = {
+"Sun":{"tone":"neutral","body":"authority, visibility and standing in your own name — good for brand, slower for pure trade"},
+"Moon":{"tone":"good","body":"public connection and steady demand — a people-and-cashflow phase"},
+"Mars":{"tone":"warn","body":"drive and competition run high, but haste and conflict can cost you"},
+"Mercury":{"tone":"good","body":"commerce, deals and communication — intellect turns straight into income"},
+"Jupiter":{"tone":"good","body":"expansion, trust and new markets — doors open through knowledge and reputation"},
+"Venus":{"tone":"good","body":"comfort, creativity and wealth-enjoyment — earnings and lifestyle both rise"},
+"Saturn":{"tone":"warn","body":"a slow, disciplined grind — durable if you endure, but gains come late and hard"},
+"Rahu":{"tone":"neutral","body":"ambitious, unconventional rise — fast growth, but restless and risk-prone"},
+"Ketu":{"tone":"warn","body":"detachment and endings — a phase to simplify and cut, not to expand"}}
+
+# planets whose dasha is a strongly benefic business turning-window
+BENEFIC_BIZ = ("Jupiter", "Venus", "Mercury", "Moon")
+
+# generic action guidance for the strong window and the careful phases
+STRONG_WINDOW_DO = [
+    "Launch, expand or raise capital in this window — the wind is behind you.",
+    "Lock in your best clients and long contracts while trust is high.",
+    "Reinvest early gains into the business rather than spending them."]
+STRONG_WINDOW_DONT = [
+    "Don't sit idle waiting for perfect — this window rewards decisive action.",
+    "Don't over-leverage on the optimism; always keep a working reserve."]

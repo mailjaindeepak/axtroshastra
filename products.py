@@ -6,7 +6,10 @@ from datetime import datetime, timedelta
 from engine import (compute_chart, nak_of, vimshottari_tree, SIGNS, SIGNS_EN,
                     NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS, _sade_sati)
 from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
-                          KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI)
+                          KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI,
+                          REMEDY_7L, REMEDY_NODE, BIZ_TEMPERAMENT, BIZ_SECTOR_10L,
+                          BIZ_PARTNERSHIP_7L, BIZ_OBSTACLE, BIZ_DASHA, BENEFIC_BIZ,
+                          STRONG_WINDOW_DO, STRONG_WINDOW_DONT)
 
 # ============================================================ ASHTAKOOTA TABLES
 # Varna by moon sign (0=Shudra..3=Brahmin for hierarchy compare)
@@ -582,4 +585,386 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                      "missing": [ELEMENT_HI[m] for m in missing]},
         "wealth": wealth, "health": health, "relationship": relationship,
         "year_ahead": year_ahead,
+    }
+
+
+# ============================================================ VYAPAR (business)
+_TONE_LABEL = {"good": "Supportive", "warn": "Hard", "neutral": "Mixed"}
+_DIG_RANK = {"exalted": 3, "own": 2, "neutral": 1, "debilitated": 0}
+
+
+def _ordinal(n: int) -> str:
+    return "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+
+
+def _biz_planet_power(p) -> int:
+    """Coarse strength of a planet for business ranking: dignity minus a
+    combustion penalty. Deterministic, no degree math needed here."""
+    return _DIG_RANK.get(p.dignity, 1) - (1 if p.combust else 0)
+
+
+def _biz_remedy_line(planet) -> str:
+    """Agency-first remedy string for an obstructing planet (7 classical +
+    the two nodes), reusing the shared REMEDY tables."""
+    if planet in REMEDY_7L:
+        fast, mantra, gem = REMEDY_7L[planet]
+        return (f"{fast}: keep it a light, disciplined day and chant "
+                f"“{mantra}”. Consider {gem.split(' — ')[0]} only after an expert trial.")
+    if planet in REMEDY_NODE:
+        fast, mantra, note = REMEDY_NODE[planet]
+        return f"{fast}: chant “{mantra}”. {note}"
+    return "Keep routines steady and decisions unhurried; discipline is the durable remedy."
+
+
+def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
+    """Business-growth report engine (/vyapar). Reuses compute_blueprint's
+    classical derivations (chart, house lords, Vimshottari dasha, Sade Sati,
+    Jupiter/Saturn transits) and maps them to BUSINESS verdicts via the
+    authored BIZ_* tables in jyotish_maps. Deterministic, no LLM, never raises
+    on valid input. `tz` may be a numeric UTC-offset in hours (like
+    compute_blueprint) or an IANA zone name such as 'Asia/Kolkata'."""
+    if isinstance(tz, str):                                  # accept a zone name too
+        try:
+            from zoneinfo import ZoneInfo
+            _naive = datetime.fromisoformat(f"{dob}T{tob}:00")
+            _off = ZoneInfo(tz).utcoffset(_naive)
+            tz = _off.total_seconds() / 3600 if _off else 0.0
+        except Exception:
+            tz = 5.5                                         # sensible IST fallback
+    dt = datetime.fromisoformat(f"{dob}T{tob}:00") - timedelta(hours=tz)
+    ch = compute_chart(dt, lat, lon)
+    g = ch["grahas"]
+    moon = g["Moon"]
+    today = datetime.utcnow()
+    use_chandra = time_quality in ("T2", "T3")
+    ref = moon.sign if use_chandra else ch["lagna_sign"]
+
+    # ---- business significators (whole-sign house lords from ref) ----
+    def _hsign(h):  # 1-indexed house -> sign
+        return (ref + h - 1) % 12
+
+    def _hlord(h):
+        return SIGN_LORD[_hsign(h)]
+
+    def _lord_house(lord):  # 1-12 house occupied by a lord (from ref)
+        return ((g[lord].sign - ref) % 12) + 1
+
+    tenth_sign = _hsign(10)
+    tenth_lord = _hlord(10)
+    tl_house = (g[tenth_lord].sign - ref) % 12               # 0-indexed
+    second_lord = _hlord(2)
+    eleventh_lord = _hlord(11)
+    seventh_lord = _hlord(7)
+    sec_house = _lord_house(second_lord)                     # 1-12
+    ele_house = _lord_house(eleventh_lord)
+
+    temperament = BIZ_TEMPERAMENT[ref]
+    sector = BIZ_SECTOR_10L[tenth_lord]
+    partnership_map = BIZ_PARTNERSHIP_7L[seventh_lord]
+
+    # ---- fit: sector by 10th lord, tilted by the stronger of Venus / Mercury ----
+    tilt = ""
+    vp, mp = _biz_planet_power(g["Venus"]), _biz_planet_power(g["Mercury"])
+    if vp > mp and tenth_lord != "Venus":
+        tilt = (" A well-placed Venus adds a creative or lifestyle edge — "
+                "lean where taste and design decide the sale.")
+    elif mp > vp and tenth_lord != "Mercury":
+        tilt = (" A strong Mercury favours trade and quick turns — "
+                "keep the deal-cycle short and the inventory moving.")
+    fit_label = sector["label"]
+    fit_sub = sector["sub"] + ("." + tilt if tilt else "")
+
+    # ---- full dasha tree, current period, roadmap (blueprint idioms) ----
+    tree = vimshottari_tree(moon.lon, dt, today + timedelta(days=40 * 365.25))
+    roadmap, active_md, active_ad, next_ad = [], None, None, None
+    for md in tree:
+        if md["end"] >= today and len(roadmap) < 3:
+            roadmap.append({"lord": md["lord"],
+                            "from": max(md["start"], today).strftime("%Y"),
+                            "to": md["end"].strftime("%Y"),
+                            "theme": BIZ_DASHA[md["lord"]]["body"],
+                            "tone": BIZ_DASHA[md["lord"]]["tone"],
+                            "current": md["start"] <= today <= md["end"]})
+    active_md = next((m for m in tree if m["start"] <= today <= m["end"]), None)
+    if active_md:
+        active_ad = next((a for a in active_md["ads"] if a["start"] <= today <= a["end"]), None)
+        ads = active_md["ads"]
+        for i, a in enumerate(ads):
+            if a is active_ad and i + 1 < len(ads):
+                next_ad = ads[i + 1]
+                break
+        if next_ad is None:
+            nmd = next((m for m in tree if m["start"] > today), None)
+            if nmd and nmd["ads"]:
+                next_ad = nmd["ads"][0]
+
+    # ---- strong window: next strongly-benefic antardasha after today ----
+    def _fmt_window(a):
+        s, e = a["start"], a["end"]
+        left = s.strftime("%b %Y")
+        right = e.strftime("%b %Y") if s.year == e.year else e.strftime("%Y")
+        return f"{left} – {right}"
+
+    strong_ad = None
+    future_ads = [a for m in tree for a in m["ads"] if a["end"] > today]
+    future_ads.sort(key=lambda a: a["start"])
+    # prefer the earliest AD (not the currently-running one) whose lord is a
+    # strong business benefic; fall back to any benefic, then to the next AD.
+    for a in future_ads:
+        if a["start"] > today and a["lord"] in BENEFIC_BIZ:
+            strong_ad = a
+            break
+    if strong_ad is None:
+        for a in future_ads:
+            if a["lord"] in BENEFIC_BIZ:
+                strong_ad = a
+                break
+    if strong_ad is None:
+        strong_ad = next_ad or (future_ads[0] if future_ads else None)
+    if strong_ad is None:                                    # extreme safety net
+        strong_ad = {"lord": active_md["lord"] if active_md else "Jupiter",
+                     "start": today, "end": today + timedelta(days=365)}
+    window_label = _fmt_window(strong_ad)
+    window_lord = strong_ad["lord"]
+    window_sub = BIZ_DASHA[window_lord]["body"]
+
+    # ---- sade sati + Jupiter/Saturn transits from Moon (blueprint idioms) ----
+    sade = _sade_sati(moon.sign, today)
+    import swisseph as swe_
+    from engine import sidereal_lon, jd, sign_of, houses_from
+    jl, _ = sidereal_lon(swe_.JUPITER, jd(today))
+    sl, _ = sidereal_lon(swe_.SATURN, jd(today))
+    jup_h = houses_from(moon.sign, sign_of(jl))
+    sat_h = houses_from(moon.sign, sign_of(sl))
+    year_ahead = {"jup_house": jup_h, "jup_good": jup_h in (1, 2, 5, 7, 9, 11),
+                  "sat_house": sat_h,
+                  "next_ad": {"lord": next_ad["lord"],
+                              "from": next_ad["start"].strftime("%b %Y")} if next_ad else None}
+
+    # ---- when the current hard phase lifts ----
+    if sade.get("active"):
+        hard_ends = sade["ends"]
+    elif active_ad and BIZ_DASHA[active_ad["lord"]]["tone"] == "warn":
+        hard_ends = active_ad["end"].strftime("%b %Y")
+    elif active_md and BIZ_DASHA[active_md["lord"]]["tone"] == "warn":
+        hard_ends = active_md["end"].strftime("%b %Y")
+    else:
+        hard_ends = active_ad["end"].strftime("%b %Y") if active_ad else "—"
+
+    # ---- last ~3 years: backward read of the recent dasha ----
+    frm = today - timedelta(days=int(3 * 365.25))
+    last_points, hard_n, seen = [], 0, set()
+    for md in tree:
+        for ad in md["ads"]:
+            if ad["end"] < frm or ad["start"] > today:
+                continue
+            key = (md["lord"], ad["lord"])
+            if key in seen:
+                continue
+            seen.add(key)
+            d = BIZ_DASHA[ad["lord"]]
+            if d["tone"] == "warn":
+                hard_n += 1
+            last_points.append(f"{ad['lord']} sub-period — {d['body']}.")
+    if hard_n >= 2:
+        last_lead = ("The last three years leaned hard — the dasha sub-periods pulled "
+                     "toward friction and slow cash rather than easy expansion.")
+    elif hard_n == 1:
+        last_lead = ("The last three years were mixed — one testing sub-period sat "
+                     "beside steadier ones, so momentum came in stops and starts.")
+    else:
+        last_lead = ("The last three years were broadly supportive — the sub-periods "
+                     "favoured trade and connection more than obstruction.")
+    last3 = {"lead": last_lead, "points": last_points[:4] or
+             ["A quiet stretch — no single dominant sub-period drove the last three years."]}
+
+    # ---- years after: the upcoming mahadashas, business-framed ----
+    years_after = [{"range": f"{r['from']}–{r['to']}", "tone": r["tone"],
+                    "body": f"{r['lord']} Mahadasha — {r['theme']}."} for r in roadmap]
+
+    # ---- careful phases: upcoming warn sub-periods (next ~5y) + sade sati ----
+    careful = []
+    horizon5 = today + timedelta(days=int(5 * 365.25))
+    for md in tree:
+        for ad in md["ads"]:
+            if ad["end"] < today or ad["start"] > horizon5:
+                continue
+            if BIZ_DASHA[ad["lord"]]["tone"] == "warn" and ad["end"] > today:
+                rng = f"{max(ad['start'], today).strftime('%b %Y')} – {ad['end'].strftime('%b %Y')}"
+                careful.append({"range": rng,
+                                "body": f"{ad['lord']} sub-period — {BIZ_DASHA[ad['lord']]['body']}. "
+                                        "Hold reserves, avoid big new leverage."})
+    if sade.get("active"):
+        careful.insert(0, {"range": f"through {sade['ends']}",
+                           "body": f"Sade Sati {sade['phase']} — Saturn is pressing your Moon. "
+                                   "Consolidate, cut waste and delay the biggest bets until it lifts."})
+    careful = careful[:4] or [{"range": "next 5 years",
+                               "body": "No sharply hard sub-period stands out — "
+                                       "the usual discipline on cash and leverage is enough."}]
+
+    # ---- money: earning pattern, gains pattern, reserve caution ----
+    money = {
+        "earn_leak": WEALTH_2L[sec_house - 1],
+        "gains": GAINS_11L[ele_house - 1],
+        "reserve": (f"Saturn currently transits your {sat_h}{_ordinal(sat_h)} house from the Moon — "
+                    "keep a working cash reserve and avoid over-leverage until it moves on."
+                    if sat_h in (1, 2, 8, 12) else
+                    "Cash discipline is your steadier lever than any single big bet — "
+                    "reserve first, then expand.")}
+
+    # ---- remedies: obstructing planets among the business significators ----
+    biz_lords = list(dict.fromkeys([tenth_lord, second_lord, eleventh_lord, seventh_lord]))
+    afflicted = [lord for lord in biz_lords
+                 if g[lord].dignity == "debilitated" or g[lord].combust]
+    if not afflicted:
+        # weakest business significator by coarse power, so the section is never empty
+        afflicted = [min(biz_lords, key=lambda l: _biz_planet_power(g[l]))]
+    remedies = []
+    for lord in afflicted[:3]:
+        remedies.append({"obstacle": BIZ_OBSTACLE.get(lord, "friction that slows the business"),
+                         "remedy": _biz_remedy_line(lord)})
+    # add the current dasha lord's obstacle if it's a hard period and not already covered
+    if active_md and BIZ_DASHA[active_md["lord"]]["tone"] == "warn" \
+            and active_md["lord"] not in afflicted:
+        remedies.append({"obstacle": BIZ_OBSTACLE.get(active_md["lord"], "a demanding phase"),
+                         "remedy": _biz_remedy_line(active_md["lord"])})
+    remedies = remedies[:3]
+
+    # ---- year-by-year outlook for the next ~5 years ----
+    year_by_year = []
+    for yr in range(today.year, today.year + 5):
+        probe = datetime(yr, 7, 1)
+        if probe < today:
+            probe = today
+        ad_lord = None
+        for md in tree:
+            if md["start"] <= probe <= md["end"]:
+                a = next((x for x in md["ads"] if x["start"] <= probe <= x["end"]), None)
+                ad_lord = a["lord"] if a else md["lord"]
+                break
+        if ad_lord is None:
+            ad_lord = active_md["lord"] if active_md else "Jupiter"
+        d = BIZ_DASHA[ad_lord]
+        year_by_year.append({"year": yr, "tone": d["tone"],
+                             "outlook": f"{ad_lord} sub-period — {d['body']}."})
+
+    # ---- houses table: 2nd / 7th / 10th / 11th business houses ----
+    house_notes = {2: WEALTH_2L[sec_house - 1], 7: partnership_map["verdict"],
+                   10: sector["label"], 11: GAINS_11L[ele_house - 1]}
+    houses = []
+    for h in (2, 7, 10, 11):
+        lord = _hlord(h)
+        houses.append({"house": h, "sign": SIGNS[_hsign(h)], "lord": lord,
+                       "lord_house": _lord_house(lord), "note": house_notes[h]})
+
+    # ---- dhana yoga: do the 2nd & 11th lords combine? ----
+    dy_present, dy_line = False, ""
+    if second_lord == eleventh_lord:
+        dy_present = True
+        dy_line = (f"One planet ({second_lord}) rules both your wealth (2nd) and gains (11th) "
+                   "houses — a natural Dhana (wealth) yoga: earning and profit pull the same way.")
+    elif g[second_lord].sign == g[eleventh_lord].sign:
+        dy_present = True
+        dy_line = (f"Your 2nd lord ({second_lord}) and 11th lord ({eleventh_lord}) sit together "
+                   "in one sign — a Dhana yoga where income and gains reinforce each other.")
+    elif g[second_lord].sign == _hsign(11) and g[eleventh_lord].sign == _hsign(2):
+        dy_present = True
+        dy_line = (f"Your 2nd and 11th lords ({second_lord}, {eleventh_lord}) exchange houses "
+                   "(Parivartana) — a strong classical wealth combination.")
+    else:
+        dy_line = (f"Your 2nd lord ({second_lord}) and 11th lord ({eleventh_lord}) don't directly "
+                   "combine — wealth builds through deliberate effort rather than an automatic yoga.")
+    dhana_yoga = {"present": dy_present, "line": dy_line}
+
+    # ---- solo vs partner leaning ----
+    if temperament["solo"] == "solo" and seventh_lord in ("Saturn", "Sun", "Mars"):
+        solo_value = "Built to go solo"
+    elif temperament["solo"] == "partner":
+        solo_value = "Better with a partner"
+    else:
+        solo_value = "Solo by nature, open to the right partner"
+
+    # ---- current-period tone ----
+    cur_lord = active_ad["lord"] if active_ad else (active_md["lord"] if active_md else "—")
+    cur_tone = BIZ_DASHA.get(cur_lord, {}).get("tone", "neutral")
+    cur_body = BIZ_DASHA.get(cur_lord, {}).get("body", "")
+    current_dasha = (f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"
+                     if active_ad else "—")
+
+    # ---- one-breath honest paragraph ----
+    hard_frame = (f"a Sade Sati squeeze that eases around {sade['ends']}"
+                  if sade.get("active") else
+                  f"a testing {cur_lord} phase" if cur_tone == "warn" else
+                  "a steady but unspectacular stretch")
+    _art = "an" if temperament["type"][:1].lower() in "aeiou" else "a"
+    breath = (f"At heart you're {_art} {temperament['type'].lower()}: your money runs best through "
+              f"{fit_label.lower()}, and {temperament['weak']}. "
+              f"The recent road has been {hard_frame}, but {window_lord} opens a real "
+              f"turning window around {strong_ad['start'].strftime('%b %Y')} — "
+              "the time to build and expand, not just hold on.")
+
+    # ---- at-a-glance summary (~8 items) ----
+    last_tone = "warn" if hard_n >= 2 else ("neutral" if hard_n == 1 else "good")
+    summary = [
+        {"label": "Your type", "value": temperament["type"],
+         "sub": temperament["work"], "tone": "neutral"},
+        {"label": "Best-fit line", "value": fit_label,
+         "sub": fit_sub, "tone": "good"},
+        {"label": "Solo or partner", "value": solo_value,
+         "sub": partnership_map["verdict"], "tone": "neutral"},
+        {"label": "Last 3 years", "value": _TONE_LABEL[last_tone],
+         "sub": last_lead, "tone": last_tone},
+        {"label": "Right now", "value": current_dasha,
+         "sub": cur_body or "A transitional phase.", "tone": cur_tone},
+        {"label": "When it turns", "value": window_label,
+         "sub": f"{window_lord} sub-period — {window_sub}", "tone": "good"},
+        {"label": "Money", "value": ("Wealth yoga present" if dy_present else "Effort-built wealth"),
+         "sub": money["gains"], "tone": "good" if dy_present else "neutral"},
+        {"label": "Be careful", "value": careful[0]["range"],
+         "sub": careful[0]["body"], "tone": "warn"},
+    ]
+
+    return {
+        "product": "vyapar",
+        "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
+                 "system": "chandra_lagna" if use_chandra else "lagna",
+                 "time_quality": time_quality, "ayanamsa": "Lahiri"},
+        "teaser": {
+            "window_label": window_label,
+            "window_sub": window_sub,
+            "fit_label": fit_label,
+            "fit_sub": fit_sub,
+            "type_label": temperament["type"],
+            "hard_ends": hard_ends,
+            "breath": breath,
+        },
+        "chart": {"lagna": SIGNS[ch["lagna_sign"]],
+                  "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
+                                       "dignity": p.dignity, "retro": p.retro,
+                                       "combust": p.combust} for p in g.values()}},
+        "summary": summary,
+        "nature": {"lagna_line": BIZ_TEMPERAMENT[ch["lagna_sign"]]["work"],
+                   "moon_line": BIZ_TEMPERAMENT[moon.sign]["gut"],
+                   "weak_spot": temperament["weak"],
+                   "note_chandra": use_chandra},
+        "fit": {"types": sector["types"], "avoid": sector["avoid"]},
+        "partnership": {"verdict": partnership_map["verdict"],
+                        "blessing": partnership_map["blessing"],
+                        "caution": partnership_map["caution"],
+                        "who": partnership_map["who"]},
+        "last3": last3,
+        "strong_window": {"label": window_label,
+                          "body": f"{window_lord} takes over as the driving period here — "
+                                  f"{window_sub}. This is your build-and-expand window.",
+                          "do": STRONG_WINDOW_DO, "dont": STRONG_WINDOW_DONT},
+        "years_after": years_after,
+        "careful": careful,
+        "money": money,
+        "remedies": remedies,
+        "year_by_year": year_by_year,
+        "houses": houses,
+        "roadmap": roadmap,
+        "sade_sati": sade,
+        "year_ahead": year_ahead,
+        "dhana_yoga": dhana_yoga,
     }
