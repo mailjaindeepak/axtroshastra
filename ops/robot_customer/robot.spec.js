@@ -31,6 +31,44 @@ test.beforeAll(() => {
   if (!ADMIN_KEY) throw new Error('ADMIN_KEY / STATS_KEY is not set — needed for cleanup.');
 });
 
+// ---- Pending-deploy gate -------------------------------------------------
+// A page that is merged into the code but not yet on the LIVE deployment would
+// 404 and turn the whole monitor red for no real reason (see backlog.md). Any
+// route listed here is treated as "pending deploy": if it 404s on the live
+// target it is SKIPPED (not failed); the moment it's actually deployed (200) it
+// is tested normally — so this self-heals, and a genuine was-live-now-404
+// regression on any route NOT listed here still fails hard.
+//
+// Seed via OPS_PENDING_DEPLOY (comma-separated paths); the default lists the
+// routes we know are merged ahead of deploy. Remove a route once it's live
+// (harmless if left — it self-heals — but stale).
+//
+// FUTURE (backlog): replace this manual allow-list with deployed-SHA gating —
+// read /healthz {version} and run a feature's tests only when its commit is an
+// ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
+const PENDING_DEPLOY = new Set(
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3')
+    .split(',').map((s) => s.trim()).filter(Boolean),
+);
+
+// If `path` is a pending-deploy route that isn't live yet (404 / unreachable),
+// mark the current test SKIPPED (test.skip throws to abort it). If the route is
+// live (2xx/3xx) or not gated, do nothing and let the test run.
+async function skipIfPendingDeploy(path, request) {
+  if (!PENDING_DEPLOY.has(path)) return;
+  let status = 0;
+  try {
+    const r = await request.get(TARGET + path, { failOnStatusCode: false });
+    status = r.status();
+  } catch (e) {
+    status = 0; // transport error — treat as not-confirmed-live
+  }
+  test.skip(
+    status === 404 || status === 0,
+    `pending deploy: ${path} not live yet (status ${status})`,
+  );
+}
+
 // ---- Page list -----------------------------------------------------------
 // Hardcoded from `ls pages/` + the server's URL routes. Structured so
 // swapping to a dynamic fetch is a one-line change:
@@ -249,7 +287,8 @@ const FUNNELS = [
 // ==========================================================================
 test.describe('B1 — Page health', () => {
   for (const pg of ALL_PAGES) {
-    test(`${pg.label} (${pg.path}): 200, no errors, no overflow, < 5s`, async ({ page }) => {
+    test(`${pg.label} (${pg.path}): 200, no errors, no overflow, < 5s`, async ({ page, request }) => {
+      await skipIfPendingDeploy(pg.path, request);
       const errors = watchErrors(page);
 
       const t0 = Date.now();
@@ -282,7 +321,8 @@ test.describe('B2 — Funnel smoke', () => {
     for (const lang of ['en', 'hi']) {
       const path = funnel.paths[lang];
 
-      test(`${funnel.name} [${lang}] form -> submit -> pipeline works (no payment)`, async ({ page }) => {
+      test(`${funnel.name} [${lang}] form -> submit -> pipeline works (no payment)`, async ({ page, request }) => {
+        await skipIfPendingDeploy(path, request);
         const errors = watchErrors(page);
 
         // --- Safety net: block payment routes so no charge can ever occur ---
@@ -347,7 +387,8 @@ test.describe('B2 — Funnel smoke', () => {
 // ==========================================================================
 test.describe('B3 — SEO checks', () => {
   for (const pg of ALL_PAGES) {
-    test(`${pg.label} (${pg.path}): SEO tags present`, async ({ page }) => {
+    test(`${pg.label} (${pg.path}): SEO tags present`, async ({ page, request }) => {
+      await skipIfPendingDeploy(pg.path, request);
       await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
 
       // <title> exists and is non-empty.

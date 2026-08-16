@@ -641,15 +641,35 @@ def _serve_page_with_nav(path: str, lang: str = "en"):
         return FileResponse(path)
 
 
+def _app_version() -> str:
+    """Best-effort deployed commit SHA, so an external monitor can tell WHICH
+    code is actually live (see backlog.md — ops-monitor should only test a
+    feature once its commit is deployed, not merely merged). Read from an env
+    var the deploy sets (APP_COMMIT / GIT_SHA / GIT_COMMIT), else a `.git-sha`
+    file written at build time, else "unknown". Never raises."""
+    for var in ("APP_COMMIT", "GIT_SHA", "GIT_COMMIT"):
+        v = (os.getenv(var) or "").strip()
+        if v:
+            return v
+    try:
+        with open(os.path.join(BASE, ".git-sha"), encoding="utf-8") as fh:
+            return fh.read().strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
 @app.get("/healthz", include_in_schema=False)
 def healthz():
     """Liveness probe: 200 if the DB is *reachable*. Kept cheap on purpose — this
     is the high-frequency ALB/EB probe, so it only opens a connection and runs a
-    trivial query. For the deeper write-durability check use /healthz/db."""
+    trivial query. For the deeper write-durability check use /healthz/db.
+
+    Also returns `version` (the deployed commit SHA, or "unknown") so the ops
+    monitor can gate feature tests on what is actually live."""
     try:
         with db() as c:
             c.execute("SELECT 1")
-        return {"status": "ok"}
+        return {"status": "ok", "version": _app_version()}
     except Exception as e:
         logger.error("healthz db check failed: %s", e)
         raise HTTPException(503, "db unavailable")
