@@ -37,8 +37,10 @@ def _paid_report_html(client, product):
 
 
 @pytest.mark.parametrize("product",
-                         [None, "milan", "blueprint", "vidyarthi", "vyapar"],
-                         ids=["marriage", "milan", "blueprint", "vidyarthi", "vyapar"])
+                         [None, "milan", "blueprint", "vidyarthi", "vyapar",
+                          "career_growth"],
+                         ids=["marriage", "milan", "blueprint", "vidyarthi",
+                              "vyapar", "career_growth"])
 def test_report_page_has_pdf_and_whatsapp_buttons(client, product):
     html = _paid_report_html(client, product)
     # one-tap PDF: the renderer's sentinel must exist AND be swapped by
