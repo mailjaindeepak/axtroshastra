@@ -1975,6 +1975,27 @@ mein sabse achha kaam karte hain.</p></div>
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
 <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+
+<style>@media screen{{body{{padding-bottom:88px}}}}
+#ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
+background:rgba(16,20,40,.96);border-top:1px solid rgba(228,176,74,.35);
+box-shadow:0 -6px 20px rgba(0,0,0,.28);
+padding:10px 12px calc(10px + env(safe-area-inset-bottom))}}
+#ax-stickybar .inner{{max-width:640px;margin:0 auto;display:flex;gap:10px}}
+#ax-stickybar a{{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+min-height:52px;text-align:center;text-decoration:none;border-radius:12px;padding:12px 10px;
+font:700 16px/1.15 system-ui,sans-serif;-webkit-tap-highlight-color:transparent}}
+#ax-stickybar .pdf{{background:#C93B2E;color:#fff}}
+#ax-stickybar .wa{{background:#25D366;color:#0b2f18}}
+@media (min-width:640px){{#ax-stickybar a{{min-height:48px;font-size:15px}}}}
+@media print{{#ax-stickybar{{display:none!important}}}}</style>
+<div id='ax-stickybar'><div class='inner'>
+<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'>&#11015; Download PDF</a>
+<a class='wa' href='#' onclick='axShare();return false;'>Share on WhatsApp</a>
+</div></div>
+<script>
+window.axShare=function(){{var url=location.href;var t='Check out my life blueprint report from Axtroshastra';if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+</script>
 </body></html>"""
 
 
@@ -3172,4 +3193,28 @@ def render_vyapar(p: dict) -> str:
   <div class="cov-trust" style="opacity:.8">www.axtroshastra.com &middot; Swiss Ephemeris &middot; Lahiri ayanamsa</div>
 </div><div class="pno">29</div></section>
 
+<style>@media screen{{body{{padding-bottom:92px}}}}
+#ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
+background:rgba(250,245,237,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+border-top:1px solid rgba(185,134,46,.35);box-shadow:0 -8px 24px rgba(48,34,14,.16);
+padding:10px 14px calc(10px + env(safe-area-inset-bottom))}}
+#ax-stickybar .inner{{max-width:430px;margin:0 auto;display:flex;gap:10px}}
+#ax-stickybar a{{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+min-height:52px;text-align:center;text-decoration:none;border-radius:14px;padding:12px 10px;
+font:700 16px/1.15 var(--sans);letter-spacing:.01em;
+-webkit-tap-highlight-color:transparent;transition:transform .08s ease,filter .15s ease}}
+#ax-stickybar a:active{{transform:scale(.97);filter:brightness(1.08)}}
+#ax-stickybar svg{{width:19px;height:19px;flex:none}}
+#ax-stickybar .pdf{{background:var(--ink);color:#F5EEE0;box-shadow:0 6px 16px rgba(42,35,56,.28)}}
+#ax-stickybar .pdf svg{{color:var(--gold2)}}
+#ax-stickybar .wa{{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(62,125,90,.28)}}
+@media (min-width:640px){{#ax-stickybar a{{min-height:48px;font-size:15px}}}}
+@media print{{#ax-stickybar{{display:none!important}}}}</style>
+<div id='ax-stickybar'><div class='inner'>
+<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M6 11l6 6 6-6'/><path d='M4 21h16'/></svg>Download PDF</a>
+<a class='wa' href='#' onclick='axShare();return false;'><svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.5-.3-2.6.7.7-2.5-.3-.5A8 8 0 0 1 12 4zm-3.1 4.3c-.2 0-.5.1-.7.3-.7.7-1 1.6-.8 2.6.3 1.2 1 2.4 2.1 3.5 1.4 1.4 3 2.3 4.6 2.5.8.1 1.6-.2 2.2-.8.2-.2.3-.5.3-.8l-.1-.7c-.1-.2-.2-.4-.5-.5l-1.7-.8a.8.8 0 0 0-.9.2l-.5.5c-.1.2-.4.2-.6.1a6.7 6.7 0 0 1-2.9-2.9c-.1-.2 0-.4.1-.6l.5-.5c.2-.2.3-.6.2-.9l-.8-1.7c-.1-.2-.3-.4-.5-.4l-.5-.1z'/></svg>Share on WhatsApp</a>
+</div></div>
+<script>
+window.axShare=function(){{var url=location.href;var t='Check out my business growth report from AxtroShastra';if(navigator.share){{navigator.share({{title:'AxtroShastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+</script>
 </body></html>"""
