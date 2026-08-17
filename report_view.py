@@ -3172,4 +3172,22 @@ def render_vyapar(p: dict) -> str:
   <div class="cov-trust" style="opacity:.8">www.axtroshastra.com &middot; Swiss Ephemeris &middot; Lahiri ayanamsa</div>
 </div><div class="pno">29</div></section>
 
+<style>@media screen{{body{{padding-bottom:80px}}}}
+#ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
+background:rgba(16,20,40,.96);border-top:1px solid rgba(228,176,74,.35);
+box-shadow:0 -6px 20px rgba(0,0,0,.28);
+padding:10px 12px calc(10px + env(safe-area-inset-bottom))}}
+#ax-stickybar .inner{{max-width:640px;margin:0 auto;display:flex;gap:10px}}
+#ax-stickybar a{{flex:1;text-align:center;text-decoration:none;border-radius:12px;
+padding:13px 10px;font:800 15px/1 'Bricolage Grotesque',system-ui,sans-serif}}
+#ax-stickybar .pdf{{background:#C93B2E;color:#fff}}
+#ax-stickybar .wa{{background:#25D366;color:#0b2f18}}
+@media print{{#ax-stickybar{{display:none!important}}}}</style>
+<div id='ax-stickybar'><div class='inner'>
+<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'>&#11015; Download PDF</a>
+<a class='wa' href='#' onclick='axShare();return false;'>Share on WhatsApp</a>
+</div></div>
+<script>
+window.axShare=function(){{var url=location.href;var t='Check out my business growth report from AxtroShastra';if(navigator.share){{navigator.share({{title:'AxtroShastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+</script>
 </body></html>"""
