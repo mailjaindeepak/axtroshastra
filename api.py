@@ -33,9 +33,9 @@ from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
 from pydantic import BaseModel, Field, field_validator
 
 from engine import compute_report
-from report_view import render_report, render_milan, render_blueprint, render_vidyarthi, north_chart_svg
+from report_view import render_report, render_milan, render_blueprint, render_vidyarthi, render_vyapar, north_chart_svg
 from report_view_v2 import render_report_v2   # marriage report v2 (4-tier, LLM-narrated)
-from products import compute_milan, compute_blueprint
+from products import compute_milan, compute_blueprint, compute_vyapar
 from vidyarthi import compute_vidyarthi_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
@@ -98,7 +98,8 @@ TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")  # approved MEDIA templ
 TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved TEXT template — fallback when the PDF isn't ready
 
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
-                  "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing"}
+                  "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing",
+                  "vyapar": "Business Growth Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -122,6 +123,10 @@ PRODUCT_SVG = {
     "vidyarthi": _SVG_OPEN + '<path d="M4 13 L16 8 L28 13 L16 18 Z"/>'
                  '<path d="M9 15 V21 Q16 24 23 21 V15"/>'
                  '<path d="M28 13 V20.5"/><circle cx="28" cy="21.5" r="1"/></svg>',
+    # business growth (vyapar) — an upward growth arrow over a baseline.
+    "vyapar": _SVG_OPEN + '<path d="M5 25 H27"/>'
+              '<path d="M8 21 L14 15 L18 19 L25 10"/>'
+              '<path d="M25 10 H20 M25 10 V15"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -289,6 +294,8 @@ def _render_for(product, payload):
         return html
     if product == "blueprint":
         return render_blueprint(payload)
+    if product == "vyapar":
+        return render_vyapar(payload)
     if product == "vidyarthi":
         return render_vidyarthi(payload)
     html = render_report_v2(payload)
@@ -779,6 +786,9 @@ def create_kundli(inp: KundliIn):
     if inp.product == "blueprint":
         report = compute_blueprint(inp.name, inp.dob, tob, tz, lat, lon,
                                    time_quality=inp.time_quality)
+    elif inp.product == "vyapar":
+        report = compute_vyapar(inp.name, inp.dob, tob, tz, lat, lon,
+                                time_quality=inp.time_quality)
     elif inp.product == "vidyarthi":
         report = compute_vidyarthi_report(inp.name, inp.dob, tob, tz, lat, lon,
                                           female=(inp.gender == "female"),
@@ -1690,7 +1700,8 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career", "/blog",
+    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
+            "/business-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)

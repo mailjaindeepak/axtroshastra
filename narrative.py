@@ -198,6 +198,18 @@ SECTION_SPECS = {
         ("hero", "2-3 motivating sentences on this student's academic/career promise."),
         ("closing_note", "A warm 3-4 sentence closing note to the student."),
     ],
+    # Vyapar (business/enterprise) report. 7 prose slots, one LLM call returns all
+    # of them as one JSON object; each slot falls back to its deterministic bank in
+    # the renderer if missing or dropped by a guardrail.
+    "vyapar": [
+        ("nature", "2-3 sentences on this person's core business temperament — how they think about money, deals and risk, and where their instincts leak, from the lagna and Moon."),
+        ("fit", "3-4 sentences on the lines of business that suit them best and why those fields play to their chart's strengths; name the kind of trade to lean into and the kind to avoid."),
+        ("partnership", "2-3 sentences on whether they build better solo or with a co-owner, what a good partner adds, and the one thing to keep clean between them."),
+        ("last3", "2-3 grounded, reassuring sentences on why the last three years felt the way they did — dasha timing and its sub-periods, not personal failure."),
+        ("windows", "3-4 encouraging sentences on the strongest upcoming window to build and expand — what period drives it, why it opens, and how to make the most of it without over-reaching."),
+        ("money", "3-4 sentences on how wealth is earned, held and where it leaks for them, drawn from the money houses and their lords; practical and plain, never fatalistic."),
+        ("remedies", "2-3 sentences framing the suggested remedies as optional, low-pressure support — agency and sound business habits first, ritual second."),
+    ],
 }
 
 # --------------------------------------------------------------------------- #
@@ -290,10 +302,13 @@ def _first_name(s: str) -> str:
     return (s or "").strip().split(" ")[0] if s else ""
 
 
-def _facts_for_llm(payload: dict, product: str) -> dict:
+def _facts_for_llm(payload: dict, product: str = None) -> dict:
     """A compact, PII-scrubbed view of the computed facts. We never send mobile,
     email, exact DOB or birth coordinates — only first names and the astrological
     results the prose needs to stay accurate."""
+    if product is None:
+        product = (payload.get("product")
+                   or (payload.get("meta") or {}).get("product") or "marriage")
     meta = dict(payload.get("meta") or {})
     for k in list(meta.keys()):          # drop private/internal fields
         if k.startswith("_"):
@@ -358,6 +373,18 @@ def _facts_for_llm(payload: dict, product: str) -> dict:
                 facts["windows"] = near
         except Exception:
             pass
+
+    # Vyapar: the shared copy loop above only carries chart/roadmap/teaser. The
+    # substance the business prose describes lives in vyapar-specific computed
+    # blocks (already PII-free — first name only in meta), so pull them across so
+    # the model narrates real placements, house lords, dasha periods, the Sade
+    # Sati window and the money/partnership lines rather than inventing them.
+    if product == "vyapar":
+        for k in ("nature", "fit", "partnership", "last3", "strong_window",
+                  "years_after", "careful", "money", "remedies", "houses",
+                  "sade_sati", "year_ahead", "dhana_yoga", "summary"):
+            if k in payload:
+                facts[k] = payload[k]
     return facts
 
 
