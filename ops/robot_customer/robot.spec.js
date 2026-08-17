@@ -87,6 +87,7 @@ const ALL_PAGES = [
   { path: '/career',            label: 'Career (EN)' },
   { path: '/hinglish/career',   label: 'Career (Hinglish)' },
   { path: '/business-growth',   label: 'Business Growth (EN)' },
+  { path: '/career-growth',     label: 'Career Growth (EN)' },
   { path: '/jeevan',            label: 'Jeevan' },
   { path: '/login',             label: 'Login' },
   { path: '/about',             label: 'About' },
@@ -258,6 +259,25 @@ async function fillVyapar(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
+// Career Growth: single person, #kundliForm, has gender + employment situation +
+// experience + WhatsApp fields. Direct-to-payment (no teaser step), same
+// pattern as marriage-v2.
+async function fillCareerGrowth(page) {
+  await page.fill('#f-name', 'Test Rohan');
+  await page.selectOption('#f-gender', 'male');
+  await page.selectOption('#f-employment', 'changing-job');
+  await page.selectOption('#f-experience', '5-10');
+  await page.fill('#f-dd', '14');
+  await page.selectOption('#f-mm', '06');
+  await page.fill('#f-yy', '1996');
+  await page.selectOption('#f-hh', TIME.hh);
+  await page.selectOption('#f-mm2', TIME.mm);
+  await page.selectOption('#f-ap', TIME.ap);
+  await pickCity(page, 'f', 'Bengaluru');
+  await page.fill('#f-whatsapp', testPhone());
+  await page.locator('#kundliForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
   {
@@ -301,6 +321,13 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillVyapar,
     hasTeaser: false,   // submit reveals #sampleReport + sets REPORT_ID; pay is inside it
+  },
+  {
+    name: 'career-growth',
+    paths: { en: '/career-growth' },   // English only for now
+    form: '#kundliForm',
+    fill: fillCareerGrowth,
+    hasTeaser: false,   // direct-to-payment, same as marriage-v2/v3 — no teaser step
   },
 ];
 

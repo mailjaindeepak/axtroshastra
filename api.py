@@ -37,6 +37,7 @@ from report_view import render_report, render_milan, render_blueprint, render_vi
 from report_view_v2 import render_report_v2   # marriage report v2 (4-tier, LLM-narrated)
 from products import compute_milan, compute_blueprint, compute_vyapar
 from vidyarthi import compute_vidyarthi_report
+import career_growth_report
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
@@ -99,7 +100,7 @@ TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved T
 
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing",
-                  "vyapar": "Business Growth Report"}
+                  "vyapar": "Business Growth Report", "career_growth": "Career Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -127,6 +128,11 @@ PRODUCT_SVG = {
     "vyapar": _SVG_OPEN + '<path d="M5 25 H27"/>'
               '<path d="M8 21 L14 15 L18 19 L25 10"/>'
               '<path d="M25 10 H20 M25 10 V15"/></svg>',
+    # career growth (career_growth) — an upward trend line with a peak marker,
+    # distinct from vidyarthi's graduation cap (a different product: job-switch
+    # timing for working professionals, not student career/academic timing).
+    "career_growth": _SVG_OPEN + '<path d="M5 23 L12 16 L17 20 L27 9"/>'
+                     '<path d="M20 9 H27 V16"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -298,6 +304,8 @@ def _render_for(product, payload):
         return render_vyapar(payload)
     if product == "vidyarthi":
         return render_vidyarthi(payload)
+    if product == "career_growth":
+        return career_growth_report.render_career_growth(payload)
     html = render_report_v2(payload)
     # Devanagari marriage report for the /hi/marriage funnel (deterministic localizer)
     if (payload.get("meta") or {}).get("lang") == "hi":
@@ -494,9 +502,11 @@ class KundliIn(BaseModel):
     variant: str | None = None
     email: str | None = None
     captcha_token: str | None = None
-    product: str = "marriage"          # marriage | blueprint | vidyarthi
+    product: str = "marriage"          # marriage | blueprint | vidyarthi | vyapar | career_growth
     stage: str | None = None           # vidyarthi only: 10th | 12th | college | postgrad
     field: str | None = None           # vidyarthi only: set when stage is college/postgrad
+    employment_situation: str | None = None  # career_growth only: personalization, never affects scoring
+    experience: str | None = None            # career_growth only: personalization, never affects scoring
 
     @field_validator("time_quality")
     @classmethod
@@ -794,6 +804,11 @@ def create_kundli(inp: KundliIn):
                                           female=(inp.gender == "female"),
                                           time_quality=inp.time_quality,
                                           stage=inp.stage, field=inp.field)
+    elif inp.product == "career_growth":
+        report = career_growth_report.compute_career_growth(
+            inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
+            place=inp.place or "", employment_situation=inp.employment_situation,
+            experience=inp.experience, time_quality=inp.time_quality)
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -1701,7 +1716,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
-            "/business-growth", "/blog",
+            "/business-growth", "/career-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
