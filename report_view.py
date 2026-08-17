@@ -1975,6 +1975,27 @@ mein sabse achha kaam karte hain.</p></div>
 <p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
 Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
 <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+
+<style>@media screen{{body{{padding-bottom:88px}}}}
+#ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
+background:rgba(16,20,40,.96);border-top:1px solid rgba(228,176,74,.35);
+box-shadow:0 -6px 20px rgba(0,0,0,.28);
+padding:10px 12px calc(10px + env(safe-area-inset-bottom))}}
+#ax-stickybar .inner{{max-width:640px;margin:0 auto;display:flex;gap:10px}}
+#ax-stickybar a{{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+min-height:52px;text-align:center;text-decoration:none;border-radius:12px;padding:12px 10px;
+font:700 16px/1.15 system-ui,sans-serif;-webkit-tap-highlight-color:transparent}}
+#ax-stickybar .pdf{{background:#C93B2E;color:#fff}}
+#ax-stickybar .wa{{background:#25D366;color:#0b2f18}}
+@media (min-width:640px){{#ax-stickybar a{{min-height:48px;font-size:15px}}}}
+@media print{{#ax-stickybar{{display:none!important}}}}</style>
+<div id='ax-stickybar'><div class='inner'>
+<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'>&#11015; Download PDF</a>
+<a class='wa' href='#' onclick='axShare();return false;'>Share on WhatsApp</a>
+</div></div>
+<script>
+window.axShare=function(){{var url=location.href;var t='Check out my life blueprint report from Axtroshastra';if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+</script>
 </body></html>"""
 
 
