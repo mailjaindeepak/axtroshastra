@@ -47,7 +47,7 @@ test.beforeAll(() => {
 // read /healthz {version} and run a feature's tests only when its commit is an
 // ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
 const PENDING_DEPLOY = new Set(
-  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3')
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/business-growth')
     .split(',').map((s) => s.trim()).filter(Boolean),
 );
 
@@ -86,6 +86,7 @@ const ALL_PAGES = [
   { path: '/hi/marriage-v3',    label: 'Marriage V3 Parent (HI)' },
   { path: '/career',            label: 'Career (EN)' },
   { path: '/hinglish/career',   label: 'Career (Hinglish)' },
+  { path: '/business-growth',   label: 'Business Growth (EN)' },
   { path: '/jeevan',            label: 'Jeevan' },
   { path: '/login',             label: 'Login' },
   { path: '/about',             label: 'About' },
@@ -241,6 +242,22 @@ async function fillCareer(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
+// Business growth (vyapar): single person, #kundliForm, WhatsApp field, no
+// gender/stage. Submit reveals the personalized preview and sets REPORT_ID
+// (payment happens inside that preview, so this stops before any charge).
+async function fillVyapar(page) {
+  await page.fill('#f-name', 'Test Rohit');
+  await page.fill('#f-dd', '06');
+  await page.selectOption('#f-mm', '10');
+  await page.fill('#f-yy', '1987');
+  await page.selectOption('#f-hh', TIME.hh);
+  await page.selectOption('#f-mm2', TIME.mm);
+  await page.selectOption('#f-ap', TIME.ap);
+  await pickCity(page, 'f', 'Jaipur');
+  await page.fill('#f-whatsapp', testPhone());
+  await page.locator('#kundliForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
   {
@@ -277,6 +294,13 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillCareer,
     hasTeaser: true,
+  },
+  {
+    name: 'business-growth',
+    paths: { en: '/business-growth' },   // English only for now; Hindi deferred
+    form: '#kundliForm',
+    fill: fillVyapar,
+    hasTeaser: false,   // submit reveals #sampleReport + sets REPORT_ID; pay is inside it
   },
 ];
 
@@ -318,7 +342,7 @@ test.describe('B1 — Page health', () => {
 // ==========================================================================
 test.describe('B2 — Funnel smoke', () => {
   for (const funnel of FUNNELS) {
-    for (const lang of ['en', 'hi']) {
+    for (const lang of Object.keys(funnel.paths)) {   // only the languages a funnel actually defines
       const path = funnel.paths[lang];
 
       test(`${funnel.name} [${lang}] form -> submit -> pipeline works (no payment)`, async ({ page, request }) => {
