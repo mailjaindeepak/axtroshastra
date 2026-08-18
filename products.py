@@ -9,7 +9,21 @@ from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
                           KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI,
                           REMEDY_7L, REMEDY_NODE, BIZ_TEMPERAMENT, BIZ_SECTOR_10L,
                           BIZ_PARTNERSHIP_7L, BIZ_OBSTACLE, BIZ_DASHA, BENEFIC_BIZ,
-                          STRONG_WINDOW_DO, STRONG_WINDOW_DONT)
+                          STRONG_WINDOW_DO, STRONG_WINDOW_DONT,
+                          BIZ_TEMPERAMENT_HI, BIZ_SECTOR_10L_HI, BIZ_DASHA_HI)
+
+# Devanagari helpers for the Vyapar /hi/ teaser (mirrors milan's authored _hi
+# fields — no runtime translation, no LLM). Planet names + month abbreviations
+# to Devanagari; the phrase content comes from the BIZ_*_HI tables above.
+_GRAHA_HI = {"Sun": "सूर्य", "Moon": "चंद्र", "Mars": "मंगल", "Mercury": "बुध",
+             "Jupiter": "गुरु", "Venus": "शुक्र", "Saturn": "शनि", "Rahu": "राहु", "Ketu": "केतु"}
+_MON_HI = {"Jan": "जनवरी", "Feb": "फ़रवरी", "Mar": "मार्च", "Apr": "अप्रैल", "May": "मई",
+           "Jun": "जून", "Jul": "जुलाई", "Aug": "अगस्त", "Sep": "सितंबर", "Oct": "अक्टूबर",
+           "Nov": "नवंबर", "Dec": "दिसंबर"}
+def _date_hi(s):
+    import re
+    return re.sub(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",
+                  lambda m: _MON_HI[m.group(1)], str(s))
 
 # ============================================================ ASHTAKOOTA TABLES
 # Varna by moon sign (0=Shudra..3=Brahmin for hierarchy compare)
@@ -662,6 +676,92 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     sector = BIZ_SECTOR_10L[tenth_lord]
     partnership_map = BIZ_PARTNERSHIP_7L[seventh_lord]
 
+    # ---- Devanagari resources for the /hi/business-growth report (additive).
+    # English fields below are the contract and never change; these feed the
+    # parallel *_hi twins the Hindi renderer reads. Same meaning, no LLM. ----
+    from jyotish_maps import BIZ_PARTNERSHIP_7L_HI, BIZ_OBSTACLE_HI
+    temperament_hi = BIZ_TEMPERAMENT_HI[ref]
+    sector_hi = BIZ_SECTOR_10L_HI[tenth_lord]
+    partnership_map_hi = BIZ_PARTNERSHIP_7L_HI[seventh_lord]
+    _SADE_PHASE_HI = {"rising phase": "उठान का चरण", "peak phase": "चरम चरण",
+                      "setting phase": "उतार का चरण"}
+    _TONE_LABEL_HI = {"good": "सहायक", "warn": "कठिन", "neutral": "मिला-जुला"}
+    _H_ORD_HI = {1: "पहले", 2: "दूसरे", 3: "तीसरे", 4: "चौथे", 5: "पाँचवें",
+                 6: "छठे", 7: "सातवें", 8: "आठवें", 9: "नौवें", 10: "दसवें",
+                 11: "ग्यारहवें", 12: "बारहवें"}
+    WEALTH_2L_HI = [
+        "अपने बल की कमाई — आमदनी सीधे आपकी अपनी मेहनत और नाम से जुड़ी",
+        "मज़बूत संचय-प्रवृत्ति — पैसा तब बढ़ता है जब पास रखा और ख़ुद सँभाला जाए",
+        "हुनर, संचार या साहस से कमाई — आमदनी पहल के पीछे आती है",
+        "संपत्ति बनाने का ढंग — ज़मीन-जायदाद, वाहन और घर से जुड़ा धन आपको रास आता है",
+        "रचनात्मकता, सट्टे या शिक्षण से लाभ — सोच-समझकर लिया जोखिम फल दे सकता है",
+        "सेवा और समस्या-समाधान से कमाई — स्थिर पर मुक़ाबले वाले क्षेत्र",
+        "साझेदारी से धन — कारोबारी साझेदार और जीवनसाथी का भाग्य दोनों मायने रखते हैं",
+        "अचानक लाभ और दूसरों के संसाधन — बीमा, विरासत और बदलाव से जुड़ा धन",
+        "ज्ञान, दूरी या धर्म से भाग्य — घर से दूर कमाई बढ़ती है",
+        "करियर से जुड़ा धन — पद और रुतबा सीधे आमदनी चलाते हैं",
+        "नेटवर्क के पैमाने का लाभ — दायरा जितना बड़ा, कमाई उतनी बड़ी",
+        "ख़र्च के साथ कमाई — पैसा आता-जाता रहता है; विदेशी या संस्थागत संबंध उसे थामने में मदद करते हैं"]
+    GAINS_11L_HI = [
+        "लाभ अपनी पहल से आता है — आपको माँगना, आवेदन करना, शुरू करना होगा",
+        "लाभ बचत और पारिवारिक संसाधनों से मज़बूत होता है",
+        "भाई-बहन, मीडिया, लेखन या छोटे उद्यमों से लाभ",
+        "संपत्ति, मातृभूमि और भावनात्मक स्थिरता से लाभ",
+        "संतान, विद्यार्थियों, रचनात्मकता या बाज़ारों से लाभ",
+        "मेहनत और मुक़ाबले के बाद लाभ — कमाया हुआ, कभी उपहार में नहीं",
+        "साझेदारियों और जन-व्यवहार से लाभ",
+        "गहरी शोध, दूसरों के पैसे या अचानक मोड़ से लाभ",
+        "गुरुओं, उच्च शिक्षा और लंबी यात्राओं से लाभ",
+        "करियर की उत्कृष्टता से लाभ — साख इनाम में बदलती है",
+        "लाभ की मज़बूत छाप — नेटवर्क आपकी बनाई हर चीज़ को कई गुना करते हैं",
+        "ऐसा लाभ जो कहीं और की वृद्धि को सींचता है — रिसाव पर नज़र रखें, इसे निवेश में लगाएँ"]
+    # short, plain one-liners for the page-3 summary capsule (detail keeps GAINS_11L_HI)
+    GAINS_11L_SHORT_HI = [
+        "लाभ आपकी अपनी पहल से आता है।",
+        "लाभ बचत और परिवार के सहारे से आता है।",
+        "भाई-बहन, मीडिया या छोटे काम से लाभ।",
+        "संपत्ति और घर-ज़मीन से लाभ।",
+        "संतान, रचनात्मकता या बाज़ार से लाभ।",
+        "मेहनत और मुक़ाबले के बाद लाभ मिलता है।",
+        "साझेदारी और जन-व्यवहार से लाभ।",
+        "शोध, दूसरों के पैसे या अचानक मोड़ से लाभ।",
+        "गुरु, उच्च शिक्षा और लंबी यात्रा से लाभ।",
+        "करियर और साख से लाभ मिलता है।",
+        "नेटवर्क आपकी हर मेहनत को कई गुना करते हैं।",
+        "कमाई अच्छी, पर बचत कमज़ोर — पैसा टिकाना सीखें।"]
+    # short, plain one-liners for the page-3 summary capsule (detail keeps GAINS_11L)
+    GAINS_11L_SHORT = [
+        "Gains come from your own initiative.",
+        "Gains come from savings and family.",
+        "Gains through siblings, media or small ventures.",
+        "Gains through property and home base.",
+        "Gains through children, creativity or markets.",
+        "Gains come after effort — earned, never gifted.",
+        "Gains through partnerships and public dealing.",
+        "Gains through research, others' money or sudden turns.",
+        "Gains through higher learning and long journeys.",
+        "Gains through career — reputation becomes reward.",
+        "Networks multiply whatever you build.",
+        "You earn well, but it leaks — invest it."]
+    STRONG_WINDOW_DO_HI = [
+        "इस दौर में शुरुआत करें, फैलाएँ या पूँजी जुटाएँ — हवा आपके पक्ष में है।",
+        "जब भरोसा ऊँचा है तभी अपने सबसे अच्छे ग्राहक और लंबे अनुबंध पक्के कर लें।",
+        "शुरुआती लाभ को ख़र्च करने के बजाय कारोबार में दोबारा लगाएँ।"]
+    STRONG_WINDOW_DONT_HI = [
+        "सही मौक़े का इंतज़ार करते हुए बैठे न रहें — यह दौर निर्णायक क़दम को फल देता है।",
+        "उम्मीद में हद से ज़्यादा क़र्ज़ न लें; हमेशा एक कामकाजी भंडार रखें।"]
+    REMEDY_LINE_HI = {
+        "Sun": "रविवार को: दिन को हल्का और अनुशासित रखें और “ॐ घृणि सूर्याय नमः” का जप करें। माणिक केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Moon": "सोमवार को: दिन को हल्का और अनुशासित रखें और “ॐ सोम सोमाय नमः” का जप करें। मोती केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Mars": "मंगलवार को: दिन को हल्का और अनुशासित रखें और “ॐ अं अंगारकाय नमः” का जप करें। मूँगा केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Mercury": "बुधवार को: दिन को हल्का और अनुशासित रखें और “ॐ बुं बुधाय नमः” का जप करें। पन्ना केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Jupiter": "गुरुवार को: दिन को हल्का और अनुशासित रखें और “ॐ ब्रीं बृहस्पतये नमः” का जप करें। पुखराज केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Venus": "शुक्रवार को: दिन को हल्का और अनुशासित रखें और “ॐ शुं शुक्राय नमः” का जप करें। हीरा केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Saturn": "शनिवार को: दिन को हल्का और अनुशासित रखें और “ॐ शं शनैश्चराय नमः” का जप करें। नीलम केवल विशेषज्ञ की सलाह के बाद ही विचारें।",
+        "Rahu": "शनिवार को: “ॐ रां राहवे नमः” का जप करें। राहु के दौर में कोई रत्न नहीं — दिनचर्या स्थिर रखें और फ़ैसले जल्दबाज़ी में न लें।",
+        "Ketu": "मंगलवार को: “ॐ कें केतवे नमः” का जप करें। केतु के दौर में कोई रत्न नहीं — स्पष्टता, समापन और सरल आदतों को तरजीह दें।"}
+    _REMEDY_LINE_HI_DEFAULT = "दिनचर्या स्थिर और फ़ैसले धीरज से रखें; अनुशासन ही टिकाऊ उपाय है।"
+
     # ---- fit: sector by 10th lord, tilted by the stronger of Venus / Mercury ----
     tilt = ""
     vp, mp = _biz_planet_power(g["Venus"]), _biz_planet_power(g["Mercury"])
@@ -673,6 +773,14 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                 "keep the deal-cycle short and the inventory moving.")
     fit_label = sector["label"]
     fit_sub = sector["sub"] + ("." + tilt if tilt else "")
+    tilt_hi = ""
+    if vp > mp and tenth_lord != "Venus":
+        tilt_hi = (" अच्छी स्थिति में शुक्र एक रचनात्मक या लाइफ़स्टाइल बढ़त देता है — "
+                   "वहाँ झुकें जहाँ पसंद और डिज़ाइन बिक्री तय करते हैं।")
+    elif mp > vp and tenth_lord != "Mercury":
+        tilt_hi = (" मज़बूत बुध व्यापार और तेज़ लेन-देन के हक़ में है — "
+                   "सौदे का चक्र छोटा और माल चलता हुआ रखें।")
+    fit_sub_hi = sector_hi["sub"] + ("." + tilt_hi if tilt_hi else "")
 
     # ---- full dasha tree, current period, roadmap (blueprint idioms) ----
     tree = vimshottari_tree(moon.lon, dt, today + timedelta(days=40 * 365.25))
@@ -683,6 +791,7 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                             "from": max(md["start"], today).strftime("%Y"),
                             "to": md["end"].strftime("%Y"),
                             "theme": BIZ_DASHA[md["lord"]]["body"],
+                            "theme_hi": BIZ_DASHA_HI[md["lord"]]["body"],
                             "tone": BIZ_DASHA[md["lord"]]["tone"],
                             "current": md["start"] <= today <= md["end"]})
     active_md = next((m for m in tree if m["start"] <= today <= m["end"]), None)
@@ -727,6 +836,9 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     window_label = _fmt_window(strong_ad)
     window_lord = strong_ad["lord"]
     window_sub = BIZ_DASHA[window_lord]["body"]
+    window_sub_short = BIZ_DASHA[window_lord]["body_short"]
+    window_sub_hi = BIZ_DASHA_HI[window_lord]["body"]
+    window_sub_short_hi = BIZ_DASHA_HI[window_lord]["body_short_hi"]
 
     # ---- sade sati + Jupiter/Saturn transits from Moon (blueprint idioms) ----
     sade = _sade_sati(moon.sign, today)
@@ -753,7 +865,7 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
 
     # ---- last ~3 years: backward read of the recent dasha ----
     frm = today - timedelta(days=int(3 * 365.25))
-    last_points, hard_n, seen = [], 0, set()
+    last_points, last_points_hi, hard_n, seen = [], [], 0, set()
     for md in tree:
         for ad in md["ads"]:
             if ad["end"] < frm or ad["start"] > today:
@@ -766,21 +878,40 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
             if d["tone"] == "warn":
                 hard_n += 1
             last_points.append(f"{ad['lord']} sub-period — {d['body']}.")
+            last_points_hi.append(f"{_GRAHA_HI.get(ad['lord'], ad['lord'])} का उप-दौर — "
+                                  f"{BIZ_DASHA_HI[ad['lord']]['body']}।")
     if hard_n >= 2:
         last_lead = ("The last three years leaned hard — the dasha sub-periods pulled "
                      "toward friction and slow cash rather than easy expansion.")
+        last_lead_hi = ("पिछले तीन साल भारी रहे — दशा के उप-दौर आसान विस्तार के बजाय "
+                        "रुकावट और धीमी नक़दी की ओर खींचते रहे।")
+        last_lead_short = "A rough stretch pulled focus from growth."
+        last_lead_short_hi = "पिछले तीन साल भारी रहे — रुकावट और धीमी नक़दी।"
     elif hard_n == 1:
         last_lead = ("The last three years were mixed — one testing sub-period sat "
                      "beside steadier ones, so momentum came in stops and starts.")
+        last_lead_hi = ("पिछले तीन साल मिले-जुले रहे — एक परखने वाला उप-दौर कुछ स्थिर "
+                        "दौरों के साथ रहा, इसलिए गति रुक-रुककर आई।")
+        last_lead_short = "A mixed stretch — momentum came in fits."
+        last_lead_short_hi = "पिछले तीन साल मिले-जुले रहे — गति रुक-रुककर आई।"
     else:
         last_lead = ("The last three years were broadly supportive — the sub-periods "
                      "favoured trade and connection more than obstruction.")
-    last3 = {"lead": last_lead, "points": last_points[:4] or
-             ["A quiet stretch — no single dominant sub-period drove the last three years."]}
+        last_lead_hi = ("पिछले तीन साल कुल मिलाकर सहायक रहे — उप-दौरों ने रुकावट से "
+                        "ज़्यादा व्यापार और जुड़ाव का साथ दिया।")
+        last_lead_short = "A broadly supportive few years."
+        last_lead_short_hi = "पिछले तीन साल कुल मिलाकर सहायक रहे।"
+    last3 = {"lead": last_lead, "lead_hi": last_lead_hi,
+             "points": last_points[:4] or
+             ["A quiet stretch — no single dominant sub-period drove the last three years."],
+             "points_hi": last_points_hi[:4] or
+             ["एक शांत दौर — पिछले तीन सालों को किसी एक प्रमुख उप-दौर ने नहीं चलाया।"]}
 
     # ---- years after: the upcoming mahadashas, business-framed ----
     years_after = [{"range": f"{r['from']}–{r['to']}", "tone": r["tone"],
-                    "body": f"{r['lord']} Mahadasha — {r['theme']}."} for r in roadmap]
+                    "body": f"{r['lord']} Mahadasha — {r['theme']}.",
+                    "body_hi": f"{_GRAHA_HI.get(r['lord'], r['lord'])} महादशा — {r['theme_hi']}।"}
+                   for r in roadmap]
 
     # ---- careful phases: upcoming warn sub-periods (next ~5y) + sade sati ----
     careful = []
@@ -791,26 +922,49 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                 continue
             if BIZ_DASHA[ad["lord"]]["tone"] == "warn" and ad["end"] > today:
                 rng = f"{max(ad['start'], today).strftime('%b %Y')} – {ad['end'].strftime('%b %Y')}"
-                careful.append({"range": rng,
+                careful.append({"range": rng, "range_hi": _date_hi(rng),
                                 "body": f"{ad['lord']} sub-period — {BIZ_DASHA[ad['lord']]['body']}. "
-                                        "Hold reserves, avoid big new leverage."})
+                                        "Hold reserves, avoid big new leverage.",
+                                "body_short": f"{ad['lord']} phase — keep reserves, avoid new debt.",
+                                "body_hi": f"{_GRAHA_HI.get(ad['lord'], ad['lord'])} का उप-दौर — "
+                                           f"{BIZ_DASHA_HI[ad['lord']]['body']}। भंडार बचाकर रखें, "
+                                           "बड़ा नया क़र्ज़ न लें।",
+                                "body_short_hi": f"{_GRAHA_HI.get(ad['lord'], ad['lord'])} का "
+                                                 "दौर — बचत रखें, नया क़र्ज़ न लें।"})
     if sade.get("active"):
         careful.insert(0, {"range": f"through {sade['ends']}",
+                           "range_hi": f"{_date_hi(sade['ends'])} तक",
                            "body": f"Sade Sati {sade['phase']} — Saturn is pressing your Moon. "
-                                   "Consolidate, cut waste and delay the biggest bets until it lifts."})
-    careful = careful[:4] or [{"range": "next 5 years",
+                                   "Consolidate, cut waste and delay the biggest bets until it lifts.",
+                           "body_short": "Sade Sati — delay big bets, cut spending.",
+                           "body_hi": f"साढ़े साती {_SADE_PHASE_HI.get(sade['phase'], sade['phase'])} — "
+                                      "शनि आपके चंद्र पर दबाव डाल रहा है। खपत घटाएँ, फ़िज़ूलख़र्ची काटें "
+                                      "और सबसे बड़े दांव तब तक टालें जब तक यह हल्का न पड़े।",
+                           "body_short_hi": "साढ़े साती — बड़े दांव टालें, ख़र्च घटाएँ।"})
+    careful = careful[:4] or [{"range": "next 5 years", "range_hi": "अगले 5 साल",
                                "body": "No sharply hard sub-period stands out — "
-                                       "the usual discipline on cash and leverage is enough."}]
+                                       "the usual discipline on cash and leverage is enough.",
+                               "body_short": "No big risk — the usual cash discipline is enough.",
+                               "body_hi": "कोई तीखा कठिन उप-दौर सामने नहीं है — नक़दी और "
+                                          "क़र्ज़ पर सामान्य अनुशासन ही काफ़ी है।",
+                               "body_short_hi": "कोई बड़ा जोखिम नहीं — बचत का सामान्य ध्यान काफ़ी।"}]
 
     # ---- money: earning pattern, gains pattern, reserve caution ----
     money = {
         "earn_leak": WEALTH_2L[sec_house - 1],
+        "earn_leak_hi": WEALTH_2L_HI[sec_house - 1],
         "gains": GAINS_11L[ele_house - 1],
+        "gains_hi": GAINS_11L_HI[ele_house - 1],
         "reserve": (f"Saturn currently transits your {sat_h}{_ordinal(sat_h)} house from the Moon — "
                     "keep a working cash reserve and avoid over-leverage until it moves on."
                     if sat_h in (1, 2, 8, 12) else
                     "Cash discipline is your steadier lever than any single big bet — "
-                    "reserve first, then expand.")}
+                    "reserve first, then expand."),
+        "reserve_hi": (f"शनि अभी आपके चंद्र से {_H_ORD_HI.get(sat_h, str(sat_h))} भाव में गोचर कर रहा है — "
+                       "जब तक यह आगे न बढ़े, एक कामकाजी नक़दी-भंडार रखें और हद से ज़्यादा क़र्ज़ से बचें।"
+                       if sat_h in (1, 2, 8, 12) else
+                       "किसी एक बड़े दांव से ज़्यादा भरोसेमंद लीवर आपका नक़दी-अनुशासन है — "
+                       "पहले भंडार, फिर विस्तार।")}
 
     # ---- remedies: obstructing planets among the business significators ----
     biz_lords = list(dict.fromkeys([tenth_lord, second_lord, eleventh_lord, seventh_lord]))
@@ -822,12 +976,16 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     remedies = []
     for lord in afflicted[:3]:
         remedies.append({"obstacle": BIZ_OBSTACLE.get(lord, "friction that slows the business"),
-                         "remedy": _biz_remedy_line(lord)})
+                         "obstacle_hi": BIZ_OBSTACLE_HI.get(lord, "ऐसी रुकावट जो कारोबार को धीमा करती है"),
+                         "remedy": _biz_remedy_line(lord),
+                         "remedy_hi": REMEDY_LINE_HI.get(lord, _REMEDY_LINE_HI_DEFAULT)})
     # add the current dasha lord's obstacle if it's a hard period and not already covered
     if active_md and BIZ_DASHA[active_md["lord"]]["tone"] == "warn" \
             and active_md["lord"] not in afflicted:
         remedies.append({"obstacle": BIZ_OBSTACLE.get(active_md["lord"], "a demanding phase"),
-                         "remedy": _biz_remedy_line(active_md["lord"])})
+                         "obstacle_hi": BIZ_OBSTACLE_HI.get(active_md["lord"], "एक माँग भरा दौर"),
+                         "remedy": _biz_remedy_line(active_md["lord"]),
+                         "remedy_hi": REMEDY_LINE_HI.get(active_md["lord"], _REMEDY_LINE_HI_DEFAULT)})
     remedies = remedies[:3]
 
     # ---- year-by-year outlook for the next ~5 years ----
@@ -846,50 +1004,74 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
             ad_lord = active_md["lord"] if active_md else "Jupiter"
         d = BIZ_DASHA[ad_lord]
         year_by_year.append({"year": yr, "tone": d["tone"],
-                             "outlook": f"{ad_lord} sub-period — {d['body']}."})
+                             "outlook": f"{ad_lord} sub-period — {d['body']}.",
+                             "outlook_hi": f"{_GRAHA_HI.get(ad_lord, ad_lord)} का उप-दौर — "
+                                           f"{BIZ_DASHA_HI[ad_lord]['body']}।"})
 
     # ---- houses table: 2nd / 7th / 10th / 11th business houses ----
     house_notes = {2: WEALTH_2L[sec_house - 1], 7: partnership_map["verdict"],
                    10: sector["label"], 11: GAINS_11L[ele_house - 1]}
+    house_notes_hi = {2: WEALTH_2L_HI[sec_house - 1], 7: partnership_map_hi["verdict"],
+                      10: sector_hi["label"], 11: GAINS_11L_HI[ele_house - 1]}
     houses = []
     for h in (2, 7, 10, 11):
         lord = _hlord(h)
         houses.append({"house": h, "sign": SIGNS[_hsign(h)], "lord": lord,
-                       "lord_house": _lord_house(lord), "note": house_notes[h]})
+                       "lord_house": _lord_house(lord), "note": house_notes[h],
+                       "note_hi": house_notes_hi[h]})
 
     # ---- dhana yoga: do the 2nd & 11th lords combine? ----
-    dy_present, dy_line = False, ""
+    dy_present, dy_line, dy_line_hi = False, "", ""
+    _sl_hi = _GRAHA_HI.get(second_lord, second_lord)
+    _el_hi = _GRAHA_HI.get(eleventh_lord, eleventh_lord)
     if second_lord == eleventh_lord:
         dy_present = True
         dy_line = (f"One planet ({second_lord}) rules both your wealth (2nd) and gains (11th) "
                    "houses — a natural Dhana (wealth) yoga: earning and profit pull the same way.")
+        dy_line_hi = (f"एक ही ग्रह ({_sl_hi}) आपके धन (द्वितीय) और लाभ (एकादश) दोनों भावों का "
+                      "स्वामी है — एक स्वाभाविक धन योग: कमाई और मुनाफ़ा एक ही दिशा में खींचते हैं।")
     elif g[second_lord].sign == g[eleventh_lord].sign:
         dy_present = True
         dy_line = (f"Your 2nd lord ({second_lord}) and 11th lord ({eleventh_lord}) sit together "
                    "in one sign — a Dhana yoga where income and gains reinforce each other.")
+        dy_line_hi = (f"आपका द्वितीय स्वामी ({_sl_hi}) और एकादश स्वामी ({_el_hi}) एक ही राशि में "
+                      "साथ बैठे हैं — एक धन योग जहाँ आमदनी और लाभ एक-दूसरे को मज़बूत करते हैं।")
     elif g[second_lord].sign == _hsign(11) and g[eleventh_lord].sign == _hsign(2):
         dy_present = True
         dy_line = (f"Your 2nd and 11th lords ({second_lord}, {eleventh_lord}) exchange houses "
                    "(Parivartana) — a strong classical wealth combination.")
+        dy_line_hi = (f"आपके द्वितीय और एकादश स्वामी ({_sl_hi}, {_el_hi}) भावों की अदला-बदली "
+                      "करते हैं (परिवर्तन) — एक मज़बूत शास्त्रीय धन-संयोग।")
     else:
         dy_line = (f"Your 2nd lord ({second_lord}) and 11th lord ({eleventh_lord}) don't directly "
                    "combine — wealth builds through deliberate effort rather than an automatic yoga.")
-    dhana_yoga = {"present": dy_present, "line": dy_line}
+        dy_line_hi = (f"आपका द्वितीय स्वामी ({_sl_hi}) और एकादश स्वामी ({_el_hi}) सीधे नहीं मिलते — "
+                      "धन किसी स्वतः योग से नहीं, बल्कि सोचे-समझे प्रयास से बनता है।")
+    dhana_yoga = {"present": dy_present, "line": dy_line, "line_hi": dy_line_hi}
 
     # ---- solo vs partner leaning ----
     if temperament["solo"] == "solo" and seventh_lord in ("Saturn", "Sun", "Mars"):
         solo_value = "Built to go solo"
+        solo_value_hi = "अकेले चलने के लिए बना"
     elif temperament["solo"] == "partner":
         solo_value = "Better with a partner"
+        solo_value_hi = "साझेदार के साथ बेहतर"
     else:
         solo_value = "Solo by nature, open to the right partner"
+        solo_value_hi = "स्वभाव से अकेले, पर सही साझेदार के लिए खुले"
 
     # ---- current-period tone ----
     cur_lord = active_ad["lord"] if active_ad else (active_md["lord"] if active_md else "—")
     cur_tone = BIZ_DASHA.get(cur_lord, {}).get("tone", "neutral")
     cur_body = BIZ_DASHA.get(cur_lord, {}).get("body", "")
+    cur_body_short = BIZ_DASHA.get(cur_lord, {}).get("body_short", "")
+    cur_body_hi = BIZ_DASHA_HI.get(cur_lord, {}).get("body", "")
+    cur_body_short_hi = BIZ_DASHA_HI.get(cur_lord, {}).get("body_short_hi", "")
     current_dasha = (f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"
                      if active_ad else "—")
+    current_dasha_hi = (f"{_GRAHA_HI.get(active_md['lord'], active_md['lord'])} महादशा — "
+                        f"{_GRAHA_HI.get(active_ad['lord'], active_ad['lord'])} अंतर्दशा"
+                        if active_ad else "—")
 
     # ---- one-breath honest paragraph ----
     hard_frame = (f"a Sade Sati squeeze that eases around {sade['ends']}"
@@ -907,22 +1089,43 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     last_tone = "warn" if hard_n >= 2 else ("neutral" if hard_n == 1 else "good")
     summary = [
         {"label": "Your type", "value": temperament["type"],
-         "sub": temperament["work"], "tone": "neutral"},
-        {"label": "Best-fit line", "value": fit_label,
-         "sub": fit_sub, "tone": "good"},
-        {"label": "Solo or partner", "value": solo_value,
-         "sub": partnership_map["verdict"], "tone": "neutral"},
+         "value_hi": temperament_hi["type"],
+         "sub": temperament["work_short"], "sub_hi": temperament_hi["work_short_hi"], "tone": "neutral"},
+        {"label": "Best-fit line", "value": fit_label, "value_hi": sector_hi["label"],
+         "sub": sector["sub_short"], "sub_hi": sector_hi["sub_short_hi"], "tone": "good"},
+        {"label": "Solo or partner", "value": solo_value, "value_hi": solo_value_hi,
+         "sub": partnership_map["verdict_short"], "sub_hi": partnership_map_hi["verdict_short_hi"], "tone": "neutral"},
         {"label": "Last 3 years", "value": _TONE_LABEL[last_tone],
-         "sub": last_lead, "tone": last_tone},
-        {"label": "Right now", "value": current_dasha,
-         "sub": cur_body or "A transitional phase.", "tone": cur_tone},
-        {"label": "When it turns", "value": window_label,
-         "sub": f"{window_lord} sub-period — {window_sub}", "tone": "good"},
+         "value_hi": _TONE_LABEL_HI[last_tone],
+         "sub": last_lead_short, "sub_hi": last_lead_short_hi, "tone": last_tone},
+        {"label": "Right now", "value": current_dasha, "value_hi": current_dasha_hi,
+         "sub": cur_body_short or "A transitional phase.",
+         "sub_hi": cur_body_short_hi or "एक बदलाव का दौर।", "tone": cur_tone},
+        {"label": "When it turns", "value": window_label, "value_hi": _date_hi(window_label),
+         "sub": f"{window_lord}: {window_sub_short}",
+         "sub_hi": f"{_GRAHA_HI.get(window_lord, window_lord)} का उप-दौर — {window_sub_short_hi}", "tone": "good"},
         {"label": "Money", "value": ("Wealth yoga present" if dy_present else "Effort-built wealth"),
-         "sub": money["gains"], "tone": "good" if dy_present else "neutral"},
+         "value_hi": ("धन योग मौजूद" if dy_present else "मेहनत से बना धन"),
+         "sub": GAINS_11L_SHORT[ele_house - 1], "sub_hi": GAINS_11L_SHORT_HI[ele_house - 1], "tone": "good" if dy_present else "neutral"},
         {"label": "Be careful", "value": careful[0]["range"],
-         "sub": careful[0]["body"], "tone": "warn"},
+         "value_hi": careful[0]["range_hi"],
+         "sub": careful[0]["body_short"], "sub_hi": careful[0]["body_short_hi"], "tone": "warn"},
     ]
+
+    # ---- Devanagari (_hi) teaser variants for the /hi/business-growth funnel.
+    # Additive: the English fields above stay the contract; business-growth.hi.html
+    # reads _hi first and falls back to English. Values come from the BIZ_*_HI
+    # tables; dates/planets via _date_hi/_GRAHA_HI. Same meaning, no LLM.
+    # (temperament_hi/sector_hi/fit_sub_hi are computed once, higher up.) ----
+    hard_frame_hi = (f"साढ़े साती का दबाव रहा जो {_date_hi(sade['ends'])} के आसपास हल्का पड़ता है"
+                     if sade.get("active") else
+                     f"एक कठिन {_GRAHA_HI.get(cur_lord, cur_lord)} का दौर रहा" if cur_tone == "warn"
+                     else "सफ़र स्थिर पर कुछ ख़ास नहीं रहा")
+    breath_hi = (f"मूल रूप से आप {temperament_hi['type']} हैं। आपका पैसा {sector_hi['label']} से "
+                 f"सबसे अच्छा चलता है। हाल में {hard_frame_hi}, पर "
+                 f"{_GRAHA_HI.get(window_lord, window_lord)} "
+                 f"{_date_hi(strong_ad['start'].strftime('%b %Y'))} के आसपास असली मोड़ लाता है — "
+                 "अब बनाने और बढ़ाने का समय है, सिर्फ़ टिके रहने का नहीं।")
 
     return {
         "product": "vyapar",
@@ -937,6 +1140,14 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
             "type_label": temperament["type"],
             "hard_ends": hard_ends,
             "breath": breath,
+            # ---- Devanagari variants (Hindi funnel) ----
+            "window_label_hi": _date_hi(window_label),
+            "window_sub_hi": BIZ_DASHA_HI[window_lord]["body"],
+            "fit_label_hi": sector_hi["label"],
+            "fit_sub_hi": fit_sub_hi,
+            "type_label_hi": temperament_hi["type"],
+            "hard_ends_hi": _date_hi(hard_ends),
+            "breath_hi": breath_hi,
         },
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
@@ -944,19 +1155,30 @@ def compute_vyapar(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                                        "combust": p.combust} for p in g.values()}},
         "summary": summary,
         "nature": {"lagna_line": BIZ_TEMPERAMENT[ch["lagna_sign"]]["work"],
+                   "lagna_line_hi": BIZ_TEMPERAMENT_HI[ch["lagna_sign"]]["work"],
                    "moon_line": BIZ_TEMPERAMENT[moon.sign]["gut"],
+                   "moon_line_hi": BIZ_TEMPERAMENT_HI[moon.sign]["gut"],
                    "weak_spot": temperament["weak"],
+                   "weak_spot_hi": temperament_hi["weak"],
                    "note_chandra": use_chandra},
-        "fit": {"types": sector["types"], "avoid": sector["avoid"]},
+        "fit": {"types": sector["types"], "types_hi": sector_hi["types"],
+                "avoid": sector["avoid"], "avoid_hi": sector_hi["avoid"]},
         "partnership": {"verdict": partnership_map["verdict"],
+                        "verdict_hi": partnership_map_hi["verdict"],
                         "blessing": partnership_map["blessing"],
+                        "blessing_hi": partnership_map_hi["blessing"],
                         "caution": partnership_map["caution"],
-                        "who": partnership_map["who"]},
+                        "caution_hi": partnership_map_hi["caution"],
+                        "who": partnership_map["who"],
+                        "who_hi": partnership_map_hi["who"]},
         "last3": last3,
-        "strong_window": {"label": window_label,
+        "strong_window": {"label": window_label, "label_hi": _date_hi(window_label),
                           "body": f"{window_lord} takes over as the driving period here — "
                                   f"{window_sub}. This is your build-and-expand window.",
-                          "do": STRONG_WINDOW_DO, "dont": STRONG_WINDOW_DONT},
+                          "body_hi": f"{_GRAHA_HI.get(window_lord, window_lord)} यहाँ मुख्य संचालक "
+                                     f"दौर बन जाता है — {window_sub_hi}। यही आपका बनाने-और-बढ़ाने का दौर है।",
+                          "do": STRONG_WINDOW_DO, "do_hi": STRONG_WINDOW_DO_HI,
+                          "dont": STRONG_WINDOW_DONT, "dont_hi": STRONG_WINDOW_DONT_HI},
         "years_after": years_after,
         "careful": careful,
         "money": money,

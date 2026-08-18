@@ -1427,6 +1427,20 @@ _REPORT_NAV_SNIPPET = """<script>
     }
   }catch(e){}
   try{
+    // In-page cross-links ("See your chart ->", etc.): scroll smoothly instead
+    // of a hash navigation. A hash push interacts with the back-to-account trap
+    // below and was bouncing these links to the login page. Harmless for reports
+    // that have no .xlink anchors.
+    document.addEventListener('click',function(e){
+      var a=(e.target&&e.target.closest)?e.target.closest('a.xlink'):null;
+      if(!a)return;
+      var href=a.getAttribute('href')||'';
+      if(href.charAt(0)!=='#')return;
+      var t=document.getElementById(href.slice(1));
+      if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  }catch(e){}
+  try{
     if(!sessionStorage.getItem('axs_back_'+rid)){
       sessionStorage.setItem('axs_back_'+rid,'1');
       history.pushState({axs:1},'',location.href);
@@ -1632,9 +1646,20 @@ def report_pdf(rid: str):
         raise HTTPException(404, "report not found")
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
-    pdf = pdfgen.get_or_generate(rid, _full_report_html(payload))
+    report_html = _full_report_html(payload)
+    pdf = pdfgen.get_or_generate(rid, report_html)
     if not pdf:
         return JSONResponse({"error": "pdf_unavailable"}, status_code=503)
+    # Chrome's --print-to-pdf drops the report's in-document jump-links; re-add
+    # them so "See your chart ->" etc. work in the downloaded PDF (vyapar only
+    # for now — it's the report that carries the .xlink cross-links). No-op &
+    # safe for everything else.
+    if payload.get("product") == "vyapar":
+        try:
+            import pdf_links
+            pdf = pdf_links.add_internal_links(pdf, report_html)
+        except Exception as e:
+            logger.error("[pdf_links] inject failed for %s: %s", rid, e)
     meta = payload.get("meta", {})
     name = meta.get("name") or (f"{meta['p1']}_{meta['p2']}" if meta.get("p1") and meta.get("p2")
                                 else "report")
