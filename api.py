@@ -301,7 +301,17 @@ def _render_for(product, payload):
     if product == "blueprint":
         return render_blueprint(payload)
     if product == "vyapar":
-        return render_vyapar(payload)
+        html = render_vyapar(payload)
+        # Devanagari business report for the /hi/business-growth funnel: the LLM
+        # narrative is already Hindi (narrative.py meta.lang), the localizer
+        # converts the static template text. Deterministic; never breaks the page.
+        if (payload.get("meta") or {}).get("lang") == "hi":
+            try:
+                import vyapar_hi
+                html = vyapar_hi.localize(html)
+            except Exception as e:
+                logger.error("[vyapar_hi] localize failed: %s", e)
+        return html
     if product == "vidyarthi":
         return render_vidyarthi(payload)
     if product == "career_growth":
@@ -1716,7 +1726,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
-            "/business-growth", "/career-growth", "/blog",
+            "/en/business-growth", "/hi/business-growth", "/career-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -2233,6 +2243,29 @@ def marriage_en():
 def marriage_hi():
     """Hindi (Devanagari) marriage-timing landing at /hi/marriage."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "shaadi.hi.html"), lang="hi")
+
+
+@app.get("/en/business-growth", include_in_schema=False)
+def business_growth_en():
+    """English Vyapar (business growth) landing at /en/business-growth."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "business-growth.html"))
+
+
+@app.get("/hi/business-growth", include_in_schema=False)
+def business_growth_hi():
+    """Hindi (Devanagari) Vyapar landing at /hi/business-growth. lang="hi" sets
+    the Devanagari nav; the form posts variant=/hi/business-growth, which flips
+    the report's meta.lang to Hindi (Devanagari narrative + vyapar_hi localizer)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "business-growth.hi.html"), lang="hi")
+
+
+@app.get("/business-growth", include_in_schema=False)
+def business_growth_redirect(request: Request):
+    """Legacy /business-growth → /en/business-growth (301 permanent). The bare
+    slug shipped first (ads + inbound links point at it), so preserve it and the
+    query string rather than break those. Defined before /{slug} so it wins."""
+    q = request.url.query
+    return RedirectResponse("/en/business-growth" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/en/marriage-v2", include_in_schema=False)
