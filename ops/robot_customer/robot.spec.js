@@ -47,7 +47,7 @@ test.beforeAll(() => {
 // read /healthz {version} and run a feature's tests only when its commit is an
 // ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
 const PENDING_DEPLOY = new Set(
-  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/business-growth')
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth')
     .split(',').map((s) => s.trim()).filter(Boolean),
 );
 
@@ -86,7 +86,8 @@ const ALL_PAGES = [
   { path: '/hi/marriage-v3',    label: 'Marriage V3 Parent (HI)' },
   { path: '/career',            label: 'Career (EN)' },
   { path: '/hinglish/career',   label: 'Career (Hinglish)' },
-  { path: '/business-growth',   label: 'Business Growth (EN)' },
+  { path: '/en/business-growth', label: 'Business Growth (EN)' },
+  { path: '/hi/business-growth', label: 'Business Growth (HI)' },
   { path: '/career-growth',     label: 'Career Growth (EN)' },
   { path: '/jeevan',            label: 'Jeevan' },
   { path: '/login',             label: 'Login' },
@@ -317,7 +318,7 @@ const FUNNELS = [
   },
   {
     name: 'business-growth',
-    paths: { en: '/business-growth' },   // English only for now; Hindi deferred
+    paths: { en: '/en/business-growth', hi: '/hi/business-growth' },
     form: '#kundliForm',
     fill: fillVyapar,
     hasTeaser: false,   // submit reveals #sampleReport + sets REPORT_ID; pay is inside it
