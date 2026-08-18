@@ -29,8 +29,10 @@ import milan_v2
 import narrative
 import report_view_v2
 import shaadi_hi
+import vyapar_hi
 from engine import compute_report
-from products import compute_milan
+from products import compute_milan, compute_vyapar
+from report_view import render_vyapar
 
 # --------------------------------------------------------------------------- #
 # sweep machinery
@@ -99,6 +101,13 @@ def _milan_payload():
     return p
 
 
+def _vyapar_payload():
+    p = compute_vyapar("Rohit Verma", "1987-10-06", "09:25", 5.5, 26.9124, 75.7873)
+    p["meta"]["lang"] = "hi"
+    p["meta"]["report_id"] = "TESTHI"
+    return p
+
+
 DUMMY_HI = "यह एक नमूना हिंदी अनुच्छेद है जो एलएलएम से आता है।"
 
 
@@ -130,6 +139,19 @@ def test_milan_hindi_has_no_english_runs(with_llm):
     html = milan_hi.localize(milan_v2.render_milan_v2(p))
     leaks = _sweep(html)
     assert not leaks, f"English/Hinglish leaked into Hindi milan report: {leaks[:8]}"
+
+
+@pytest.mark.parametrize("with_llm", [False, True])
+def test_vyapar_hindi_has_no_english_runs(with_llm):
+    """The /hi/business-growth report must be pure Devanagari. with_llm=False is
+    the worst case (deterministic banks only) — every bank must compose in Hindi
+    at render time; with_llm=True proves the localized shell doesn't leak either."""
+    p = _vyapar_payload()
+    if with_llm:
+        p["narrative"] = {k: DUMMY_HI for k, _ in narrative.SECTION_SPECS["vyapar"]}
+    html = vyapar_hi.localize(render_vyapar(p))
+    leaks = _sweep(html)
+    assert not leaks, f"English/Hinglish leaked into Hindi vyapar report: {leaks[:8]}"
 
 
 # --------------------------------------------------------------------------- #

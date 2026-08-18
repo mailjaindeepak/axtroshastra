@@ -11,3 +11,6 @@ twilio
 xhtml2pdf>=0.2.16
 geonamescache
 tzdata
+
+# internal PDF jump-links (pdf_links.py re-adds report cross-links Chrome strips)
+pymupdf>=1.24.0
