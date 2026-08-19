@@ -22,6 +22,7 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     env:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       GH_TOKEN: ${{ github.token }}
@@ -64,6 +65,7 @@ jobs:
       - name: "Phase A — Deep health checks"
         id: watcher
         continue-on-error: true
+        timeout-minutes: 18
         run: python -m ops.watcher
 
       - name: Record watcher result to dashboard
@@ -83,18 +85,31 @@ jobs:
       # ================================================================
       # PHASE B — Robot customer (only if watcher passed)
       # ================================================================
+      - name: Cache Playwright browsers
+        if: steps.watcher.outcome == 'success'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('ops/robot_customer/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # No --with-deps: it shells out to apt-get, which stalled this workflow for
+      # ~55 min on unreachable Ubuntu mirrors. ubuntu-latest already has the deps.
       - name: Install robot dependencies
         if: steps.watcher.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 18
         working-directory: ops/robot_customer
         run: |
           npm install
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: "Phase B — Robot customer smoke test"
         id: robot
         if: steps.watcher.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 25
         working-directory: ops/robot_customer
         run: npx playwright test
 
@@ -132,13 +147,14 @@ jobs:
           python -c "from ops import alerts; import os; alerts.send_alert('Robot customer FAILED', 'The end-to-end customer journey failed on the live site. Something is broken (form / unlock / report / PDF). Run: '+os.environ['RUN_URL'], 'critical')"
 
       # ---- Watcher failed (robot was skipped) ----
-      - name: Record watcher failure to history
+      - name: Record watcher failure to history + alert
         if: steps.watcher.outcome != 'success'
         run: |
           python -m ops.history record-run \
             --status fail \
             --detail "Monitor: watcher health checks FAILED — robot skipped." \
             --run-url "$RUN_URL"
+          python -c "from ops import alerts; import os; alerts.send_alert('Watcher health checks FAILED', 'A deep health check failed on the live site (DB / PDF / OTP / LLM / Razorpay / wallets). The robot customer run was skipped. Run: '+os.environ['RUN_URL'], 'critical')"
 
       # ---- 2-consecutive-failure guard ----
       - name: Auto-rollback guard (2 consecutive failures)
@@ -169,3 +185,15 @@ jobs:
       - name: Fail job on any failure
         if: steps.watcher.outcome != 'success' || (steps.watcher.outcome == 'success' && steps.robot.outcome != 'success')
         run: exit 1
+
+      # ---- Catch-all: cancellation / job timeout / infra failure ----
+      # The branches above only alert on a CLEAN watcher-or-robot failure. A
+      # cancelled run (job timeout, a wedged step, someone hitting cancel, a new
+      # run superseding this one via cancel-in-progress) used to alert nobody —
+      # the workflow just went quiet. The condition deliberately excludes the two
+      # paths that already sent an alert, so this never double-fires.
+      - name: Alert on cancellation or unexpected failure
+        if: cancelled() || (failure() && steps.watcher.outcome == 'success' && steps.robot.outcome == 'success')
+        run: |
+          python -c "from ops import alerts; import os; alerts.send_alert('Monitor run did NOT complete', 'The ops-monitor run was cancelled or failed outside the normal health checks (job timeout, a stalled step, or an infrastructure error). Nobody checked the live site this cycle. Run: '+os.environ['RUN_URL'], 'critical')" \
+            || echo "alert failed (non-fatal)"

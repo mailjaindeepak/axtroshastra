@@ -13,6 +13,7 @@ jobs:
   test:
     name: Python tests (engine + API)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -28,11 +29,13 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run test suite (incl. engine regression guard)
+        timeout-minutes: 20
         run: pytest -q
 
   e2e:
     name: Playwright E2E (mobile + desktop)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -61,13 +64,28 @@ jobs:
         with:
           node-version: "20"
 
+      # Cache the downloaded Chromium so repeat runs skip the download entirely.
+      # Keyed on the lockfile, so a Playwright version bump busts the cache.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('tests/e2e/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # NOTE: deliberately NO --with-deps. It shells out to apt-get, which stalls
+      # for ~55 min on unreachable Ubuntu mirrors (azure.archive.ubuntu.com "Ign:").
+      # The ubuntu-latest runner image already ships Chromium's system libraries.
       - name: Install Playwright + browser
+        timeout-minutes: 18
         working-directory: tests/e2e
         run: |
           npm install
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: Run E2E tests
+        timeout-minutes: 28
         working-directory: tests/e2e
         env:
           CI: "1"
@@ -107,6 +125,9 @@ jobs:
     needs: [test, e2e]
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/aws-mysql'
     runs-on: ubuntu-latest
+    # eb deploy (~10m) + wait-for-Green (capped at 10m) + smoke test (~12m),
+    # with headroom. Never let a wedged deploy sit for GitHub's 6h default.
+    timeout-minutes: 75
     environment: production
     concurrency:
       group: eb-deploy
@@ -191,14 +212,25 @@ jobs:
           done
           echo "environment did not reach Green"; exit 1
 
+      - name: Cache Playwright browsers (smoke test)
+        if: steps.green.outcome == 'success'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('ops/robot_customer/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # No --with-deps: see the note in the e2e job. apt-get is the stall.
       - name: Smoke test (robot customer on live site)
         id: smoke
         if: steps.green.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 25
         working-directory: ops/robot_customer
         run: |
           npm install
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
           npx playwright test
 
       # ---- STAGE 3a: SUCCESS ----

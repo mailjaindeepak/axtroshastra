@@ -27,6 +27,7 @@ concurrency:
 jobs:
   guarded-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 75
     env:
       AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -84,13 +85,24 @@ jobs:
           echo "environment did not reach Green"; exit 1
 
       # 4) Smoke test the live site like a real customer.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('ops/robot_customer/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # No --with-deps: apt-get stalls on unreachable Ubuntu mirrors and wedges
+      # the job. ubuntu-latest already ships Chromium's system libraries.
       - name: Smoke test (robot customer)
         id: smoke
         continue-on-error: true
+        timeout-minutes: 25
         working-directory: ops/robot_customer
         run: |
           npm install
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
           npx playwright test
 
       # 5a) SUCCESS path -> record the passing run + alert + dashboard.
