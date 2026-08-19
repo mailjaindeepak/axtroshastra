@@ -315,7 +315,14 @@ def _render_for(product, payload):
     if product == "vidyarthi":
         return render_vidyarthi(payload)
     if product == "career_growth":
-        return career_growth_report.render_career_growth(payload)
+        html = career_growth_report.render_career_growth(payload)
+        if (payload.get("meta") or {}).get("lang") == "hi":
+            try:
+                import career_growth_hi
+                html = career_growth_hi.localize(html)
+            except Exception as e:
+                logger.error("[career_growth_hi] localize failed: %s", e)
+        return html
     html = render_report_v2(payload)
     # Devanagari marriage report for the /hi/marriage funnel (deterministic localizer)
     if (payload.get("meta") or {}).get("lang") == "hi":
@@ -827,6 +834,9 @@ def create_kundli(inp: KundliIn):
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
     report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
+    if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
+        import career_growth_hi
+        report["teaser"] = career_growth_hi.translate_teaser(report["teaser"])
     report["meta"]["geo_source"] = geo_source
     try:
         if report.get("chart"):
@@ -1751,7 +1761,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
-            "/en/business-growth", "/hi/business-growth", "/career-growth", "/blog",
+            "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -2320,6 +2330,27 @@ def marriage_v3_en():
 def marriage_v3_hi():
     """Hindi (Devanagari) counterpart of /en/marriage-v3."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v3.hi.html"), lang="hi")
+
+
+@app.get("/en/career-growth", include_in_schema=False)
+def career_growth_en():
+    """English career-timing landing at /en/career-growth (canonical, matches
+    the /en/marriage-v3, /en/compatibility prefix convention)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "career-growth.html"))
+
+
+@app.get("/hi/career-growth", include_in_schema=False)
+def career_growth_hi():
+    """Hindi (Devanagari) counterpart of /en/career-growth."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "career-growth.hi.html"), lang="hi")
+
+
+@app.get("/career-growth", include_in_schema=False)
+def career_growth_redirect(request: Request):
+    """Legacy bare /career-growth → /en/career-growth (301 permanent). Preserves
+    query string so already-issued/ad links keep working."""
+    q = request.url.query
+    return RedirectResponse("/en/career-growth" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)
