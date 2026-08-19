@@ -88,7 +88,8 @@ const ALL_PAGES = [
   { path: '/hinglish/career',   label: 'Career (Hinglish)' },
   { path: '/en/business-growth', label: 'Business Growth (EN)' },
   { path: '/hi/business-growth', label: 'Business Growth (HI)' },
-  { path: '/career-growth',     label: 'Career Growth (EN)' },
+  { path: '/en/career-growth',  label: 'Career Growth (EN)' },
+  { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
   { path: '/jeevan',            label: 'Jeevan' },
   { path: '/login',             label: 'Login' },
   { path: '/about',             label: 'About' },
@@ -260,9 +261,10 @@ async function fillVyapar(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
-// Career Growth: single person, #kundliForm, has gender + employment situation +
-// experience + WhatsApp fields. Direct-to-payment (no teaser step), same
-// pattern as marriage-v2.
+// Career Growth: single person, #kundliForm, has gender + employment situation
+// + experience fields. Free-preview teaser step (#teaser), same pattern as
+// compatibility/marriage — WhatsApp is collected later via the unlock-time
+// contact modal, not in this form.
 async function fillCareerGrowth(page) {
   await page.fill('#f-name', 'Test Rohan');
   await page.selectOption('#f-gender', 'male');
@@ -275,7 +277,6 @@ async function fillCareerGrowth(page) {
   await page.selectOption('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Bengaluru');
-  await page.fill('#f-whatsapp', testPhone());
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
@@ -325,10 +326,10 @@ const FUNNELS = [
   },
   {
     name: 'career-growth',
-    paths: { en: '/career-growth' },   // English only for now
+    paths: { en: '/en/career-growth', hi: '/hi/career-growth' },
     form: '#kundliForm',
     fill: fillCareerGrowth,
-    hasTeaser: false,   // direct-to-payment, same as marriage-v2/v3 — no teaser step
+    hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
   },
 ];
 

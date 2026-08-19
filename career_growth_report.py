@@ -270,6 +270,31 @@ def _fmt_date_long(dt: datetime) -> str:
     return f"{dt.day} {dt.strftime('%B %Y')}"
 
 
+def _verdict_text(naukri_meter: dict) -> dict:
+    """Job-vs-Own-Business verdict copy, shared by the teaser (POST /api/kundli
+    response) and the full report (render_career_growth) so both always agree —
+    single source of truth instead of two independent copies drifting apart."""
+    label = naukri_meter.get("label", "Balanced")
+    if label == "Naukri-leaning":
+        return {"h3": "Job, not Own Business — for now",
+                "p": ("Your strengths compound faster inside a team than solo, so structured "
+                      "employment reads stronger than independent business right now.")}
+    if label == "Apnakaam-leaning":
+        return {"h3": "Own Business, Over a Job — worth exploring",
+                "p": ("Your strengths read as more self-directed than team-dependent — building "
+                      "something of your own reads stronger here than structured employment.")}
+    return {"h3": "Balanced — Either Path Can Work",
+            "p": ("Your chart doesn't lean hard either way — both structured employment and "
+                  "independent business are genuinely open paths; the choice comes down to "
+                  "opportunity and personal preference more than chart pressure.")}
+
+
+def _do_by_month(best_window: dict | None) -> str:
+    if not best_window:
+        return "soon"
+    return (datetime.strptime(best_window["start"], "%Y-%m") - timedelta(days=45)).strftime("%B")
+
+
 def compute_career_growth(name: str, dob: str, tob: str, tz: float, lat: float, lon: float,
                           gender: str = "male", place: str = "", employment_situation: str | None = None,
                           experience: str | None = None, time_quality: str = "T0",
@@ -347,6 +372,10 @@ def compute_career_growth(name: str, dob: str, tob: str, tz: float, lat: float, 
     strongest_support = next((s for s in strengths if not s.startswith(current_md["lord"])
                               and not s.startswith(tenth_lord)), None)
 
+    verdict = _verdict_text(naukri_meter)
+    do_by = _do_by_month(best_window)
+    teaser_quote = about_you.get("strength") or persona_line
+
     teaser = {
         "name": name,
         "switch_outlook": switch_outlook,
@@ -354,12 +383,20 @@ def compute_career_growth(name: str, dob: str, tob: str, tz: float, lat: float, 
         "field_top": field_families[0],
         "windows_count": len(windows),
         "best_window_range": _fmt_range(best_window["start"], best_window["end"]) if best_window else "—",
+        "quote": teaser_quote,
+        "do_by": do_by,
+        "has_quiet_stretch": quiet_stretch is not None,
+        "verdict_h3": verdict["h3"],
+        "verdict_h3_blurred": "Job, not Own Business" if naukri_meter["label"] != "Apnakaam-leaning"
+                              else "Own Business, not a Job",
     }
 
     return {
         "product": "career_growth",
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d")},
         "teaser": teaser,
+        "verdict": verdict,
+        "do_by": do_by,
         "person": {"name": name, "gender": gender, "dob": dob, "tob": tob, "place": place,
                    "employment_situation": employment_situation, "experience": experience},
         "chart": {"lagna": SIGNS[chart["lagna_sign"]],
@@ -470,19 +507,8 @@ def render_career_growth(payload: dict) -> str:
 
     naukri_meter = p.get("naukri_meter", {"lean": 0, "label": "Balanced"})
     job_fill_pct = max(6, min(100, round((naukri_meter.get("lean", 0) + 100) / 2)))
-    if naukri_meter.get("label") == "Naukri-leaning":
-        verdict_h3 = "Job, not Own Business — for now"
-        verdict_p = ("Your strengths compound faster inside a team than solo, so structured "
-                     "employment reads stronger than independent business right now.")
-    elif naukri_meter.get("label") == "Apnakaam-leaning":
-        verdict_h3 = "Own Business, Over a Job — worth exploring"
-        verdict_p = ("Your strengths read as more self-directed than team-dependent — building "
-                     "something of your own reads stronger here than structured employment.")
-    else:
-        verdict_h3 = "Balanced — Either Path Can Work"
-        verdict_p = ("Your chart doesn't lean hard either way — both structured employment and "
-                     "independent business are genuinely open paths; the choice comes down to "
-                     "opportunity and personal preference more than chart pressure.")
+    verdict = p.get("verdict") or _verdict_text(naukri_meter)
+    verdict_h3, verdict_p = verdict["h3"], verdict["p"]
 
     workplace = p.get("workplace", {"archetype": "Diplomat"})
     wtext = WORKPLACE_TEXT.get(workplace.get("archetype", "Diplomat"), WORKPLACE_TEXT["Diplomat"])
@@ -531,8 +557,7 @@ def render_career_growth(payload: dict) -> str:
                      'stretch shows up in the next three years — the windows above are the main '
                      'shape of your timing.</p>')
 
-    do_by = (datetime.strptime(best_window["start"], "%Y-%m") - timedelta(days=45)).strftime("%B") \
-        if best_window else "soon"
+    do_by = p.get("do_by") or _do_by_month(best_window)
 
     phase = p.get("phase", "Wait & Prepare")
 
