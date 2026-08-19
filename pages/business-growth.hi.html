@@ -46,9 +46,11 @@ body{font-family:var(--body);background:var(--paper);color:var(--ink);line-heigh
 img,svg{display:block;max-width:100%}
 a{color:var(--sindoor)}
 .wrap{max-width:680px;margin:0 auto;padding:0 20px}
-.eyebrow{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--haldi)}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--haldi);margin-bottom:9px}
 .eyebrow.dark{color:var(--sindoor)}
-h1,h2,h3{font-family:var(--display);line-height:1.12}
+/* Devanagari matras need a roomier line-box than Latin — 1.12 let the top
+   vowel marks overflow their line and collide with the element above. */
+h1,h2,h3{font-family:var(--display);line-height:1.25}
 .btn{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;padding:16px 20px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 0 var(--sindoor-dark);transition:transform .08s ease}
 .btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sindoor-dark)}
 .btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
@@ -62,7 +64,7 @@ section{padding:52px 0}
 .brand{display:flex;align-items:center;gap:9px;margin-bottom:34px}
 .brand svg{width:26px;height:26px}
 .brand span{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.02em;color:#F3EFE4}
-.hero h1{font-size:clamp(38px,9vw,56px);font-weight:800;color:#fff}
+.hero h1{font-size:clamp(38px,9vw,56px);font-weight:800;color:#fff;line-height:1.22;margin-top:6px}
 .hero h1 em{font-style:normal;color:var(--haldi)}
 .hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(18px,4.6vw,22px);color:#D9D4C3;margin-top:12px}
 .hero .sub2{margin-top:12px;font-size:15px;color:#A9ABC0;max-width:44ch}
@@ -464,7 +466,7 @@ fbq('track', 'PageView');
 .premium-sample .ps-trow .d b{color:var(--pink);font-weight:600}
 /* exact-month card */
 .premium-sample .ps-month{text-align:center}
-.premium-sample .ps-month .nm.ps-month-big{font-size:36px;line-height:1.1;margin:10px 0 8px}
+.premium-sample .ps-month .nm.ps-month-big{font-size:36px;line-height:1.2;margin:10px 0 8px}
 /* partner snapshot: 3 theme boxes */
 .ps-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;position:relative;z-index:1}
 .premium-sample .ps-p3{background:var(--panel);border:1px solid var(--pline);border-radius:15px;padding:16px 12px;text-align:center;box-shadow:0 6px 18px var(--pshadow)}
