@@ -92,8 +92,24 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:8000
         run: npx playwright test
 
+      # Diagnostics upload. Two deliberate guards, both added 24 Aug 2026 after a
+      # GREEN E2E run was reported as a FAILED job and blocked the deploy gate:
+      #   "Error: Failed to CreateArtifact: Artifact storage quota has been hit."
+      #
+      #   1. `if: failure()` (was `always()`) — a passing run's report is never read
+      #      by anyone, and uploading it on every green build is what exhausted the
+      #      account-wide storage quota in the first place. Only keep the evidence
+      #      when there is actually something to debug.
+      #   2. `continue-on-error: true` — uploading DIAGNOSTICS must never decide
+      #      whether the test job passed. Without this, a quota/network failure in
+      #      this step marks the whole job red, which in turn blocks the guarded
+      #      deploy below even though every test passed.
+      #
+      # retention cut 14 -> 7 days: these are only useful while triaging a fresh
+      # failure, and shorter retention keeps the quota from refilling.
       - name: Upload Playwright report + screenshots
-        if: always()
+        if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -101,7 +117,7 @@ jobs:
             tests/e2e/playwright-report
             tests/e2e/test-results
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 7
 
   # ---------------------------------------------------------------------------
   # Guarded production deploy — the ONE button.
