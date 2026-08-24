@@ -851,6 +851,8 @@ def create_kundli(inp: KundliIn):
                                 "place": inp.place}   # (#8) for /api/deep + report cover
     # note: birth details live under the underscore-prefixed _birth so narrative.py's
     # PII scrub keeps them out of the LLM payload; the report cover reads them here.
+    if inp.gender:
+        report["meta"]["_gender"] = inp.gender   # stored only; same PII-scrub convention as _birth
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
@@ -1762,7 +1764,7 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
-    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
+    urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
@@ -1806,7 +1808,7 @@ def make_pass(key: str = "", n: int = 5):
             "example_links": [f"{base}/shaadi?pass={toks[0]}",
                               f"{base}/milan?pass={toks[0]}",
                               f"{base}/en/compatibility?pass={toks[0]}",
-                              f"{base}/jeevan?pass={toks[0]}",
+                              f"{base}/en/life-blueprint?pass={toks[0]}",
                               f"{base}/career?pass={toks[0]}"],
             "note": "Each token unlocks exactly ONE report, on any product page."}
 
@@ -2355,6 +2357,43 @@ def career_growth_redirect(request: Request):
     query string so already-issued/ad links keep working."""
     q = request.url.query
     return RedirectResponse("/en/career-growth" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/life-blueprint", include_in_schema=False)
+def jeevan_en():
+    """English Life Blueprint landing at /en/life-blueprint (canonical, matches the
+    /en/career-growth prefix convention)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "jeevan.html"))
+
+
+@app.get("/hi/life-blueprint", include_in_schema=False)
+def jeevan_hi():
+    """Hindi/Hinglish counterpart of /en/life-blueprint."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "jeevan.hi.html"), lang="hi")
+
+
+@app.get("/jeevan", include_in_schema=False)
+def jeevan_redirect(request: Request):
+    """Legacy bare /jeevan → /en/life-blueprint (301 permanent). Preserves query
+    string so already-issued/ad/pass links keep working."""
+    q = request.url.query
+    return RedirectResponse("/en/life-blueprint" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/jeevan", include_in_schema=False)
+def jeevan_en_legacy_redirect(request: Request):
+    """Legacy /en/jeevan → /en/life-blueprint (301 permanent), from when this
+    product's route was renamed."""
+    q = request.url.query
+    return RedirectResponse("/en/life-blueprint" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/hi/jeevan", include_in_schema=False)
+def jeevan_hi_legacy_redirect(request: Request):
+    """Legacy /hi/jeevan → /hi/life-blueprint (301 permanent), from when this
+    product's route was renamed."""
+    q = request.url.query
+    return RedirectResponse("/hi/life-blueprint" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)

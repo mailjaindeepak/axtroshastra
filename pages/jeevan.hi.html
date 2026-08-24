@@ -1,24 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi-IN">
 <head>
 <meta charset="UTF-8">
-<script>window.__axlang="en";</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Blueprint Report — Your Chart, Your Story | Axtroshastra</title>
+<title>Life Blueprint Report — Aapki Kundli, Aapki Kahani | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
-<link rel="canonical" href="https://www.axtroshastra.com/en/life-blueprint">
-<link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/life-blueprint">
-<link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/life-blueprint">
+<link rel="canonical" href="https://www.axtroshastra.com/hi/life-blueprint">
 <meta property="og:title" content="Life Blueprint Report ₹499">
-<meta property="og:description" content="Personality, career direction, strengths and upcoming life phases — from your birth chart, in 2 minutes.">
+<meta property="og:description" content="Personality, career direction, strengths aur aane wale life phases — aapki kundli se, 2 minute mein.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
-<meta property="og:url" content="https://www.axtroshastra.com/en/life-blueprint">
+<meta property="og:url" content="https://www.axtroshastra.com/hi/life-blueprint">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Personality, strengths, career direction and upcoming life phases from your birth chart — calculated using classical Vedic rules. Report ₹499, in 2 minutes.">
+<meta name="description" content="Aapki kundli se personality, strengths, career direction aur aane wale life phases — classical Vedic rules se calculate. Report ₹499, 2 minute mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#23253B;
@@ -83,79 +80,40 @@ section{padding:52px 0}
 .trust li b{color:#E8E4D6;font-weight:600}
 .trust .dot{width:5px;height:5px;border-radius:50%;background:var(--haldi);flex:none}
 
-/* ============ TEASER — Fraunces/cream-gold premium theme (same palette,
-   font pairing and card language as the rest of this page). Sections:
-   chart snapshot, current chapter, insight, 10-area map, real locked
-   glimpses, then what's in the full report + CTA. English only. ============ */
-.premium-sample{
-  --disp:'Fraunces',Georgia,serif;
-  --bg:#E9E1D3;--panel:#FBF7EF;--pline:#E7DCC6;--pshadow:rgba(90,60,20,.10);
-  --pink:#2A2015;--phead:#3a2c18;--pmuted:#8A8199;--pgold:#C9A34E;--pgold-lt:#E7CE8F;
-  --pgreen:#3E7D5A;--pgreen-bg:#E7F1EA;--pterra:#B4572B;--pterra-bg:#F7E6DC;
-  --tbox:linear-gradient(150deg,#3a2c18,#211509);--tbox-glow:rgba(201,163,78,.30);
-  --pcta:#B4674A;--pcta-h:#9A4E35;
-  background:var(--bg);color:var(--pink);font-family:var(--body);line-height:1.6;padding:34px 16px 44px;overflow:hidden;position:relative;display:none}
-#teaser.show{display:block}
-.ps-tag{max-width:560px;margin:0 auto 16px;text-align:center;font-size:11.5px;color:#9c8f77;position:relative;z-index:1}
-.ps-wrap{max-width:560px;margin:0 auto;position:relative;z-index:1}
-.premium-sample .eb{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--pgold);text-align:center}
-.ps-block{margin-top:22px;position:relative;z-index:1}
-.ps-sechead{text-align:center;margin:30px 0 4px;position:relative;z-index:1}
-.ps-sechead:first-child{margin-top:0}
-.ps-sechead .h{font-family:var(--disp);font-weight:500;font-size:20px;color:var(--phead);margin-top:6px}
-.ps-sechead .s{font-size:12.5px;color:var(--pmuted);margin-top:5px}
+/* ---------- TEASER / PAYWALL ---------- */
+.teaser{background:linear-gradient(var(--paper), #F3ECDD);display:none}
+.teaser.show{display:block}
+.teaser-head{text-align:center;margin-bottom:22px}
+.teaser-head h2{font-size:clamp(24px,6vw,30px);font-weight:800}
+.chart-facts{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.chart-facts .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+.chart-facts .row:last-child{border-bottom:0}
+.chart-facts .k{color:var(--muted)}
+.chart-facts .v{font-weight:700;text-align:right}
+.dasha-note{font-size:13.5px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin-top:12px}
+.windows-found{font-family:var(--display);font-weight:800;font-size:19px;text-align:center;margin:22px 0 14px}
+.windows-found b{color:var(--sindoor)}
 
-/* Chart snapshot strip */
-.ps-snap{display:flex;margin-top:14px;background:var(--panel);border:1px solid var(--pline);border-radius:16px;overflow:hidden;box-shadow:0 6px 18px var(--pshadow)}
-.ps-snap .c{flex:1;text-align:center;padding:16px 6px;position:relative}
-.ps-snap .c+.c::before{content:"";position:absolute;left:0;top:18%;bottom:18%;width:1px;background:var(--pline)}
-.ps-snap .c .k{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pmuted)}
-.ps-snap .c .v{font-family:var(--disp);font-weight:500;font-size:15px;color:var(--phead);margin-top:5px;line-height:1.25}
+/* locked timeline */
+.timeline{background:var(--midnight);border-radius:var(--radius);padding:20px 16px 16px;color:#CFCBBB}
+.timeline .tl-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8F92AB;margin-bottom:14px;text-align:center}
+.tl-track{position:relative;height:54px;background:var(--midnight-2);border-radius:8px;overflow:hidden}
+.tl-window{position:absolute;top:0;bottom:0;background:linear-gradient(90deg, rgba(228,176,74,.85), rgba(228,176,74,.55));display:flex;align-items:center;justify-content:center}
+.tl-window .lockchip{background:rgba(21,28,57,.85);color:var(--haldi);border-radius:8px;font-size:12px;font-weight:700;padding:5px 9px;display:flex;gap:5px;align-items:center;filter:none}
+.tl-window .yrs{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:var(--midnight);filter:blur(7px);user-select:none}
+.tl-years{display:flex;justify-content:space-between;font-size:10.5px;color:#7C7F99;margin-top:8px;padding:0 2px}
+.tl-cap{font-size:12.5px;color:#A9ABC0;text-align:center;margin-top:12px}
 
-/* Current chapter */
-.premium-sample .ps-tbox{background:var(--tbox);color:#EFE7D8;border-radius:18px;padding:20px 18px;position:relative;overflow:hidden}
-.premium-sample .ps-tbox::before{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--tbox-glow),transparent 70%);filter:blur(14px)}
-.premium-sample .ps-tbox .who{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--pgold-lt);position:relative;display:flex;align-items:center;gap:6px}
-.premium-sample .ps-tbox .nm{font-family:var(--disp);font-weight:500;font-size:21px;line-height:1.25;color:#fff;margin:6px 0 2px;position:relative}
-.premium-sample .ps-tbox p{font-size:13px;line-height:1.55;position:relative;margin-bottom:0;color:#D9D0BE}
-
-/* Insight lines */
-.ps-insight{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:14px 16px;margin-top:10px;box-shadow:0 6px 18px var(--pshadow);display:flex;gap:12px;align-items:flex-start;text-align:left}
-.ps-insight .ic{flex:0 0 auto;width:18px;height:18px;color:var(--pgold);margin-top:2px}
-.ps-insight p{font-size:13.5px;line-height:1.5;color:var(--phead)}
-
-/* Ten-area map */
-.ps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--pline);border:1px solid var(--pline);border-radius:14px;overflow:hidden;margin-top:14px}
-.ps-grid .g{background:var(--panel);padding:12px 13px;font-size:13px;color:var(--phead);display:flex;align-items:center;gap:8px}
-.ps-grid .g .n{font-family:var(--disp);font-size:10.5px;color:var(--pgold);min-width:15px}
-
-/* Personalized glimpses */
-.ps-glimpse{display:flex;align-items:flex-start;gap:13px;background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:14px 15px;margin-top:10px;box-shadow:0 6px 18px var(--pshadow)}
-.ps-glimpse .tag{flex:0 0 auto;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:20px;padding:4px 9px;color:var(--pgold);background:var(--pgold-lt)}
-.ps-glimpse .tag.good{color:var(--pgreen);background:var(--pgreen-bg)}
-.ps-glimpse .tag.warn{color:var(--pterra);background:var(--pterra-bg)}
-.ps-glimpse .b{flex:1;min-width:0}
-.ps-glimpse .area{font-family:var(--disp);font-weight:500;font-size:14.5px;color:var(--phead)}
-.ps-glimpse .ins{font-size:12px;color:var(--pmuted);margin-top:3px;line-height:1.4}
-.ps-glimpse .blur{filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none}
-
-.ps-methodnote{text-align:center;font-size:12px;color:var(--pmuted);margin-top:16px;line-height:1.5}
-.ps-methodnote b{color:var(--phead);font-weight:600}
-.ps-locked{background:var(--panel);border:1px solid var(--pline);border-radius:20px;padding:24px;margin-top:16px;text-align:center;box-shadow:0 12px 34px var(--pshadow);position:relative;z-index:1}
-.ps-locklist{list-style:none;text-align:left;margin-top:6px}
-.ps-locklist li{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--pline)}
-.ps-locklist li:last-child{border-bottom:0}
-.ps-locklist .lk{flex:0 0 auto;color:var(--pgold);margin-top:2px}
-.ps-locklist b{font-family:var(--disp);font-weight:600;color:var(--phead);display:block;font-size:14px}
-.ps-locklist span{color:var(--pmuted);font-size:12.5px;line-height:1.4}
-.ps-cta{display:inline-flex;align-items:center;gap:9px;background:var(--pcta);color:#fff;border:0;border-radius:100px;padding:15px 30px;font-size:15.5px;font-weight:700;font-family:var(--body);cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.22);text-decoration:none;margin-top:16px}
-.ps-cta:hover{background:var(--pcta-h)}
-.ps-subnote{font-size:11.5px;color:var(--pmuted);margin-top:11px;line-height:1.6}
-.ps-dec{position:absolute;z-index:0;pointer-events:none;max-width:none;opacity:.9}
-@media(max-width:420px){
-  .ps-snap .c .v{font-size:13.5px}
-  .ps-grid .g{padding:11px 10px;font-size:12.5px}
-}
+/* paywall card */
+.paywall{background:var(--card);border-radius:var(--radius);border:2px solid var(--haldi);padding:24px 20px;margin-top:22px;box-shadow:0 14px 40px rgba(35,37,59,.12)}
+.paywall h3{font-size:22px;font-weight:800}
+.price{display:flex;align-items:baseline;gap:10px;margin:6px 0 16px}
+.price .now{font-family:var(--display);font-weight:800;font-size:32px;color:var(--sindoor)}
+.price .was{color:var(--muted);text-decoration:line-through;font-size:17px}
+.price .tag{font-size:11px;font-weight:700;background:var(--haldi-soft);color:#8a6a1f;border-radius:20px;padding:4px 10px;letter-spacing:.04em}
+.paywall ul{list-style:none;margin-bottom:18px}
+.paywall li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}
+.paywall li svg{flex:none;margin-top:3px}
 
 /* ---------- WHY DIFFERENT ---------- */
 .why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
@@ -210,12 +168,6 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
-.sticky.kbd{display:none!important}
-.sticky .sp .l2 .clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--sindoor)}
-.offer-timer{margin:14px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(228,176,74,.14)}
-.offer-timer b.clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--midnight);background:var(--haldi-soft);border:1px solid var(--haldi);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
-.offer-timer s{color:var(--muted)}
-.offer-timer .amt{color:var(--sindoor);font-weight:800}
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -269,14 +221,6 @@ fbq('track', 'PageView');
 </script>
 <style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
 <style>
-.dob-row{display:flex;gap:8px}
-.dob-row input{padding:13px 8px;text-align:center}
-.dob-row select{padding:13px 8px}
-#f-dd{flex:0 0 3.4em}
-#f-mm{flex:1 1 auto;min-width:0}
-#f-yy{flex:0 0 5.2em}
-</style>
-<style>
 /* social proof / reviews (shared with homepage) */
 .stats-row{display:flex;gap:10px;margin:22px 0}
 .stat-tile{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
@@ -312,27 +256,19 @@ fbq('track', 'PageView');
     </div>
 
     <p class="eyebrow">Life Blueprint Report</p>
-    <h1>Your birth chart holds<br><em>the whole story.</em></h1>
-    <p class="sub">Personality. Career. Strengths.<br>What's coming next. One report.</p>
+    <h1>Aapki kundli mein<br><em>poori kahani</em> hai.</h1>
+    <p class="sub">Personality. Career. Strengths.<br>Aane wale phases. Ek hi report mein.</p>
     <p class="sub2">Your complete chart decoded — who you are, which direction fits you, and what the next phases of your life look like.</p>
 
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Enter your birth details 👇</p>
+      <p class="fc-title">Apni birth details daaliye 👇</p>
       <div class="field">
-        <label for="f-name">Name</label>
-        <input id="f-name" type="text" placeholder="Your name" required>
+        <label for="f-name">Naam</label>
+        <input id="f-name" type="text" placeholder="Aapka naam" required>
       </div>
       <div class="field">
-        <label for="f-gender">You are</label>
-        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
-      </div>
-      <div class="field">
-        <label>Date of birth</label>
-        <div class="dob-row">
-          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
-          <select id="f-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select>
-          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off">
-        </div>
+        <label for="f-dob">Date of birth</label>
+        <input id="f-dob" type="date" required>
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">Time of birth</label>
@@ -341,25 +277,25 @@ fbq('track', 'PageView');
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
         <select id="f-approx">
-          <option value="" disabled selected hidden>Choose an approximate time</option>
-          <option value="subah">Morning (4 AM – 10 AM)</option>
-          <option value="din">Midday (10 AM – 4 PM)</option>
-          <option value="shaam">Evening (4 PM – 10 PM)</option>
-          <option value="raat">Night (10 PM – 4 AM)</option>
-          <option value="unknown">Don't know at all</option>
+          <option value="" disabled selected hidden>Approximate time chuniye</option>
+          <option value="subah">Subah (4 AM – 10 AM)</option>
+          <option value="din">Din (10 AM – 4 PM)</option>
+          <option value="shaam">Shaam (4 PM – 10 PM)</option>
+          <option value="raat">Raat (10 PM – 4 AM)</option>
+          <option value="unknown">Bilkul nahi pata</option>
         </select>
         <div id="f-approx-hint" class="field-hint"></div>
       </div>
       <label class="tob-toggle">
         <input type="checkbox" id="unknownTime">
-        <span><b>Don't know your exact birth time?</b> No problem — most people don't. We work with an approximate time. <span class="spec">It's our specialty.</span></span>
+        <span><b>Birth time exactly nahi pata?</b> Koi baat nahi — most people don't. Hum approximate time ke saath kaam karte hain. <span class="spec">Hamari specialty hai.</span></span>
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
         <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
-      <button class="btn" type="submit">Check my chart — FREE</button>
-      <p class="btn-note">Free chart snapshot first. Full report ₹499 — pay only if you want the answer.</p>
+      <button class="btn" type="submit">Meri kundli check karo — FREE</button>
+      <p class="btn-note">Free chart snapshot pehle. Full report ₹499 — pay only if you want the answer.</p>
     </form>
   </div>
 </header>
@@ -376,88 +312,46 @@ fbq('track', 'PageView');
   </div>
 </div>
 
-<!-- ============ TEASER (free preview, populated from the buyer's own real
-     computed chart after they submit the form above). English only. ============ -->
-<section class="premium-sample" id="teaser">
-  <svg class="ps-dec" width="300" height="300" viewBox="0 0 300 300" fill="none" aria-hidden="true" style="top:-110px;right:-160px"><defs><radialGradient id="psSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F1CB6E" stop-opacity=".85"/><stop offset="55%" stop-color="#E6B457" stop-opacity=".3"/><stop offset="100%" stop-color="#E6B457" stop-opacity="0"/></radialGradient></defs><circle cx="150" cy="150" r="150" fill="url(#psSun)"/><circle cx="150" cy="150" r="42" fill="#EFC469" opacity=".5"/><g stroke="#E3B053" stroke-width="3" stroke-linecap="round" opacity=".38"><line x1="207" y1="150" x2="232" y2="150"/><line x1="190" y1="190" x2="208" y2="208"/><line x1="150" y1="207" x2="150" y2="232"/><line x1="110" y1="190" x2="92" y2="208"/><line x1="93" y1="150" x2="68" y2="150"/><line x1="110" y1="110" x2="92" y2="92"/><line x1="150" y1="93" x2="150" y2="68"/><line x1="190" y1="110" x2="208" y2="92"/></g></svg>
-  <p class="ps-tag">Free preview — a real glimpse of your paid report, computed from your own birth chart.</p>
-  <div class="ps-wrap">
-
-    <!-- 1. Chart snapshot -->
-    <div class="ps-sechead"><div class="eb">At a glance</div><div class="h">Your Life Blueprint</div></div>
-    <div class="ps-snap">
-      <div class="c"><div class="k">Rising sign</div><div class="v" id="tv-lagna">—</div></div>
-      <div class="c"><div class="k">Moon sign</div><div class="v" id="tv-moon">—</div></div>
-      <div class="c"><div class="k">Nakshatra</div><div class="v" id="tv-nak">—</div></div>
+<!-- ============ TEASER + PAYWALL (revealed after form) ============ -->
+<section class="teaser" id="teaser">
+  <div class="wrap">
+    <div class="teaser-head">
+      <p class="eyebrow dark">Free snapshot</p>
+      <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
     </div>
 
-    <!-- 2. Current chapter -->
-    <div class="ps-block ps-tbox">
-      <div class="who">⏳&nbsp; Current chapter</div>
-      <div class="nm" id="tv-dasha">—</div>
-      <p>Until <b id="tv-till" style="color:#fff">—</b> — this one period is shaping how every one of your 10 life areas reads right now.</p>
+    <div class="chart-facts">
+      <div class="row"><span class="k">Moon sign (Rashi)</span><span class="v" id="t-rashi">—</span></div>
+      <div class="row"><span class="k">Nakshatra</span><span class="v" id="t-nak">—</span></div>
+      <div class="row"><span class="k">Current period</span><span class="v" id="t-dasha">—</span></div>
+      <div class="row"><span class="k">Period till</span><span class="v" id="t-till">—</span></div>
+      <div class="dasha-note" id="t-note">⭐ Aapka current dasha period directly relevant hai aapke marriage timing se.</div>
     </div>
 
-    <!-- 3. What your chart is saying -->
-    <div class="ps-sechead"><div class="eb">What your chart is saying</div></div>
-    <div class="ps-insight">
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 4h4v4"/></svg>
-      <p id="tv-insight1">—</p>
-    </div>
-    <div class="ps-insight">
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 0 18 9 9 0 1 1 0-18Z"/></svg>
-      <p id="tv-insight2">—</p>
+    <p class="windows-found">Aapki report mein <b id="t-count">—</b> ready hain.</p>
+
+    <div class="timeline">
+      <p class="tl-title" id="tlTitle">Your marriage timeline</p>
+      <div class="tl-track" id="tlTrack"></div>
+      <div class="tl-years" id="tlYears"></div>
+      <p class="tl-cap">Windows calculated. Exact years, months aur strength grade report mein.</p>
     </div>
 
-    <!-- 4. Ten areas, one picture -->
-    <div class="ps-sechead"><div class="eb">Ten areas. One connected picture.</div><div class="h" style="font-size:17px">Everything below reads from the same chart</div></div>
-    <div class="ps-grid">
-      <div class="g"><span class="n">01</span>Career</div>
-      <div class="g"><span class="n">02</span>Money</div>
-      <div class="g"><span class="n">03</span>Marriage</div>
-      <div class="g"><span class="n">04</span>Children</div>
-      <div class="g"><span class="n">05</span>Property</div>
-      <div class="g"><span class="n">06</span>Relocation</div>
-      <div class="g"><span class="n">07</span>Health</div>
-      <div class="g"><span class="n">08</span>Growth</div>
-      <div class="g"><span class="n">09</span>Family</div>
-      <div class="g"><span class="n">10</span>Timing</div>
-    </div>
-
-    <!-- 5. Personalized glimpses -->
-    <div class="ps-sechead"><div class="eb">A few real glimpses</div><div class="h" style="font-size:17px">From your own report, locked</div></div>
-    <div id="tv-glimpses"></div>
-
-    <p class="ps-methodnote">Computed from your <b>lagna</b>, <b>Moon nakshatra</b> and <b>dasha timeline</b> — the full chain (chart → houses → dignity → life areas) is in your report.</p>
-
-    <!-- 6. What you'll see + CTA -->
-    <div class="ps-locked">
-      <svg class="ps-dec" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true" style="right:-24px;top:-24px"><g opacity=".5"><clipPath id="psRock"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#psRock)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/></g></g></svg>
-      <div class="eb">Unlock your full report</div>
-      <div class="h" style="font-family:var(--disp);font-weight:500;font-size:21px;color:var(--phead);margin-top:6px">Your chart already has these answers</div>
-
-      <ul class="ps-locklist">
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your full Life Wheel</b><span>Which of your 10 life areas are Thriving, Building, or need Watching — and why.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Career direction, decoded</b><span>What your 10th house and its lord say about the work that fits you.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Money &amp; wealth pattern</b><span>How you earn, save, and where your gains come from.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Relationships &amp; family</b><span>Your partnership style, family-formation pattern, and the ties that shape you.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Built-in strengths &amp; growth lessons</b><span>Which planets are working for you, and where to pay attention.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your life roadmap</b><span>Your next 3 mahadasha phases, with years and each phase's theme.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Full astrology reasoning</b><span>Every verdict, explained house by house — with your kundli chart shown.</span></div></li>
+    <div class="paywall">
+      <h3>Full Life Blueprint Report</h3>
+      <div class="price">
+        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
+      </div>
+      <ul>
+        <li>✅ <b>Aap kaun hain</b> — lagna aur moon se personality decode</li>
+        <li>✅ <b>Career direction</b> — 10th house kya kehta hai</li>
+        <li>✅ <b>Built-in strengths</b> — kaunse planets aapke saath hain</li>
+        <li>✅ <b>Growth lessons</b> — kahan dhyaan dena hai</li>
+        <li>✅ <b>Life roadmap</b> — agle 3 phases, saalo ke saath</li>
       </ul>
-
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">See my full Life Blueprint <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span></button>
-      <div class="ps-subnote">Instant on-screen delivery, right after payment.</div>
-      <div class="offer-timer" id="offerTimer" style="margin:16px auto 0">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
+      <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — ₹499</button>
+      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery</p>
     </div>
-
   </div>
 </section>
 
@@ -478,13 +372,6 @@ fbq('track', 'PageView');
       <div class="rev"><div class="stars">★★★★★</div><p>"Read it on a random low day and the 'coming phases' bit genuinely gave me something to look forward to. No fake hype, just a map."</p><div class="who">— Tanvi, 30</div></div>
       <div class="rev"><div class="stars">★★★★★</div><p>"The strengths section named things about me I could never put into words. Screenshotted it for the days I doubt myself."</p><div class="who">— Rohit, 28</div></div>
       <div class="rev"><div class="stars">★★★★★</div><p>"I liked the honesty — it listed growth lessons too, not just flattery. That's what made the praise believable."</p><div class="who">— Kavya, 26</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"The 'life roadmap' section is what got me — it laid out my next three phases with actual years attached, not vague 'good things are coming' filler."</p><div class="who">— Aditya, 33</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Shared it with my mom who's followed astrology her whole life — she cross-checked the dasha dates herself and said it matched what she'd have calculated by hand."</p><div class="who">— Priyanka, 27</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Career section nailed the kind of work environment I actually thrive in — not just 'you'll do well,' but why, tied back to my 10th house."</p><div class="who">— Sameer, 31</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Paid for this on a whim during a rough week. Reading the strengths section back to myself actually shifted my mood — didn't expect that from a ₹499 report."</p><div class="who">— Divya, 24</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Two minutes start to finish, exactly as promised. No sign-up wall, no spam calls after — just the report and a PDF I could save."</p><div class="who">— Karan, 35</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"What stood out was it showed my actual kundli chart alongside the reading, so I could see where each line was coming from instead of just trusting it blind."</p><div class="who">— Meenal, 29</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Didn't know my exact birth time and half-expected a watered-down version. The Moon-based reading still felt specific and useful."</p><div class="who">— Farhan, 32</div></div>
     </div>
     <p class="revs-hint">← swipe, or hover to pause →</p>
   </div>
@@ -494,20 +381,20 @@ fbq('track', 'PageView');
 <section class="why">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Why it's different</p>
-      <h2>Why this report is different</h2>
+      <p class="eyebrow dark">Kyun alag hai</p>
+      <h2>Yeh report alag kyun hai</h2>
     </div>
     <div class="block">
-      <h3>Not a generic horoscope. Your chart, decoded.</h3>
-      <p>Newspaper horoscopes are the same for millions of people. This report is built from your exact birth chart — NASA-grade ephemeris data, Lahiri ayanamsa. Your lagna, your moon nakshatra, your dasha phases — all yours, no one else's. Same chart, same answer, every time.</p>
+      <h3>Generic horoscope nahi. Aapka chart, decoded.</h3>
+      <p>Newspaper wala rashifal 12 logon ke liye ek hota hai. Yeh report aapke exact birth chart se banti hai — NASA-grade ephemeris data, Lahiri ayanamsa. Aapka lagna, aapka moon nakshatra, aapke dasha phases — sab aapke hain, kisi aur ke nahi. Same chart, same answer, every time.</p>
     </div>
     <div class="block gold">
-      <h3>We don't just tell you nice things.</h3>
-      <p>The report pairs strengths with growth lessons — which planets are working for you, and where you need to pay attention. A report that only flatters isn't a mirror, it's flattery. What's useful is what gives direction.</p>
+      <h3>Hum sirf achhi-achhi baatein nahi batate.</h3>
+      <p>Report mein strengths ke saath growth lessons bhi hain — kaunse planets aapke saath hain aur kahan dhyaan chahiye. Jo report sirf taareef kare, woh mirror nahi hai, flattery hai. Kaam ki cheez woh hai jo direction de.</p>
     </div>
     <div class="cred">
       <span class="badge">⚙️ IIT–IIM ALUMNI BUILT</span>
-      <h3>Built by IIT–IIM engineers.</h3>
+      <h3>Banaya IIT–IIM engineers ne.</h3>
       <p>Classical Vedic principles — dasha, lagna, house lords — encoded into software. The reading comes from your chart's actual positions, not from templates or someone's mood that day.</p>
     </div>
   </div>
@@ -517,16 +404,16 @@ fbq('track', 'PageView');
 <section class="inside">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Inside the report</p>
-      <h2>What you'll get in the report</h2>
+      <p class="eyebrow dark">Report ke andar</p>
+      <h2>Report mein kya milega</h2>
     </div>
     <ol>
-      <li><b>Who you are</b><span>Your outer self (lagna) and inner self (moon) — both decoded, in plain words.</span></li>
-      <li><b>Career direction</b><span>What your 10th house and its lord indicate — the kind of work that suits you.</span></li>
-      <li><b>Built-in strengths</b><span>Which planets are strong in your chart — and what that means practically.</span></li>
-      <li><b>Growth lessons</b><span>Where your chart shows friction — so it's preparation, not a surprise.</span></li>
-      <li><b>Life roadmap</b><span>Your next 3 mahadasha phases — with years, and each phase's theme.</span></li>
-      <li><b>What your current period means</b><span>Which phase you're in right now, and what kind of decisions work best in it.</span></li>
+      <li><b>Aap kaun hain</b><span>Outer self (lagna) aur inner self (moon) — dono ka decode, plain words mein.</span></li>
+      <li><b>Career direction</b><span>10th house aur uska lord kya indicate karta hai — kaunsi type ka kaam aapko suit karta hai.</span></li>
+      <li><b>Built-in strengths</b><span>Kaunse planets aapke chart mein strong hain — aur unka practical matlab.</span></li>
+      <li><b>Growth lessons</b><span>Kahan chart challenge dikhata hai — taaki surprise na ho, preparation ho.</span></li>
+      <li><b>Life roadmap</b><span>Aapke agle 3 mahadasha phases — saalon ke saath, har phase ka theme.</span></li>
+      <li><b>Current period ka matlab</b><span>Abhi kaunsa phase chal raha hai aur abhi ke decisions kis theme mein best kaam karte hain.</span></li>
     </ol>
   </div>
 </section>
@@ -535,10 +422,10 @@ fbq('track', 'PageView');
 <section class="rectify">
   <div class="wrap">
     <p class="eyebrow">Birth time problem?</p>
-    <h2>Don't know your exact birth time?<br><em>The report still works.</em></h2>
+    <h2>Birth time exact nahi pata?<br><em>Report phir bhi banti hai.</em></h2>
     <p class="stat">30–40%</p>
-    <p class="stat-cap">of people don't know their exact birth time</p>
-    <p>For charts like these we use the classical Chandra Lagna method — a Moon-based reading, fully traditional. You still get personality, phases and roadmap; an exact time just adds lagna-based precision on top.</p>
+    <p class="stat-cap">logon ko apna exact birth time nahi pata</p>
+    <p>Aise charts ke liye hum classical Chandra Lagna method use karte hain — Moon-based reading, jo poori tarah traditional hai. Personality, phases aur roadmap phir bhi milta hai; exact time ho toh lagna-based precision aur add ho jaati hai.</p>
   </div>
 </section>
 
@@ -548,27 +435,24 @@ fbq('track', 'PageView');
 <section class="faq">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Questions</p>
-      <h2>Frequently asked questions</h2>
+      <p class="eyebrow dark">Sawaal-jawaab</p>
+      <h2>Aksar poochhe gaye sawaal</h2>
     </div>
     <div style="height:18px"></div>
-    <details><summary>Is this a generic report?</summary>
-      <div class="a">No. Every line comes from your chart's actual positions — your lagna, your planets' dignity, your dasha dates. Two different people get two different reports. The report shows your chart too, so you can verify it.</div>
+    <details><summary>Kya yeh generic report hai?</summary>
+      <div class="a">Nahi. Har line aapke chart ke actual positions se aati hai — aapka lagna, aapke planets ki dignity, aapke dasha dates. Do alag logon ki report alag hoti hai. Report mein chart bhi dikhta hai, taaki aap verify kar sakein.</div>
     </details>
-    <details><summary>Why might this differ from what another astrologer told me?</summary>
-      <div class="a">Different practitioners sometimes use different ayanamsa settings or manual shortcuts. We use NASA-grade ephemeris data and the standard Lahiri ayanamsa, and show the chart behind every reading — so you (or anyone you trust) can check it line by line.</div>
+    <details><summary>Mujhe birth time nahi pata. Report ban sakti hai?</summary>
+      <div class="a">Haan — Chandra Lagna (Moon-based) method se, jo classical texts ka standard tareeka hai approximate time ke liye. Report yeh clearly batati hai ki kaunsa method use hua.</div>
     </details>
-    <details><summary>I don't know my birth time. Can I still get a report?</summary>
-      <div class="a">Yes — via the Chandra Lagna (Moon-based) method, the classical-text standard for an approximate time. The report clearly states which method was used.</div>
+    <details><summary>Kya yeh bata dega ki job change karun ya nahi?</summary>
+      <div class="a">Report direction batati hai — kaunsi type ka kaam aapke chart ko suit karta hai aur abhi kaunsa phase chal raha hai. Decision aapka hai; specific timing ke liye Career Timing report better fit hai.</div>
     </details>
-    <details><summary>Will this tell me whether to change my job or not?</summary>
-      <div class="a">The report gives direction — the kind of work that suits your chart, and which phase you're in right now. The decision is yours; for specific timing, the Career Timing report is a better fit.</div>
+    <details><summary>Report kab milegi?</summary>
+      <div class="a">Payment ke turant baad, screen par. PDF download bhi milta hai.</div>
     </details>
-    <details><summary>When will I get the report?</summary>
-      <div class="a">Right after payment, on screen. A PDF download is included too.</div>
-    </details>
-    <details><summary>Is my data safe?</summary>
-      <div class="a">Your birth details are used only for your report. No spam calls — we never sell your number.</div>
+    <details><summary>Meri details safe hain?</summary>
+      <div class="a">Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi ko nahi bechte.</div>
     </details>
   </div>
 </section>
@@ -576,8 +460,8 @@ fbq('track', 'PageView');
 <!-- ============ FINAL CTA ============ -->
 <section class="final">
   <div class="wrap">
-    <h2>Know your next phase<br><em>before it arrives.</em></h2>
-    <a class="btn" href="#kundliForm">Check my chart — FREE</a>
+    <h2>Apna agla phase<br><em>pehle se jaan lo.</em></h2>
+    <a class="btn" href="#kundliForm">Meri kundli check karo — FREE</a>
   </div>
 </section>
 
@@ -592,7 +476,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Life Blueprint Report</p>
-    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2">₹499 · instant delivery</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
 </div>
@@ -664,22 +548,11 @@ unknown.addEventListener('change', function(){
   form.addEventListener('submit', function(e){
     if(unknown.checked && !approxSel.value){
       e.preventDefault(); e.stopImmediatePropagation();
-      approxHint.textContent='Please choose an approximate time, or select \'Don\'t know at all\'.';
+      approxHint.textContent='Approximate time chuniye, ya “Bilkul nahi pata” select kijiye.';
       approxSel.focus();
     }
   }, true);
 })();
-
-function buildDob(){
-  var dd=document.getElementById('f-dd').value.trim(), mmv=document.getElementById('f-mm').value, yy=document.getElementById('f-yy').value.trim();
-  if(!dd||!mmv||!yy) return null;
-  var d=('0'+dd).slice(-2);
-  var yr=parseInt(yy,10), curr=new Date().getFullYear();
-  if(yr<1900 || yr>curr) return 'invalid';
-  var dt=new Date(yy+'-'+mmv+'-'+d+'T00:00:00');
-  if(isNaN(dt.getTime()) || dt.getMonth()+1 !== parseInt(mmv,10) || dt.getDate() !== parseInt(d,10)) return 'invalid';
-  return yy+'-'+mmv+'-'+d;
-}
 
 // map form state -> time_quality tier
 function timeQuality(){
@@ -694,12 +567,8 @@ function timeQuality(){
 // form submit -> POST /api/kundli -> render teaser
 document.getElementById('kundliForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  var dob = buildDob();
-  if(!dob){ alert('Please select your full date of birth.'); return; }
-  if(dob === 'invalid'){ alert('This date does not exist — please re-check.'); return; }
-  if(!document.getElementById('f-gender').value){ alert('Please select whether you are male or female.'); return; }
   var btn = this.querySelector('.btn');
-  btn.textContent = 'Reading your chart…'; btn.disabled = true;
+  btn.textContent = 'Kundli ban rahi hai…'; btn.disabled = true;
   showAnalyzing();
   var q = timeQuality();
   try{
@@ -707,54 +576,52 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
-        gender: document.getElementById('f-gender').value || null,
-        dob: dob,
+        dob: document.getElementById('f-dob').value,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
         product: 'blueprint',
         variant: location.pathname
       })});
-    if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
+    if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
     var data = await res.json();
     REPORT_ID = data.report_id;
     renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
-    alert(err.message + ' — please try again.');
+    alert(err.message + ' — dobara try kijiye.');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'Check my chart — FREE'; btn.disabled = false;
+    btn.textContent = 'Meri kundli check karo — FREE'; btn.disabled = false;
   }
 });
 
-var TV_TAG_LABEL = {thriving:'Thriving', building:'Building', watch:'Watch'};
-var TV_TAG_CLASS = {thriving:'good', building:'', watch:'warn'};
-var TV_AREA_LABEL = {career:'Career', money:'Money', marriage:'Marriage'};
-
 function renderTeaser(t){
-  document.getElementById('tv-lagna').textContent = t.lagna_en || '—';
-  document.getElementById('tv-moon').textContent = t.moon_sign_en + ' (' + t.moon_sign + ')';
-  document.getElementById('tv-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
-  document.getElementById('tv-dasha').textContent = t.current_dasha;
-  document.getElementById('tv-till').textContent = t.dasha_till;
-
-  document.getElementById('tv-insight1').innerHTML =
-    'Your <b>' + t.lagna_en + '</b> rising sign sets the starting point for every one of the 10 areas below — each house, and each life area, is counted from here.';
-  document.getElementById('tv-insight2').innerHTML =
-    'Your Moon sits in <b>' + t.moon_sign_en + '</b>, in <b>' + t.nakshatra + '</b> nakshatra — the emotional, instinctive layer beneath how you present outwardly.';
-
-  var gwrap = document.getElementById('tv-glimpses');
-  gwrap.innerHTML = (t.glimpses || []).map(function(g){
-    var cls = TV_TAG_CLASS[g.tag] || '';
-    var label = TV_TAG_LABEL[g.tag] || g.tag;
-    var area = TV_AREA_LABEL[g.area] || g.area;
-    return '<div class="ps-glimpse">'
-      + '<span class="tag ' + cls + '">' + label + '</span>'
-      + '<div class="b"><div class="area">' + area + '</div>'
-      + '<div class="ins blur" aria-hidden="true">Your real chapter-by-chapter read for this area, with the reasoning behind it.</div></div></div>';
-  }).join('');
-
+  var name = document.getElementById('f-name').value.trim();
+  if(name) document.getElementById('t-name').textContent = name + ' ki';
+  document.getElementById('t-rashi').textContent = t.moon_sign + ' (' + t.moon_sign_en + ')';
+  document.getElementById('t-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
+  document.getElementById('t-dasha').textContent = t.current_dasha;
+  document.getElementById('t-till').textContent = t.dasha_till;
+  document.getElementById('t-count').textContent = (t.chapters||6) + ' life chapters';
+  var tl = document.querySelector('.timeline');
+  if(t.timeline_hints && t.horizon){
+    tl.style.display = '';
+    document.getElementById('tlTitle').textContent =
+      'Your timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
+    var yrs = document.getElementById('tlYears'); yrs.innerHTML='';
+    for(var y=t.horizon[0]; y<=t.horizon[1]; y+=2){
+      var s=document.createElement('span'); s.textContent=y; yrs.appendChild(s);
+    }
+    var track = document.getElementById('tlTrack'); track.innerHTML='';
+    t.timeline_hints.forEach(function(h,i){
+      var w=document.createElement('div'); w.className='tl-window';
+      w.style.left=h.left_pct+'%'; w.style.width=h.width_pct+'%';
+      if(i>0) w.style.opacity=.75;
+      w.innerHTML='<span class="yrs">20XX–XX</span><span class="lockchip">🔒 Window '+(i+1)+'</span>';
+      track.appendChild(w);
+    });
+  } else if(tl){ tl.style.display = 'none'; }
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
@@ -848,30 +715,24 @@ function _getCookie(name){
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
-  // Always confirm the delivery number for THIS unlock — never silently reuse a
-  // previously-saved number. The modal pre-fills any last-entered value only for convenience.
-  if(!window.__axContactConfirmed){
-    axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });
-    return;
-  }
-  window.__axContactConfirmed = false;   // reset so the next unlock click re-asks
+  if(!AX_CONTACT){ axContactModal(startPayment); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
       phone: AX_CONTACT.phone, email: AX_CONTACT.email || null,
       fbc: _getCookie('_fbc'), fbp: _getCookie('_fbp')})});
-  if(!res.ok){ alert('Payment setup issue — please try again shortly.'); return; }
+  if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
   if(order.free){ window.FREE_UNLOCK = true; awaitReport(); return; }
-  if(order.error === 'invalid_pass'){ alert('This free-pass link has already been used or is invalid.'); return; }
+  if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
   if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
-    name: 'Axtroshastra', description: 'Life Blueprint Report',
+    name: 'Axtroshastra', description: 'Marriage Timing Report',
     theme: {color: '#C93B2E'},
     prefill: {contact: AX_CONTACT.phone, email: AX_CONTACT.email || ''},
     handler: function(resp){
@@ -889,7 +750,7 @@ async function startPayment(){
 
 async function awaitReport(){
   var btn = document.getElementById('unlockBtn');
-  btn.textContent = 'Building your report…'; btn.disabled = true;
+  btn.textContent = 'Report ban rahi hai…'; btn.disabled = true;
   for(var i=0;i<30;i++){                            // poll up to ~60s
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
@@ -903,8 +764,8 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false;
-  alert('Payment is processing — refresh the page in a minute. Your report will be ready.');
+  btn.textContent = 'Unlock my report — ₹499'; btn.disabled = false;
+  alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
 }
 
 // honest live counter (hidden until real volume crosses threshold)
@@ -925,15 +786,10 @@ async function awaitReport(){
     fetch('/api/report/' + pr).then(function(r){return r.json()}).then(function(d){
       if(d && d.paid){
         var b = document.createElement('div');
-        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 44px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
-        b.innerHTML='✅ Your paid report is ready — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">view it here →</a><button type="button" aria-label="Close" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0 4px">×</button>';
+        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 16px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
+        b.innerHTML='✅ Aapki paid report ready hai — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">yahan dekhiye →</a>';
         document.body.appendChild(b);
         localStorage.removeItem('axtro_rid');
-        // banner must not permanently cover the header — add a × close control and auto-hide after ~8s.
-        var __axBannerTimer;
-        function __axCloseBanner(){ if(__axBannerTimer){ clearTimeout(__axBannerTimer); } if(b && b.parentNode){ b.parentNode.removeChild(b); } }
-        b.querySelector('button').addEventListener('click', __axCloseBanner);
-        __axBannerTimer = setTimeout(__axCloseBanner, 8000);
       } else if(d && d.paid === false) { /* unpaid teaser — keep quietly */ }
     }).catch(function(){});
   }catch(e){}
@@ -945,40 +801,6 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
-// On mobile the on-screen keyboard shoves the fixed ₹499 bar over the form.
-// Hide the bar while any form field is focused (keyboard likely open); restore on blur.
-// This is independent of the scroll-based .hidden toggle above.
-(function(){
-  var kbForm = document.getElementById('kundliForm');
-  if(!kbForm || !sticky) return;
-  kbForm.addEventListener('focusin', function(){ sticky.classList.add('kbd'); });
-  kbForm.addEventListener('focusout', function(){
-    setTimeout(function(){
-      if(!kbForm.contains(document.activeElement)){ sticky.classList.remove('kbd'); }
-    }, 120);
-  });
-})();
-// sticky CTA behaviour:
-//   • teaser already generated  -> open payment
-//   • form filled, no teaser yet -> submit the form to generate the teaser (no jump to top)
-//   • form not filled            -> smooth-scroll to the form and focus the first field
-document.getElementById('stickyBtn').addEventListener('click', function(e){
-  e.preventDefault();
-  if(REPORT_ID){ startPayment(); return; }
-  var form = document.getElementById('kundliForm');
-  var dob = buildDob();
-  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); });
-  var tobFilled = unknown.checked ? !!document.getElementById('f-approx').value
-                                   : !!document.getElementById('f-tob').value;
-  if(textFilled && dob && dob !== 'invalid' && tobFilled){
-    if(typeof form.requestSubmit === 'function'){ form.requestSubmit(); }
-    else { form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true})); }
-    return;
-  }
-  form.scrollIntoView({behavior:'smooth'});
-  var first = document.getElementById('f-name');
-  if(first) setTimeout(function(){ try{ first.focus(); }catch(_){}}, 400);
-});
 </script>
 <style>
 .field{position:relative}
@@ -1011,7 +833,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     timer=setTimeout(function(){
       fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
         items=(d&&d.results)||[];active=-1;render();
-        if(!items.length){hint.textContent='City not found — choose the nearest big city/district.';}
+        if(!items.length){hint.textContent='City nahi mili — nazdeeki bada sheher/zila chuniye.';}
       }).catch(function(){items=[];render();});
     },180);
   });
@@ -1040,14 +862,6 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
 })();
 </script>
 
-<script>
-(function(){
-  var mm = document.getElementById('f-mm');
-  if(!mm) return;
-  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
-})();
-</script>
 <script>
 (function(){
   var hh=document.getElementById("f-hh"),mm=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
@@ -1091,68 +905,5 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   requestAnimationFrame(tick);
 })();
 </script>
-
-<!-- FORM VALIDATION — name sanitisation, future-date check, re-submit reuse -->
-<script>
-(function(){
-  var form=document.getElementById("kundliForm"); if(!form) return;
-  var dd=document.getElementById("f-dd"),mm=document.getElementById("f-mm"),yy=document.getElementById("f-yy");
-  var nm=document.getElementById("f-name");
-  function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
-  var nameHint=mkHint(nm), dobHint=mkHint(dd?dd.closest(".dob-row"):null);
-  function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
-    var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
-    if(+y<1900||+y>cy) return "Please enter a birth year between 1900 and "+cy+".";
-    var dt=new Date(+y,+m-1,+d);
-    if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return "This date does not exist. Please re-check.";
-    if(dt>t) return "Birth date can't be in the future.";
-    return ""; }
-  function dateValid(){ return dateMsg()===""; }
-  function checkDate(){ dobHint.textContent = dateMsg(); }
-  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
-  form.addEventListener("submit", function(e){
-    function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
-    var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
-    nm.value=clean;
-    if(!clean){ nameHint.textContent="Please enter your name."; stop(); nm.focus(); return; } nameHint.textContent="";
-    if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
-    var h=[nm.value,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,
-           document.getElementById("f-approx").value, (document.getElementById("f-place").value||"")].join("~");
-    var teaser=document.getElementById("teaser");
-    if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }
-    window.__lastHash=h;
-  }, true);
-})();
-</script>
-
-<!-- Clear for the time-of-birth selects: their placeholder option is hidden, so a
-     picked hour otherwise can't be un-picked. Resets all three + the hidden value. -->
-<script>
-(function(){
-  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
-  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='Clear'; b.setAttribute('aria-label','Clear time of birth');
-  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
-  hh.parentElement.appendChild(b);
-  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
-})();
-</script>
-
-<!-- 30-minute launch-offer countdown. The end-time is kept in sessionStorage so a page
-     REFRESH doesn't restart it; a fresh visit (new tab/session) starts a new 30:00.
-     Drives the inline banner (#otClock) and the sticky bar (#otClockSticky). -->
-<script>(function(){
-  var DUR = 30 * 60 * 1000, KEY = 'axs_blueprint_offer_end';
-  var end = +sessionStorage.getItem(KEY);
-  if (!end) { end = Date.now() + DUR; try { sessionStorage.setItem(KEY, String(end)); } catch(e){} }
-  var a = document.getElementById('otClock'), b = document.getElementById('otClockSticky');
-  function two(n){ return (n < 10 ? '0' : '') + n; }
-  function tick(){
-    var ms = end - Date.now(); if (ms < 0) ms = 0;
-    var t = two(Math.floor(ms/60000)) + ':' + two(Math.floor((ms%60000)/1000));
-    if (a) a.textContent = t; if (b) b.textContent = t;
-    if (ms > 0) setTimeout(tick, 1000);
-  }
-  tick();
-})();</script>
 </body>
 </html>

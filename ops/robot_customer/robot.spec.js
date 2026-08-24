@@ -90,7 +90,7 @@ const ALL_PAGES = [
   { path: '/hi/business-growth', label: 'Business Growth (HI)' },
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
-  { path: '/jeevan',            label: 'Jeevan' },
+  { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
   { path: '/login',             label: 'Login' },
   { path: '/about',             label: 'About' },
   { path: '/privacy',           label: 'Privacy' },
@@ -280,6 +280,23 @@ async function fillCareerGrowth(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
+// Life Blueprint: single person, #kundliForm, split dd/mm/yy DOB fields
+// (same shape as career-growth) and an "approximate time" fallback we don't
+// exercise here since we always provide an exact known time. WhatsApp is
+// collected later via the unlock-time contact modal, same as compatibility.
+async function fillBlueprint(page) {
+  await page.fill('#f-name', 'Test Ananya');
+  await page.selectOption('#f-gender', 'female');
+  await page.fill('#f-dd', '23');
+  await page.selectOption('#f-mm', '09');
+  await page.fill('#f-yy', '1992');
+  await page.selectOption('#f-hh', TIME.hh);
+  await page.selectOption('#f-mm2', TIME.mm);
+  await page.selectOption('#f-ap', TIME.ap);
+  await pickCity(page, 'f', 'Pune');
+  await page.locator('#kundliForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
   {
@@ -329,6 +346,13 @@ const FUNNELS = [
     paths: { en: '/en/career-growth', hi: '/hi/career-growth' },
     form: '#kundliForm',
     fill: fillCareerGrowth,
+    hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
+  },
+  {
+    name: 'life-blueprint',
+    paths: { en: '/en/life-blueprint' },   // HI report out of scope for now
+    form: '#kundliForm',
+    fill: fillBlueprint,
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
   },
 ];
