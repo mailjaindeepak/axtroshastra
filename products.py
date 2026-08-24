@@ -7,6 +7,7 @@ from engine import (compute_chart, nak_of, vimshottari_tree, SIGNS, SIGNS_EN,
                     NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS, _sade_sati)
 from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
                           KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI,
+                          HOME_4, CHILDREN_5, FOREIGN_12, FAMILY_9,
                           REMEDY_7L, REMEDY_NODE, BIZ_TEMPERAMENT, BIZ_SECTOR_10L,
                           BIZ_PARTNERSHIP_7L, BIZ_OBSTACLE, BIZ_DASHA, BENEFIC_BIZ,
                           STRONG_WINDOW_DO, STRONG_WINDOW_DONT,
@@ -493,6 +494,24 @@ PLANET_LESSON = {"Sun": "ego and recognition", "Moon": "emotional steadiness",
                  "Jupiter": "over-optimism", "Venus": "indulgence",
                  "Saturn": "delay and self-doubt"}
 
+# Blueprint's Life Wheel: a 3-way bucket (thriving/building/watch) derived
+# entirely from a house lord's already-computed dignity -- no new scoring.
+# Dusthanas (6/8/12) invert the reading: a weak lord there is classically a
+# relief (less of that house's difficulty), a strong one keeps it active.
+_DUSTHANA_HOUSES = (6, 8, 12)
+
+
+def _wheel_tag(dignity: str, house_num: int) -> str:
+    strong = dignity in ("exalted", "own")
+    weak = dignity == "debilitated"
+    if house_num in _DUSTHANA_HOUSES:
+        if weak: return "thriving"
+        if strong: return "watch"
+    else:
+        if strong: return "thriving"
+        if weak: return "watch"
+    return "building"
+
 
 def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     dt = datetime.fromisoformat(f"{dob}T{tob}:00") - timedelta(hours=tz)
@@ -517,6 +536,7 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
 
     # life roadmap: current + next 2 mahadashas
     tree = vimshottari_tree(moon.lon, dt, today + timedelta(days=40 * 365.25))
+
     roadmap, started = [], False
     for md in tree:
         if md["end"] < today: continue
@@ -567,6 +587,33 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                   "next_ad": {"lord": next_ad["lord"],
                               "from": next_ad["start"].strftime("%b %Y")} if next_ad else None}
 
+    # ---- the three genuinely new life areas + a small parents/siblings note ----
+    home = HOME_4[(ref + 3) % 12]
+    children = CHILDREN_5[(ref + 4) % 12]
+    foreign = FOREIGN_12[(ref + 11) % 12]
+    family = FAMILY_9[(ref + 8) % 12]
+
+    # ---- Life Wheel: one 3-way tag per area, from each house lord's dignity ----
+    lagna_lord = SIGN_LORD[ref]
+    seventh_lord = SIGN_LORD[(ref + 6) % 12]
+    fifth_lord = SIGN_LORD[(ref + 4) % 12]
+    fourth_lord = SIGN_LORD[(ref + 3) % 12]
+    twelfth_lord = SIGN_LORD[(ref + 11) % 12]
+    sixth_lord = SIGN_LORD[(ref + 5) % 12]
+    ninth_lord = SIGN_LORD[(ref + 8) % 12]
+    wheel = {
+        "career": _wheel_tag(g[tenth_lord].dignity, 10),
+        "money": _wheel_tag(g[second_lord].dignity, 2),
+        "marriage": _wheel_tag(g[seventh_lord].dignity, 7),
+        "children": _wheel_tag(g[fifth_lord].dignity, 5),
+        "home": _wheel_tag(g[fourth_lord].dignity, 4),
+        "foreign": _wheel_tag(g[twelfth_lord].dignity, 12),
+        "health": _wheel_tag(g[sixth_lord].dignity, 6),
+        "growth": _wheel_tag(g[lagna_lord].dignity, 1),
+        "family": _wheel_tag(g[ninth_lord].dignity, 9),
+        "timing": "watch" if sade["active"] else _wheel_tag(g[active_md["lord"]].dignity, 1),
+    }
+
     return {
         "product": "blueprint",
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
@@ -577,7 +624,13 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                    "current_dasha": f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"
                                     if active_ad else "—",
                    "dasha_till": active_ad["end"].strftime("%b %Y") if active_ad else "—",
-                   "chapters": 6},
+                   "lagna_en": SIGNS_EN[ch["lagna_sign"]],
+                   # Free-preview glimpses (landing-page teaser only): 3 fixed,
+                   # high-resonance areas reduced to just {area, tag} -- the same
+                   # real Life Wheel verdict already shown on that area's page in
+                   # the full report. Read-only mapping of the `wheel` dict below;
+                   # no new calculation, no per-area date, no insight text.
+                   "glimpses": [{"area": a, "tag": wheel[a]} for a in ("career", "money", "marriage")]},
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
                                        "dignity": p.dignity, "retro": p.retro,
@@ -599,6 +652,8 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                      "missing": [ELEMENT_HI[m] for m in missing]},
         "wealth": wealth, "health": health, "relationship": relationship,
         "year_ahead": year_ahead,
+        "home": home, "children": children, "foreign": foreign, "family": family,
+        "wheel": wheel,
     }
 
 

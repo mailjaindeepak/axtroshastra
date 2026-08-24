@@ -1,0 +1,109 @@
+"""Life Blueprint (/jeevan, product id "blueprint") regression tests for the
+v2 redesign: the Vyapar-styled ten-area report. Same pattern as
+test_career_growth.py's helpers."""
+
+BLUEPRINT = {"name": "Blueprint Tester", "dob": "1988-04-12", "tob": "14:20",
+             "time_quality": "T0", "place": "Mumbai", "gender": "female",
+             "product": "blueprint"}
+
+
+def _paid_blueprint_report_html(client, **overrides):
+    r = client.post("/api/kundli", json={**BLUEPRINT, **overrides})
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    page = client.get(f"/report/{rid}")
+    assert page.status_code == 200
+    return page.text
+
+
+def test_blueprint_page_serves_200(client):
+    r = client.get("/en/life-blueprint")
+    assert r.status_code == 200
+
+
+def test_jeevan_legacy_redirects_to_canonical(client):
+    r = client.get("/jeevan", follow_redirects=False)
+    assert r.status_code == 301
+    assert r.headers["location"] == "/en/life-blueprint"
+
+    r = client.get("/en/jeevan", follow_redirects=False)
+    assert r.status_code == 301
+    assert r.headers["location"] == "/en/life-blueprint"
+
+    r = client.get("/hi/jeevan", follow_redirects=False)
+    assert r.status_code == 301
+    assert r.headers["location"] == "/hi/life-blueprint"
+
+
+def test_jeevan_legacy_redirect_preserves_query(client):
+    r = client.get("/en/jeevan?pass=tok123", follow_redirects=False)
+    assert r.status_code == 301
+    assert r.headers["location"] == "/en/life-blueprint?pass=tok123"
+
+
+def test_blueprint_report_renders_all_ten_areas(client):
+    html = _paid_blueprint_report_html(client)
+    assert "Blueprint Tester" in html
+    assert "Life Blueprint" in html
+    for section in ("Career &amp; work direction", "Money &amp; financial pattern",
+                     "Marriage &amp; partnership", "Children &amp; family formation",
+                     "Home &amp; property", "Foreign travel &amp; relocation",
+                     "Health &amp; energy", "Personal growth &amp; identity",
+                     "Family relationships", "Current period"):
+        assert section in html, section
+    # the cross-sell hooks that keep Blueprint a funnel hub, not a dead end
+    assert "Job Change report" in html
+    assert "Milan report" in html
+    # honesty guardrails must survive into the rendered page
+    assert "never a claim about fertility" in html
+    assert "not a medical diagnosis" in html
+
+
+def test_blueprint_report_has_wheel_and_tag_cards(client):
+    html = _paid_blueprint_report_html(client)
+    # radial wheel chart (replaces the old two flat "Life Wheel" grid pages)
+    assert 'class="wheelchart"' in html
+    assert html.count("wheelchart") >= 1
+    # bordered tag-cards + Favour/Watching pair + reflection line on each
+    # of the 8 re-skinned area pages (career..family; growth is untouched)
+    assert html.count('class="tcard') == 8
+    assert html.count('class="dwcard"') == 8
+    assert html.count('class="reflect"') == 8
+    assert "FAVOUR" in html.upper()
+    assert "WATCHING" in html.upper()
+    # the single shared global roadmap page must be untouched by this pass
+    assert "Current period" in html
+
+
+def test_blueprint_wheel_has_all_ten_tags(client):
+    import products
+    p = products.compute_blueprint("Wheel Tester", "1988-04-12", "14:20", 5.5,
+                                    19.0760, 72.8777)
+    wheel = p["wheel"]
+    assert set(wheel) == {"career", "money", "marriage", "children", "home",
+                          "foreign", "health", "growth", "family", "timing"}
+    assert all(v in ("thriving", "building", "watch") for v in wheel.values())
+
+
+def test_blueprint_varies_by_birth_data(client):
+    html_a = _paid_blueprint_report_html(client, name="Person A",
+                                         dob="1988-01-05", tob="22:15", place="Delhi")
+    html_b = _paid_blueprint_report_html(client, name="Person B",
+                                         dob="2000-11-23", tob="04:50", place="Chennai")
+    assert html_a != html_b
+
+
+def test_blueprint_pdf_generates(client):
+    body = {**BLUEPRINT}
+    r = client.post("/api/kundli", json=body)
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    r = client.get(f"/report/{rid}/pdf")
+    # 200 with a real PDF when Chrome is available in the test environment,
+    # 503 (graceful "pdf_unavailable") when it isn't -- never a 500/crash.
+    assert r.status_code in (200, 503)
+    if r.status_code == 200:
+        assert r.headers["content-type"] == "application/pdf"
+        assert r.content.startswith(b"%PDF")

@@ -4,6 +4,7 @@ Deterministic templates only; every fact comes from the payload.
 LLM narrative layer can later replace individual section texts via the same slots.
 """
 import json
+import math
 from datetime import datetime, timedelta
 from html import escape
 import report_addons  # escape user-supplied fields (name/place) before HTML interpolation
@@ -86,6 +87,46 @@ def north_chart_svg(payload: dict) -> str:
 <style>.sn{{font:600 13px sans-serif;fill:#A8977F;text-anchor:middle}}
 .pl{{font:800 15px sans-serif;fill:#F3EFE4;text-anchor:middle}}</style>
 {''.join(cells)}</svg>"""
+
+
+_BLUEPRINT_WHEEL_ORDER = ["career", "money", "marriage", "children", "home",
+                          "foreign", "health", "growth", "family", "timing"]
+_BLUEPRINT_WHEEL_LABEL = {"career": "Career", "money": "Money", "marriage": "Marriage",
+                           "children": "Children", "home": "Home", "foreign": "Foreign",
+                           "health": "Health", "growth": "Growth", "family": "Family",
+                           "timing": "Now"}
+_BLUEPRINT_WHEEL_COLOR = {"thriving": "#3E7D5A", "building": "#B9862E", "watch": "#B4572B"}
+
+
+def blueprint_wheel_svg(wheel: dict, name: str, dasha_label: str) -> str:
+    """Radial 'Life Wheel' for the Life Blueprint report — one point per area,
+    placed around a circle and colored by its thriving/building/watch tag
+    (already computed in `wheel`; no new astrology here)."""
+    cx, cy, r, lr = 160, 160, 92, 122
+    n = len(_BLUEPRINT_WHEEL_ORDER)
+    spokes, dots, labels = [], [], []
+    for i, area in enumerate(_BLUEPRINT_WHEEL_ORDER):
+        ang = -math.pi / 2 + i * (2 * math.pi / n)
+        col = _BLUEPRINT_WHEEL_COLOR.get(wheel.get(area, "building"), _BLUEPRINT_WHEEL_COLOR["building"])
+        x, y = cx + r * math.cos(ang), cy + r * math.sin(ang)
+        lx, ly = cx + lr * math.cos(ang), cy + lr * math.sin(ang)
+        spokes.append(f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" stroke="{col}" stroke-width="1.3" opacity=".5"/>')
+        dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6.5" fill="{col}"/>')
+        anchor = "middle"
+        if lx < cx - 8: anchor = "end"
+        elif lx > cx + 8: anchor = "start"
+        labels.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" dominant-baseline="middle" class="wl" fill="{col}">{_BLUEPRINT_WHEEL_LABEL[area]}</text>')
+    return f"""<svg viewBox="0 0 320 320" class="wheelchart" role="img" aria-label="Your Life Wheel">
+<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#E9E1D0" stroke-width="1.4"/>
+<circle cx="{cx}" cy="{cy}" r="{r*0.64:.0f}" fill="none" stroke="#E9E1D0" stroke-width="1"/>
+{''.join(spokes)}
+{''.join(dots)}
+<circle cx="{cx}" cy="{cy}" r="44" fill="#FAF5ED" stroke="#B9862E" stroke-width="1.4"/>
+<text x="{cx}" y="{cy-5}" text-anchor="middle" class="wn">{name}</text>
+<text x="{cx}" y="{cy+12}" text-anchor="middle" class="wd">{dasha_label}</text>
+<style>.wl{{font:700 11px sans-serif}}.wn{{font:700 14px 'Fraunces',Georgia,serif;fill:#2A2338}}.wd{{font:600 9.5px sans-serif;fill:#8A8199}}</style>
+{''.join(labels)}
+</svg>"""
 
 
 def _weak_periods(payload: dict) -> list:
@@ -1843,158 +1884,411 @@ This compatibility score is one classical input to a marriage decision, not the 
 
 # ============================================================ BLUEPRINT RENDERER
 def render_blueprint(p: dict) -> str:
+    """/jeevan — Life Blueprint report. Returns a complete <!DOCTYPE html> doc,
+    reusing Vyapar's v17 page/card system (_VYAPAR_CSS, _VYAPAR_DEFS, icon set)
+    verbatim -- one card per page, points not paragraphs, no new visual style.
+    English-first; Hindi is a scoped fast-follow (see blueprint_report_spec.md)."""
     m = p["meta"]
-    m = {**m, "name": escape(m["name"])}  # user-supplied name: escape to prevent stored XSS
-    road = ""
-    for r in p["roadmap"]:
-        cur = " · <b style='color:#C93B2E'>ABHI CHAL RAHA HAI</b>" if r["current"] else ""
-        road += (f"<div class='ph'><b>{r['lord']} phase</b> "
-                 f"<span class='yrs'>{r['from']} → {r['to']}</span>{cur}"
-                 f"<p>{r['theme']}</p></div>")
+    name = escape(m.get("name", ""))  # user-supplied: escape (stored-XSS guard)
+    teaser = p["teaser"]
+    ch = p["chart"]
+    lagna_sa = ch["lagna"]
+    lagna_en = VY_SIGN_EN.get(lagna_sa, lagna_sa)
+    planets = ch["planets"]
+    moon_sa = planets.get("Moon", {}).get("sign", "")
+    moon_en = VY_SIGN_EN.get(moon_sa, moon_sa)
+    persona = p["persona"]
+    career = p["career"]
+    wealth = p["wealth"]
+    wheel = p["wheel"]
+    roadmap = p["roadmap"]
+    sade = p.get("sade_sati", {})
+    nakp = p["nak_profile"]
+    elements = p["elements"]
 
-    # ---------- new blueprint sections ----------
-    ss = p.get("sade_sati", {})
-    if ss.get("active"):
-        ss_html = (f"<h2>Sade Sati check — bina poochhe jawab</h2><div class='ssb'>"
-                   f"<b>Chal rahi hai:</b> {ss['phase']}, till <b>{ss['ends']}</b>. "
-                   f"Iska classical matlab: Shani discipline aur restructuring karwata hai — "
-                   f"delay lagta hai, par jo is period mein banta hai, tikau banta hai. "
-                   f"Dar ka nahi, dhairya ka period hai.</div>")
-    else:
-        ss_html = (f"<h2>Sade Sati check — bina poochhe jawab</h2><div class='ssb'>"
-                   f"<b>Abhi nahi chal rahi.</b> Next phase approx {ss.get('next_starts','—')} se shuru hoga. "
-                   f"Filhaal Shani ka is angle se koi pressure nahi.</div>")
+    cur_md = roadmap[0] if roadmap else None
+    cur_lord = cur_md["lord"] if cur_md else "—"
+    compact_dasha = teaser["current_dasha"].replace(" Mahadasha", "").replace(" Antardasha", " AD")
 
-    np_ = p.get("nak_profile", {})
-    nak_html = (f"<div class='card' style='margin-top:12px'><p><b>Aapka nakshatra: "
-                f"{np_.get('nakshatra','')} ({np_.get('symbol','')}):</b> {np_.get('nature','')}.</p>"
-                f"<p style='margin-top:8px'>{np_.get('relationship','')}.</p></div>") if np_ else ""
+    LABEL = {"career": "Career", "money": "Money", "marriage": "Marriage",
+             "children": "Children", "home": "Home", "foreign": "Foreign",
+             "health": "Health", "growth": "Growth", "family": "Family",
+             "timing": "Now"}
+    TAG_CLASS = {"thriving": "good", "building": "", "watch": "warn"}
+    TAG_LABEL = {"thriving": "Thriving", "building": "Building", "watch": "Watch"}
 
-    el = p.get("elements", {})
-    el_html = ""
-    if el:
-        miss = (f" Aapke chart mein {', '.join(el['missing'])} element ke planets nahi hain — "
-                f"us quality ko conscious effort se laana hoga." if el.get("missing") else
-                " Chaaron elements present hain — versatile temperament.")
-        el_html = (f"<h2>Element balance</h2><div class='card'><p>Aapke chart ka dominant element: "
-                   f"<b>{el['dominant']}</b> ({el['dominant_n']} planets).{miss}</p></div>")
+    by_sign = {}
+    for pl, info in planets.items():
+        by_sign.setdefault(info["sign"], []).append(pl)
 
-    w = p.get("wealth", {})
-    wealth_html = (f"<h2>Dhan — earning aur gains ka pattern</h2><div class='card'>"
-                   f"<p><b>Earning pattern:</b> {w.get('second','')}.</p>"
-                   f"<p style='margin-top:8px'><b>Gains pattern:</b> {w.get('gains','')}.</p></div>") if w else ""
+    def house_of(sa):
+        return ((SIGN_NUM[sa] - SIGN_NUM[lagna_sa]) % 12) + 1
 
-    health_html = (f"<h2>Sharir — chart ki tendencies</h2><div class='card'>"
-                   f"<p>{p.get('health','')}.</p>"
-                   f"<p class='soft'>Yeh classical indications hain, medical advice nahi — "
-                   f"sehat ke faisle hamesha doctor ke saath.</p></div>") if p.get("health") else ""
+    kundli_cells = ""
+    for sa, col, row in VY_KUNDLI_LAYOUT:
+        occ = by_sign.get(sa, [])
+        pl_html = f'<div class="pl">{" · ".join(occ)}</div>' if occ else ""
+        is_asc = (sa == lagna_sa)
+        label = f'{VY_SIGN_EN.get(sa, sa)} · Asc' if is_asc else VY_SIGN_EN.get(sa, sa)
+        kundli_cells += (f'<div class="kc{" asc" if is_asc else ""}" '
+                         f'style="grid-column:{col};grid-row:{row}">'
+                         f'<div class="sn">{label}</div>{pl_html}</div>')
+    kundli_center = (f'<div class="kc center" style="grid-column:2/4;grid-row:2/4">'
+                     f'<b>Life Blueprint</b><span>{lagna_en} rising</span></div>')
 
-    rel = p.get("relationship", {})
-    rel_html = (f"<h2>Rishtey — ek jhalak</h2><div class='card'>"
-                f"<p>Aapka 7th house <b>{rel.get('seventh','')}</b> hai — partner indication: "
-                f"{rel.get('line','')}.</p>"
-                f"<p class='soft'>Shaadi ki exact timing windows ke liye Marriage Timing Report "
-                f"dekhiye — usi chart se, minute-level depth ke saath.</p></div>") if rel else ""
+    planet_rows = ""
+    for pl in VY_PLANET_ORDER:
+        info = planets.get(pl)
+        if not info: continue
+        hn = house_of(info["sign"])
+        role = VY_HOUSE_ROLE.get(hn, "")
+        dign = f" · {info['dignity']}" if info.get("dignity") in ("exalted", "debilitated", "own") else ""
+        planet_rows += (f'<tr><td>{pl}</td><td>{VY_SIGN_EN.get(info["sign"], info["sign"])}</td>'
+                        f'<td>{_vy_ordinal(hn)}</td><td>{role}{dign}</td></tr>')
 
-    ya = p.get("year_ahead", {})
-    ya_html = ""
-    if ya:
-        jup_t = ("Jupiter abhi aapke Moon se supportive house mein transit kar raha hai — growth "
-                 "aur openings ka saath hai." if ya.get("jup_good") else
-                 "Jupiter ka current transit neutral zone mein hai — is saal effort ka weight zyada rahega.")
-        nx = ya.get("next_ad")
-        nx_t = (f" Aapka agla sub-period <b>{nx['lord']}</b> ka hai, {nx['from']} se — "
-                f"us theme ki taiyari abhi se ho sakti hai." if nx else "")
-        ya_html = (f"<h2>Aane wala saal</h2><div class='card'><p>{jup_t}</p>"
-                   f"<p style='margin-top:8px'>Saturn abhi aapke Moon se house {ya.get('sat_house','—')} "
-                   f"mein hai.{nx_t}</p></div>")
+    # remedies: current Mahadasha lord + the lord behind the Watch-tagged area, if any
+    def remedy_pt(lord):
+        from jyotish_maps import REMEDY_7L, REMEDY_NODE
+        r = REMEDY_7L.get(lord) or REMEDY_NODE.get(lord)
+        if not r: return ""
+        day, mantra, gem = r
+        return (f'<div class="pt"><svg class="ic pi"><use href="#i-check"/></svg>'
+                f'<div class="tx"><b>On {day}</b>Chant &ldquo;{mantra}&rdquo;. {gem}.</div></div>')
+    remedy_pts = remedy_pt(cur_lord)
+    watch_areas = [a for a in wheel if wheel[a] == "watch" and a != "timing"]
 
-    st = "".join(f"<li>{s}</li>" for s in p["strengths"])
-    ls = "".join(f"<li>{s}</li>" for s in p["lessons"])
-    chandra = ("<p class='soft'>Note: approximate birth time — personality read uses "
-               "the Moon chart (classical Chandra Lagna method).</p>"
-               if p["persona"]["note_chandra"] else "")
-    return f"""<!DOCTYPE html><html lang="hi-IN"><head><meta charset="utf-8">
+    roadmap_wins = ""
+    for i, r in enumerate(roadmap):
+        badge = ("mod", "In progress") if r["current"] else (("build", "Ahead") if i == 1 else ("hold", "Later"))
+        roadmap_wins += (f'<div class="win"><div class="wt"><span class="wd">{r["lord"]} Mahadasha</span>'
+                         f'<span class="wg {badge[0]}">{badge[1]}</span></div>'
+                         f'<div class="wb">{r["from"]} &ndash; {r["to"]} &middot; {r["theme"]}</div></div>')
+
+    sade_active = bool(sade.get("active"))
+
+    strengths_pts = "".join(
+        f'<div class="pt good"><svg class="ic pi"><use href="#i-check"/></svg>'
+        f'<div class="tx">{escape(s)}</div></div>' for s in p.get("strengths", [])[:3])
+    lessons_pts = "".join(
+        f'<div class="pt warn"><svg class="ic pi"><use href="#i-alert"/></svg>'
+        f'<div class="tx">{escape(s)}</div></div>' for s in p.get("lessons", [])[:2])
+
+    # ---- bordered tag-cards for the 8 area pages (career..family) --
+    # reuses wheel[]/strengths[]/lessons[] as already computed; adds no new
+    # astrology, only new presentation. Reflection lines are static per-area
+    # copy, not derived from the chart.
+    wheel_svg = blueprint_wheel_svg(wheel, name, compact_dasha)
+    AREA_ORDER = ["career", "money", "marriage", "children", "home", "foreign", "health", "family"]
+    AREA_REFLECT = {
+        "career": "Where in your work life are you still waiting for permission you don’t need?",
+        "money": "Is your money pattern something you inherited, or something you actually chose?",
+        "marriage": "What do you actually need from a partner — not what you think you should want?",
+        "children": "Are you building a family on your own timeline, or someone else’s?",
+        "home": "Does where you live right now feel like roots, or a rest stop?",
+        "foreign": "If distance called you tomorrow, would you go — or is that hesitation, not truth?",
+        "health": "What is your body already telling you that you’ve been talking over?",
+        "family": "Which family tie are you keeping out of love, and which out of habit?",
+    }
+    strengths_list = p.get("strengths", []) or []
+    lessons_list = p.get("lessons", []) or []
+
+    def tcard(area, icon, body_html):
+        tag = wheel[area]
+        cls = TAG_CLASS[tag]
+        idx = AREA_ORDER.index(area)
+        if tag == "watch":
+            favour = "Keep doing what already works here — steady effort still compounds."
+            watching = (lessons_list[idx % len(lessons_list)] if lessons_list
+                        else "This is the one area worth extra patience right now.")
+        else:
+            favour = (strengths_list[idx % len(strengths_list)] if strengths_list
+                      else "Your chart backs you here — this is a place to build, not doubt.")
+            watching = "Nothing flagged here — the usual care is enough."
+        return (f'<div class="tcard {cls}">'
+                f'<div class="verdict {cls or "gold"} sum"><svg class="ic"><use href="#{icon}"/></svg> {TAG_LABEL[tag]} right now.</div>'
+                f'{body_html}'
+                f'</div>'
+                f'<div class="dwcard"><div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg>'
+                f'<div class="tx"><b>Favour</b>{escape(favour)}</div></div>'
+                f'<div class="dwrow watch"><svg class="ic pi"><use href="#i-alert"/></svg>'
+                f'<div class="tx"><b>Watching</b>{escape(watching)}</div></div></div>'
+                f'<div class="reflect">&ldquo;{escape(AREA_REFLECT[area])}&rdquo;</div>')
+
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{m['name']} — Life Blueprint | Axtroshastra</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<title>{name} &mdash; Life Blueprint | Axtroshastra</title>
 <style>
-:root{{--ink:#23253B;--midnight:#151C39;--paper:#FAF6ED;--sindoor:#C93B2E;
---haldi:#E4B04A;--muted:#6B6D82;--line:#E7E0D2;--display:'Bricolage Grotesque',sans-serif}}
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
-line-height:1.6;font-size:15.5px;max-width:640px;margin:0 auto;padding:0 20px 60px}}
-.hero{{background:var(--midnight);color:#F3EFE4;margin:0 -20px;padding:36px 22px;text-align:center}}
-.hero .brand{{font-family:var(--display);font-weight:800;color:var(--haldi);font-size:13px;letter-spacing:.08em}}
-.hero h1{{font-family:var(--display);font-size:26px;margin-top:14px;color:#fff}}
-.hero p{{color:#A9ABC0;font-size:14px;margin-top:6px}}
-h2{{font-family:var(--display);font-size:21px;margin:34px 0 12px}}
-.card{{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}}
-.ph{{background:#fff;border-left:5px solid var(--haldi);border:1.5px solid var(--line);
-border-left:5px solid var(--haldi);border-radius:12px;padding:14px 16px;margin-bottom:10px}}
-.ph .yrs{{color:var(--muted);font-size:14px;margin-left:8px}}
-.ph p{{font-size:15px;margin-top:5px}}
-ul{{margin-left:20px}} li{{margin-bottom:6px;font-size:15px}}
-.soft{{color:var(--muted);font-size:14px;margin-top:10px}}
-.tn{{font-size:13.5px;color:var(--muted);margin-top:24px}}
-.ssb{{background:#F6E7C6;border-radius:12px;padding:15px 16px;font-size:15px}}
+{_VYAPAR_CSS}
 </style></head><body>
-<div class="hero"><p class="brand">✦ AXTROSHASTRA · LIFE BLUEPRINT</p>
-<h1>{m['name']}</h1><p>Lagna {p['chart']['lagna']} · Moon {p['teaser']['moon_sign']} ·
-{p['teaser']['nakshatra']} · Generated {m['generated']}</p></div>
+{_VYAPAR_DEFS}
 
-<h2>Aap kaun hain — chart ke hisaab se</h2>
-<div class="card"><p><b>Outer self (Lagna {p['chart']['lagna']}):</b> {p['persona']['lagna_line']}.</p>
-<p style="margin-top:8px"><b>Inner self (Moon {p['teaser']['moon_sign']}):</b> {p['persona']['moon_line']}.</p>{chandra}</div>
-{nak_html}
+<!-- 01 COVER -->
+<section class="page sand"><div class="col">
+  <div class="cov-brand">Axtroshastra &middot; Life Blueprint</div>
+  <svg class="constel" viewBox="0 0 230 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="14,66 60,54 104,42 150,31 210,13" stroke="#5A3C14" stroke-width="1.1" stroke-dasharray="2 5" opacity=".55"/>
+    <circle cx="14" cy="66" r="3" fill="#B9862E"/><circle cx="60" cy="54" r="3" fill="#B9862E"/><circle cx="104" cy="42" r="3" fill="#B9862E"/>
+    <g transform="translate(150 31)" stroke="#B9862E" stroke-width="1.4"><path d="M0 -7V7M-7 0H7M-5 -5l10 10M5 -5l-10 10"/></g>
+    <g transform="translate(210 13)"><path d="M0 -9V9M-9 0H9M-6 -6l12 12M6 -6l-12 12" stroke="#B9862E" stroke-width="1.6"/><circle r="3.6" fill="#E4D5BE" stroke="#B9862E" stroke-width="1.5"/></g>
+  </svg>
+  <div class="cov-name">{name}</div>
+  <div class="cov-type"><svg class="ti" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 4h4v4"/></svg><span>{escape(persona["lagna_line"])}</span></div>
+  <div class="cov-pills"><span class="cp"><span class="g">&#9790;</span> Moon in {moon_en}</span><span class="cp"><span class="g">&#9651;</span> {lagna_en} rising</span><span class="cp"><span class="g">&#9796;</span> {compact_dasha}</span></div>
+  <div class="cov-comfort">One report, ten parts of your life, and one honest answer to where you actually stand.</div>
+  <div class="cov-trust">Swiss Ephemeris &middot; Lahiri ayanamsa &middot; Generated {m.get("generated", "")}</div>
+</div><div class="pno">01</div></section>
 
-<h2>Career direction</h2>
-<div class="card"><p>Aapka 10th house <b>{p['career']['tenth_sign']}</b> hai aur uska lord
-<b>{p['career']['tenth_lord']}</b> jis jagah baitha hai, wahan se indication milta hai:
-<b>{p['career']['direction']}</b>.</p></div>
+<!-- 02 NOTE FOR YOU -->
+<section class="page note"><div class="col">
+  <svg class="fan nftop" viewBox="0 0 54 30" fill="none"><rect x="6" y="13" width="42" height="20" fill="#FBF7EE"/><g stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M27 27 L12 15M27 27 L18 12M27 27 L27 9M27 27 L36 12M27 27 L42 15"/><path d="M12 15 A19 19 0 0 1 42 15"/></g></svg>
+  <div class="eyebrow">A note for you</div>
+  <h2 class="head">Before you read on</h2>
+  <div class="rule"></div>
+  <div class="lead">Dear {name}, this report is a map, not a verdict. Ten parts of your life, each read from the same chart &mdash; where you stand right now, and what deserves your attention next.</div>
+  <div class="lead">Nothing here is guessed. Every line traces back to a house, a planet, or a period in your own birth chart &mdash; and every part is honest about what it can and cannot tell you.</div>
+  <div class="lead">&mdash; Your astrologer, Axtroshastra</div>
+  <svg class="fan nfbot" viewBox="0 0 54 30" fill="none"><rect x="6" y="13" width="42" height="20" fill="#FBF7EE"/><g stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M27 27 L12 15M27 27 L18 12M27 27 L27 9M27 27 L36 12M27 27 L42 15"/><path d="M12 15 A19 19 0 0 1 42 15"/></g></svg><svg class="crn ctl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn ctr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg>
+</div><div class="pno">02</div></section>
 
-<h2>Built-in strengths</h2><div class="card"><ul>{st}</ul></div>
-<h2>Growth lessons</h2><div class="card"><ul>{ls}</ul></div>
+<!-- 03 LIFE WHEEL -->
+<section class="page"><div class="col">
+  <div class="eyebrow">At a glance</div>
+  <h2 class="head">Your Life Wheel</h2>
+  <div class="rule"></div>
+  <div class="lead">All ten areas this report covers &mdash; each tag comes straight from your chart, not a guess.</div>
+  {wheel_svg}
+  <div class="sfoot">Thriving &middot; Building &middot; Watch &mdash; a three-way read on each area, from the same chart math behind every page in this report.</div>
+</div><div class="pno">03</div></section>
 
-<h2>Aapka life roadmap — agle 3 phases</h2>{road}
-<p class="soft">Har phase ke andar chhote periods (antardashas) hote hain jo timing ko
-refine karte hain — specific sawaal ke liye Marriage Timing ya Career report dekhiye.</p>
+<!-- 04 ABOUT YOU -->
+<section class="page"><div class="col">
+  <div class="eyebrow">About you</div>
+  <h2 class="head">Who you are, from the chart</h2>
+  <div class="rule"></div>
+  <div class="verdict gold sum"><svg class="ic"><use href="#i-scales"/></svg> {escape(persona["lagna_line"])}</div>
+  <div class="pts">
+    <div class="pt"><svg class="ic pi"><use href="#i-scales"/></svg><div class="tx"><b>{lagna_en} rising &mdash; your outward self</b>{escape(persona["lagna_line"])}</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>{moon_en} Moon &mdash; how you run inside</b>{escape(persona["moon_line"])}</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-book"/></svg><div class="tx"><b>{nakp["nakshatra"]} nakshatra</b>{escape(nakp["nature"])}</div></div>
+  </div>
+</div><div class="pno">04</div></section>
 
-{ss_html}
-{el_html}
-{wealth_html}
-{health_html}
-{rel_html}
-{ya_html}
+<!-- 05 CAREER -->
+<section class="page"><div class="col">
+  <div class="eyebrow">01 &middot; Career &amp; work direction</div>
+  <h2 class="head">Where your chart points you</h2>
+  <div class="rule"></div>
+  {tcard("career", "i-compass",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-compass"/></svg><div class="tx"><b>Your natural direction</b>{career["direction"]}.</div></div>'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-clock"/></svg><div class="tx"><b>The moment for a bigger question</b>If switching or building feels urgent, {("your " + cur_lord + " period") if cur_md else "your current period"} is the one shaping that pull.</div></div>'
+    f'</div>')}
+  <a class="xlink" href="#">Time a switch precisely, with our Job Change report &rarr;</a>
+</div><div class="pno">05</div></section>
 
-<h2>Current period</h2>
-<div class="card"><p><b>{p['teaser']['current_dasha']}</b> — till {p['teaser']['dasha_till']}.
-Is period ka rang upar roadmap ke pehle phase se aata hai; abhi ke decisions usi theme
-mein sabse achha kaam karte hain.</p></div>
+<!-- 07 MONEY -->
+<section class="page"><div class="col">
+  <div class="eyebrow">02 &middot; Money &amp; financial pattern</div>
+  <h2 class="head">How money moves for you</h2>
+  <div class="rule"></div>
+  {tcard("money", "i-coins",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-coins"/></svg><div class="tx"><b>How you earn &amp; save</b>{wealth["second"]}.</div></div>'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-trend"/></svg><div class="tx"><b>How gains arrive</b>{wealth["gains"]}.</div></div>'
+    f'</div>')}
+</div><div class="pno">06</div></section>
 
-<p class="tn">System: {'Chandra Lagna' if m['system']=='chandra_lagna' else 'Lagna-based'} ·
-Lahiri ayanamsa · Indications, not fate — chart direction batata hai, choice aapki hai.<br>
-<a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></p>
+<!-- 09 MARRIAGE -->
+<section class="page"><div class="col">
+  <div class="eyebrow">03 &middot; Marriage &amp; partnership</div>
+  <h2 class="head">What you need in a partner</h2>
+  <div class="rule"></div>
+  {tcard("marriage", "i-people",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>Your partnership style</b>{p["relationship"]["line"]}.</div></div>'
+    f'</div>')}
+  <a class="xlink" href="#">Check real compatibility, with our Milan report &rarr;</a>
+</div><div class="pno">07</div></section>
 
-<style>@media screen{{body{{padding-bottom:88px}}}}
+<!-- 11 CHILDREN -->
+<section class="page"><div class="col">
+  <div class="eyebrow">04 &middot; Children &amp; family formation</div>
+  <h2 class="head">Building a family, your way</h2>
+  <div class="rule"></div>
+  {tcard("children", "i-gem",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-gem"/></svg><div class="tx"><b>Your family-formation pattern</b>{p["children"]}.</div></div>'
+    f'</div>')}
+  <div class="note"><b>A boundary we hold:</b> this reads a tendency, never a date, and never a claim about fertility.</div>
+</div><div class="pno">08</div></section>
+
+<!-- 13 HOME -->
+<section class="page"><div class="col">
+  <div class="eyebrow">05 &middot; Home &amp; property</div>
+  <h2 class="head">Where and how you put down roots</h2>
+  <div class="rule"></div>
+  {tcard("home", "i-shield",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-shield"/></svg><div class="tx"><b>Your property pattern</b>{p["home"]}.</div></div>'
+    f'</div>')}
+</div><div class="pno">09</div></section>
+
+<!-- 15 FOREIGN -->
+<section class="page"><div class="col">
+  <div class="eyebrow">06 &middot; Foreign travel &amp; relocation</div>
+  <h2 class="head">Whether distance suits you</h2>
+  <div class="rule"></div>
+  {tcard("foreign", "i-target",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-target"/></svg><div class="tx"><b>Your relocation pattern</b>{p["foreign"]}.</div></div>'
+    f'</div>')}
+</div><div class="pno">10</div></section>
+
+<!-- 17 HEALTH -->
+<section class="page"><div class="col">
+  <div class="eyebrow">07 &middot; Health &amp; energy</div>
+  <h2 class="head">How your body tends to run</h2>
+  <div class="rule"></div>
+  {tcard("health", "i-moon",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>Your constitutional tendency</b>{p["health"]}.</div></div>'
+    f'</div>')}
+  <div class="note"><b>A boundary we hold:</b> this is a classical tendency, not a medical diagnosis.</div>
+</div><div class="pno">11</div></section>
+
+<!-- 19 GROWTH -->
+<section class="page"><div class="col">
+  <div class="eyebrow">08 &middot; Personal growth &amp; identity</div>
+  <h2 class="head">What comes naturally, and what doesn't</h2>
+  <div class="rule"></div>
+  <div class="pts">
+    {strengths_pts}
+    {lessons_pts}
+    <div class="pt"><svg class="ic pi"><use href="#i-scales"/></svg><div class="tx"><b>Your elemental balance</b>{elements["dominant"]} runs strongest in your chart{("; " + " and ".join(elements["missing"]) + " is quiet") if elements["missing"] else ""}.</div></div>
+  </div>
+</div><div class="pno">12</div></section>
+
+<!-- 20 FAMILY -->
+<section class="page"><div class="col">
+  <div class="eyebrow">09 &middot; Family relationships</div>
+  <h2 class="head">Parents, siblings, and old ties</h2>
+  <div class="rule"></div>
+  {tcard("family", "i-people",
+    f'<div class="pts">'
+    f'<div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>Your family-relationship pattern</b>{p["family"]}.</div></div>'
+    f'</div>')}
+</div><div class="pno">13</div></section>
+
+<!-- 14 CURRENT PERIOD -->
+<section class="page"><div class="col">
+  <div class="eyebrow">10 &middot; Current period &amp; what's next</div>
+  <h2 class="head">The chapter you're in</h2>
+  <div class="rule"></div>
+  <div class="callout"><div class="ch"><svg class="ic"><use href="#i-hourglass"/></svg> Right now</div><p>{teaser["current_dasha"]}, until {teaser["dasha_till"]}.</p></div>
+  {roadmap_wins}
+  <div class="note">Periods are openings, not fixed dates. They raise your odds &mdash; the effort still has to come from you.</div>
+</div><div class="pno">14</div></section>
+
+<!-- 15 CAUTION -->
+<section class="page"><div class="col">
+  <div class="eyebrow terra">When to play it safe</div>
+  <h2 class="head">{"Your careful stretch" if sade_active else "No major caution flag right now"}</h2>
+  <div class="rule"></div>
+  <div class="verdict terra sum"><svg class="ic"><use href="#i-alert"/></svg> {("Sade Sati, " + sade.get("phase", "") + " &mdash; until " + sade.get("ends", "")) if sade_active else "Nothing flagged as a hard caution period at the moment."}</div>
+  <div class="pts">
+    <div class="pt {'warn' if sade_active else 'good'}"><svg class="ic pi"><use href="#i-hourglass"/></svg><div class="tx"><b>What it means</b>{("Saturn is transiting near your Moon &mdash; a season for patience on big decisions, not a sign anything is wrong.") if sade_active else "The usual discipline on money and big decisions is enough for now."}</div></div>
+    {("<div class='pt'><svg class=\"ic pi\"><use href=\"#i-check\"/></svg><div class=\"tx\"><b>Areas worth watching</b>" + ", ".join(LABEL[a] for a in watch_areas) + ".</div></div>") if watch_areas else ""}
+  </div>
+</div><div class="pno">15</div></section>
+
+<!-- 16 REMEDIES -->
+<section class="page"><div class="col">
+  <div class="eyebrow">Remedies &amp; your plan</div>
+  <h2 class="head">What to actually do</h2>
+  <div class="rule"></div>
+  <div class="callout"><div class="ch"><svg class="ic"><use href="#i-check"/></svg> Simple, classical support</div><p>Offered to steady you, never to frighten you. No remedy replaces the plan on the pages before this.</p></div>
+  <div class="pts">
+    {remedy_pts}
+  </div>
+</div><div class="pno">16</div></section>
+
+<!-- 17 KUNDLI -->
+<section class="page"><div class="col">
+  <div class="eyebrow">Your chart &middot; the proof</div>
+  <h2 class="head">Your kundli</h2>
+  <div class="rule"></div>
+  <div class="kundli">
+    {kundli_cells}
+    {kundli_center}
+  </div>
+  <div class="klegend">Your birth chart, South-Indian style &middot; Ascendant marked in gold. Every reading in this report is calculated from this chart &mdash; nothing is guessed, and any astrologer can verify it.</div>
+</div><div class="pno">17</div></section>
+
+<!-- 18 PLANETS -->
+<section class="page"><div class="col">
+  <div class="eyebrow">Your chart &middot; the proof</div>
+  <h2 class="head">Every planet, placed</h2>
+  <div class="rule"></div>
+  <div class="tscroll"><table class="k">
+    <tr><th>Planet</th><th>Sign</th><th>House</th><th>What it means</th></tr>
+    {planet_rows}
+  </table></div>
+</div><div class="pno">18</div></section>
+
+<!-- 19 METHODOLOGY -->
+<section class="page"><div class="col">
+  <div class="eyebrow">Your chart &middot; methodology</div>
+  <h2 class="head">Which house feeds which page</h2>
+  <div class="rule"></div>
+  <div class="lead">A handful of houses carry each area of this report. Here's the map, so nothing in it reads as a guess.</div>
+  <div class="pts">
+    <div class="pt"><svg class="ic pi"><use href="#i-compass"/></svg><div class="tx"><b>10th house &mdash; career</b>Work, status, and public role.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-coins"/></svg><div class="tx"><b>2nd &amp; 11th houses &mdash; money</b>Saved wealth, and the gains that come from effort.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>7th house &mdash; partnership</b>Marriage, and business partnership too.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-gem"/></svg><div class="tx"><b>5th house &mdash; children</b>Creativity and family formation.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-shield"/></svg><div class="tx"><b>4th house &mdash; home</b>Property, base, and domestic comfort.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-target"/></svg><div class="tx"><b>12th house &mdash; foreign lands</b>Distance, relocation, and what lies beyond home.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>6th house &mdash; health</b>Routine, resilience, and daily friction.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>9th house &mdash; family</b>Father, elders, and inherited belief.</div></div>
+  </div>
+</div><div class="pno">19</div></section>
+
+<!-- 20 CLOSING -->
+<section class="page sand"><div class="col">
+  <div class="eyebrow">With gratitude</div>
+  <h2 class="head">Thank you, {name}</h2>
+  <div class="rule"></div>
+  <div class="lead">Thank you for trusting Axtroshastra with your questions. We hope this reading gave you a little clarity &mdash; and a little calm &mdash; about the road ahead.</div>
+  <div class="lead">Got a question about one part of your life in particular? These are calculated the same honest way:</div>
+  <div class="pts">
+    <div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>Compatibility</b>Whether two charts really move together.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-clock"/></svg><div class="tx"><b>Job Change</b>The right window to switch, and where to go next.</div></div>
+    <div class="pt"><svg class="ic pi"><use href="#i-store"/></svg><div class="tx"><b>Vyapar &mdash; Business</b>When to build, and when to hold.</div></div>
+  </div>
+  <div class="cov-trust">www.axtroshastra.com &middot; Swiss Ephemeris &middot; Lahiri ayanamsa</div>
+</div><div class="pno">20</div></section>
+
+<style>
 #ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
-background:rgba(16,20,40,.96);border-top:1px solid rgba(228,176,74,.35);
-box-shadow:0 -6px 20px rgba(0,0,0,.28);
-padding:10px 12px calc(10px + env(safe-area-inset-bottom))}}
-#ax-stickybar .inner{{max-width:640px;margin:0 auto;display:flex;gap:10px}}
+background:linear-gradient(180deg,rgba(250,245,237,0),var(--cream) 22%);
+padding:14px 16px calc(14px + env(safe-area-inset-bottom))}}
+#ax-stickybar .inner{{max-width:430px;margin:0 auto;display:flex;gap:10px}}
 #ax-stickybar a{{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
 min-height:52px;text-align:center;text-decoration:none;border-radius:12px;padding:12px 10px;
-font:700 16px/1.15 system-ui,sans-serif;-webkit-tap-highlight-color:transparent}}
-#ax-stickybar .pdf{{background:#C93B2E;color:#fff}}
-#ax-stickybar .wa{{background:#25D366;color:#0b2f18}}
+font:700 15px/1.15 var(--sans);-webkit-tap-highlight-color:transparent}}
+#ax-stickybar a:active{{transform:scale(.97);filter:brightness(1.08)}}
+#ax-stickybar svg{{width:19px;height:19px;flex:none}}
+#ax-stickybar .pdf{{background:var(--ink);color:#F5EEE0;box-shadow:0 6px 16px rgba(42,35,56,.28)}}
+#ax-stickybar .pdf svg{{color:var(--gold2)}}
+#ax-stickybar .wa{{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(62,125,90,.28)}}
 @media (min-width:640px){{#ax-stickybar a{{min-height:48px;font-size:15px}}}}
 @media print{{#ax-stickybar{{display:none!important}}}}</style>
 <div id='ax-stickybar'><div class='inner'>
-<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'>&#11015; Download PDF</a>
-<a class='wa' href='#' onclick='axShare();return false;'>Share on WhatsApp</a>
+<a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M6 11l6 6 6-6'/><path d='M4 21h16'/></svg>Download PDF</a>
+<a class='wa' href='#' onclick='axShare();return false;'><svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.5-.3-2.6.7.7-2.5-.3-.5A8 8 0 0 1 12 4zm-3.1 4.3c-.2 0-.5.1-.7.3-.7.7-1 1.6-.8 2.6.3 1.2 1 2.4 2.1 3.5 1.4 1.4 3 2.3 4.6 2.5.8.1 1.6-.2 2.2-.8.2-.2.3-.5.3-.8l-.1-.7c-.1-.2-.2-.4-.5-.5l-1.7-.8a.8.8 0 0 0-.9.2l-.5.5c-.1.2-.4.2-.6.1a6.7 6.7 0 0 1-2.9-2.9c-.1-.2 0-.4.1-.6l.5-.5c.2-.2.3-.6.2-.9l-.8-1.7c-.1-.2-.3-.4-.5-.4l-.5-.1z'/></svg>Share on WhatsApp</a>
 </div></div>
 <script>
-window.axShare=function(){{var url=location.href;var t='Check out my life blueprint report from Axtroshastra';if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
+window.axShare=function(){{var url=location.href;var t='Check out my Life Blueprint report from Axtroshastra';if(navigator.share){{navigator.share({{title:'Axtroshastra',text:t,url:url}}).catch(function(){{}});}}else{{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}}}};
 </script>
 </body></html>"""
 
@@ -2513,7 +2807,26 @@ table.k tr:nth-child(even) td{background:#FCF7EE}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 /* Devanagari word-gap fix: zero letter-spacing on every letter-spaced label in the Hindi render (guarded by lang="hi"; English unaffected) */
-html[lang="hi"] .eyebrow,html[lang="hi"] h2.head,html[lang="hi"] .cov-brand,html[lang="hi"] .cov-trust,html[lang="hi"] .sl,html[lang="hi"] .hg,html[lang="hi"] .wg,html[lang="hi"] table.k th,html[lang="hi"] .sn,html[lang="hi"] .ne,html[lang="hi"] .sig,html[lang="hi"] .reviewbar,html[lang="hi"] #ax-stickybar a{letter-spacing:0}'''
+html[lang="hi"] .eyebrow,html[lang="hi"] h2.head,html[lang="hi"] .cov-brand,html[lang="hi"] .cov-trust,html[lang="hi"] .sl,html[lang="hi"] .hg,html[lang="hi"] .wg,html[lang="hi"] table.k th,html[lang="hi"] .sn,html[lang="hi"] .ne,html[lang="hi"] .sig,html[lang="hi"] .reviewbar,html[lang="hi"] #ax-stickybar a{letter-spacing:0}
+/* Life Blueprint wheel + tag-cards -- additive only, new class names, never
+   redefines .pt/.scard/.callout/.verdict (render_vyapar shares those). */
+.wheelchart{width:100%;max-width:270px;margin:10px auto 2px;display:block}
+.tcard{width:100%;text-align:left;background:#fff;border:1.5px solid var(--box-line);
+  border-left:5px solid var(--gold);border-radius:12px;padding:15px 16px;margin-top:16px}
+.tcard.good{border-left-color:var(--green)}
+.tcard.warn{border-left-color:var(--terra)}
+.tcard .verdict{margin-top:0}
+.tcard .pts{margin-top:14px;gap:14px}
+.dwcard{width:100%;text-align:left;background:var(--gold-callout);border-radius:12px;
+  padding:12px 14px;margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.dwrow{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.dwrow .tx b{display:block;font-family:var(--sans);font-weight:700;font-size:11px;
+  letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.dwrow.do .pi{color:var(--green)}.dwrow.do .tx b{color:var(--green)}
+.dwrow.watch .pi{color:var(--terra)}.dwrow.watch .tx b{color:var(--terra)}
+.reflect{width:100%;text-align:left;font-family:var(--serif);font-style:italic;
+  font-size:14.5px;color:var(--body);line-height:1.5;margin-top:12px;
+  border-top:1px solid var(--line);padding-top:11px}'''
 
 _VYAPAR_DEFS = r'''<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-scales" viewBox="0 0 24 24"><path d="M12 3v18M6 21h12M5 6h14M5 6l-2.5 6a2.7 2.7 0 0 0 5 0zM19 6l2.5 6a2.7 2.7 0 0 1-5 0z"/></symbol>

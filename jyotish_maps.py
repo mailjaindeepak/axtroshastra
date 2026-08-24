@@ -120,6 +120,62 @@ HEALTH_6 = ["heat and head-related tendencies — manage anger and rushing",
 "circulation and stress themes — movement is your medicine",
 "immunity and sleep themes — boundaries protect the body too"]
 
+# ---- Home & property tendencies by 4th-house sign (0-11) — Blueprint ----
+HOME_4 = ["quick moves and impulsive purchases — good for a first home, less good for holding one long",
+"a strong pull toward owning — property held here tends to appreciate and stay in the family",
+"more than one home base likely — renting, relocating or splitting time between places",
+"deep attachment to home — comfort and emotional security matter more than square footage",
+"a home that makes a statement — space, status and a touch of grandeur matter",
+"practical, well-organised living — function over flash, renovation over relocation",
+"harmony-driven choices — a partner's opinion on the home often outweighs your own",
+"transformation-linked — inherited property, renovation, or a home tied to a major life change",
+"distance-linked — a second home, a farmhouse, or property away from where you grew up",
+"slow, disciplined accumulation — property bought late holds value longer than property bought early",
+"unconventional living arrangements — shared spaces, community living, or an unusual location",
+"emotionally driven choices — a home near water, or one chosen more by feeling than by plan"]
+
+# ---- Children & family-formation tendencies by 5th-house sign (0-11) — Blueprint ----
+CHILDREN_5 = ["an early, eager pull toward parenthood — timing favours not overthinking it",
+"a steady, patient approach — family formation on your own unhurried timeline",
+"a communication-first style — children (or ideas) who ask a lot of questions early",
+"a strongly nurturing instinct — home life organises itself around the children once they arrive",
+"a proud, expressive bond — children, or creative projects, that carry your name forward",
+"a careful, detail-oriented approach — practical planning matters more than spontaneity here",
+"a partnership-centred approach — timing and decisions here are made jointly, rarely alone",
+"an intense, protective bond — privacy and depth matter more than an open-book approach",
+"an optimistic, freedom-loving style — children, or ventures, that travel or explore widely",
+"a later, more deliberate timeline — responsibility taken seriously once the decision is made",
+"an unconventional approach — non-traditional family shapes or timelines fit naturally here",
+"an imaginative, emotionally attuned bond — creativity and empathy run through this area strongly"]
+
+# ---- Foreign travel & relocation tendencies by 12th-house sign (0-11) — Blueprint ----
+FOREIGN_12 = ["a restless pull abroad — impulsive moves that work out better than they looked on paper",
+"relocation only for real security — you won't move without a solid reason and a solid plan",
+"short trips and shuttling more likely than one permanent move — many places, not one",
+"an emotional pull toward a place that feels like home, even far from where you started",
+"a move that raises your profile — recognition abroad is more likely than a quiet relocation",
+"practical, work-driven relocation — a posting or assignment rather than a lifestyle choice",
+"relocation tied to a relationship or partnership — rarely a solo decision",
+"a transformative move — the kind of relocation that changes who you become, not just where you live",
+"a strong, natural pull toward foreign lands — study, travel or long-distance opportunity favour you",
+"relocation for career structure — a transfer or a ladder, not a leap of faith",
+"a pull toward unconventional or international communities — you may feel more at home abroad than expected",
+"a spiritually or emotionally driven pull — this house's own sign, doubling the classical foreign-lands signal"]
+
+# ---- Family-relationship tendencies (parents & siblings) by 9th-house sign (0-11) — Blueprint ----
+FAMILY_9 = ["a direct, sometimes blunt relationship with father figures — respect is earned through honesty, not distance",
+"steady, dependable family bonds — the kind that don't need frequent tending to stay strong",
+"sibling relationships built on conversation — distance is bridged more easily by a call than a visit",
+"a deeply emotional tie to family roots — guidance from parents still matters, even from far away",
+"a relationship with father figures built on pride and recognition — praise matters more than either side admits",
+"a duty-driven family bond — care is expressed through practical help more than words",
+"family harmony matters more than being right — peacekeeping is a strength here, sometimes at a cost",
+"an intense, complicated bond with a parent — depth and privacy both run high in this relationship",
+"a relationship built on shared beliefs or philosophy — family bonds strengthen around a shared sense of meaning",
+"a formal, respect-based bond with father figures — warmth is real but rarely worn on the sleeve",
+"an unconventional family dynamic — chosen family or unusual arrangements feel as real as blood ties",
+"a compassionate, forgiving bond — old family friction tends to soften rather than harden over time"]
+
 # ---- Element by sign & pair dynamics ----
 SIGN_ELEMENT = ["fire","earth","air","water","fire","earth","air","water","fire","earth","air","water"]
 ELEMENT_HI = {"fire":"Agni (fire)","earth":"Prithvi (earth)","air":"Vayu (air)","water":"Jal (water)"}
