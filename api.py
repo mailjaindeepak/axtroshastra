@@ -612,6 +612,50 @@ def _inject_nav(html: str, lang: str = "en") -> str:
     return new_html if n else html
 
 
+def _inject_footer_link(html: str, lang: str = "en") -> str:
+    """Add "Celebrity Kundlis" to the footer link row of every served page.
+
+    Done server-side rather than by editing 50 footers by hand: every page's
+    footer carries an `<a href="/blog">` in the same About/Privacy/Terms/Blog
+    row, so we anchor to that and insert directly after it, inheriting whatever
+    inline style that row already uses (the styles differ per page). Idempotent
+    - a page that already links the index is left alone, so this can never
+    double-insert. The guard must match `href="/en/celebrity"` EXACTLY: a bare
+    substring test for "/en/celebrity" also matches every
+    /en/celebrity-horoscope-<slug>-kundli link, so it skipped all 9 celebrity
+    pages - which is why they shipped without the footer link the first time. Never raises: a footer we can't parse just goes
+    unchanged rather than breaking the page."""
+    try:
+        if not html:
+            return html
+        import re
+        # Skip if the page already points at the index - either via a real link,
+        # or via its own canonical (which is how the index page itself opts out,
+        # so it never grows a footer link pointing at itself).
+        if re.search(r'href="(?:https?://[^"]*)?/en/celebrity"', html):
+            return html
+        label = "सेलिब्रिटी कुंडली" if lang == "hi" else "Celebrity Kundlis"
+        # Reuse the /blog anchor's own style attribute so the new link matches
+        # the row it joins, whatever palette that particular page uses.
+        m = re.search(r'<a\s+href="/blog"([^>]*)>.*?</a>', html, re.IGNORECASE | re.DOTALL)
+        if m:
+            return html[:m.end()] + f' \u00b7 <a href="/en/celebrity"{m.group(1)}>{label}</a>' + html[m.end():]
+
+        # Shape 2: celebrity kundli pages have NO <footer> element at all - they end
+        # with a `<p class="foot">` attribution paragraph. Insert a link row above it,
+        # styled with the page's own CSS vars so it themes in both skins.
+        m = re.search(r'<p class="foot"', html, re.IGNORECASE)
+        if m:
+            row = ('<p style="text-align:center;margin:0 0 18px;font-size:14px">'
+                   f'<a href="/en/celebrity" style="color:var(--acc);font-weight:700;'
+                   f'text-decoration:none">\u2190 All {label}</a></p>')
+            return html[:m.start()] + row + html[m.start():]
+        return html
+    except Exception as e:
+        logger.error("[footer] celebrity link injection failed: %s", e)
+        return html
+
+
 # Single source for the GA4 + Meta Pixel + Microsoft Clarity <head> block. The
 # static marketing pages under pages/*.html embed this exact snippet by hand;
 # the pages we build/serve in Python (the report page, /account, /login) never
@@ -671,7 +715,8 @@ def _inject_tracking(html: str) -> str:
 def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_tracking(_inject_nav(f.read(), lang)))
+            return HTMLResponse(_inject_tracking(_inject_nav(
+                _inject_footer_link(f.read(), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
