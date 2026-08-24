@@ -542,6 +542,7 @@ PAGES_DIR = os.path.join(BASE, "pages")
 # any page's own CSS. Injected right after <body> by _inject_nav().
 NAV_LINKS = [
     ("Home", "/"),
+    ("Celebrity Kundlis", "/en/celebrity"),
     ("Login / My Account", "/account"),
     ("About Us", "/about"),
     ("Privacy Policy", "/privacy"),
@@ -553,6 +554,7 @@ NAV_LINKS = [
 # English-only for now, so their links still point at the English versions.
 NAV_LINKS_HI = [
     ("होम", "/hi"),
+    ("सेलिब्रिटी कुंडली", "/en/celebrity"),
     ("लॉगिन / मेरा अकाउंट", "/account"),
     ("हमारे बारे में", "/about"),
     ("प्राइवेसी पॉलिसी", "/privacy"),
@@ -1762,8 +1764,10 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/jeevan", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
-            "/about", "/login", "/privacy", "/terms", "/refunds"
-            ] + [f"/blog/{s}" for s in BLOG_SLUGS]
+            "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity"
+            ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
+                f"/en/celebrity-horoscope-{s}-kundli" for s in CELEBRITY_SLUGS
+            ]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
                     f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>',
@@ -2377,6 +2381,71 @@ def match_redirect(request: Request):
     like /match?pass=<token> keep working."""
     q = request.url.query
     return RedirectResponse("/en/compatibility" + (f"?{q}" if q else ""), status_code=301)
+
+
+CELEBRITY_DIR = os.path.join(PAGES_DIR, "celebrity")
+
+def _celebrity_slugs() -> list:
+    """Every live celebrity slug, derived from the files actually on disk —
+    self-updates as pages are added, no code change needed per new celebrity."""
+    if not os.path.isdir(CELEBRITY_DIR):
+        return []
+    return sorted(
+        f[:-5] for f in os.listdir(CELEBRITY_DIR)
+        if f.endswith(".html") and f != "index.html"
+    )
+
+CELEBRITY_SLUGS = _celebrity_slugs()
+
+def _celebrity_display_name(slug: str) -> str:
+    """'ms-dhoni' -> 'MS Dhoni', 'virat-kohli' -> 'Virat Kohli'. Small-caps
+    initialisms (ms, rj, etc.) are rare enough here that a short allowlist is
+    simpler than trying to detect them heuristically."""
+    upper_words = {"ms"}
+    return " ".join(w.upper() if w in upper_words else w.capitalize() for w in slug.split("-"))
+
+
+@app.get("/en/celebrity", include_in_schema=False)
+def celebrity_index():
+    """Hub page listing every live celebrity kundli — linked from the site nav."""
+    return _serve_page_with_nav(os.path.join(CELEBRITY_DIR, "index.html"))
+
+
+@app.get("/en/coming-soon", include_in_schema=False)
+def coming_soon():
+    """Shared fallback for any celebrity-kundli link (capsule pill or inline text)
+    whose target isn't built yet. Personalizes via its own client-side ?name=."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "coming-soon.html"))
+
+
+@app.get("/en/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+def celebrity_en(slug: str):
+    """Serve pages/celebrity/<slug>.html — one page per built celebrity. A slug
+    with no file yet (not in data.json as live, or not a celebrity at all)
+    redirects to the coming-soon page instead of 404ing, since these slugs are
+    linked from OTHER already-live celebrity pages' capsules/inline text."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    path = os.path.join(CELEBRITY_DIR, f"{slug}.html")
+    if os.path.exists(path):
+        return _serve_page_with_nav(path)
+    from urllib.parse import quote
+    return RedirectResponse(f"/en/coming-soon?name={quote(_celebrity_display_name(slug))}", status_code=302)
+
+
+@app.get("/hi/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+def celebrity_hi(slug: str):
+    """Hindi twin of the route above. No Hindi celebrity pages exist yet, so
+    every slug currently redirects to coming-soon — this starts serving the
+    real page automatically the moment a <slug>.hi.html file is added, no
+    route change needed."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    hi_path = os.path.join(CELEBRITY_DIR, f"{slug}.hi.html")
+    if os.path.exists(hi_path):
+        return _serve_page_with_nav(hi_path, lang="hi")
+    from urllib.parse import quote
+    return RedirectResponse(f"/en/coming-soon?name={quote(_celebrity_display_name(slug))}", status_code=302)
 
 
 @app.get("/{slug}", include_in_schema=False)
