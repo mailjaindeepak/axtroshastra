@@ -29,6 +29,11 @@ KUNDLI = {"name": "LI Buyer", "dob": "1991-06-10", "tob": "09:20",
 STATIC_PAGE = ("<html><head><title>t</title><script>clarity.ms/tag</script>"
                "<script>fbq('init','x')</script></head><body>hi</body></html>")
 BARE_PAGE = "<html><head><title>t</title></head><body>hi</body></html>"
+# A funnel landing page is identified by its Lead fire — the same marker
+# api._is_funnel_page() looks for. Only these fire the Landing conversion.
+FUNNEL_PAGE = ("<html><head><title>t</title></head><body>"
+               "<script>fbq('track','Lead',{},{eventID:R});</script>"
+               "</body></html>")
 
 
 def _configure(monkeypatch, landing="1111111", lead="2222222",
@@ -73,7 +78,7 @@ def test_injection_is_idempotent(monkeypatch):
 def test_every_funnel_step_is_wired(monkeypatch):
     """The four steps the ads funnel reports on."""
     _configure(monkeypatch)
-    out = api._inject_tracking(BARE_PAGE)
+    out = api._inject_tracking(FUNNEL_PAGE)
     conv = json.loads(out.split("var CONV = ")[1].split(";")[0])
     assert conv == {"Lead": "2222222",              # form filled
                     "InitiateCheckout": "3333333",  # checkout opened
@@ -95,7 +100,7 @@ def test_unconfigured_conversions_are_dormant(monkeypatch):
     """No ids set -> the base tag still loads (retargeting + landing views still
     work) but nothing tries to fire a conversion."""
     _configure(monkeypatch, landing="", lead="", checkout="", purchase="")
-    out = api._inject_tracking(BARE_PAGE)
+    out = api._inject_tracking(FUNNEL_PAGE)
     assert "snap.licdn.com" in out
     assert "var CONV = {};" in out
     assert 'var LANDING = "";' in out
@@ -311,3 +316,45 @@ def test_changing_the_meta_pixel_id_cannot_affect_linkedin(monkeypatch):
     conv = json.loads(bridge.split(";")[0])
     assert "init" not in conv and set(conv) == {"Lead", "InitiateCheckout",
                                                 "Purchase"}
+
+
+# ------------------------------------------- Landing fires ONLY where a Lead can
+
+def test_landing_fires_on_a_funnel_page(monkeypatch):
+    _configure(monkeypatch)
+    assert 'var LANDING = "1111111"' in api._inject_tracking(FUNNEL_PAGE)
+
+
+def test_landing_does_not_fire_on_the_report_page(monkeypatch):
+    """THE DOUBLE-COUNT BUG. The post-payment redirect loads /report/<id>; that
+    page load used to fire Landing a second time for the same buyer, inflating
+    the top of the funnel and wrecking the Landing -> Form Filled rate."""
+    _configure(monkeypatch)
+    out = api._inject_tracking(BARE_PAGE)          # report page: no Lead fire
+    assert 'var LANDING = "";' in out
+    assert "1111111" not in out
+
+
+def test_landing_does_not_fire_on_content_pages(monkeypatch):
+    """Blog, celebrity, legal and /account pages are not ad destinations."""
+    _configure(monkeypatch)
+    assert 'var LANDING = "";' in api._inject_tracking(STATIC_PAGE)
+
+
+def test_base_tag_still_loads_where_landing_does_not(monkeypatch):
+    """Scoping the CONVERSION must not scope the TAG — retargeting audiences,
+    click attribution and the li_fat_id capture all need site-wide coverage."""
+    _configure(monkeypatch)
+    out = api._inject_tracking(BARE_PAGE)
+    assert "snap.licdn.com" in out
+    assert "ax_li_fat" in out                      # click id still captured
+    assert '_linkedin_partner_id = "10777105"' in out
+
+
+def test_funnel_page_detection_matches_the_real_pages():
+    """The marker must match every real funnel page and no content page —
+    a spacing change in one page would silently drop it from the funnel."""
+    funnel = {n for n, h in _funnel_pages()}
+    assert len(funnel) >= 17, "expected the 17 product landing pages, got %d" % len(funnel)
+    for name, html in _funnel_pages():
+        assert api._is_funnel_page(html), "%s fires Lead but is not detected" % name
