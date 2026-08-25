@@ -440,14 +440,18 @@ def store_user_contact(rid, phone=None, email=None):
                               (json.dumps(payload), rid))
     return user_phone
 
-def _store_attribution(rid, fbc=None, fbp=None, ua="", ip=""):
-    """Persist Meta attribution cookies + request context in the report payload
-    so the server-side CAPI fire (webhook / verify) can forward them."""
+def _store_attribution(rid, fbc=None, fbp=None, ua="", ip="", li_fat_id=None):
+    """Persist ad-click attribution + request context in the report payload so
+    the server-side CAPI fires (webhook / verify) can forward them.
+
+    fbc/fbp are Meta's click + browser cookies; li_fat_id is LinkedIn's click id
+    (see _linkedin_head, which parks it in the ax_li_fat cookie at landing)."""
     fbc = (fbc or "").strip()
     fbp = (fbp or "").strip()
     ua = (ua or "").strip()
     ip = (ip or "").strip()
-    if not (fbc or fbp or ua or ip):
+    li_fat_id = (li_fat_id or "").strip()
+    if not (fbc or fbp or ua or ip or li_fat_id):
         return
     with _lock, db() as c:
         row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
@@ -463,6 +467,8 @@ def _store_attribution(rid, fbc=None, fbp=None, ua="", ip=""):
             meta["_ua"] = ua
         if ip:
             meta["_ip"] = ip
+        if li_fat_id:
+            meta["_li_fat_id"] = li_fat_id
         c.execute("UPDATE reports SET payload=? WHERE id=?",
                   (json.dumps(payload), rid))
 
@@ -690,7 +696,148 @@ fbq('track', 'PageView');
 """
 
 
-def _inject_tracking(html: str) -> str:
+
+# ---------------------------------------------------------------- LinkedIn ---
+# The Insight Tag + the funnel conversions fired off it. Kept separate from
+# _TRACKING_HEAD above because it must be injected AFTER the Meta block: the
+# funnel bridge below wraps window.fbq, so fbq has to already exist when it runs.
+#
+# Conversion ids come from Campaign Manager (Analyze -> Conversion tracking) via
+# env, and each one is independently dormant: an unset id simply never fires, so
+# shipping this with nothing configured is a no-op. Partner id defaults to the
+# live account; set LINKEDIN_PARTNER_ID="" to disable LinkedIn entirely.
+LINKEDIN_PARTNER_ID = os.getenv("LINKEDIN_PARTNER_ID", "10777105").strip()
+# Maps the Meta Pixel event the funnel pages ALREADY fire -> LinkedIn conversion.
+_LINKEDIN_CONV = {k: v for k, v in {
+    "Lead": os.getenv("LINKEDIN_CONV_LEAD", "").strip(),                  # form filled
+    "InitiateCheckout": os.getenv("LINKEDIN_CONV_CHECKOUT", "").strip(),  # checkout opened
+    "Purchase": os.getenv("LINKEDIN_CONV_PURCHASE", "").strip(),          # paid
+}.items() if v}
+# Fired on every page load rather than off a Pixel event.
+_LINKEDIN_CONV_LANDING = os.getenv("LINKEDIN_CONV_LANDING", "").strip()
+
+
+def _linkedin_head() -> str:
+    """The Insight Tag base code plus a bridge that mirrors the funnel to it.
+
+    HOW THE FUNNEL IS WIRED (and why there is no per-page markup)
+        Every funnel page already fires the Meta Pixel at exactly the four points
+        we care about - PageView / Lead / InitiateCheckout / Purchase - so rather
+        than hand-editing the same three lines into 17 landing pages (and every
+        future one), this wraps window.fbq once and re-emits the matching
+        LinkedIn conversion. Pages need no changes at all.
+
+        THE TRADE-OFF: LinkedIn conversions now ride on the Meta Pixel calls. If
+        the Pixel is ever removed from a page, that page silently stops
+        reporting to LinkedIn too. If Meta is ever dropped site-wide, replace
+        this bridge with explicit lintrk() calls at the same four points.
+
+        Note fbq's stub is defined synchronously by the Meta snippet, so the
+        bridge still works when connect.facebook.net itself is blocked - the
+        calls queue on the stub and we read them on the way past.
+
+    DEDUPLICATION
+        Meta's Lead/Purchase fires already carry {eventID: REPORT_ID}. We reuse
+        that same id as LinkedIn's event_id, which is what lets LinkedIn discard
+        the server-side Conversions API copy of a sale it already saw in the
+        browser (see tracking.py).
+    """
+    if not LINKEDIN_PARTNER_ID:
+        return ""
+    return """
+<!-- LinkedIn Insight Tag + funnel bridge (injected server-side; ids from env) -->
+<script type="text/javascript">
+_linkedin_partner_id = "%(pid)s";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script>
+<script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=%(pid)s&fmt=gif" />
+</noscript>
+<script type="text/javascript">
+(function(){
+  var CONV = %(conv)s;          /* Meta event name -> LinkedIn conversion id */
+  var LANDING = %(landing)s;    /* fired on page load, "" when unconfigured */
+  function fire(id, eventId){
+    if(!id || !window.lintrk) return;
+    var p = {conversion_id: Number(id)};
+    if(eventId) p.event_id = String(eventId);
+    try{ window.lintrk('track', p); }catch(e){}
+  }
+  if(LANDING) fire(LANDING, null);
+  function bridge(){
+    var orig = window.fbq;
+    if(typeof orig !== 'function' || orig.__axLi) return;
+    var wrapped = function(){
+      try{
+        if(arguments[0] === 'track'){
+          var id = CONV[arguments[1]];
+          /* 4th arg is Meta's {eventID: rid} on Lead/Purchase; undefined on
+             InitiateCheckout, which simply means that one is not deduped. */
+          if(id) fire(id, arguments[3] && arguments[3].eventID);
+        }
+      }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    for(var k in orig){ try{ wrapped[k] = orig[k]; }catch(e){} }
+    wrapped.__axLi = 1;
+    window.fbq = wrapped;
+  }
+  bridge();
+  /* Re-run in case fbevents.js loads late and hands back a fresh fbq. Guarded
+     by __axLi above, so re-running is harmless. */
+  document.addEventListener('DOMContentLoaded', bridge);
+  window.addEventListener('load', bridge);
+  /* li_fat_id is LinkedIn's click id, appended to the landing URL when enhanced
+     conversion tracking is on. Park it in a first-party cookie so /api/order
+     can read it server-side - it is the ONLY identifier that can attribute a
+     phone-only buyer, since LinkedIn accepts no hashed phone. */
+  try{
+    var m = location.search.match(/[?&]li_fat_id=([^&#]+)/);
+    if(m && m[1]) document.cookie = 'ax_li_fat=' + m[1] +
+      ';path=/;max-age=7776000;SameSite=Lax' +
+      (location.protocol === 'https:' ? ';Secure' : '');
+  }catch(e){}
+})();
+</script>
+""" % {"pid": LINKEDIN_PARTNER_ID,
+       "conv": json.dumps(_LINKEDIN_CONV),
+       "landing": json.dumps(_LINKEDIN_CONV_LANDING)}
+
+
+def _inject_linkedin(html: str) -> str:
+    """Add the Insight Tag before </head>. Idempotent on the insight.min.js src,
+    so a page that ever hardcodes the tag is left alone. Never raises."""
+    try:
+        if not html or "snap.licdn.com" in html or not LINKEDIN_PARTNER_ID:
+            return html
+        block = _linkedin_head()
+        if not block:
+            return html
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: block + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + block,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[linkedin] injection failed: %s", e)
+        return html
+
+
+def _inject_ga_meta_clarity(html: str) -> str:
     """Add GA4 + Meta Pixel + Clarity to a page's <head> when it isn't already
     there. Idempotent: skips any page already loading the Clarity tag, so the
     hardcoded pages/*.html copies are left untouched (no double page_view /
@@ -710,6 +857,15 @@ def _inject_tracking(html: str) -> str:
     except Exception as e:
         logger.error("[tracking] injection failed: %s", e)
         return html
+
+
+def _inject_tracking(html: str) -> str:
+    """All analytics for a served page: GA4 + Meta + Clarity, then LinkedIn.
+
+    Order matters - LinkedIn goes in LAST so its funnel bridge is parsed after
+    window.fbq exists, whether the Meta block was hardcoded in the page or
+    injected just above by _inject_ga_meta_clarity."""
+    return _inject_linkedin(_inject_ga_meta_clarity(html))
 
 
 def _serve_page_with_nav(path: str, lang: str = "en"):
@@ -934,13 +1090,16 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
             user_phone = store_user_contact(rid, body.phone, body.email) or user_phone
         except Exception as e:
             logger.error("[contact] persist failed for %s: %s", rid, e)
-    # Persist Meta attribution data (fbc/fbp cookies + UA/IP) so the CAPI
-    # Purchase fired from the webhook/verify path can attribute to the ad click.
+    # Persist ad attribution (Meta fbc/fbp + LinkedIn li_fat_id + UA/IP) so the
+    # CAPI Purchase fired from the webhook/verify path can attribute the click.
+    # li_fat_id comes from a cookie rather than the request body so it works on
+    # all 17 funnel pages without editing any of their checkout JS.
     try:
         _store_attribution(rid, body.fbc, body.fbp,
                            request.headers.get("user-agent", ""),
                            request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-                           or request.client.host)
+                           or request.client.host,
+                           li_fat_id=request.cookies.get("ax_li_fat", ""))
     except Exception as e:
         logger.error("[attribution] persist failed for %s: %s", rid, e)
     if rec["paid"]:                              # already paid -> skip checkout
@@ -1083,7 +1242,8 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
                         "INR", phone, pay_email,
                         fbc=_meta.get("_fbc"), fbp=_meta.get("_fbp"),
                         client_user_agent=_meta.get("_ua"),
-                        client_ip_address=_meta.get("_ip"))
+                        client_ip_address=_meta.get("_ip"),
+                        li_fat_id=_meta.get("_li_fat_id"))
     payments.mark_processed(db, eid, event.get("event", ""), rid or "")
     return {"ok": True}
 
@@ -1169,7 +1329,8 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
                 "INR", phone, pay_email or form_email or "",
                 fbc=_meta.get("_fbc"), fbp=_meta.get("_fbp"),
                 client_user_agent=_meta.get("_ua"),
-                client_ip_address=_meta.get("_ip"))
+                client_ip_address=_meta.get("_ip"),
+                li_fat_id=_meta.get("_li_fat_id"))
     return {"ok": True, "report_id": rid}
 
 
