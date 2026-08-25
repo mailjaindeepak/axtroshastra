@@ -6,8 +6,20 @@ Tracks the paid-ads funnel end to end:
 Click  ->  Landing  ->  Form Filled  ->  Checkout Initiated  ->  Purchase
 ```
 
-The code is **already deployed and inert**. Nothing fires until the conversion
-ids below are set, so this document is the activation checklist.
+Every conversion is **inert until its id is configured**, so this code is safe to
+ship before any of the setup below is done. This document is that setup checklist.
+
+> **Deploying is a separate, manual step.** Merging to `aws-mysql` does not ship
+> anything — the deploy job in `ci.yml` is `workflow_dispatch` only. Triggering
+> it deploys whatever `aws-mysql` currently points at, so an open PR is NOT
+> picked up. Confirm what is actually live with:
+>
+> ```bash
+> curl -s https://www.axtroshastra.com/en/marriage-v3 | grep -c snap.licdn.com
+> ```
+>
+> `1` = the tag is serving; `0` = this code is not live yet, whatever the CI
+> checkmarks say.
 
 ---
 
