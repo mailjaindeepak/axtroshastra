@@ -36,10 +36,35 @@ wraps `window.fbq` once and re-emits the matching LinkedIn conversion:
 
 | Funnel step        | Meta event the page already fires | LinkedIn conversion env var |
 | ------------------ | --------------------------------- | --------------------------- |
-| Landing            | (page load)                       | `LINKEDIN_CONV_LANDING`     |
+| Landing            | (page load, funnel pages only)    | `LINKEDIN_CONV_LANDING`     |
 | Form Filled        | `Lead`                            | `LINKEDIN_CONV_LEAD`        |
 | Checkout Initiated | `InitiateCheckout`                | `LINKEDIN_CONV_CHECKOUT`    |
 | Purchase           | `Purchase`                        | `LINKEDIN_CONV_PURCHASE`    |
+
+### Where Landing fires — and where it deliberately does not
+
+The **tag** loads on every page; the **Landing conversion** does not. It fires
+only on pages that could actually produce the next funnel step, detected by
+`_is_funnel_page()` looking for the page's own Meta `Lead` fire — the 17 product
+landing pages the ads point at.
+
+It is suppressed on `/report/<id>`, `/account`, `/login`, the blog, the celebrity
+pages and the legal pages.
+
+> **This was a real bug, fixed after launch.** Landing originally fired on every
+> served page, so the post-payment redirect to `/report/<id>` counted the same
+> buyer a second time. That inflated the top of the funnel and made
+> Landing -> Form Filled read far worse than reality. If you are comparing
+> figures across 2026-08-25, Landing counts before the fix are overstated.
+
+Scoping the conversion does **not** scope the tag: retargeting audiences, click
+attribution and the `li_fat_id` capture still work site-wide.
+
+One consequence worth knowing: if you ever point an ad at the homepage, the blog
+or a celebrity page, Landing will not fire for that click — those pages have no
+form, so they cannot produce a Lead. The visitor is still tracked and still
+retargetable, and Landing fires when they reach a funnel page. To count such a
+page as a landing, give it a funnel form rather than loosening the detection.
 
 > **Trade-off to know about.** LinkedIn conversions ride on the Meta Pixel
 > calls. Remove the Pixel from a page and that page silently stops reporting to

@@ -713,11 +713,31 @@ _LINKEDIN_CONV = {k: v for k, v in {
     "InitiateCheckout": os.getenv("LINKEDIN_CONV_CHECKOUT", "").strip(),  # checkout opened
     "Purchase": os.getenv("LINKEDIN_CONV_PURCHASE", "").strip(),          # paid
 }.items() if v}
-# Fired on every page load rather than off a Pixel event.
+# Fired on page load, but ONLY on a funnel landing page - see _is_funnel_page.
 _LINKEDIN_CONV_LANDING = os.getenv("LINKEDIN_CONV_LANDING", "").strip()
 
+# A page is a "landing" page if it can actually produce the next funnel step,
+# i.e. it fires the Meta Lead event. Detected from the page's own markup rather
+# than a hand-maintained path list, for the same reason the bridge below reads
+# fbq instead of editing 17 files: a new funnel page is covered automatically,
+# and a content page can never drift into counting as an ad landing.
+_FUNNEL_PAGE_MARKER = "fbq('track','Lead'"
 
-def _linkedin_head() -> str:
+
+def _is_funnel_page(html: str) -> bool:
+    """True for the 17 product landing pages, False for the report page,
+    /account, /login, the blog, the celebrity pages and the legal pages.
+
+    WHY THIS EXISTS: the Landing conversion originally fired on every page the
+    app served, so a single buyer counted twice - once on the real landing page
+    and again when the post-payment redirect loaded /report/<id>. That inflated
+    the top of the funnel and made Landing -> Form Filled read far worse than it
+    was. Landing now fires only where a Lead is possible, which is exactly the
+    set of pages the ads point at."""
+    return _FUNNEL_PAGE_MARKER in (html or "")
+
+
+def _linkedin_head(is_funnel_page: bool = False) -> str:
     """The Insight Tag base code plus a bridge that mirrors the funnel to it.
 
     HOW THE FUNNEL IS WIRED (and why there is no per-page markup)
@@ -744,6 +764,10 @@ def _linkedin_head() -> str:
     """
     if not LINKEDIN_PARTNER_ID:
         return ""
+    # The base tag still loads on EVERY page - retargeting audiences, click
+    # attribution and the li_fat_id capture all depend on site-wide coverage.
+    # Only the Landing *conversion* is scoped.
+    landing = _LINKEDIN_CONV_LANDING if is_funnel_page else ""
     return """
 <!-- LinkedIn Insight Tag + funnel bridge (injected server-side; ids from env) -->
 <script type="text/javascript">
@@ -812,7 +836,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 </script>
 """ % {"pid": LINKEDIN_PARTNER_ID,
        "conv": json.dumps(_LINKEDIN_CONV),
-       "landing": json.dumps(_LINKEDIN_CONV_LANDING)}
+       "landing": json.dumps(landing)}
 
 
 def _inject_linkedin(html: str) -> str:
@@ -821,7 +845,7 @@ def _inject_linkedin(html: str) -> str:
     try:
         if not html or "snap.licdn.com" in html or not LINKEDIN_PARTNER_ID:
             return html
-        block = _linkedin_head()
+        block = _linkedin_head(_is_funnel_page(html))
         if not block:
             return html
         import re
