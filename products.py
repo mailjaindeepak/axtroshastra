@@ -625,12 +625,12 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                                     if active_ad else "—",
                    "dasha_till": active_ad["end"].strftime("%b %Y") if active_ad else "—",
                    "lagna_en": SIGNS_EN[ch["lagna_sign"]],
-                   # Free-preview glimpses (landing-page teaser only): 3 fixed,
-                   # high-resonance areas reduced to just {area, tag} -- the same
-                   # real Life Wheel verdict already shown on that area's page in
-                   # the full report. Read-only mapping of the `wheel` dict below;
-                   # no new calculation, no per-area date, no insight text.
-                   "glimpses": [{"area": a, "tag": wheel[a]} for a in ("career", "money", "marriage")]},
+                   "cur_ad_lord": active_ad["lord"] if active_ad else None,
+                   # Free-preview Life Wheel (landing-page teaser only): the same
+                   # real, already-computed 10-area Thriving/Building/Watch verdict
+                   # shown in the full report -- read-only copy of the `wheel` dict
+                   # above, no new calculation.
+                   "wheel": wheel},
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
                                        "dignity": p.dignity, "retro": p.retro,
