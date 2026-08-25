@@ -628,7 +628,7 @@ def _inject_footer_link(html: str, lang: str = "en") -> str:
     - a page that already links the index is left alone, so this can never
     double-insert. The guard must match `href="/en/celebrity"` EXACTLY: a bare
     substring test for "/en/celebrity" also matches every
-    /en/celebrity-horoscope-<slug>-kundli link, so it skipped all 9 celebrity
+    /en/celebrity-horoscope/<slug>-kundli link, so it skipped all 9 celebrity
     pages - which is why they shipped without the footer link the first time. Never raises: a footer we can't parse just goes
     unchanged rather than breaking the page."""
     try:
@@ -1998,7 +1998,7 @@ def sitemap():
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
-                f"/en/celebrity-horoscope-{s}-kundli" for s in CELEBRITY_SLUGS
+                f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
             ]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
     return Response(content='<?xml version="1.0" encoding="UTF-8"?>'
@@ -2687,7 +2687,7 @@ def coming_soon():
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "coming-soon.html"))
 
 
-@app.get("/en/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+@app.get("/en/celebrity-horoscope/{slug}-kundli", include_in_schema=False)
 def celebrity_en(slug: str):
     """Serve pages/celebrity/<slug>.html — one page per built celebrity. A slug
     with no file yet (not in data.json as live, or not a celebrity at all)
@@ -2702,7 +2702,7 @@ def celebrity_en(slug: str):
     return RedirectResponse(f"/en/coming-soon?name={quote(_celebrity_display_name(slug))}", status_code=302)
 
 
-@app.get("/hi/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+@app.get("/hi/celebrity-horoscope/{slug}-kundli", include_in_schema=False)
 def celebrity_hi(slug: str):
     """Hindi twin of the route above. No Hindi celebrity pages exist yet, so
     every slug currently redirects to coming-soon — this starts serving the
@@ -2715,6 +2715,25 @@ def celebrity_hi(slug: str):
         return _serve_page_with_nav(hi_path, lang="hi")
     from urllib.parse import quote
     return RedirectResponse(f"/en/coming-soon?name={quote(_celebrity_display_name(slug))}", status_code=302)
+
+
+@app.get("/en/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+def celebrity_en_legacy(slug: str):
+    """26 Aug 2026: the URL shape moved from a hyphen to a real path segment
+    (.../celebrity-horoscope-<slug>-kundli -> .../celebrity-horoscope/<slug>-kundli).
+    Every already-live page, and anything already indexed or shared under the
+    old shape, keeps working via a permanent redirect rather than going dead."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    return RedirectResponse(f"/en/celebrity-horoscope/{slug}-kundli", status_code=301)
+
+
+@app.get("/hi/celebrity-horoscope-{slug}-kundli", include_in_schema=False)
+def celebrity_hi_legacy(slug: str):
+    """Hindi twin of the legacy redirect above."""
+    if not slug.replace("-", "").isalnum():
+        raise HTTPException(404, "not found")
+    return RedirectResponse(f"/hi/celebrity-horoscope/{slug}-kundli", status_code=301)
 
 
 @app.get("/{slug}", include_in_schema=False)

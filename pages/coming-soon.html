@@ -121,19 +121,19 @@ h1 em{font-style:normal;color:var(--acc)}
 
 <script>
 var LIVE = [
-  ["Virat Kohli","/en/celebrity-horoscope-virat-kohli-kundli"],
-  ["MS Dhoni","/en/celebrity-horoscope-ms-dhoni-kundli"],
-  ["Rohit Sharma","/en/celebrity-horoscope-rohit-sharma-kundli"],
-  ["Hardik Pandya","/en/celebrity-horoscope-hardik-pandya-kundli"],
-  ["Sachin Tendulkar","/en/celebrity-horoscope-sachin-tendulkar-kundli"],
-  ["Yuvraj Singh","/en/celebrity-horoscope-yuvraj-singh-kundli"],
-  ["Shah Rukh Khan","/en/celebrity-horoscope-shah-rukh-khan-kundli"],
-  ["Katrina Kaif","/en/celebrity-horoscope-katrina-kaif-kundli"],
-  ["Deepika Padukone","/en/celebrity-horoscope-deepika-padukone-kundli"],
-  ["Kareena Kapoor Khan","/en/celebrity-horoscope-kareena-kapoor-khan-kundli"],
-  ["Rashmika Mandanna","/en/celebrity-horoscope-rashmika-mandanna-kundli"],
-  ["Alia Bhatt","/en/celebrity-horoscope-alia-bhatt-kundli"],
-  ["Anushka Sharma","/en/celebrity-horoscope-anushka-sharma-kundli"]
+  ["Virat Kohli","/en/celebrity-horoscope/virat-kohli-kundli"],
+  ["MS Dhoni","/en/celebrity-horoscope/ms-dhoni-kundli"],
+  ["Rohit Sharma","/en/celebrity-horoscope/rohit-sharma-kundli"],
+  ["Hardik Pandya","/en/celebrity-horoscope/hardik-pandya-kundli"],
+  ["Sachin Tendulkar","/en/celebrity-horoscope/sachin-tendulkar-kundli"],
+  ["Yuvraj Singh","/en/celebrity-horoscope/yuvraj-singh-kundli"],
+  ["Shah Rukh Khan","/en/celebrity-horoscope/shah-rukh-khan-kundli"],
+  ["Katrina Kaif","/en/celebrity-horoscope/katrina-kaif-kundli"],
+  ["Deepika Padukone","/en/celebrity-horoscope/deepika-padukone-kundli"],
+  ["Kareena Kapoor Khan","/en/celebrity-horoscope/kareena-kapoor-khan-kundli"],
+  ["Rashmika Mandanna","/en/celebrity-horoscope/rashmika-mandanna-kundli"],
+  ["Alia Bhatt","/en/celebrity-horoscope/alia-bhatt-kundli"],
+  ["Anushka Sharma","/en/celebrity-horoscope/anushka-sharma-kundli"]
 ];
 var list = document.getElementById('liveList');
 LIVE.forEach(function(c){
@@ -144,11 +144,20 @@ LIVE.forEach(function(c){
 
 var params = new URLSearchParams(location.search);
 var name = params.get('name');
+var topic = params.get('topic');
 if(name){
   name = name.replace(/[<>]/g,'').slice(0,60);
   document.getElementById('heading').innerHTML = name + '’s kundli isn’t <em>ready</em> yet.';
   document.getElementById('lede').textContent = 'We haven’t built ' + name + '’s chart yet — no shortcuts here, so it stays off the site until it’s done properly.';
   document.title = name + ' — Coming Soon — AxtroShastra';
+} else if(topic){
+  // 26 Aug 2026: several celebrity pages link to topic/guide hubs (e.g. "What is a dasha?",
+  // "Mangal dosha") that don't exist yet. Reusing the name= wording ("X's kundli isn't
+  // ready") doesn't make sense for a guide, so this is a separate branch with its own copy.
+  topic = topic.replace(/[<>]/g,'').slice(0,60);
+  document.getElementById('heading').innerHTML = topic + ' isn’t <em>written</em> yet.';
+  document.getElementById('lede').textContent = 'This guide is on the list, not on the site yet — same rule as everywhere else here: nothing goes up until it is done properly.';
+  document.title = topic + ' — Coming Soon — AxtroShastra';
 }
 
 document.querySelectorAll('.skin button').forEach(function(b){
