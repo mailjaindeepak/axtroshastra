@@ -119,42 +119,40 @@ section{padding:52px 0}
 .premium-sample .ps-tbox .nm{font-family:var(--disp);font-weight:500;font-size:21px;line-height:1.25;color:#fff;margin:6px 0 2px;position:relative}
 .premium-sample .ps-tbox p{font-size:13px;line-height:1.55;position:relative;margin-bottom:0;color:#D9D0BE}
 
-/* Insight lines */
-.ps-insight{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:14px 16px;margin-top:10px;box-shadow:0 6px 18px var(--pshadow);display:flex;gap:12px;align-items:flex-start;text-align:left}
-.ps-insight .ic{flex:0 0 auto;width:18px;height:18px;color:var(--pgold);margin-top:2px}
-.ps-insight p{font-size:13.5px;line-height:1.5;color:var(--phead)}
-
-/* Ten-area map */
-.ps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--pline);border:1px solid var(--pline);border-radius:14px;overflow:hidden;margin-top:14px}
-.ps-grid .g{background:var(--panel);padding:12px 13px;font-size:13px;color:var(--phead);display:flex;align-items:center;gap:8px}
-.ps-grid .g .n{font-family:var(--disp);font-size:10.5px;color:var(--pgold);min-width:15px}
-
-/* Personalized glimpses */
-.ps-glimpse{display:flex;align-items:flex-start;gap:13px;background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:14px 15px;margin-top:10px;box-shadow:0 6px 18px var(--pshadow)}
-.ps-glimpse .tag{flex:0 0 auto;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:20px;padding:4px 9px;color:var(--pgold);background:var(--pgold-lt)}
-.ps-glimpse .tag.good{color:var(--pgreen);background:var(--pgreen-bg)}
-.ps-glimpse .tag.warn{color:var(--pterra);background:var(--pterra-bg)}
-.ps-glimpse .b{flex:1;min-width:0}
-.ps-glimpse .area{font-family:var(--disp);font-weight:500;font-size:14.5px;color:var(--phead)}
-.ps-glimpse .ins{font-size:12px;color:var(--pmuted);margin-top:3px;line-height:1.4}
-.ps-glimpse .blur{filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none}
-
-.ps-methodnote{text-align:center;font-size:12px;color:var(--pmuted);margin-top:16px;line-height:1.5}
-.ps-methodnote b{color:var(--phead);font-weight:600}
-.ps-locked{background:var(--panel);border:1px solid var(--pline);border-radius:20px;padding:24px;margin-top:16px;text-align:center;box-shadow:0 12px 34px var(--pshadow);position:relative;z-index:1}
-.ps-locklist{list-style:none;text-align:left;margin-top:6px}
-.ps-locklist li{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--pline)}
-.ps-locklist li:last-child{border-bottom:0}
-.ps-locklist .lk{flex:0 0 auto;color:var(--pgold);margin-top:2px}
-.ps-locklist b{font-family:var(--disp);font-weight:600;color:var(--phead);display:block;font-size:14px}
-.ps-locklist span{color:var(--pmuted);font-size:12.5px;line-height:1.4}
-.ps-cta{display:inline-flex;align-items:center;gap:9px;background:var(--pcta);color:#fff;border:0;border-radius:100px;padding:15px 30px;font-size:15.5px;font-weight:700;font-family:var(--body);cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.22);text-decoration:none;margin-top:16px}
-.ps-cta:hover{background:var(--pcta-h)}
-.ps-subnote{font-size:11.5px;color:var(--pmuted);margin-top:11px;line-height:1.6}
+/* Life Wheel */
+.ps-wheel-wrap{margin-top:18px;text-align:center;position:relative;z-index:1}
+.ps-wheel-svg{display:block;width:100%;max-width:400px;height:auto;margin:0 auto}
+.ps-wheel-ring{fill:none;stroke:#D3C2A0;stroke-width:1.3}
+.ps-wheel-spoke{stroke:#D3C2A0;stroke-width:1.3}
+.ps-wheel-dot-halo{fill:var(--bg);stroke:none}
+.ps-wheel-label{font-family:var(--body);font-size:14px;fill:var(--pmuted)}
+.ps-wheel-center-circle{fill:var(--panel);stroke:var(--pgold);stroke-width:1.6}
+.ps-wheel-center-name{font-family:var(--disp);font-weight:700;font-size:21px;fill:var(--phead)}
+.ps-wheel-center-sub{font-family:var(--body);font-size:11.5px;fill:var(--pgold)}
+.ps-wheel-legend{display:flex;justify-content:center;gap:26px;margin-top:14px;flex-wrap:wrap}
+.ps-wheel-legend-item{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--phead)}
+.ps-wheel-legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
 .ps-dec{position:absolute;z-index:0;pointer-events:none;max-width:none;opacity:.9}
+
+/* Unlock grid (9-card locked teaser) */
+.ps-unlock-head{text-align:center;margin-top:36px}
+.ps-unlock-head .h{font-family:var(--disp);font-weight:600;font-size:23px;color:var(--phead);margin-top:6px}
+.ps-unlock-head .s{font-size:13px;color:var(--pmuted);margin-top:8px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5}
+.ps-unlock-box{background:var(--panel);border:1px solid var(--pline);border-radius:24px;padding:26px 18px;margin-top:20px;text-align:center;box-shadow:0 14px 36px var(--pshadow);position:relative;overflow:hidden;z-index:1}
+.ps-unlock-box .h{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--phead);margin-top:6px}
+.ps-unlock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.ps-ucard{background:var(--tbox);border-radius:16px;padding:14px 10px 12px;position:relative;text-align:left;min-height:112px;display:flex;flex-direction:column;justify-content:flex-end}
+.ps-ucard .ic{width:18px;height:18px;color:var(--pgold-lt);opacity:.9}
+.ps-ucard .lk{position:absolute;top:10px;right:10px;width:13px;height:13px;color:#C9BBA0;opacity:.8}
+.ps-ucard .t{font-family:var(--disp);font-weight:600;font-size:13.5px;color:#F3EFE4;line-height:1.3;margin-top:10px}
+.ps-cta{display:inline-flex;align-items:center;gap:9px;background:var(--pcta);color:#fff;border:0;border-radius:100px;padding:15px 30px;font-size:15.5px;font-weight:700;font-family:var(--body);cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.22);text-decoration:none}
+.ps-cta:hover{background:var(--pcta-h)}
+.ps-unlock-box .ps-cta{margin-top:22px}
 @media(max-width:420px){
   .ps-snap .c .v{font-size:13.5px}
-  .ps-grid .g{padding:11px 10px;font-size:12.5px}
+  .ps-unlock-grid{gap:8px}
+  .ps-ucard{padding:12px 8px 10px;min-height:100px}
+  .ps-ucard .t{font-size:12.3px}
 }
 
 /* ---------- WHY DIFFERENT ---------- */
@@ -400,62 +398,29 @@ fbq('track', 'PageView');
 
     <!-- 3. What your chart is saying -->
     <div class="ps-sechead"><div class="eb">What your chart is saying</div></div>
-    <div class="ps-insight">
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 4h4v4"/></svg>
-      <p id="tv-insight1">—</p>
-    </div>
-    <div class="ps-insight">
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 0 18 9 9 0 1 1 0-18Z"/></svg>
-      <p id="tv-insight2">—</p>
-    </div>
 
-    <!-- 4. Ten areas, one picture -->
-    <div class="ps-sechead"><div class="eb">Ten areas. One connected picture.</div><div class="h" style="font-size:17px">Everything below reads from the same chart</div></div>
-    <div class="ps-grid">
-      <div class="g"><span class="n">01</span>Career</div>
-      <div class="g"><span class="n">02</span>Money</div>
-      <div class="g"><span class="n">03</span>Marriage</div>
-      <div class="g"><span class="n">04</span>Children</div>
-      <div class="g"><span class="n">05</span>Property</div>
-      <div class="g"><span class="n">06</span>Relocation</div>
-      <div class="g"><span class="n">07</span>Health</div>
-      <div class="g"><span class="n">08</span>Growth</div>
-      <div class="g"><span class="n">09</span>Family</div>
-      <div class="g"><span class="n">10</span>Timing</div>
+    <!-- 4. Life Wheel -->
+    <div class="ps-wheel-wrap">
+      <div id="tv-wheel"></div>
+      <div class="ps-wheel-legend">
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgreen)"></span>Thriving</span>
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgold)"></span>Building</span>
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pterra)"></span>Watch</span>
+      </div>
     </div>
 
-    <!-- 5. Personalized glimpses -->
-    <div class="ps-sechead"><div class="eb">A few real glimpses</div><div class="h" style="font-size:17px">From your own report, locked</div></div>
-    <div id="tv-glimpses"></div>
-
-    <p class="ps-methodnote">Computed from your <b>lagna</b>, <b>Moon nakshatra</b> and <b>dasha timeline</b> — the full chain (chart → houses → dignity → life areas) is in your report.</p>
-
-    <!-- 6. What you'll see + CTA -->
-    <div class="ps-locked">
-      <svg class="ps-dec" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true" style="right:-24px;top:-24px"><g opacity=".5"><clipPath id="psRock"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#psRock)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/></g></g></svg>
+    <!-- 5. Unlock grid -->
+    <div class="ps-unlock-head">
+      <div class="eb">This is just the surface</div>
+      <div class="h">Your full report keeps going</div>
+      <div class="s">Every area below, your weak periods, your action plan, and the reasoning behind every reading — all included.</div>
+    </div>
+    <div class="ps-unlock-box">
+      <svg class="ps-dec" width="70" height="70" viewBox="0 0 70 70" fill="none" aria-hidden="true" style="right:-18px;top:-18px"><g opacity=".45"><clipPath id="psRock2"><circle cx="35" cy="35" r="18"/></clipPath><circle cx="35" cy="35" r="18" fill="#D8C09A"/><g clip-path="url(#psRock2)" fill="#B99B6F"><circle cx="29" cy="30" r="4.5" opacity=".7"/><circle cx="41" cy="38" r="3.4" opacity=".7"/><circle cx="33" cy="44" r="2.7" opacity=".7"/></g></g></svg>
       <div class="eb">Unlock your full report</div>
-      <div class="h" style="font-family:var(--disp);font-weight:500;font-size:21px;color:var(--phead);margin-top:6px">Your chart already has these answers</div>
-
-      <ul class="ps-locklist">
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your full Life Wheel</b><span>Which of your 10 life areas are Thriving, Building, or need Watching — and why.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Career direction, decoded</b><span>What your 10th house and its lord say about the work that fits you.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Money &amp; wealth pattern</b><span>How you earn, save, and where your gains come from.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Relationships &amp; family</b><span>Your partnership style, family-formation pattern, and the ties that shape you.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Built-in strengths &amp; growth lessons</b><span>Which planets are working for you, and where to pay attention.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your life roadmap</b><span>Your next 3 mahadasha phases, with years and each phase's theme.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Full astrology reasoning</b><span>Every verdict, explained house by house — with your kundli chart shown.</span></div></li>
-      </ul>
-
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">See my full Life Blueprint <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span></button>
-      <div class="ps-subnote">Instant on-screen delivery, right after payment.</div>
-      <div class="offer-timer" id="offerTimer" style="margin:16px auto 0">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
+      <div class="h">9 things you'll get</div>
+      <div class="ps-unlock-grid" id="tv-unlock-grid"></div>
+      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">&uarr; Get my report <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span></button>
     </div>
 
   </div>
@@ -728,9 +693,62 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   }
 });
 
-var TV_TAG_LABEL = {thriving:'Thriving', building:'Building', watch:'Watch'};
-var TV_TAG_CLASS = {thriving:'good', building:'', watch:'warn'};
-var TV_AREA_LABEL = {career:'Career', money:'Money', marriage:'Marriage'};
+var TV_WHEEL_ORDER = ['career','money','marriage','children','home','foreign','health','growth','family','timing'];
+var TV_WHEEL_LABEL = {career:'Career', money:'Money', marriage:'Marriage', children:'Children',
+  home:'Property', foreign:'Relocation', health:'Health', growth:'Growth', family:'Family', timing:'Timing'};
+var TV_WHEEL_COLOR = {thriving:'var(--pgreen)', building:'var(--pgold)', watch:'var(--pterra)'};
+
+function tvWheelSvg(wheel, name, sub){
+  var cx = 240, cy = 220, dotR = 148, labelR = 174, centerR = 54;
+  var items = TV_WHEEL_ORDER.map(function(k){ return [TV_WHEEL_LABEL[k], wheel[k]]; });
+  var n = items.length;
+  var rings = [66, 107, 148];
+  var ringHtml = rings.map(function(r){ return '<circle class="ps-wheel-ring" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'; }).join('');
+  var spokes = '', dots = '', labels = '';
+  for(var i=0;i<n;i++){
+    var ang = (-90 + i * (360/n)) * Math.PI/180;
+    var dx = cx + dotR*Math.cos(ang), dy = cy + dotR*Math.sin(ang);
+    var lx = cx + labelR*Math.cos(ang), ly = cy + labelR*Math.sin(ang);
+    var ix = cx + centerR*Math.cos(ang), iy = cy + centerR*Math.sin(ang);
+    spokes += '<line class="ps-wheel-spoke" x1="'+ix.toFixed(1)+'" y1="'+iy.toFixed(1)+'" x2="'+dx.toFixed(1)+'" y2="'+dy.toFixed(1)+'"/>';
+    var color = TV_WHEEL_COLOR[items[i][1]] || 'var(--pmuted)';
+    dots += '<circle class="ps-wheel-dot-halo" cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="8.5"/><circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="6.4" fill="'+color+'"/>';
+    var cosv = Math.cos(ang);
+    var anchor = Math.abs(cosv) < 0.35 ? 'middle' : (cosv > 0 ? 'start' : 'end');
+    var sinv = Math.sin(ang);
+    var dyoff = (sinv > -0.85 && sinv < 0.85) ? '0.32em' : (sinv < 0 ? '0.9em' : '0.05em');
+    labels += '<text class="ps-wheel-label" x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="'+anchor+'" dy="'+dyoff+'">'+items[i][0]+'</text>';
+  }
+  var center = '<circle class="ps-wheel-center-circle" cx="'+cx+'" cy="'+cy+'" r="'+centerR+'"/>'
+    + '<text class="ps-wheel-center-name" x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle">'+name+'</text>'
+    + '<text class="ps-wheel-center-sub" x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle">'+sub+'</text>';
+  return '<svg class="ps-wheel-svg" viewBox="0 0 480 440" xmlns="http://www.w3.org/2000/svg">'+ringHtml+spokes+dots+center+labels+'</svg>';
+}
+
+// 9 of the 10 Life Blueprint areas (Timing excluded) -- icon path + locked-teaser
+// benefit line for the "9 things you'll get" grid. Copy only; no computed values.
+var TV_UNLOCK_CARDS = [
+  {icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>', t:'Your true career direction'},
+  {icon:'<circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/>', t:'How your wealth grows'},
+  {icon:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', t:'Your ideal partner, decoded'},
+  {icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', t:'Your family-building window'},
+  {icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', t:'Right time to buy or move'},
+  {icon:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>', t:'Should you move abroad'},
+  {icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', t:"Your body's weak points"},
+  {icon:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', t:"What's holding you back"},
+  {icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', t:'Mending old family ties'},
+];
+var TV_LOCK_ICON = '<rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>';
+
+function tvRenderUnlockGrid(){
+  var svgOpen = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+  document.getElementById('tv-unlock-grid').innerHTML = TV_UNLOCK_CARDS.map(function(c){
+    return '<div class="ps-ucard">'
+      + svgOpen + c.icon + '</svg>'
+      + '<svg class="lk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_LOCK_ICON + '</svg>'
+      + '<div class="t">' + c.t + '</div></div>';
+  }).join('');
+}
 
 function renderTeaser(t){
   document.getElementById('tv-lagna').textContent = t.lagna_en || '—';
@@ -739,21 +757,10 @@ function renderTeaser(t){
   document.getElementById('tv-dasha').textContent = t.current_dasha;
   document.getElementById('tv-till').textContent = t.dasha_till;
 
-  document.getElementById('tv-insight1').innerHTML =
-    'Your <b>' + t.lagna_en + '</b> rising sign sets the starting point for every one of the 10 areas below — each house, and each life area, is counted from here.';
-  document.getElementById('tv-insight2').innerHTML =
-    'Your Moon sits in <b>' + t.moon_sign_en + '</b>, in <b>' + t.nakshatra + '</b> nakshatra — the emotional, instinctive layer beneath how you present outwardly.';
-
-  var gwrap = document.getElementById('tv-glimpses');
-  gwrap.innerHTML = (t.glimpses || []).map(function(g){
-    var cls = TV_TAG_CLASS[g.tag] || '';
-    var label = TV_TAG_LABEL[g.tag] || g.tag;
-    var area = TV_AREA_LABEL[g.area] || g.area;
-    return '<div class="ps-glimpse">'
-      + '<span class="tag ' + cls + '">' + label + '</span>'
-      + '<div class="b"><div class="area">' + area + '</div>'
-      + '<div class="ins blur" aria-hidden="true">Your real chapter-by-chapter read for this area, with the reasoning behind it.</div></div></div>';
-  }).join('');
+  var firstName = (document.getElementById('f-name').value || '').trim().split(/\s+/)[0] || 'You';
+  var adLord = t.cur_ad_lord ? ('Antardasha of ' + t.cur_ad_lord) : '';
+  document.getElementById('tv-wheel').innerHTML = tvWheelSvg(t.wheel || {}, firstName, adLord);
+  tvRenderUnlockGrid();
 
   var el = document.getElementById('teaser');
   el.classList.add('show');
@@ -889,7 +896,7 @@ async function startPayment(){
 
 async function awaitReport(){
   var btn = document.getElementById('unlockBtn');
-  btn.textContent = 'Building your report…'; btn.disabled = true;
+  if(btn){ btn.textContent = 'Building your report…'; btn.disabled = true; }
   for(var i=0;i<30;i++){                            // poll up to ~60s
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
@@ -903,7 +910,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false;
+  if(btn){ btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false; }
   alert('Payment is processing — refresh the page in a minute. Your report will be ready.');
 }
 
