@@ -30,8 +30,9 @@ import narrative
 import report_view_v2
 import shaadi_hi
 import vyapar_hi
+from blueprint_hi_report import render_blueprint_hi
 from engine import compute_report
-from products import compute_milan, compute_vyapar
+from products import compute_blueprint, compute_milan, compute_vyapar
 from report_view import render_vyapar
 
 # --------------------------------------------------------------------------- #
@@ -108,6 +109,15 @@ def _vyapar_payload():
     return p
 
 
+def _blueprint_payload(**kw):
+    defaults = dict(name="Ananya Iyer", dob="1994-06-15", tob="08:30", tz=5.5,
+                     lat=28.6139, lon=77.2090, time_quality="T0")
+    defaults.update(kw)
+    p = compute_blueprint(**defaults)
+    p["meta"]["lang"] = "hi"
+    return p
+
+
 DUMMY_HI = "यह एक नमूना हिंदी अनुच्छेद है जो एलएलएम से आता है।"
 
 
@@ -152,6 +162,22 @@ def test_vyapar_hindi_has_no_english_runs(with_llm):
     html = vyapar_hi.localize(render_vyapar(p))
     leaks = _sweep(html)
     assert not leaks, f"English/Hinglish leaked into Hindi vyapar report: {leaks[:8]}"
+
+
+@pytest.mark.parametrize("birth", [
+    dict(name="Ananya Iyer", dob="1994-06-15", tob="08:30", tz=5.5, lat=28.6139, lon=77.2090),
+    dict(name="Rohan Verma", dob="1988-11-02", tob="23:45", tz=5.5, lat=19.0760, lon=72.8777),
+    dict(name="Kavya Reddy", dob="2001-11-03", tob="04:10", tz=5.5, lat=13.0827, lon=80.2707),
+])
+def test_blueprint_hindi_has_no_english_runs(birth):
+    """The /hi/life-blueprint report (blueprint_hi_report.render_blueprint_hi,
+    a real renderer, not a post-render translator) must be pure Devanagari
+    for any real chart — three distinct births exercise different wheel-tag
+    combinations (thriving/building/watch), dignities, dashas and elements."""
+    p = _blueprint_payload(**birth)
+    html = render_blueprint_hi(p)
+    leaks = _sweep(html)
+    assert not leaks, f"English/Hinglish leaked into Hindi blueprint report: {leaks[:8]}"
 
 
 # --------------------------------------------------------------------------- #

@@ -614,11 +614,50 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
         "timing": "watch" if sade["active"] else _wheel_tag(g[active_md["lord"]].dignity, 1),
     }
 
+    # ---- additive-only exposure of already-computed facts (house/lord/sign/
+    # dignity per area, the full houses-1-12 map, and the current Mahadasha's
+    # own antardasha list) -- every value below is derived from variables the
+    # function above already computed; nothing new is calculated here. This
+    # feeds the Hindi report's Part 2 "how every tag was set" / house-table /
+    # dasha-timeline pages without touching the English renderer, which never
+    # reads these keys.
+    def _area_fact(house_num, lord):
+        return {"house": house_num, "lord": lord,
+                "lord_sign": SIGNS[g[lord].sign], "dignity": g[lord].dignity}
+    area_detail = {
+        "career": _area_fact(10, tenth_lord),
+        "money": _area_fact(2, second_lord),
+        "marriage": _area_fact(7, seventh_lord),
+        "children": _area_fact(5, fifth_lord),
+        "home": _area_fact(4, fourth_lord),
+        "foreign": _area_fact(12, twelfth_lord),
+        "health": _area_fact(6, sixth_lord),
+        "growth": _area_fact(1, lagna_lord),
+        "family": _area_fact(9, ninth_lord),
+        "timing": _area_fact(None, active_md["lord"]) if active_md else None,
+    }
+    houses_1_12 = [{"house": i + 1, "sign": SIGNS[(ref + i) % 12],
+                     "lord": SIGN_LORD[(ref + i) % 12]} for i in range(12)]
+    dasha_current_ads = [{"lord": a["lord"], "from": a["start"].strftime("%b %Y"),
+                          "to": a["end"].strftime("%b %Y"),
+                          "current": a["start"] <= today <= a["end"]}
+                         for a in active_md["ads"]] if active_md else []
+    dasha_current_md = ({"lord": active_md["lord"],
+                        "from": active_md["start"].strftime("%b %Y"),
+                        "to": active_md["end"].strftime("%b %Y")}
+                       if active_md else None)
+    year_ahead["jup_sign"] = SIGNS[sign_of(jl)]
+    year_ahead["sat_sign"] = SIGNS[sign_of(sl)]
+
     return {
         "product": "blueprint",
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
                  "system": "chandra_lagna" if use_chandra else "lagna",
-                 "time_quality": time_quality, "ayanamsa": "Lahiri"},
+                 "time_quality": time_quality, "ayanamsa": "Lahiri", "tob": tob},
+        "area_detail": area_detail,
+        "houses_1_12": houses_1_12,
+        "dasha_current_md": dasha_current_md,
+        "dasha_current_ads": dasha_current_ads,
         "teaser": {"moon_sign": SIGNS[moon.sign], "moon_sign_en": SIGNS_EN[moon.sign],
                    "nakshatra": NAKSHATRAS[moon.nak], "pada": moon.pada,
                    "current_dasha": f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"

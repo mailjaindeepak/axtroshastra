@@ -91,6 +91,7 @@ const ALL_PAGES = [
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
   { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
+  { path: '/hi/life-blueprint', label: 'Life Blueprint (HI)' },
   { path: '/login',             label: 'Login' },
   { path: '/about',             label: 'About' },
   { path: '/privacy',           label: 'Privacy' },
@@ -350,7 +351,7 @@ const FUNNELS = [
   },
   {
     name: 'life-blueprint',
-    paths: { en: '/en/life-blueprint' },   // HI report out of scope for now
+    paths: { en: '/en/life-blueprint', hi: '/hi/life-blueprint' },
     form: '#kundliForm',
     fill: fillBlueprint,
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility

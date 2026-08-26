@@ -2040,6 +2040,7 @@ def render_blueprint(p: dict) -> str:
 
 <!-- 02 NOTE FOR YOU -->
 <section class="page note"><div class="col">
+  <div class="noteframe">
   <svg class="fan nftop" viewBox="0 0 54 30" fill="none"><rect x="6" y="13" width="42" height="20" fill="#FBF7EE"/><g stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M27 27 L12 15M27 27 L18 12M27 27 L27 9M27 27 L36 12M27 27 L42 15"/><path d="M12 15 A19 19 0 0 1 42 15"/></g></svg>
   <div class="eyebrow">A note for you</div>
   <h2 class="head">Before you read on</h2>
@@ -2048,6 +2049,7 @@ def render_blueprint(p: dict) -> str:
   <div class="lead">Nothing here is guessed. Every line traces back to a house, a planet, or a period in your own birth chart &mdash; and every part is honest about what it can and cannot tell you.</div>
   <div class="lead">&mdash; Your astrologer, Axtroshastra</div>
   <svg class="fan nfbot" viewBox="0 0 54 30" fill="none"><rect x="6" y="13" width="42" height="20" fill="#FBF7EE"/><g stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M27 27 L12 15M27 27 L18 12M27 27 L27 9M27 27 L36 12M27 27 L42 15"/><path d="M12 15 A19 19 0 0 1 42 15"/></g></svg><svg class="crn ctl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn ctr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg>
+  </div>
 </div><div class="pno">02</div></section>
 
 <!-- 03 LIFE WHEEL -->
