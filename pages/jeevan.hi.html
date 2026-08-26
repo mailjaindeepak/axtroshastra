@@ -1,22 +1,30 @@
 <!DOCTYPE html>
-<html lang="hi-IN">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
+<script>window.__axlang="hi";</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Blueprint Report — Aapki Kundli, Aapki Kahani | Axtroshastra</title>
+<title>जीवन ब्लूप्रिंट रिपोर्ट — आपकी कुंडली, आपकी कहानी | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
 <link rel="canonical" href="https://www.axtroshastra.com/hi/life-blueprint">
-<meta property="og:title" content="Life Blueprint Report ₹499">
-<meta property="og:description" content="Personality, career direction, strengths aur aane wale life phases — aapki kundli se, 2 minute mein.">
+<link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/life-blueprint">
+<link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/life-blueprint">
+<meta property="og:title" content="जीवन ब्लूप्रिंट रिपोर्ट ₹999">
+<meta property="og:description" content="आपका स्वभाव, करियर दिशा, ताकत और आगे आने वाले जीवन के चरण — आपकी जन्म-कुंडली से, सिर्फ़ 2 मिनट में।">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/hi/life-blueprint">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Aapki kundli se personality, strengths, career direction aur aane wale life phases — classical Vedic rules se calculate. Report ₹499, 2 minute mein.">
+<meta name="description" content="आपका स्वभाव, ताकत, करियर दिशा और आगे आने वाले जीवन के चरण — आपकी जन्म-कुंडली से, पुराने वैदिक नियमों से निकाले गए। रिपोर्ट ₹999, सिर्फ़ 2 मिनट में।">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ============ DESIGN-SYSTEM PARITY NOTE ============
+   Every token, class name and pixel value in this block is copied verbatim
+   from pages/jeevan.html (the English Life Blueprint page) so this Hindi
+   counterpart is visually and structurally identical -- translation only.
+   ==================================== */
 :root{
   --ink:#23253B;
   --midnight:#151C39;
@@ -31,8 +39,8 @@
   --line:#E7E0D2;
   --ok:#2E7D53;
   --radius:14px;
-  --display:'Bricolage Grotesque', 'Segoe UI', sans-serif;
-  --body:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --display:'Bricolage Grotesque', 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
+  --body:'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -80,40 +88,75 @@ section{padding:52px 0}
 .trust li b{color:#E8E4D6;font-weight:600}
 .trust .dot{width:5px;height:5px;border-radius:50%;background:var(--haldi);flex:none}
 
-/* ---------- TEASER / PAYWALL ---------- */
-.teaser{background:linear-gradient(var(--paper), #F3ECDD);display:none}
-.teaser.show{display:block}
-.teaser-head{text-align:center;margin-bottom:22px}
-.teaser-head h2{font-size:clamp(24px,6vw,30px);font-weight:800}
-.chart-facts{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
-.chart-facts .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
-.chart-facts .row:last-child{border-bottom:0}
-.chart-facts .k{color:var(--muted)}
-.chart-facts .v{font-weight:700;text-align:right}
-.dasha-note{font-size:13.5px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin-top:12px}
-.windows-found{font-family:var(--display);font-weight:800;font-size:19px;text-align:center;margin:22px 0 14px}
-.windows-found b{color:var(--sindoor)}
+/* ============ TEASER — Fraunces/cream-gold premium theme (same palette,
+   font pairing and card language as the rest of this page). ============ */
+.premium-sample{
+  --disp:'Fraunces',Georgia,serif;
+  --bg:#E9E1D3;--panel:#FBF7EF;--pline:#E7DCC6;--pshadow:rgba(90,60,20,.10);
+  --pink:#2A2015;--phead:#3a2c18;--pmuted:#8A8199;--pgold:#C9A34E;--pgold-lt:#E7CE8F;
+  --pgreen:#3E7D5A;--pgreen-bg:#E7F1EA;--pterra:#B4572B;--pterra-bg:#F7E6DC;
+  --tbox:linear-gradient(150deg,#3a2c18,#211509);--tbox-glow:rgba(201,163,78,.30);
+  --pcta:#B4674A;--pcta-h:#9A4E35;
+  background:var(--bg);color:var(--pink);font-family:var(--body);line-height:1.6;padding:34px 16px 44px;overflow:hidden;position:relative;display:none}
+#teaser.show{display:block}
+.ps-tag{max-width:560px;margin:0 auto 16px;text-align:center;font-size:11.5px;color:#9c8f77;position:relative;z-index:1}
+.ps-wrap{max-width:560px;margin:0 auto;position:relative;z-index:1}
+.premium-sample .eb{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--pgold);text-align:center}
+.ps-block{margin-top:22px;position:relative;z-index:1}
+.ps-sechead{text-align:center;margin:30px 0 4px;position:relative;z-index:1}
+.ps-sechead:first-child{margin-top:0}
+.ps-sechead .h{font-family:var(--disp);font-weight:500;font-size:20px;color:var(--phead);margin-top:6px}
+.ps-sechead .s{font-size:12.5px;color:var(--pmuted);margin-top:5px}
 
-/* locked timeline */
-.timeline{background:var(--midnight);border-radius:var(--radius);padding:20px 16px 16px;color:#CFCBBB}
-.timeline .tl-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8F92AB;margin-bottom:14px;text-align:center}
-.tl-track{position:relative;height:54px;background:var(--midnight-2);border-radius:8px;overflow:hidden}
-.tl-window{position:absolute;top:0;bottom:0;background:linear-gradient(90deg, rgba(228,176,74,.85), rgba(228,176,74,.55));display:flex;align-items:center;justify-content:center}
-.tl-window .lockchip{background:rgba(21,28,57,.85);color:var(--haldi);border-radius:8px;font-size:12px;font-weight:700;padding:5px 9px;display:flex;gap:5px;align-items:center;filter:none}
-.tl-window .yrs{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:var(--midnight);filter:blur(7px);user-select:none}
-.tl-years{display:flex;justify-content:space-between;font-size:10.5px;color:#7C7F99;margin-top:8px;padding:0 2px}
-.tl-cap{font-size:12.5px;color:#A9ABC0;text-align:center;margin-top:12px}
+/* Chart snapshot strip */
+.ps-snap{display:flex;margin-top:14px;background:var(--panel);border:1px solid var(--pline);border-radius:16px;overflow:hidden;box-shadow:0 6px 18px var(--pshadow)}
+.ps-snap .c{flex:1;text-align:center;padding:16px 6px;position:relative}
+.ps-snap .c+.c::before{content:"";position:absolute;left:0;top:18%;bottom:18%;width:1px;background:var(--pline)}
+.ps-snap .c .k{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pmuted)}
+.ps-snap .c .v{font-family:var(--disp);font-weight:500;font-size:15px;color:var(--phead);margin-top:5px;line-height:1.25}
 
-/* paywall card */
-.paywall{background:var(--card);border-radius:var(--radius);border:2px solid var(--haldi);padding:24px 20px;margin-top:22px;box-shadow:0 14px 40px rgba(35,37,59,.12)}
-.paywall h3{font-size:22px;font-weight:800}
-.price{display:flex;align-items:baseline;gap:10px;margin:6px 0 16px}
-.price .now{font-family:var(--display);font-weight:800;font-size:32px;color:var(--sindoor)}
-.price .was{color:var(--muted);text-decoration:line-through;font-size:17px}
-.price .tag{font-size:11px;font-weight:700;background:var(--haldi-soft);color:#8a6a1f;border-radius:20px;padding:4px 10px;letter-spacing:.04em}
-.paywall ul{list-style:none;margin-bottom:18px}
-.paywall li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}
-.paywall li svg{flex:none;margin-top:3px}
+/* Current chapter */
+.premium-sample .ps-tbox{background:var(--tbox);color:#EFE7D8;border-radius:18px;padding:20px 18px;position:relative;overflow:hidden}
+.premium-sample .ps-tbox::before{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--tbox-glow),transparent 70%);filter:blur(14px)}
+.premium-sample .ps-tbox .who{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--pgold-lt);position:relative;display:flex;align-items:center;gap:6px}
+.premium-sample .ps-tbox .nm{font-family:var(--disp);font-weight:500;font-size:21px;line-height:1.25;color:#fff;margin:6px 0 2px;position:relative}
+.premium-sample .ps-tbox p{font-size:13px;line-height:1.55;position:relative;margin-bottom:0;color:#D9D0BE}
+
+/* Life Wheel */
+.ps-wheel-wrap{margin-top:18px;text-align:center;position:relative;z-index:1}
+.ps-wheel-svg{display:block;width:100%;max-width:400px;height:auto;margin:0 auto}
+.ps-wheel-ring{fill:none;stroke:#D3C2A0;stroke-width:1.3}
+.ps-wheel-spoke{stroke:#D3C2A0;stroke-width:1.3}
+.ps-wheel-dot-halo{fill:var(--bg);stroke:none}
+.ps-wheel-label{font-family:var(--body);font-size:14px;fill:var(--pmuted)}
+.ps-wheel-center-circle{fill:var(--panel);stroke:var(--pgold);stroke-width:1.6}
+.ps-wheel-center-name{font-family:var(--disp);font-weight:700;font-size:21px;fill:var(--phead)}
+.ps-wheel-center-sub{font-family:var(--body);font-size:11.5px;fill:var(--pgold)}
+.ps-wheel-legend{display:flex;justify-content:center;gap:26px;margin-top:14px;flex-wrap:wrap}
+.ps-wheel-legend-item{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--phead)}
+.ps-wheel-legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.ps-dec{position:absolute;z-index:0;pointer-events:none;max-width:none;opacity:.9}
+
+/* Unlock grid (9-card locked teaser) */
+.ps-unlock-head{text-align:center;margin-top:36px}
+.ps-unlock-head .h{font-family:var(--disp);font-weight:600;font-size:23px;color:var(--phead);margin-top:6px}
+.ps-unlock-head .s{font-size:13px;color:var(--pmuted);margin-top:8px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5}
+.ps-unlock-box{background:var(--panel);border:1px solid var(--pline);border-radius:24px;padding:26px 18px;margin-top:20px;text-align:center;box-shadow:0 14px 36px var(--pshadow);position:relative;overflow:hidden;z-index:1}
+.ps-unlock-box .h{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--phead);margin-top:6px}
+.ps-unlock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.ps-ucard{background:var(--tbox);border-radius:16px;padding:14px 10px 12px;position:relative;text-align:left;min-height:112px;display:flex;flex-direction:column;justify-content:flex-end}
+.ps-ucard .ic{width:18px;height:18px;color:var(--pgold-lt);opacity:.9}
+.ps-ucard .lk{position:absolute;top:10px;right:10px;width:13px;height:13px;color:#C9BBA0;opacity:.8}
+.ps-ucard .t{font-family:var(--disp);font-weight:600;font-size:13.5px;color:#F3EFE4;line-height:1.3;margin-top:10px}
+.ps-cta{display:inline-flex;align-items:center;gap:9px;background:var(--pcta);color:#fff;border:0;border-radius:100px;padding:15px 30px;font-size:15.5px;font-weight:700;font-family:var(--body);cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.22);text-decoration:none}
+.ps-cta:hover{background:var(--pcta-h)}
+.ps-unlock-box .ps-cta{margin-top:22px}
+@media(max-width:420px){
+  .ps-snap .c .v{font-size:13.5px}
+  .ps-unlock-grid{gap:8px}
+  .ps-ucard{padding:12px 8px 10px;min-height:100px}
+  .ps-ucard .t{font-size:12.3px}
+}
 
 /* ---------- WHY DIFFERENT ---------- */
 .why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
@@ -168,6 +211,12 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+.sticky.kbd{display:none!important}
+.sticky .sp .l2 .clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--sindoor)}
+.offer-timer{margin:14px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(228,176,74,.14)}
+.offer-timer b.clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--midnight);background:var(--haldi-soft);border:1px solid var(--haldi);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
+.offer-timer s{color:var(--muted)}
+.offer-timer .amt{color:var(--sindoor);font-weight:800}
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -221,6 +270,14 @@ fbq('track', 'PageView');
 </script>
 <style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
 <style>
+.dob-row{display:flex;gap:8px}
+.dob-row input{padding:13px 8px;text-align:center}
+.dob-row select{padding:13px 8px}
+#f-dd{flex:0 0 3.4em}
+#f-mm{flex:1 1 auto;min-width:0}
+#f-yy{flex:0 0 5.2em}
+</style>
+<style>
 /* social proof / reviews (shared with homepage) */
 .stats-row{display:flex;gap:10px;margin:22px 0}
 .stat-tile{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
@@ -239,6 +296,7 @@ fbq('track', 'PageView');
 </style>
 </head>
 <body>
+<div id="axlang" data-axlang="hi"><a href="/en/life-blueprint" hreflang="en">EN</a><a class="on" href="/hi/life-blueprint" aria-current="page">हिंदी</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
 
 <!-- ============ HERO ============ -->
 <header class="hero">
@@ -255,47 +313,55 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
 
-    <p class="eyebrow">Life Blueprint Report</p>
-    <h1>Aapki kundli mein<br><em>poori kahani</em> hai.</h1>
-    <p class="sub">Personality. Career. Strengths.<br>Aane wale phases. Ek hi report mein.</p>
-    <p class="sub2">Your complete chart decoded — who you are, which direction fits you, and what the next phases of your life look like.</p>
+    <p class="eyebrow">जीवन ब्लूप्रिंट रिपोर्ट</p>
+    <h1>आपकी जन्म-कुंडली में<br><em>पूरी कहानी छिपी है।</em></h1>
+    <p class="sub">स्वभाव। करियर। ताकत।<br>आगे क्या आने वाला है। एक ही रिपोर्ट में।</p>
+    <p class="sub2">आपकी पूरी कुंडली खोली गई — आप कौन हैं, कौन-सी दिशा आपके लिए सही है, और आपके जीवन के अगले चरण कैसे दिखते हैं।</p>
 
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Apni birth details daaliye 👇</p>
+      <p class="fc-title">अपनी जन्म जानकारी भरें 👇</p>
       <div class="field">
-        <label for="f-name">Naam</label>
-        <input id="f-name" type="text" placeholder="Aapka naam" required>
+        <label for="f-name">नाम</label>
+        <input id="f-name" type="text" placeholder="आपका नाम" required>
       </div>
       <div class="field">
-        <label for="f-dob">Date of birth</label>
-        <input id="f-dob" type="date" required>
+        <label for="f-gender">आप हैं</label>
+        <select id="f-gender" required aria-label="आप हैं"><option value="" disabled selected hidden>चुनें…</option><option value="male">पुरुष</option><option value="female">महिला</option></select>
+      </div>
+      <div class="field">
+        <label>जन्म तारीख़</label>
+        <div class="dob-row">
+          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="तारीख़" autocomplete="off">
+          <select id="f-mm" required aria-label="महीना"><option value="" disabled selected hidden>महीना</option></select>
+          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="साल" autocomplete="off">
+        </div>
       </div>
       <div class="field" id="tobField">
-        <label for="f-tob">Time of birth</label>
-        <div class="tob3"><select id="f-hh" aria-label="Hour"></select><select id="f-mm2" aria-label="Minute"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
+        <label for="f-tob">जन्म का समय</label>
+        <div class="tob3"><select id="f-hh" aria-label="घंटा"></select><select id="f-mm2" aria-label="मिनट"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
-        <label for="f-approx">Approximate time</label>
+        <label for="f-approx">अनुमानित समय</label>
         <select id="f-approx">
-          <option value="" disabled selected hidden>Approximate time chuniye</option>
-          <option value="subah">Subah (4 AM – 10 AM)</option>
-          <option value="din">Din (10 AM – 4 PM)</option>
-          <option value="shaam">Shaam (4 PM – 10 PM)</option>
-          <option value="raat">Raat (10 PM – 4 AM)</option>
-          <option value="unknown">Bilkul nahi pata</option>
+          <option value="" disabled selected hidden>अनुमानित समय चुनें</option>
+          <option value="subah">सुबह (4 AM – 10 AM)</option>
+          <option value="din">दिन (10 AM – 4 PM)</option>
+          <option value="shaam">शाम (4 PM – 10 PM)</option>
+          <option value="raat">रात (10 PM – 4 AM)</option>
+          <option value="unknown">बिल्कुल पता नहीं</option>
         </select>
         <div id="f-approx-hint" class="field-hint"></div>
       </div>
       <label class="tob-toggle">
         <input type="checkbox" id="unknownTime">
-        <span><b>Birth time exactly nahi pata?</b> Koi baat nahi — most people don't. Hum approximate time ke saath kaam karte hain. <span class="spec">Hamari specialty hai.</span></span>
+        <span><b>सही जन्म समय पता नहीं?</b> कोई बात नहीं — ज़्यादातर लोगों को पता नहीं होता। हम अनुमानित समय से भी काम कर लेते हैं। <span class="spec">यही तो हमारी खासियत है।</span></span>
       </label>
       <div class="field">
-        <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
+        <label for="f-place">जन्म स्थान</label>
+        <input id="f-place" type="text" placeholder="शहर, राज्य" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
-      <button class="btn" type="submit">Meri kundli check karo — FREE</button>
-      <p class="btn-note">Free chart snapshot pehle. Full report ₹499 — pay only if you want the answer.</p>
+      <button class="btn" type="submit">मेरी कुंडली देखें — मुफ़्त</button>
+      <p class="btn-note">पहले मुफ़्त झलक। पूरी रिपोर्ट ₹999 — जवाब चाहिए तभी पेमेंट करें।</p>
     </form>
   </div>
 </header>
@@ -304,76 +370,92 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>NASA-grade ephemeris</b> precision</li>
-      <li><span class="dot"></span><b>No account</b> needed</li>
-      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
-      <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+      <li><span class="dot"></span><b>NASA-ग्रेड</b> इफ़ेमेरिस सटीकता</li>
+      <li><span class="dot"></span><b>कोई अकाउंट</b> नहीं चाहिए</li>
+      <li><span class="dot"></span><b>2 मिनट</b> में रिपोर्ट</li>
+      <li><span class="dot"></span><b>IIT–IIM</b> पूर्व छात्रों द्वारा बनाया गया</li>
     </ul>
   </div>
 </div>
 
-<!-- ============ TEASER + PAYWALL (revealed after form) ============ -->
-<section class="teaser" id="teaser">
-  <div class="wrap">
-    <div class="teaser-head">
-      <p class="eyebrow dark">Free snapshot</p>
-      <h2><span id="t-name">Aapki</span> kundli ready hai ✅</h2>
+<!-- ============ TEASER (मुफ़्त झलक, फॉर्म भरने के बाद खरीदार की असली
+     कुंडली से भरी जाती है) ============ -->
+<section class="premium-sample" id="teaser">
+  <svg class="ps-dec" width="300" height="300" viewBox="0 0 300 300" fill="none" aria-hidden="true" style="top:-110px;right:-160px"><defs><radialGradient id="psSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F1CB6E" stop-opacity=".85"/><stop offset="55%" stop-color="#E6B457" stop-opacity=".3"/><stop offset="100%" stop-color="#E6B457" stop-opacity="0"/></radialGradient></defs><circle cx="150" cy="150" r="150" fill="url(#psSun)"/><circle cx="150" cy="150" r="42" fill="#EFC469" opacity=".5"/><g stroke="#E3B053" stroke-width="3" stroke-linecap="round" opacity=".38"><line x1="207" y1="150" x2="232" y2="150"/><line x1="190" y1="190" x2="208" y2="208"/><line x1="150" y1="207" x2="150" y2="232"/><line x1="110" y1="190" x2="92" y2="208"/><line x1="93" y1="150" x2="68" y2="150"/><line x1="110" y1="110" x2="92" y2="92"/><line x1="150" y1="93" x2="150" y2="68"/><line x1="190" y1="110" x2="208" y2="92"/></g></svg>
+  <p class="ps-tag">मुफ़्त झलक — आपकी पूरी रिपोर्ट की एक असली झलक, आपकी अपनी जन्म-कुंडली से निकाली गई।</p>
+  <div class="ps-wrap">
+
+    <!-- 1. Chart snapshot -->
+    <div class="ps-sechead"><div class="eb">एक नज़र में</div><div class="h">आपका जीवन ब्लूप्रिंट</div></div>
+    <div class="ps-snap">
+      <div class="c"><div class="k">लग्न (राशि)</div><div class="v" id="tv-lagna">—</div></div>
+      <div class="c"><div class="k">चंद्र राशि</div><div class="v" id="tv-moon">—</div></div>
+      <div class="c"><div class="k">नक्षत्र</div><div class="v" id="tv-nak">—</div></div>
     </div>
 
-    <div class="chart-facts">
-      <div class="row"><span class="k">Moon sign (Rashi)</span><span class="v" id="t-rashi">—</span></div>
-      <div class="row"><span class="k">Nakshatra</span><span class="v" id="t-nak">—</span></div>
-      <div class="row"><span class="k">Current period</span><span class="v" id="t-dasha">—</span></div>
-      <div class="row"><span class="k">Period till</span><span class="v" id="t-till">—</span></div>
-      <div class="dasha-note" id="t-note">⭐ Aapka current dasha period directly relevant hai aapke marriage timing se.</div>
+    <!-- 2. Current chapter -->
+    <div class="ps-block ps-tbox">
+      <div class="who">⏳&nbsp; मौजूदा अध्याय</div>
+      <div class="nm" id="tv-dasha">—</div>
+      <p><b id="tv-till" style="color:#fff">—</b> तक — यह एक दौर ही तय करता है कि आपके 10 जीवन-क्षेत्रों में से हर एक अभी कैसा पढ़ता है।</p>
     </div>
 
-    <p class="windows-found">Aapki report mein <b id="t-count">—</b> ready hain.</p>
+    <!-- 3. What your chart is saying -->
+    <div class="ps-sechead"><div class="eb">आपकी कुंडली क्या कह रही है</div></div>
 
-    <div class="timeline">
-      <p class="tl-title" id="tlTitle">Your marriage timeline</p>
-      <div class="tl-track" id="tlTrack"></div>
-      <div class="tl-years" id="tlYears"></div>
-      <p class="tl-cap">Windows calculated. Exact years, months aur strength grade report mein.</p>
-    </div>
-
-    <div class="paywall">
-      <h3>Full Life Blueprint Report</h3>
-      <div class="price">
-        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
+    <!-- 4. Life Wheel -->
+    <div class="ps-wheel-wrap">
+      <div id="tv-wheel"></div>
+      <div class="ps-wheel-legend">
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgreen)"></span>उन्नति पर</span>
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgold)"></span>बन रहा है</span>
+        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pterra)"></span>सतर्कता</span>
       </div>
-      <ul>
-        <li>✅ <b>Aap kaun hain</b> — lagna aur moon se personality decode</li>
-        <li>✅ <b>Career direction</b> — 10th house kya kehta hai</li>
-        <li>✅ <b>Built-in strengths</b> — kaunse planets aapke saath hain</li>
-        <li>✅ <b>Growth lessons</b> — kahan dhyaan dena hai</li>
-        <li>✅ <b>Life roadmap</b> — agle 3 phases, saalo ke saath</li>
-      </ul>
-      <button class="btn" id="unlockBtn" onclick="startPayment()">Unlock my report — ₹499</button>
-      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant on-screen delivery</p>
     </div>
+
+    <!-- 5. Unlock grid -->
+    <div class="ps-unlock-head">
+      <div class="eb">यह तो बस शुरुआत है</div>
+      <div class="h">आपकी पूरी रिपोर्ट में और भी बहुत कुछ है</div>
+      <div class="s">हर क्षेत्र का पूरा विवरण, कमज़ोर दौर, आपकी कार्य-योजना, और हर रीडिंग के पीछे की पूरी वजह — सब शामिल।</div>
+    </div>
+    <div class="ps-unlock-box">
+      <svg class="ps-dec" width="70" height="70" viewBox="0 0 70 70" fill="none" aria-hidden="true" style="right:-18px;top:-18px"><g opacity=".45"><clipPath id="psRock2"><circle cx="35" cy="35" r="18"/></clipPath><circle cx="35" cy="35" r="18" fill="#D8C09A"/><g clip-path="url(#psRock2)" fill="#B99B6F"><circle cx="29" cy="30" r="4.5" opacity=".7"/><circle cx="41" cy="38" r="3.4" opacity=".7"/><circle cx="33" cy="44" r="2.7" opacity=".7"/></g></g></svg>
+      <div class="eb">अपनी पूरी रिपोर्ट अनलॉक करें</div>
+      <div class="h">आपको 9 चीज़ें मिलेंगी</div>
+      <div class="ps-unlock-grid" id="tv-unlock-grid"></div>
+      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">&uarr; मेरी रिपोर्ट पाएँ <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹999</span></button>
+    </div>
+
   </div>
 </section>
 
 <section class="proof">
   <div class="wrap">
         <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Loved across India</p>
-      <h2>You're in good company</h2>
+      <p class="eyebrow dark">पूरे भारत में पसंद की गई</p>
+      <h2>आप अच्छी संगत में हैं</h2>
     </div>
     <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+      <div class="stat-tile"><div class="n">25,000+</div><div class="c">रिपोर्ट बन चुकी हैं</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">औसत रेटिंग</div></div>
+      <div class="stat-tile"><div class="n">2 मिनट</div><div class="c">में नतीजा</div></div>
     </div>
         <div class="revs" id="revsTrack">
-      <div class="rev"><div class="stars">★★★★★</div><p>"Bought it half-expecting generic gyaan. The career and wealth sections were oddly specific about my actual life — not horoscope-column vague."</p><div class="who">— Nikhil, 29</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"What sold me: every point had a reason — dasha, house, lord. Took a few lines to a pandit ji and he agreed. Felt legit."</p><div class="who">— Zoya, 31</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"Read it on a random low day and the 'coming phases' bit genuinely gave me something to look forward to. No fake hype, just a map."</p><div class="who">— Tanvi, 30</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"The strengths section named things about me I could never put into words. Screenshotted it for the days I doubt myself."</p><div class="who">— Rohit, 28</div></div>
-      <div class="rev"><div class="stars">★★★★★</div><p>"I liked the honesty — it listed growth lessons too, not just flattery. That's what made the praise believable."</p><div class="who">— Kavya, 26</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"आधा सोचकर लिया था कि कुछ सामान्य-सी बातें होंगी। करियर और पैसे वाले हिस्से में तो ऐसी बातें थीं जो सीधे मेरी अपनी ज़िंदगी से जुड़ी थीं — किसी अखबार वाले राशिफल जैसी नहीं।"</p><div class="who">— निखिल, 29</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"जिस बात ने भरोसा दिलाया: हर बात के पीछे एक वजह थी — दशा, भाव, स्वामी। कुछ लाइनें पंडित जी को दिखाईं, उन्होंने भी मान लिया। असली लगी।"</p><div class="who">— ज़ोया, 31</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"एक बुरे दिन पढ़ी थी, और 'आने वाले चरण' वाले हिस्से ने सच में कुछ उम्मीद दी। कोई झूठा जोश नहीं, बस एक साफ़ नक़्शा।"</p><div class="who">— तनवी, 30</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"ताकत वाले हिस्से में मेरे बारे में ऐसी बातें थीं जो मैं खुद कभी शब्दों में नहीं कह पाई। जिस दिन खुद पर शक हो, उस दिन के लिए स्क्रीनशॉट रख लिया।"</p><div class="who">— रोहित, 28</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"ईमानदारी अच्छी लगी — सिर्फ़ तारीफ़ नहीं, आगे बढ़ने में जो रुकावटें हैं वो भी बताईं। इसी वजह से तारीफ़ पर भी भरोसा हुआ।"</p><div class="who">— काव्या, 26</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"'जीवन का रोडमैप' वाला हिस्सा सबसे पसंद आया — अगले तीन चरण असली सालों के साथ बताए, सिर्फ़ 'अच्छे दिन आएँगे' जैसी बातें नहीं।"</p><div class="who">— आदित्य, 33</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"मम्मी को दिखाई, जो शुरू से ज्योतिष मानती हैं — उन्होंने खुद दशा की तारीख़ें मिलाईं और कहा कि हाथ से निकालने पर भी यही आता।"</p><div class="who">— प्रियंका, 27</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"करियर वाले हिस्से ने बिल्कुल सही पकड़ा कि मैं किस तरह के माहौल में सबसे अच्छा काम करता हूँ — बस 'अच्छा करोगे' नहीं, दसवें भाव से जोड़कर पूरी वजह भी।"</p><div class="who">— समीर, 31</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"एक मुश्किल हफ़्ते में यूँ ही ले लिया था। ताकत वाला हिस्सा खुद को पढ़कर सुनाने से सच में मूड बदल गया — ₹999 की रिपोर्ट से यह उम्मीद नहीं थी।"</p><div class="who">— दिव्या, 24</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"दो मिनट में शुरू से आखिर तक, बिल्कुल जैसा बताया गया था। कोई साइन-अप की झंझट नहीं, बाद में कोई स्पैम कॉल नहीं — बस रिपोर्ट और एक PDF जो सेव कर सकूँ।"</p><div class="who">— करण, 35</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"सबसे अलग बात यह लगी कि मेरी असली कुंडली भी साथ में दिखाई, तो मैं देख सकती थी कि हर बात कहाँ से आ रही है, बिना आँख मूँदकर भरोसा किए।"</p><div class="who">— मीनल, 29</div></div>
+      <div class="rev"><div class="stars">★★★★★</div><p>"अपना सही जन्म समय नहीं पता था, सोचा शायद कमज़ोर-सी रिपोर्ट होगी। चंद्रमा-आधारित रीडिंग भी उतनी ही सटीक और काम की लगी।"</p><div class="who">— फ़रहान, 32</div></div>
     </div>
-    <p class="revs-hint">← swipe, or hover to pause →</p>
+    <p class="revs-hint">← स्वाइप करें, या रोकने के लिए ऊपर होल्ड करें →</p>
   </div>
 </section>
 
@@ -381,21 +463,21 @@ fbq('track', 'PageView');
 <section class="why">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Kyun alag hai</p>
-      <h2>Yeh report alag kyun hai</h2>
+      <p class="eyebrow dark">यह अलग क्यों है</p>
+      <h2>यह रिपोर्ट अलग क्यों है</h2>
     </div>
     <div class="block">
-      <h3>Generic horoscope nahi. Aapka chart, decoded.</h3>
-      <p>Newspaper wala rashifal 12 logon ke liye ek hota hai. Yeh report aapke exact birth chart se banti hai — NASA-grade ephemeris data, Lahiri ayanamsa. Aapka lagna, aapka moon nakshatra, aapke dasha phases — sab aapke hain, kisi aur ke nahi. Same chart, same answer, every time.</p>
+      <h3>कोई सामान्य राशिफल नहीं। आपकी कुंडली, पूरी तरह खोली गई।</h3>
+      <p>अखबार के राशिफल लाखों लोगों के लिए एक जैसे होते हैं। यह रिपोर्ट आपकी अपनी सटीक जन्म-कुंडली से बनी है — NASA-ग्रेड इफ़ेमेरिस डेटा, लाहिड़ी अयनांश। आपका लग्न, आपकी चंद्र नक्षत्र, आपकी दशा के दौर — सब सिर्फ़ आपके, किसी और के नहीं। एक ही कुंडली, हर बार वही जवाब।</p>
     </div>
     <div class="block gold">
-      <h3>Hum sirf achhi-achhi baatein nahi batate.</h3>
-      <p>Report mein strengths ke saath growth lessons bhi hain — kaunse planets aapke saath hain aur kahan dhyaan chahiye. Jo report sirf taareef kare, woh mirror nahi hai, flattery hai. Kaam ki cheez woh hai jo direction de.</p>
+      <h3>हम सिर्फ़ अच्छी-अच्छी बातें नहीं बताते।</h3>
+      <p>रिपोर्ट आपकी ताकत के साथ-साथ आगे बढ़ने की सीख भी बताती है — कौन-से ग्रह आपके पक्ष में काम कर रहे हैं, और कहाँ ध्यान देना ज़रूरी है। जो रिपोर्ट सिर्फ़ तारीफ़ करे, वह आईना नहीं, चापलूसी है। असली काम की चीज़ वही है जो दिशा दे।</p>
     </div>
     <div class="cred">
-      <span class="badge">⚙️ IIT–IIM ALUMNI BUILT</span>
-      <h3>Banaya IIT–IIM engineers ne.</h3>
-      <p>Classical Vedic principles — dasha, lagna, house lords — encoded into software. The reading comes from your chart's actual positions, not from templates or someone's mood that day.</p>
+      <span class="badge">⚙️ IIT–IIM पूर्व छात्रों द्वारा बनाया गया</span>
+      <h3>IIT–IIM इंजीनियरों ने बनाया है।</h3>
+      <p>पुराने वैदिक सिद्धांत — दशा, लग्न, भावों के स्वामी — सॉफ्टवेयर में ढाले गए हैं। रीडिंग आपकी कुंडली की असली स्थिति से आती है, किसी ढाँचे से या किसी के उस दिन के मूड से नहीं।</p>
     </div>
   </div>
 </section>
@@ -404,16 +486,16 @@ fbq('track', 'PageView');
 <section class="inside">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Report ke andar</p>
-      <h2>Report mein kya milega</h2>
+      <p class="eyebrow dark">रिपोर्ट के अंदर</p>
+      <h2>रिपोर्ट में आपको क्या मिलेगा</h2>
     </div>
     <ol>
-      <li><b>Aap kaun hain</b><span>Outer self (lagna) aur inner self (moon) — dono ka decode, plain words mein.</span></li>
-      <li><b>Career direction</b><span>10th house aur uska lord kya indicate karta hai — kaunsi type ka kaam aapko suit karta hai.</span></li>
-      <li><b>Built-in strengths</b><span>Kaunse planets aapke chart mein strong hain — aur unka practical matlab.</span></li>
-      <li><b>Growth lessons</b><span>Kahan chart challenge dikhata hai — taaki surprise na ho, preparation ho.</span></li>
-      <li><b>Life roadmap</b><span>Aapke agle 3 mahadasha phases — saalon ke saath, har phase ka theme.</span></li>
-      <li><b>Current period ka matlab</b><span>Abhi kaunsa phase chal raha hai aur abhi ke decisions kis theme mein best kaam karte hain.</span></li>
+      <li><b>आप कौन हैं</b><span>आपका बाहरी स्वभाव (लग्न) और भीतरी स्वभाव (चंद्र) — दोनों को सीधी भाषा में खोला गया।</span></li>
+      <li><b>करियर की दिशा</b><span>आपका दसवां भाव और उसका स्वामी क्या इशारा करते हैं — वह काम जो आपको सूट करता है।</span></li>
+      <li><b>आपकी मौजूदा ताकत</b><span>आपकी कुंडली में कौन-से ग्रह मज़बूत हैं — और इसका असल में क्या मतलब है।</span></li>
+      <li><b>आगे बढ़ने की सीख</b><span>जहाँ आपकी कुंडली में रुकावट दिखती है — ताकि यह तैयारी बने, अचानक झटका नहीं।</span></li>
+      <li><b>जीवन का रोडमैप</b><span>आपकी अगली 3 महादशाओं के दौर — सालों के साथ, हर दौर के विषय के साथ।</span></li>
+      <li><b>आपका मौजूदा दौर क्या कहता है</b><span>आप अभी किस चरण में हैं, और इसमें कैसे फैसले सबसे बेहतर काम करते हैं।</span></li>
     </ol>
   </div>
 </section>
@@ -421,38 +503,39 @@ fbq('track', 'PageView');
 <!-- ============ RECTIFICATION ============ -->
 <section class="rectify">
   <div class="wrap">
-    <p class="eyebrow">Birth time problem?</p>
-    <h2>Birth time exact nahi pata?<br><em>Report phir bhi banti hai.</em></h2>
+    <p class="eyebrow">जन्म समय की दिक्क़त?</p>
+    <h2>सही जन्म समय पता नहीं?<br><em>फिर भी रिपोर्ट पूरी तरह काम करती है।</em></h2>
     <p class="stat">30–40%</p>
-    <p class="stat-cap">logon ko apna exact birth time nahi pata</p>
-    <p>Aise charts ke liye hum classical Chandra Lagna method use karte hain — Moon-based reading, jo poori tarah traditional hai. Personality, phases aur roadmap phir bhi milta hai; exact time ho toh lagna-based precision aur add ho jaati hai.</p>
+    <p class="stat-cap">लोगों को अपना सही जन्म समय नहीं पता होता</p>
+    <p>ऐसी कुंडलियों के लिए हम पुरानी चंद्र-लग्न पद्धति इस्तेमाल करते हैं — चंद्रमा पर आधारित रीडिंग, पूरी तरह पारंपरिक। आपको फिर भी स्वभाव, दौर और रोडमैप मिलता है; सटीक समय बस लग्न-आधारित बारीकी और जोड़ देता है।</p>
   </div>
 </section>
-
-<!-- ============ SOCIAL PROOF ============ -->
 
 <!-- ============ FAQ ============ -->
 <section class="faq">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow dark">Sawaal-jawaab</p>
-      <h2>Aksar poochhe gaye sawaal</h2>
+      <p class="eyebrow dark">सवाल-जवाब</p>
+      <h2>अक्सर पूछे जाने वाले सवाल</h2>
     </div>
     <div style="height:18px"></div>
-    <details><summary>Kya yeh generic report hai?</summary>
-      <div class="a">Nahi. Har line aapke chart ke actual positions se aati hai — aapka lagna, aapke planets ki dignity, aapke dasha dates. Do alag logon ki report alag hoti hai. Report mein chart bhi dikhta hai, taaki aap verify kar sakein.</div>
+    <details><summary>क्या यह एक सामान्य रिपोर्ट है?</summary>
+      <div class="a">नहीं। हर लाइन आपकी कुंडली की असली स्थिति से आती है — आपका लग्न, आपके ग्रहों की शक्ति, आपकी दशा की तारीख़ें। दो अलग लोगों को दो अलग रिपोर्ट मिलती हैं। रिपोर्ट में आपकी कुंडली भी दिखाई जाती है, ताकि आप खुद जाँच सकें।</div>
     </details>
-    <details><summary>Mujhe birth time nahi pata. Report ban sakti hai?</summary>
-      <div class="a">Haan — Chandra Lagna (Moon-based) method se, jo classical texts ka standard tareeka hai approximate time ke liye. Report yeh clearly batati hai ki kaunsa method use hua.</div>
+    <details><summary>यह किसी और ज्योतिषी की बात से अलग क्यों हो सकती है?</summary>
+      <div class="a">कई बार अलग-अलग ज्योतिषी अलग अयनांश या हाथ के शॉर्टकट इस्तेमाल करते हैं। हम NASA-ग्रेड इफ़ेमेरिस डेटा और मानक लाहिड़ी अयनांश इस्तेमाल करते हैं, और हर रीडिंग के पीछे की कुंडली भी दिखाते हैं — ताकि आप (या जिस पर आप भरोसा करें) लाइन-दर-लाइन जाँच सकें।</div>
     </details>
-    <details><summary>Kya yeh bata dega ki job change karun ya nahi?</summary>
-      <div class="a">Report direction batati hai — kaunsi type ka kaam aapke chart ko suit karta hai aur abhi kaunsa phase chal raha hai. Decision aapka hai; specific timing ke liye Career Timing report better fit hai.</div>
+    <details><summary>मुझे अपना जन्म समय नहीं पता। क्या फिर भी रिपोर्ट मिल सकती है?</summary>
+      <div class="a">हाँ — चंद्र-लग्न (चंद्रमा पर आधारित) पद्धति से, जो अनुमानित समय के लिए पुराने ग्रंथों का मानक तरीका है। रिपोर्ट में साफ़ बताया जाता है कि कौन-सी पद्धति इस्तेमाल हुई।</div>
     </details>
-    <details><summary>Report kab milegi?</summary>
-      <div class="a">Payment ke turant baad, screen par. PDF download bhi milta hai.</div>
+    <details><summary>क्या यह बताएगी कि नौकरी बदलनी चाहिए या नहीं?</summary>
+      <div class="a">रिपोर्ट दिशा देती है — आपकी कुंडली के हिसाब से कौन-सा काम आपको सूट करता है, और आप अभी किस दौर में हैं। फैसला आपका है; सही समय के लिए हमारी करियर टाइमिंग रिपोर्ट ज़्यादा सही रहेगी।</div>
     </details>
-    <details><summary>Meri details safe hain?</summary>
-      <div class="a">Birth details sirf aapki report ke liye use hoti hain. No spam calls — hum aapka number kisi ko nahi bechte.</div>
+    <details><summary>रिपोर्ट कब मिलेगी?</summary>
+      <div class="a">पेमेंट के तुरंत बाद, स्क्रीन पर। साथ में PDF डाउनलोड भी मिलता है।</div>
+    </details>
+    <details><summary>क्या मेरी जानकारी सुरक्षित है?</summary>
+      <div class="a">आपकी जन्म-जानकारी सिर्फ़ आपकी रिपोर्ट के लिए इस्तेमाल होती है। कोई स्पैम कॉल नहीं — हम आपका नंबर कभी नहीं बेचते।</div>
     </details>
   </div>
 </section>
@@ -460,41 +543,41 @@ fbq('track', 'PageView');
 <!-- ============ FINAL CTA ============ -->
 <section class="final">
   <div class="wrap">
-    <h2>Apna agla phase<br><em>pehle se jaan lo.</em></h2>
-    <a class="btn" href="#kundliForm">Meri kundli check karo — FREE</a>
+    <h2>अपना अगला चरण जानें<br><em>उसके आने से पहले।</em></h2>
+    <a class="btn" href="#kundliForm">मेरी कुंडली देखें — मुफ़्त</a>
   </div>
 </section>
 
 <footer>
-  <b>Axtroshastra</b> · Computational Vedic Astrology · by Cultnuts<br>
+  <b>Axtroshastra</b> · गणना पर आधारित वैदिक ज्योतिष · Cultnuts की तरफ़ से<br>
   <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> · <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br>
-  <a href="/about" style="color:#B9BBD0">About Us</a> · <a href="/privacy" style="color:#B9BBD0">Privacy</a> · <a href="/terms" style="color:#B9BBD0">Terms</a> · <a href="/blog" style="color:#B9BBD0">Blog</a><br>
-  Reports are probability estimates from classical Jyotish principles, not guarantees.
+  <a href="/about" style="color:#B9BBD0">हमारे बारे में</a> · <a href="/privacy" style="color:#B9BBD0">गोपनीयता</a> · <a href="/terms" style="color:#B9BBD0">नियम और शर्तें</a> · <a href="/blog" style="color:#B9BBD0">ब्लॉग</a><br>
+  रिपोर्ट पुराने ज्योतिष सिद्धांतों से निकाले गए अंदाज़े हैं, गारंटी नहीं।
 </footer>
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
-    <p class="l1">Life Blueprint Report</p>
-    <p class="l2">₹499 · instant delivery</p>
+    <p class="l1">जीवन ब्लूप्रिंट रिपोर्ट</p>
+    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹999</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
   </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
 </div>
 
 
 <!-- ============ ANALYZING OVERLAY (square kundli, consistent with other forms) ============ -->
 <div class="ax-analyzing" id="axAnalyzing" role="status" aria-live="polite" aria-hidden="true">
   <svg class="ksq" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect x="6" y="6" width="88" height="88" stroke="#E4B04A" stroke-width="2"/><path d="M6 6 L94 94 M94 6 L6 94" stroke="#E4B04A" stroke-width="1.5"/><path d="M50 6 L94 50 L50 94 L6 50 Z" stroke="#E4B04A" stroke-width="2"/></svg>
-  <h3>Reading your chart…</h3>
+  <h3>आपकी कुंडली पढ़ी जा रही है…</h3>
   <p class="step" id="axStep"></p>
   <div class="bar"><i></i></div>
-  <p class="cap">NASA-grade ephemeris · Vimshottari dasha · Lahiri ayanamsa</p>
+  <p class="cap">NASA-ग्रेड इफ़ेमेरिस · विंशोत्तरी दशा · लाहिड़ी अयनांश</p>
 </div>
 
 <script>
 // Analyzing overlay: cycles "work happening" steps; min display 6s so the
 // compute feels substantial even when the API returns fast.
-var AX_STEPS = ['Calculating planetary positions…','Building your Vimshottari dasha timeline…','Mapping your life phases…','Reading career & wealth houses…','Preparing your snapshot…'];
+var AX_STEPS = ['ग्रहों की स्थिति निकाली जा रही है…','आपकी विंशोत्तरी दशा टाइमलाइन बनाई जा रही है…','आपके जीवन के चरण मैप किए जा रहे हैं…','करियर और धन भावों को पढ़ा जा रहा है…','आपकी झलक तैयार की जा रही है…'];
 var __axStepTimer = null, __axShownAt = 0;
 function showAnalyzing(){
   var ov = document.getElementById('axAnalyzing'); if(!ov) return;
@@ -548,11 +631,22 @@ unknown.addEventListener('change', function(){
   form.addEventListener('submit', function(e){
     if(unknown.checked && !approxSel.value){
       e.preventDefault(); e.stopImmediatePropagation();
-      approxHint.textContent='Approximate time chuniye, ya “Bilkul nahi pata” select kijiye.';
+      approxHint.textContent='कृपया अनुमानित समय चुनें, या \'बिल्कुल पता नहीं\' चुनें।';
       approxSel.focus();
     }
   }, true);
 })();
+
+function buildDob(){
+  var dd=document.getElementById('f-dd').value.trim(), mmv=document.getElementById('f-mm').value, yy=document.getElementById('f-yy').value.trim();
+  if(!dd||!mmv||!yy) return null;
+  var d=('0'+dd).slice(-2);
+  var yr=parseInt(yy,10), curr=new Date().getFullYear();
+  if(yr<1900 || yr>curr) return 'invalid';
+  var dt=new Date(yy+'-'+mmv+'-'+d+'T00:00:00');
+  if(isNaN(dt.getTime()) || dt.getMonth()+1 !== parseInt(mmv,10) || dt.getDate() !== parseInt(d,10)) return 'invalid';
+  return yy+'-'+mmv+'-'+d;
+}
 
 // map form state -> time_quality tier
 function timeQuality(){
@@ -567,8 +661,12 @@ function timeQuality(){
 // form submit -> POST /api/kundli -> render teaser
 document.getElementById('kundliForm').addEventListener('submit', async function(e){
   e.preventDefault();
+  var dob = buildDob();
+  if(!dob){ alert('कृपया अपनी पूरी जन्म तारीख़ चुनें।'); return; }
+  if(dob === 'invalid'){ alert('यह तारीख़ मौजूद नहीं है — कृपया दोबारा जाँचें।'); return; }
+  if(!document.getElementById('f-gender').value){ alert('कृपया चुनें कि आप पुरुष हैं या महिला।'); return; }
   var btn = this.querySelector('.btn');
-  btn.textContent = 'Kundli ban rahi hai…'; btn.disabled = true;
+  btn.textContent = 'आपकी कुंडली पढ़ी जा रही है…'; btn.disabled = true;
   showAnalyzing();
   var q = timeQuality();
   try{
@@ -576,57 +674,135 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
-        dob: document.getElementById('f-dob').value,
+        gender: document.getElementById('f-gender').value || null,
+        dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
         product: 'blueprint',
         variant: location.pathname
       })});
-    if(!res.ok){ throw new Error((await res.json()).detail || 'Kuch galat ho gaya'); }
+    if(!res.ok){ throw new Error((await res.json()).detail || 'कुछ गड़बड़ हो गई'); }
     var data = await res.json();
     REPORT_ID = data.report_id;
     renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
-    alert(err.message + ' — dobara try kijiye.');
+    alert(err.message + ' — कृपया दोबारा कोशिश करें।');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'Meri kundli check karo — FREE'; btn.disabled = false;
+    btn.textContent = 'मेरी कुंडली देखें — मुफ़्त'; btn.disabled = false;
   }
 });
 
+var TV_WHEEL_ORDER = ['career','money','marriage','children','home','foreign','health','growth','family','timing'];
+var TV_WHEEL_LABEL = {career:'करियर', money:'पैसा', marriage:'विवाह', children:'बच्चे',
+  home:'संपत्ति', foreign:'स्थानांतरण', health:'स्वास्थ्य', growth:'विकास', family:'परिवार', timing:'समय'};
+var TV_WHEEL_COLOR = {thriving:'var(--pgreen)', building:'var(--pgold)', watch:'var(--pterra)'};
+
+// Real API sign/lord names arrive in English/Sanskrit-Roman (e.g. "Cancer",
+// "Mercury") -- this maps them to Devanagari for display only. Read-only
+// terminology lookup (same technique as vyapar_hi.py's _TOK table); the
+// underlying value driving the wheel/labels is always the real computed one.
+var TV_SIGN_HI = {Aries:'मेष', Taurus:'वृषभ', Gemini:'मिथुन', Cancer:'कर्क', Leo:'सिंह',
+  Virgo:'कन्या', Libra:'तुला', Scorpio:'वृश्चिक', Sagittarius:'धनु', Capricorn:'मकर',
+  Aquarius:'कुंभ', Pisces:'मीन'};
+var TV_PLANET_HI = {Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु',
+  Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु'};
+var TV_NAK_HI = {Ashwini:'अश्विनी', Bharani:'भरणी', Krittika:'कृत्तिका', Rohini:'रोहिणी',
+  Mrigashira:'मृगशिरा', Ardra:'आर्द्रा', Punarvasu:'पुनर्वसु', Pushya:'पुष्य',
+  Ashlesha:'आश्लेषा', Magha:'मघा', Hasta:'हस्त', Chitra:'चित्रा',
+  Swati:'स्वाति', Vishakha:'विशाखा', Anuradha:'अनुराधा', Jyeshtha:'ज्येष्ठा',
+  Mula:'मूल', Shravana:'श्रवण', Dhanishta:'धनिष्ठा', Shatabhisha:'शतभिषा',
+  Revati:'रेवती'};
+var TV_MONTH_HI = {Jan:'जन॰', Feb:'फ़र॰', Mar:'मार्च', Apr:'अप्रैल', May:'मई', Jun:'जून',
+  Jul:'जुल॰', Aug:'अग॰', Sep:'सित॰', Oct:'अक्तू॰', Nov:'नव॰', Dec:'दिस॰'};
+// "Feb 2027" -> "फ़र॰ 2027" -- swaps only the English month abbreviation, leaves the year.
+function tvDateHi(s){
+  return (s || '—').replace(/^([A-Za-z]{3})(\s+\d{4})$/, function(_, mo, yr){ return (TV_MONTH_HI[mo] || mo) + yr; });
+}
+// "Sun Mahadasha — Moon Antardasha" -> "सूर्य महादशा — चंद्र अंतर्दशा" -- swaps only
+// the two real planet names via TV_PLANET_HI; the actual lords are always the real
+// computed ones, this only changes how they're displayed.
+function tvDashaHi(s){
+  var m = /^([A-Za-z]+) Mahadasha(?: — ([A-Za-z]+) Antardasha)?$/.exec(s || '');
+  if(!m) return s;
+  var md = TV_PLANET_HI[m[1]] || m[1];
+  if(!m[2]) return md + ' महादशा';
+  var ad = TV_PLANET_HI[m[2]] || m[2];
+  return md + ' महादशा — ' + ad + ' अंतर्दशा';
+}
+
+function tvWheelSvg(wheel, name, sub){
+  var cx = 240, cy = 220, dotR = 148, labelR = 174, centerR = 54;
+  var items = TV_WHEEL_ORDER.map(function(k){ return [TV_WHEEL_LABEL[k], wheel[k]]; });
+  var n = items.length;
+  var rings = [66, 107, 148];
+  var ringHtml = rings.map(function(r){ return '<circle class="ps-wheel-ring" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'; }).join('');
+  var spokes = '', dots = '', labels = '';
+  for(var i=0;i<n;i++){
+    var ang = (-90 + i * (360/n)) * Math.PI/180;
+    var dx = cx + dotR*Math.cos(ang), dy = cy + dotR*Math.sin(ang);
+    var lx = cx + labelR*Math.cos(ang), ly = cy + labelR*Math.sin(ang);
+    var ix = cx + centerR*Math.cos(ang), iy = cy + centerR*Math.sin(ang);
+    spokes += '<line class="ps-wheel-spoke" x1="'+ix.toFixed(1)+'" y1="'+iy.toFixed(1)+'" x2="'+dx.toFixed(1)+'" y2="'+dy.toFixed(1)+'"/>';
+    var color = TV_WHEEL_COLOR[items[i][1]] || 'var(--pmuted)';
+    dots += '<circle class="ps-wheel-dot-halo" cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="8.5"/><circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="6.4" fill="'+color+'"/>';
+    var cosv = Math.cos(ang);
+    var anchor = Math.abs(cosv) < 0.35 ? 'middle' : (cosv > 0 ? 'start' : 'end');
+    var sinv = Math.sin(ang);
+    var dyoff = (sinv > -0.85 && sinv < 0.85) ? '0.32em' : (sinv < 0 ? '0.9em' : '0.05em');
+    labels += '<text class="ps-wheel-label" x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="'+anchor+'" dy="'+dyoff+'">'+items[i][0]+'</text>';
+  }
+  var center = '<circle class="ps-wheel-center-circle" cx="'+cx+'" cy="'+cy+'" r="'+centerR+'"/>'
+    + '<text class="ps-wheel-center-name" x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle">'+name+'</text>'
+    + '<text class="ps-wheel-center-sub" x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle">'+sub+'</text>';
+  return '<svg class="ps-wheel-svg" viewBox="0 0 480 440" xmlns="http://www.w3.org/2000/svg">'+ringHtml+spokes+dots+center+labels+'</svg>';
+}
+
+// 9 of the 10 Life Blueprint areas (Timing excluded) -- icon path + locked-teaser
+// benefit line for the "9 things you'll get" grid. Copy only; no computed values.
+var TV_UNLOCK_CARDS = [
+  {icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>', t:'आपकी असली करियर दिशा'},
+  {icon:'<circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/>', t:'आपका धन कैसे बढ़ता है'},
+  {icon:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', t:'आपका सही साथी, समझाया गया'},
+  {icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', t:'आपके परिवार बनाने का सही दौर'},
+  {icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', t:'घर खरीदने या बदलने का सही समय'},
+  {icon:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>', t:'क्या विदेश जाना आपके लिए सही है'},
+  {icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', t:'आपके शरीर की कमज़ोर कड़ियाँ'},
+  {icon:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', t:'आपको कौन-सी बात रोक रही है'},
+  {icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', t:'पुरानी पारिवारिक खटास को सुलझाना'},
+];
+var TV_LOCK_ICON = '<rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>';
+
+function tvRenderUnlockGrid(){
+  var svgOpen = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+  document.getElementById('tv-unlock-grid').innerHTML = TV_UNLOCK_CARDS.map(function(c){
+    return '<div class="ps-ucard">'
+      + svgOpen + c.icon + '</svg>'
+      + '<svg class="lk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_LOCK_ICON + '</svg>'
+      + '<div class="t">' + c.t + '</div></div>';
+  }).join('');
+}
+
 function renderTeaser(t){
-  var name = document.getElementById('f-name').value.trim();
-  if(name) document.getElementById('t-name').textContent = name + ' ki';
-  document.getElementById('t-rashi').textContent = t.moon_sign + ' (' + t.moon_sign_en + ')';
-  document.getElementById('t-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
-  document.getElementById('t-dasha').textContent = t.current_dasha;
-  document.getElementById('t-till').textContent = t.dasha_till;
-  document.getElementById('t-count').textContent = (t.chapters||6) + ' life chapters';
-  var tl = document.querySelector('.timeline');
-  if(t.timeline_hints && t.horizon){
-    tl.style.display = '';
-    document.getElementById('tlTitle').textContent =
-      'Your timeline · ' + t.horizon[0] + ' – ' + t.horizon[1];
-    var yrs = document.getElementById('tlYears'); yrs.innerHTML='';
-    for(var y=t.horizon[0]; y<=t.horizon[1]; y+=2){
-      var s=document.createElement('span'); s.textContent=y; yrs.appendChild(s);
-    }
-    var track = document.getElementById('tlTrack'); track.innerHTML='';
-    t.timeline_hints.forEach(function(h,i){
-      var w=document.createElement('div'); w.className='tl-window';
-      w.style.left=h.left_pct+'%'; w.style.width=h.width_pct+'%';
-      if(i>0) w.style.opacity=.75;
-      w.innerHTML='<span class="yrs">20XX–XX</span><span class="lockchip">🔒 Window '+(i+1)+'</span>';
-      track.appendChild(w);
-    });
-  } else if(tl){ tl.style.display = 'none'; }
+  document.getElementById('tv-lagna').textContent = TV_SIGN_HI[t.lagna_en] || t.lagna_en || '—';
+  document.getElementById('tv-moon').textContent = TV_SIGN_HI[t.moon_sign_en] || t.moon_sign_en || '—';
+  document.getElementById('tv-nak').textContent = (TV_NAK_HI[t.nakshatra] || t.nakshatra) + ' — पाद ' + t.pada;
+  document.getElementById('tv-dasha').textContent = tvDashaHi(t.current_dasha);
+  document.getElementById('tv-till').textContent = tvDateHi(t.dasha_till);
+
+  var firstName = (document.getElementById('f-name').value || '').trim().split(/\s+/)[0] || 'आप';
+  var adLordHi = t.cur_ad_lord ? (TV_PLANET_HI[t.cur_ad_lord] || t.cur_ad_lord) : '';
+  var adLord = adLordHi ? (adLordHi + ' की अंतर्दशा') : '';
+  document.getElementById('tv-wheel').innerHTML = tvWheelSvg(t.wheel || {}, firstName, adLord);
+  tvRenderUnlockGrid();
+
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
+  sb.textContent = 'अनलॉक ₹999'; sb.setAttribute('href', '#teaser');
 }
 
 // --- Pre-payment contact capture (T1): WhatsApp number (required) + email (optional).
@@ -666,17 +842,17 @@ function axContactModal(onDone){
     '#axContactModal .axc-go{width:100%;margin-top:15px;border:0;border-radius:12px;background:#C93B2E;color:#fff;font-size:16.5px;font-weight:800;padding:14px;cursor:pointer;font-family:inherit}',
     '</style>',
     '<div class="axc-bg"></div>',
-    '<div class="axc-card" role="dialog" aria-modal="true" aria-label="Your contact details">',
-    '<button type="button" class="axc-x" aria-label="Close">&times;</button>',
-    '<h3>Where should we send your report?</h3>',
-    '<p class="axc-sub">Takes 5 seconds — then you go straight to payment.</p>',
-    '<label for="axcPhone">Mobile number (with WhatsApp)</label>',
+    '<div class="axc-card" role="dialog" aria-modal="true" aria-label="आपकी संपर्क जानकारी">',
+    '<button type="button" class="axc-x" aria-label="बंद करें">&times;</button>',
+    '<h3>आपकी रिपोर्ट कहाँ भेजें?</h3>',
+    '<p class="axc-sub">बस 5 सेकंड — फिर सीधे पेमेंट पर जाएँ।</p>',
+    '<label for="axcPhone">मोबाइल नंबर (WhatsApp वाला)</label>',
     '<div class="axc-in"><span>+91</span><input id="axcPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210"></div>',
-    '<div class="axc-note">Your report, OTP &amp; account will be created on this number — make sure it\'s your WhatsApp number.</div>',
-    '<label for="axcEmail">Email (optional) — for a PDF copy</label>',
+    '<div class="axc-note">आपकी रिपोर्ट, OTP और अकाउंट इसी नंबर पर बनेंगे — यह आपका WhatsApp नंबर ज़रूर हो।</div>',
+    '<label for="axcEmail">ईमेल (वैकल्पिक) — PDF कॉपी के लिए</label>',
     '<div class="axc-in"><input id="axcEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>',
     '<div class="axc-err" id="axcErr"></div>',
-    '<button type="button" class="axc-go">Continue to payment →</button>',
+    '<button type="button" class="axc-go">पेमेंट की ओर बढ़ें →</button>',
     '</div>'
   ].join('');
   document.body.appendChild(wrap);
@@ -696,9 +872,9 @@ function axContactModal(onDone){
   function fail(msg, el){ err.textContent = msg; err.style.display = 'block'; try{ el.focus(); }catch(e){} }
   wrap.querySelector('.axc-go').addEventListener('click', function(){
     var p = axNormPhone(phone.value);
-    if(!p){ fail('Please enter a valid 10-digit mobile number.', phone); return; }
+    if(!p){ fail('कृपया सही 10-अंकों का मोबाइल नंबर डालें।', phone); return; }
     var em = (email.value || '').trim();
-    if(em && !/^\S+@\S+\.\S+$/.test(em)){ fail('That email doesn\'t look right — fix it or leave it blank.', email); return; }
+    if(em && !/^\S+@\S+\.\S+$/.test(em)){ fail('यह ईमेल सही नहीं लग रहा — ठीक करें या खाली छोड़ दें।', email); return; }
     AX_CONTACT = {phone: p, email: em};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
     close();
@@ -712,27 +888,33 @@ function _getCookie(name){
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-// Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
+// अनलॉक -> POST /api/order -> Razorpay चेकआउट -> पोल -> रिपोर्ट पेज
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
-  if(!AX_CONTACT){ axContactModal(startPayment); return; }
+  // Always confirm the delivery number for THIS unlock — never silently reuse a
+  // previously-saved number. The modal pre-fills any last-entered value only for convenience.
+  if(!window.__axContactConfirmed){
+    axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });
+    return;
+  }
+  window.__axContactConfirmed = false;   // reset so the next unlock click re-asks
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
       phone: AX_CONTACT.phone, email: AX_CONTACT.email || null,
       fbc: _getCookie('_fbc'), fbp: _getCookie('_fbp')})});
-  if(!res.ok){ alert('Payment setup issue — thodi der mein try kijiye.'); return; }
+  if(!res.ok){ alert('पेमेंट सेट करने में दिक़्क़त — कृपया थोड़ी देर बाद कोशिश करें।'); return; }
   var order = await res.json();
   if(order.already_paid){ location.href='/report/'+REPORT_ID; return; }
   if(order.free){ window.FREE_UNLOCK = true; awaitReport(); return; }
-  if(order.error === 'invalid_pass'){ alert('Yeh free-pass link use ho chuka hai ya invalid hai.'); return; }
+  if(order.error === 'invalid_pass'){ alert('यह फ़्री-पास लिंक पहले ही इस्तेमाल हो चुका है या अमान्य है।'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:999});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
-    name: 'Axtroshastra', description: 'Marriage Timing Report',
+    name: 'Axtroshastra', description: 'Life Blueprint Report',
     theme: {color: '#C93B2E'},
     prefill: {contact: AX_CONTACT.phone, email: AX_CONTACT.email || ''},
     handler: function(resp){
@@ -750,22 +932,22 @@ async function startPayment(){
 
 async function awaitReport(){
   var btn = document.getElementById('unlockBtn');
-  btn.textContent = 'Report ban rahi hai…'; btn.disabled = true;
+  if(btn){ btn.textContent = 'आपकी रिपोर्ट बन रही है…'; btn.disabled = true; }
   for(var i=0;i<30;i++){                            // poll up to ~60s
     var r = await fetch('/api/report/' + REPORT_ID);
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+        if(window.fbq) fbq('track','Purchase',{value:999,currency:'INR'},{eventID:REPORT_ID});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:999});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.textContent = 'Unlock my report — ₹499'; btn.disabled = false;
-  alert('Payment process ho raha hai — 1 minute mein page refresh kijiye. Report ready hogi.');
+  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹999</span>'; btn.disabled = false; }
+  alert('पेमेंट प्रोसेस हो रहा है — एक मिनट में पेज रीफ़्रेश करें। आपकी रिपोर्ट तैयार हो जाएगी।');
 }
 
 // honest live counter (hidden until real volume crosses threshold)
@@ -786,10 +968,15 @@ async function awaitReport(){
     fetch('/api/report/' + pr).then(function(r){return r.json()}).then(function(d){
       if(d && d.paid){
         var b = document.createElement('div');
-        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 16px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
-        b.innerHTML='✅ Aapki paid report ready hai — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">yahan dekhiye →</a>';
+        b.style.cssText='position:fixed;top:0;left:0;right:0;background:#2E7D53;color:#fff;padding:10px 44px;font-size:14px;z-index:99;text-align:center;font-family:sans-serif';
+        b.innerHTML='✅ आपकी रिपोर्ट तैयार है — <a href="/report/'+pr+'" style="color:#fff;font-weight:700">यहाँ देखें →</a><button type="button" aria-label="बंद करें" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0 4px">×</button>';
         document.body.appendChild(b);
         localStorage.removeItem('axtro_rid');
+        // banner must not permanently cover the header — add a × close control and auto-hide after ~8s.
+        var __axBannerTimer;
+        function __axCloseBanner(){ if(__axBannerTimer){ clearTimeout(__axBannerTimer); } if(b && b.parentNode){ b.parentNode.removeChild(b); } }
+        b.querySelector('button').addEventListener('click', __axCloseBanner);
+        __axBannerTimer = setTimeout(__axCloseBanner, 8000);
       } else if(d && d.paid === false) { /* unpaid teaser — keep quietly */ }
     }).catch(function(){});
   }catch(e){}
@@ -801,6 +988,40 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
+// On mobile the on-screen keyboard shoves the fixed ₹999 bar over the form.
+// Hide the bar while any form field is focused (keyboard likely open); restore on blur.
+// This is independent of the scroll-based .hidden toggle above.
+(function(){
+  var kbForm = document.getElementById('kundliForm');
+  if(!kbForm || !sticky) return;
+  kbForm.addEventListener('focusin', function(){ sticky.classList.add('kbd'); });
+  kbForm.addEventListener('focusout', function(){
+    setTimeout(function(){
+      if(!kbForm.contains(document.activeElement)){ sticky.classList.remove('kbd'); }
+    }, 120);
+  });
+})();
+// sticky CTA behaviour:
+//   • teaser already generated  -> open payment
+//   • form filled, no teaser yet -> submit the form to generate the teaser (no jump to top)
+//   • form not filled            -> smooth-scroll to the form and focus the first field
+document.getElementById('stickyBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  if(REPORT_ID){ startPayment(); return; }
+  var form = document.getElementById('kundliForm');
+  var dob = buildDob();
+  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); });
+  var tobFilled = unknown.checked ? !!document.getElementById('f-approx').value
+                                   : !!document.getElementById('f-tob').value;
+  if(textFilled && dob && dob !== 'invalid' && tobFilled){
+    if(typeof form.requestSubmit === 'function'){ form.requestSubmit(); }
+    else { form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true})); }
+    return;
+  }
+  form.scrollIntoView({behavior:'smooth'});
+  var first = document.getElementById('f-name');
+  if(first) setTimeout(function(){ try{ first.focus(); }catch(_){}}, 400);
+});
 </script>
 <style>
 .field{position:relative}
@@ -833,7 +1054,7 @@ window.addEventListener('scroll', function(){
     timer=setTimeout(function(){
       fetch('/api/city-suggest?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
         items=(d&&d.results)||[];active=-1;render();
-        if(!items.length){hint.textContent='City nahi mili — nazdeeki bada sheher/zila chuniye.';}
+        if(!items.length){hint.textContent='शहर नहीं मिला — सबसे नज़दीकी बड़े शहर/ज़िले को चुनें।';}
       }).catch(function(){items=[];render();});
     },180);
   });
@@ -848,7 +1069,7 @@ window.addEventListener('scroll', function(){
   document.addEventListener('click',function(e){if(!e.target.closest('.field')){items=[];render();}});
   var form=inp.closest('form');
   if(form)form.addEventListener('submit',function(e){
-    if(!selected){e.preventDefault();e.stopImmediatePropagation();hint.textContent='Please pick your birth city from the list.';inp.focus();}
+    if(!selected){e.preventDefault();e.stopImmediatePropagation();hint.textContent='कृपया सूची में से अपना जन्म-शहर चुनें।';inp.focus();}
   },true);
   var of=window.fetch;
   window.fetch=function(url,opts){
@@ -864,11 +1085,19 @@ window.addEventListener('scroll', function(){
 
 <script>
 (function(){
+  var mm = document.getElementById('f-mm');
+  if(!mm) return;
+  var months=['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्तूबर','नवंबर','दिसंबर'];
+  months.forEach(function(m,i){ var o=document.createElement('option'); o.value=('0'+(i+1)).slice(-2); o.textContent=m; mm.appendChild(o); });
+})();
+</script>
+<script>
+(function(){
   var hh=document.getElementById("f-hh"),mm=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
   if(!hh||!tob) return;
   function opt(sel,v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o);}
-  opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
-  opt(mm,"","Min"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+  opt(hh,"","घंटा"); for(var h=1;h<=12;h++) opt(hh,h,h);
+  opt(mm,"","मिनट"); for(var m=0;m<60;m++){var s=(m<10?"0":"")+m; opt(mm,s,s);}
   opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
   function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
   hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
@@ -905,5 +1134,68 @@ window.addEventListener('scroll', function(){
   requestAnimationFrame(tick);
 })();
 </script>
+
+<!-- FORM VALIDATION — name sanitisation, future-date check, re-submit reuse -->
+<script>
+(function(){
+  var form=document.getElementById("kundliForm"); if(!form) return;
+  var dd=document.getElementById("f-dd"),mm=document.getElementById("f-mm"),yy=document.getElementById("f-yy");
+  var nm=document.getElementById("f-name");
+  function mkHint(a){ if(!a) return {textContent:""}; var h=document.createElement("div"); h.className="field-hint"; a.insertAdjacentElement("afterend",h); return h; }
+  var nameHint=mkHint(nm), dobHint=mkHint(dd?dd.closest(".dob-row"):null);
+  function dateMsg(){ var d=dd.value,m=mm.value,y=yy.value; if(!(d&&m&&y)) return "";
+    var t=new Date(); t.setHours(0,0,0,0); var cy=t.getFullYear();
+    if(+y<1900||+y>cy) return "कृपया 1900 और "+cy+" के बीच जन्म वर्ष लिखें।";
+    var dt=new Date(+y,+m-1,+d);
+    if(!(dt.getFullYear()===+y&&dt.getMonth()===(+m-1)&&dt.getDate()===+d)) return "यह तारीख़ मौजूद नहीं है। कृपया दोबारा जाँचें।";
+    if(dt>t) return "जन्म तारीख़ भविष्य की नहीं हो सकती।";
+    return ""; }
+  function dateValid(){ return dateMsg()===""; }
+  function checkDate(){ dobHint.textContent = dateMsg(); }
+  if(dd){ dd.addEventListener("change",checkDate); mm.addEventListener("change",checkDate); yy.addEventListener("change",checkDate); }
+  form.addEventListener("submit", function(e){
+    function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
+    var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
+    nm.value=clean;
+    if(!clean){ nameHint.textContent="कृपया अपना नाम लिखें।"; stop(); nm.focus(); return; } nameHint.textContent="";
+    if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    var h=[nm.value,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,
+           document.getElementById("f-approx").value, (document.getElementById("f-place").value||"")].join("~");
+    var teaser=document.getElementById("teaser");
+    if(h===window.__lastHash && teaser && teaser.classList.contains("show")){ stop(); teaser.scrollIntoView({behavior:"smooth"}); return; }
+    window.__lastHash=h;
+  }, true);
+})();
+</script>
+
+<!-- Clear for the time-of-birth selects: their placeholder option is hidden, so a
+     picked hour otherwise can't be un-picked. Resets all three + the hidden value. -->
+<script>
+(function(){
+  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
+  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='मिटाएँ'; b.setAttribute('aria-label','जन्म समय मिटाएँ');
+  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
+  hh.parentElement.appendChild(b);
+  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
+})();
+</script>
+
+<!-- 30-minute launch-offer countdown. The end-time is kept in sessionStorage so a page
+     REFRESH doesn't restart it; a fresh visit (new tab/session) starts a new 30:00.
+     Drives the inline banner (#otClock) and the sticky bar (#otClockSticky). -->
+<script>(function(){
+  var DUR = 30 * 60 * 1000, KEY = 'axs_blueprint_offer_end';
+  var end = +sessionStorage.getItem(KEY);
+  if (!end) { end = Date.now() + DUR; try { sessionStorage.setItem(KEY, String(end)); } catch(e){} }
+  var a = document.getElementById('otClock'), b = document.getElementById('otClockSticky');
+  function two(n){ return (n < 10 ? '0' : '') + n; }
+  function tick(){
+    var ms = end - Date.now(); if (ms < 0) ms = 0;
+    var t = two(Math.floor(ms/60000)) + ':' + two(Math.floor((ms%60000)/1000));
+    if (a) a.textContent = t; if (b) b.textContent = t;
+    if (ms > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();</script>
 </body>
 </html>

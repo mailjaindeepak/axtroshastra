@@ -299,6 +299,9 @@ def _render_for(product, payload):
                 logger.error("[milan_hi] v1 localize failed: %s", e)
         return html
     if product == "blueprint":
+        if (payload.get("meta") or {}).get("lang") == "hi":
+            from blueprint_hi_report import render_blueprint_hi
+            return render_blueprint_hi(payload)
         return render_blueprint(payload)
     if product == "vyapar":
         html = render_vyapar(payload)
@@ -353,13 +356,20 @@ STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass 
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
+LIFE_BLUEPRINT_PRICE_PAISE = 99900        # ₹999 — Life Blueprint only (was ₹499)
+_LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
+                             "/jeevan", "/en/jeevan", "/hi/jeevan")
 
 
 def _order_amount_paise(rec: dict) -> int:
     """The price actually charged for a report, by funnel variant. Single source
     for both order creation and the server-side purchase-tracking value."""
     variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
-    return MILAN_PRICE_PAISE if variant in _MILAN_VARIANTS else PRICE_PAISE
+    if variant in _MILAN_VARIANTS:
+        return MILAN_PRICE_PAISE
+    if variant in _LIFE_BLUEPRINT_VARIANTS:
+        return LIFE_BLUEPRINT_PRICE_PAISE
+    return PRICE_PAISE
 
 
 def _valid_admin_key(key: str) -> bool:
@@ -1064,6 +1074,11 @@ def create_kundli(inp: KundliIn):
     if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
         import career_growth_hi
         report["teaser"] = career_growth_hi.translate_teaser(report["teaser"])
+    # Note: blueprint's teaser is deliberately NOT translated server-side —
+    # pages/jeevan.hi.html already translates it client-side (TV_SIGN_HI,
+    # TV_PLANET_HI, tvDashaHi, etc.), tested and working. Adding a second,
+    # server-side translation here would risk double-translating the same
+    # fields the client already expects in English (moon_sign_en, lagna_en).
     report["meta"]["geo_source"] = geo_source
     try:
         if report.get("chart"):

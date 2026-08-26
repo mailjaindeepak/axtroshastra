@@ -1,10 +1,20 @@
 """Life Blueprint (/jeevan, product id "blueprint") regression tests for the
 v2 redesign: the Vyapar-styled ten-area report. Same pattern as
 test_career_growth.py's helpers."""
+import api
 
 BLUEPRINT = {"name": "Blueprint Tester", "dob": "1988-04-12", "tob": "14:20",
              "time_quality": "T0", "place": "Mumbai", "gender": "female",
              "product": "blueprint"}
+
+
+class _StubOrders:
+    def create(self, payload):
+        return {"id": "order_stub_bp", "amount": payload["amount"]}
+
+
+class _StubRzp:
+    order = _StubOrders()
 
 
 def _paid_blueprint_report_html(client, **overrides):
@@ -94,6 +104,72 @@ def test_blueprint_varies_by_birth_data(client):
     assert html_a != html_b
 
 
+def test_blueprint_hi_page_serves_200(client):
+    r = client.get("/hi/life-blueprint")
+    assert r.status_code == 200
+    assert 'lang="hi"' in r.text
+
+
+def test_blueprint_hi_full_report_is_rendered(client):
+    """A Hindi buyer's PAID report is built by blueprint_hi_report.render_
+    blueprint_hi() -- a real renderer wired through _render_for, not a
+    post-render translation of render_blueprint's English HTML."""
+    html = _paid_blueprint_report_html(client, variant="/hi/life-blueprint")
+    assert 'lang="hi"' in html
+    # Part 1: ten life areas, in Hindi, present regardless of chart data
+    for hi_text in ("आपका जीवन ब्लूप्रिंट", "आपके बारे में", "आपकी कुंडली क्या कहती है",
+                     "क्या अभी वह पल है?"):
+        assert hi_text in html, hi_text
+    # Part 2: the finalized reference's evidence/methodology section, absent
+    # from English's shorter design -- this is the structural point of this
+    # renderer existing at all, not a translation of render_blueprint.
+    for hi_text in ("यह निष्कर्ष कैसे निकले", "आपकी जन्म-कुंडली", "हर ग्रह, उसकी जगह पर",
+                     "भाव 1&ndash;6", "भाव 7&ndash;12", "दशाएँ, समझाई गईं",
+                     "हर टैग कैसे तय हुआ", "हर रीडिंग, एक तालिका में",
+                     "यह रिपोर्ट क्या है", "एक छोटी शब्दावली"):
+        assert hi_text in html, hi_text
+    # the user's own name must survive untouched (never transliterated —
+    # matches the deliberate policy in milan_hi.py/shaadi_hi.py/career_growth_hi.py)
+    assert "Blueprint Tester" in html
+
+
+def test_blueprint_hi_report_has_wheel_and_area_cards(client):
+    """The Hindi report reuses the wheel/card visual system (_VYAPAR_CSS,
+    the same wheelchart SVG shape) plus its own additive card classes for
+    the deeper Part 1 + Part 2 structure the reference PDF calls for."""
+    html = _paid_blueprint_report_html(client, variant="/hi/life-blueprint")
+    assert 'class="wheelchart"' in html
+    assert html.count('class="reasoncard') == 12  # 9 areas + timing + dashas-explained + worked example
+    assert html.count('class="reflect"') == 9      # 8 named areas + growth
+    assert html.count('class="verdict') == 11       # 9 areas + timing + sade-sati
+
+
+def test_blueprint_hi_preserves_real_dignity_reasoning(client):
+    """The Part 2 worked example and 'how every tag was set' page must cite
+    the SAME real house/lord/dignity compute_blueprint() actually used for
+    that person's career tag -- never a fabricated or hardcoded example."""
+    import products
+    p = products.compute_blueprint("Dignity Tester", "1988-04-12", "14:20", 5.5,
+                                    19.0760, 72.8777)
+    d = p["area_detail"]["career"]
+    html = _paid_blueprint_report_html(client, variant="/hi/life-blueprint",
+                                       name="Dignity Tester", dob="1988-04-12",
+                                       tob="14:20", place="Mumbai")
+    from blueprint_hi_report import PLANET_HI, SIGN_HI
+    assert PLANET_HI[d["lord"]] in html
+    assert SIGN_HI[d["lord_sign"]] in html
+
+
+def test_blueprint_hi_varies_by_birth_data(client):
+    html_a = _paid_blueprint_report_html(client, variant="/hi/life-blueprint",
+                                         name="Person A", dob="1988-01-05",
+                                         tob="22:15", place="Delhi")
+    html_b = _paid_blueprint_report_html(client, variant="/hi/life-blueprint",
+                                         name="Person B", dob="2000-11-23",
+                                         tob="04:50", place="Chennai")
+    assert html_a != html_b
+
+
 def test_blueprint_pdf_generates(client):
     body = {**BLUEPRINT}
     r = client.post("/api/kundli", json=body)
@@ -107,3 +183,41 @@ def test_blueprint_pdf_generates(client):
     if r.status_code == 200:
         assert r.headers["content-type"] == "application/pdf"
         assert r.content.startswith(b"%PDF")
+
+
+def test_blueprint_hi_pdf_generates(client):
+    """The same real /report/{rid}/pdf pipeline, but for a Hindi buyer --
+    must hit render_blueprint_hi(), not render_blueprint()."""
+    r = client.post("/api/kundli", json={**BLUEPRINT, "variant": "/hi/life-blueprint"})
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    r = client.get(f"/report/{rid}/pdf")
+    assert r.status_code in (200, 503)
+    if r.status_code == 200:
+        assert r.headers["content-type"] == "application/pdf"
+        assert r.content.startswith(b"%PDF")
+
+
+def test_blueprint_price_is_999_not_499(client, monkeypatch):
+    """Life Blueprint's price was raised (crossed-out ₹1999 -> ₹999,
+    previously ₹999 -> ₹499). _order_amount_paise() must charge ₹999 for
+    both language variants, while every other product keeps its own price
+    (never accidentally bumped alongside blueprint's)."""
+    monkeypatch.setattr(api, "rzp_client", lambda: _StubRzp())
+    for variant in ("/en/life-blueprint", "/hi/life-blueprint"):
+        r = client.post("/api/kundli", json={**BLUEPRINT, "variant": variant})
+        rid = r.json()["report_id"]
+        order = client.post("/api/order", json={"report_id": rid})
+        assert order.status_code == 200, order.text
+        assert order.json()["amount"] == 99900, variant
+
+    # a different product on the same shared PRICE_PAISE constant must be
+    # completely unaffected by blueprint's price change.
+    r = client.post("/api/kundli", json={"name": "Marriage Tester", "dob": "1990-01-01",
+                                         "tob": "10:00", "place": "Delhi", "gender": "female",
+                                         "product": "marriage", "variant": "/en/marriage"})
+    rid = r.json()["report_id"]
+    order = client.post("/api/order", json={"report_id": rid})
+    assert order.status_code == 200, order.text
+    assert order.json()["amount"] == 49900
