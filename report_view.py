@@ -1883,13 +1883,268 @@ This compatibility score is one classical input to a marriage decision, not the 
 
 
 # ============================================================ BLUEPRINT RENDERER
+#
+# Part-1/Part-2 structure ported to match the finalized Life Blueprint
+# reference. The per-area Antardasha timeline (BP_ROW_CAP, _bp_merge_ad_phases,
+# _bp_timeline_rows, BP_AREA_PHASE_NOTES) is a verbatim port of the approved,
+# QA-verified scratchpad implementation (blueprint_a4.py::phase_read/
+# ad_phases + build_parametric.py::_merge_ad_phases/_timeline_rows) -- same
+# classification rule (a house's own lord, or an Antardasha lord that
+# occupies/aspects the house via engine.py's own aspects_house()), same
+# never-merge-row-0 rule, same 4-row visual budget. No new astrology.
+def _bp_quality_challenge():
+    """Lazy import: products.py imports SIGN_PARTNER from this module inside a
+    function body specifically to avoid a circular import at module-load
+    time; mirror that pattern here rather than importing products at the top."""
+    from products import PLANET_GIFT, PLANET_LESSON
+    quality = dict(PLANET_GIFT, Rahu="ambition and unconventional drive", Ketu="detachment and quiet intuition")
+    challenge = dict(PLANET_LESSON, Rahu="restlessness and chasing more", Ketu="drift and under-investment")
+    return quality, challenge
+
+BP_AREA_NOUN = {"career": "career", "money": "money", "marriage": "marriage",
+                "children": "children and family", "home": "home", "foreign": "travel",
+                "health": "health", "growth": "self and identity", "family": "family"}
+BP_AREA_TITLE = {"career": "Where your chart points you", "money": "How money moves for you",
+                 "marriage": "What you need in a partner", "children": "Building a family, your way",
+                 "home": "Where and how you put down roots", "foreign": "Whether distance suits you",
+                 "health": "How your body tends to run", "growth": "What comes naturally, and what doesn't",
+                 "family": "Parents, siblings, and old ties"}
+BP_AREA_DOMAIN = {"career": "Your career direction", "money": "Your financial picture",
+                  "marriage": "Your partnership picture", "children": "This family bond",
+                  "home": "Your home and property situation", "foreign": "Your travel and relocation picture",
+                  "health": "Your health and daily routine", "growth": "Your personal growth and self-trust",
+                  "family": "Your family relationships"}
+BP_AREA_DO_WATCH = {
+    "career": (["Keep sharpening the specific skills that already bring you clients or recognition.",
+               "Invest time in the relationships and networks that tend to open doors for you.",
+               "If a role or direction change is on the table, this is a reasonable window to explore it."],
+              ["Don't let a comfortable stretch quietly turn into coasting &mdash; check your direction periodically."]),
+    "money": (["Keep a portion of income flowing into structured savings, not just reactive spending.",
+              "Diversify how income arrives &mdash; more than one channel tends to serve you better than one.",
+              "Let gains compound instead of chasing quick, one-off wins."],
+             ["Avoid impulsive spending, lending or borrowing decisions made under pressure."]),
+    "marriage": (["Say what you actually expect from a partner rather than assuming it's understood.",
+                 "Give the relationship as much room to grow at its own pace as you'd want for yourself.",
+                 "Choose consistency and follow-through over grand gestures."],
+                ["Don't mistake a quiet stretch for a disinterested one &mdash; this area moves at its own pace."]),
+    "children": (["Protect the depth and privacy this bond needs rather than forcing it open.",
+                 "Let trust build gradually instead of expecting instant closeness.",
+                 "Revisit any big family decisions when you both feel less rushed."],
+                ["Don't let outside pressure (family, timelines) override your own pace here."]),
+    "home": (["Involve the people you share this space with before finalising a decision.",
+             "Prioritise long-term stability over a choice that only looks good short-term.",
+             "Trust the pull toward harmony here &mdash; it's usually pointing you the right way."],
+            ["Don't let someone else's preference fully override your own on a major property call."]),
+    "foreign": (["Treat this as a season of movement rather than one single big relocation decision.",
+                "Weigh a short trip or short-term move on its own merits before committing to something permanent.",
+                "Give yourself real time to adjust after any move &mdash; don't judge it too early."],
+               ["Don't rush a permanent relocation decision while the path still feels unsettled."]),
+    "health": (["Build in routine and rest rather than relying on bursts of willpower.",
+               "Practice moderation, especially around habits that tend to run to excess for you.",
+               "Notice small, early signs of imbalance instead of waiting for a bigger wake-up call."],
+              ["Don't ignore a pattern just because it hasn't caused a problem yet."]),
+    "growth": (["Trust the instinct that leads with feeling &mdash; it's a genuine strength here, not a weakness.",
+               "Notice patterns that repeat across different parts of your life; they're usually telling you something.",
+               "Give yourself permission to lead with intuition, not only logic."],
+              ["Don't second-guess a decision purely because it wasn't the most “logical” one."]),
+    "family": (["Give old friction room to soften rather than forcing a resolution.",
+               "Be the one to extend the small gesture that keeps a relationship warm.",
+               "Let compassion lead instead of needing to be right."],
+              ["Don't reopen old arguments just because the relationship currently feels calmer."]),
+}
+BP_AREA_PHASE_NOTES = {
+    "career": {"favorable": ["A window with real momentum for your career direction &mdash; a good stretch to push for more.",
+                             "Another stretch where career moves tend to land well."],
+              "watch": ["A stretch where career decisions deserve a bit more care than usual.",
+                        "A later window where it's worth double-checking before a big career move."],
+              "steady": ["A quieter stretch for career &mdash; steady, background progress rather than a big shift.",
+                        "Another steady period for career; nothing dramatic, just consistent."]},
+    "money": {"favorable": ["A window where money matters tend to move in your favour.",
+                            "Another stretch that favours financial growth."],
+             "watch": ["A stretch where financial decisions deserve extra patience.",
+                       "A later window worth being more careful with money in."],
+             "steady": ["A quieter stretch financially &mdash; steady income and spending, no big swings.",
+                       "Another steady financial period; consistency is the theme."]},
+    "marriage": {"favorable": ["A window with real focus on this relationship &mdash; a good stretch to invest in it.",
+                               "Another stretch that favours closeness with a partner."],
+                "watch": ["A stretch where the relationship deserves extra patience and care.",
+                          "A later window worth being more deliberate with a partner in."],
+                "steady": ["A quieter stretch for this relationship &mdash; steady rather than eventful.",
+                          "Another steady period; the relationship holds its course."]},
+    "children": {"favorable": ["A window with real focus on this bond &mdash; a good stretch to nurture it.",
+                               "Another stretch that favours closeness with children or family."],
+                "watch": ["A stretch where this bond deserves extra patience.",
+                          "A later window worth handling this bond a little more carefully in."],
+                "steady": ["A quieter stretch for this bond &mdash; steady, background closeness.",
+                          "Another steady period; nothing dramatic here."]},
+    "home": {"favorable": ["A window that favours home and property decisions.",
+                           "Another stretch that supports progress on home matters."],
+            "watch": ["A stretch where property decisions deserve extra care.",
+                      "A later window worth double-checking a home decision in."],
+            "steady": ["A quieter stretch for home and property &mdash; steady rather than eventful.",
+                      "Another steady period; the home situation holds steady."]},
+    "foreign": {"favorable": ["A window that favours travel or a relocation decision.",
+                              "Another stretch that supports movement or a move."],
+               "watch": ["A stretch where travel or relocation calls deserve extra patience.",
+                         "A later window worth being more cautious about a move in."],
+               "steady": ["A quieter stretch for travel and relocation &mdash; nothing pressing.",
+                         "Another steady period; movement stays low-key."]},
+    "health": {"favorable": ["A window that supports energy and vitality.",
+                             "Another stretch that favours good health habits sticking."],
+              "watch": ["A stretch where your routine and moderation deserve extra attention.",
+                        "A later window worth being more careful with habits in."],
+              "steady": ["A quieter stretch for health &mdash; steady, unremarkable, which is a good thing here.",
+                        "Another steady period for health and routine."]},
+    "growth": {"favorable": ["A window that favours personal growth and bigger decisions about yourself.",
+                             "Another stretch that supports self-trust and new directions."],
+              "watch": ["A stretch where big personal decisions deserve extra patience.",
+                        "A later window worth reflecting more before acting on impulse."],
+              "steady": ["A quieter stretch for personal growth &mdash; steady, internal, not outwardly dramatic.",
+                        "Another steady period; growth continues quietly."]},
+    "family": {"favorable": ["A window that favours family relationships and old ties.",
+                             "Another stretch that supports warmth with family."],
+              "watch": ["A stretch where family relationships deserve extra patience.",
+                        "A later window worth handling family matters a little more carefully in."],
+              "steady": ["A quieter stretch for family relationships &mdash; steady, background warmth.",
+                        "Another steady period; family ties hold their course."]},
+}
+BP_REFLECT = {
+    "career": {"thriving": "What would I build if I trusted this momentum a little more?",
+              "building": "What is one thing I could commit to, instead of keeping every door open?",
+              "watch": "Am I avoiding a decision here, or genuinely still deciding?"},
+    "money": {"thriving": "Where is money already working for me, and can I put more behind it?",
+             "building": "What is one leak I already know about, but haven't closed?",
+             "watch": "What would change if I treated this as a season, not a verdict?"},
+    "marriage": {"thriving": "Am I making space to enjoy this, or just managing it?",
+                "building": "What does my partner need from me this season that I haven't offered yet?",
+                "watch": "What am I waiting for the other person to say first?"},
+    "children": {"thriving": "What kind of parent, or elder, do I actually want to be?",
+                "building": "Is the timing pressure coming from me, or from everyone around me?",
+                "watch": "What would feel like enough information to stop worrying and decide?"},
+    "home": {"thriving": "What would make this place feel finished, not just functional?",
+            "building": "Am I waiting for the 'right' moment, or an excuse to keep waiting?",
+            "watch": "What's the smallest version of this decision I could make right now?"},
+    "foreign": {"thriving": "What's actually pulling me outward &mdash; opportunity, or escape?",
+               "building": "What would I need to feel ready to say yes to this?",
+               "watch": "Would I regret staying more than I'd regret going?"},
+    "health": {"thriving": "What habit is quietly doing more for me than I give it credit for?",
+              "building": "What's one thing my body has been asking for that I keep postponing?",
+              "watch": "Am I treating rest as a reward, or as maintenance?"},
+    "growth": {"thriving": "What have I outgrown that I'm still carrying out of habit?",
+              "building": "What pattern keeps showing up in different rooms of my life?",
+              "watch": "What would I do differently if no one was watching?"},
+    "family": {"thriving": "What's a family tradition worth protecting on purpose?",
+              "building": "What's one thing I've never said out loud that would ease this?",
+              "watch": "Whose approval am I still working for?"},
+    "timing": {"thriving": "If I trusted that the timing is genuinely on my side, what would I start this month?",
+              "building": "What am I building right now that only pays off if I stay patient?",
+              "watch": "What decision can wait until this season eases, without real cost to waiting?"},
+}
+BP_ROW_CAP = 4  # matches the old fixed layout's row count exactly -- 5 rows measurably
+                # overflowed onto a second physical page in QA (55 -> 62 pages).
+
+
+def _bp_tag_class(tag):
+    return {"THRIVING": "good", "BUILDING": "", "WATCH": "warn",
+            "FAVORABLE": "good", "STEADY": "mut"}.get(tag, "")
+
+
+def _bp_merge_ad_phases(ad_phases):
+    """Merge consecutive real Antardasha periods sharing the same phase kind
+    into one row spanning their combined real date range. Row 0 (today's
+    live Antardasha) is never merged with what follows, even if the next AD
+    shares its status -- ported verbatim from the approved implementation."""
+    if not ad_phases:
+        return []
+    first = ad_phases[0]
+    merged = [{"start": first["from"], "end": first["to"], "kind": first["kind"]}]
+    for ph in ad_phases[1:]:
+        if len(merged) > 1 and merged[-1]["kind"] == ph["kind"]:
+            merged[-1]["end"] = ph["to"]
+        else:
+            merged.append({"start": ph["from"], "end": ph["to"], "kind": ph["kind"]})
+    return merged
+
+
+def _bp_timeline_rows(ad_phases, notes):
+    """ad_phases = the area's real, today-onward Antardasha list (already
+    phase-classified in products.py). Merges same-status runs, caps at
+    BP_ROW_CAP, folds any overflow into one closing 'Further ahead' row."""
+    merged = _bp_merge_ad_phases(ad_phases)
+    if len(merged) > BP_ROW_CAP:
+        head, tail = merged[:BP_ROW_CAP - 1], merged[BP_ROW_CAP - 1:]
+        rows = head + [{"start": tail[0]["start"], "end": tail[-1]["end"],
+                        "kind": tail[0]["kind"], "beyond": True}]
+    else:
+        rows = merged
+    seen, out = {}, []
+    for i, r in enumerate(rows):
+        kind = r["kind"]
+        n = seen.get(kind, 0); seen[kind] = n + 1
+        bank = notes[kind]
+        note = bank[min(n, len(bank) - 1)]
+        c = _bp_tag_class(kind.upper())
+        if r.get("beyond"):
+            out.append(f'<div class="adrow beyond"><div class="yrs">Further ahead</div>'
+                        f'<div class="note"><b>{kind.title()}</b> from {r["start"]} &mdash; {note}</div></div>')
+        elif i == 0:
+            out.append(f'<div class="adrow {c}"><div class="yrs">Current period '
+                        f'<span class="tlrange">{r["start"]}&ndash;{r["end"]}</span></div>'
+                        f'<div><span class="tag {c}">{kind.title()}</span></div>'
+                        f'<div class="note">{note}</div></div>')
+        else:
+            out.append(f'<div class="adrow {c} compact"><div class="yrs">Next period '
+                        f'<span class="tlrange">{r["start"]}&ndash;{r["end"]}</span></div>'
+                        f'<div><span class="tag {c}">{kind.title()}</span></div>'
+                        f'<div class="note">{note}</div></div>')
+    if len(out) >= 2:
+        return "".join(out[:-2]) + f'<div style="page-break-inside:avoid">{out[-2]}{out[-1]}</div>'
+    return "".join(out)
+
+
+def _bp_why_line(d, area_key, tag):
+    """Plain-English 'why' -- names the house, ruling planet and its
+    placement in one natural sentence, then a short takeaway. Handles the
+    6th/8th/12th dusthana inversion explicitly. Built entirely from
+    p['area_detail'][area] (house/lord/sign/dignity), all already computed
+    by compute_blueprint() -- no new astrology."""
+    dusthana = d["house"] in (6, 8, 12)
+    strong = d["dignity"] in ("exalted", "own")
+    weak = d["dignity"] == "debilitated"
+    place_word = {"exalted": "strongly placed", "own": "very comfortably placed",
+                 "debilitated": "weakly placed"}.get(d["dignity"], "placed in an average, neutral way")
+    noun = BP_AREA_NOUN.get(area_key, "this area")
+    tag_label = {"thriving": "Thriving", "building": "Building", "watch": "Watch"}[tag]
+    base = (f'Your {_vy_ordinal(d["house"])} house of {noun} is ruled by {d["lord"]}, and {d["lord"]} is '
+           f'{place_word} in {VY_SIGN_EN.get(d["lord_sign"], d["lord_sign"])}.')
+    if dusthana and weak:
+        simple = (f'a weaker placement here is actually a relief, since it softens this house&rsquo;s harder '
+                  f'side &mdash; that&rsquo;s why {noun} reads {tag_label}')
+    elif dusthana and strong:
+        simple = (f'a strong placement here keeps this house&rsquo;s harder side more active, which is why '
+                  f'{noun} reads {tag_label} rather than automatically Thriving')
+    elif strong:
+        simple = f'this gives {noun} a supportive foundation, which is why it reads {tag_label}'
+    elif weak:
+        simple = f'this asks for a little more patience here, which is why it reads {tag_label}'
+    else:
+        simple = f'this is a steady, average placement, which is why it reads {tag_label}'
+    return f'{base} <i>In simple words: {simple}.</i>'
+
+
+# ============================================================ BLUEPRINT RENDERER
 def render_blueprint(p: dict) -> str:
-    """/jeevan — Life Blueprint report. Returns a complete <!DOCTYPE html> doc,
-    reusing Vyapar's v17 page/card system (_VYAPAR_CSS, _VYAPAR_DEFS, icon set)
-    verbatim -- one card per page, points not paragraphs, no new visual style.
-    English-first; Hindi is a scoped fast-follow (see blueprint_report_spec.md)."""
+    """/en/life-blueprint — Life Blueprint report. Part 1 (ten life areas) +
+    Part 2 (kundli, planet table, houses, dasha timeline, transits, Sade
+    Sati, methodology, worked example, mapped table, honesty, glossary),
+    restructured to match the finalized reference. Reuses _VYAPAR_CSS's
+    shared card system plus the additive bp-/adrow classes above. The
+    per-area Antardasha timeline uses the ported phase_read()/ad_phases()
+    data computed in products.compute_blueprint() and the verbatim-ported
+    _bp_merge_ad_phases/_bp_timeline_rows above -- no new astrology."""
     m = p["meta"]
     name = escape(m.get("name", ""))  # user-supplied: escape (stored-XSS guard)
+    first_name = name.split(" ")[0] if name else ""
     teaser = p["teaser"]
     ch = p["chart"]
     lagna_sa = ch["lagna"]
@@ -1905,6 +2160,12 @@ def render_blueprint(p: dict) -> str:
     sade = p.get("sade_sati", {})
     nakp = p["nak_profile"]
     elements = p["elements"]
+    area_detail = p["area_detail"]
+    houses_1_12 = p["houses_1_12"]
+    dasha_current_md = p.get("dasha_current_md")
+    dasha_current_ads = p.get("dasha_current_ads") or []
+    year_ahead = p.get("year_ahead") or {}
+    quality, challenge = _bp_quality_challenge()
 
     cur_md = roadmap[0] if roadmap else None
     cur_lord = cur_md["lord"] if cur_md else "—"
@@ -1934,17 +2195,26 @@ def render_blueprint(p: dict) -> str:
                          f'style="grid-column:{col};grid-row:{row}">'
                          f'<div class="sn">{label}</div>{pl_html}</div>')
     kundli_center = (f'<div class="kc center" style="grid-column:2/4;grid-row:2/4">'
-                     f'<b>Life Blueprint</b><span>{lagna_en} rising</span></div>')
+                     f'<b>{name}</b><span>{lagna_en} rising</span></div>')
+
+    def _dign_label(dign, retro):
+        base = {"exalted": "exalted", "own": "own sign", "debilitated": "debilitated"}.get(dign, "neutral")
+        return base + (" · retrograde" if retro else "")
 
     planet_rows = ""
     for pl in VY_PLANET_ORDER:
         info = planets.get(pl)
         if not info: continue
         hn = house_of(info["sign"])
-        role = VY_HOUSE_ROLE.get(hn, "")
-        dign = f" · {info['dignity']}" if info.get("dignity") in ("exalted", "debilitated", "own") else ""
         planet_rows += (f'<tr><td>{pl}</td><td>{VY_SIGN_EN.get(info["sign"], info["sign"])}</td>'
-                        f'<td>{_vy_ordinal(hn)}</td><td>{role}{dign}</td></tr>')
+                        f'<td>{_vy_ordinal(hn)}</td><td>{_dign_label(info.get("dignity"), info.get("retro"))}</td></tr>')
+
+    retro_rows = "".join(
+        f'<div class="bp-sccard str" style="background:var(--terra-bg);margin-top:8px">'
+        f'<div class="sch" style="color:var(--terra)">{pl} &mdash; retrograde</div>'
+        f'<div class="bp-scitem">In {VY_SIGN_EN.get(info["sign"], info["sign"])}, your {_vy_ordinal(house_of(info["sign"]))} house.</div></div>'
+        for pl in VY_PLANET_ORDER for info in [planets.get(pl)] if info and info.get("retro")
+    )
 
     # remedies: current Mahadasha lord + the lord behind the Watch-tagged area, if any
     def remedy_pt(lord):
@@ -1957,62 +2227,388 @@ def render_blueprint(p: dict) -> str:
     remedy_pts = remedy_pt(cur_lord)
     watch_areas = [a for a in wheel if wheel[a] == "watch" and a != "timing"]
 
-    roadmap_wins = ""
-    for i, r in enumerate(roadmap):
-        badge = ("mod", "In progress") if r["current"] else (("build", "Ahead") if i == 1 else ("hold", "Later"))
-        roadmap_wins += (f'<div class="win"><div class="wt"><span class="wd">{r["lord"]} Mahadasha</span>'
-                         f'<span class="wg {badge[0]}">{badge[1]}</span></div>'
-                         f'<div class="wb">{r["from"]} &ndash; {r["to"]} &middot; {r["theme"]}</div></div>')
-
     sade_active = bool(sade.get("active"))
 
-    strengths_pts = "".join(
-        f'<div class="pt good"><svg class="ic pi"><use href="#i-check"/></svg>'
-        f'<div class="tx">{escape(s)}</div></div>' for s in p.get("strengths", [])[:3])
-    lessons_pts = "".join(
-        f'<div class="pt warn"><svg class="ic pi"><use href="#i-alert"/></svg>'
-        f'<div class="tx">{escape(s)}</div></div>' for s in p.get("lessons", [])[:2])
+    # ---- Table of Contents ----
+    AREA_ORDER = ["career", "money", "marriage", "children", "home", "foreign", "health", "growth", "family"]
+    toc_rows = [("00", "At a glance")] + [(f"0{i+1}" if i < 9 else str(i+1), LABEL[a])
+                                          for i, a in enumerate(AREA_ORDER + ["timing"])]
+    toc_html = "".join(f'<div class="bp-scitem" style="border-top:1px dotted var(--line);padding-top:8px;margin-top:8px;text-align:left"><b>{n}</b> &nbsp; {t}</div>' for n, t in toc_rows)
 
-    # ---- bordered tag-cards for the 8 area pages (career..family) --
-    # reuses wheel[]/strengths[]/lessons[] as already computed; adds no new
-    # astrology, only new presentation. Reflection lines are static per-area
-    # copy, not derived from the chart.
-    wheel_svg = blueprint_wheel_svg(wheel, name, compact_dasha)
-    AREA_ORDER = ["career", "money", "marriage", "children", "home", "foreign", "health", "family"]
-    AREA_REFLECT = {
-        "career": "Where in your work life are you still waiting for permission you don’t need?",
-        "money": "Is your money pattern something you inherited, or something you actually chose?",
-        "marriage": "What do you actually need from a partner — not what you think you should want?",
-        "children": "Are you building a family on your own timeline, or someone else’s?",
-        "home": "Does where you live right now feel like roots, or a rest stop?",
-        "foreign": "If distance called you tomorrow, would you go — or is that hesitation, not truth?",
-        "health": "What is your body already telling you that you’ve been talking over?",
-        "family": "Which family tie are you keeping out of love, and which out of habit?",
+    # ---- per-area section builder (Part 1) ----
+    AREA_TEXT = {"career": career["direction"], "money": wealth["second"], "marriage": p["relationship"]["line"],
+                 "children": p["children"], "home": p["home"], "foreign": p["foreign"],
+                 "health": p["health"], "family": p["family"]}
+    AREA_ICON = {"career": "i-compass", "money": "i-coins", "marriage": "i-people", "children": "i-gem",
+                 "home": "i-shield", "foreign": "i-target", "health": "i-moon", "growth": "i-scales",
+                 "family": "i-people"}
+    AREA_EXTRA_PT = {
+        "money": f'<div class="pt"><svg class="ic pi"><use href="#i-trend"/></svg><div class="tx"><b>How extra income tends to arrive</b>{wealth["gains"]}.</div></div>',
     }
-    strengths_list = p.get("strengths", []) or []
-    lessons_list = p.get("lessons", []) or []
+    AREA_BOUNDARY = {
+        "children": "this page describes a general tendency &mdash; never an exact date, and never a claim about fertility.",
+        "health": "this page describes a broad wellness tendency from your chart, not a diagnosis &mdash; it is not medical advice.",
+    }
+    # cross-sell hooks that keep Blueprint a funnel hub, not a dead end --
+    # pre-existing behavior, preserved from the previous design.
+    AREA_XLINK = {
+        "career": '<a class="xlink" href="#">Time a switch precisely, with our Job Change report &rarr;</a>',
+        "marriage": '<a class="xlink" href="#">Check real compatibility, with our Milan report &rarr;</a>',
+    }
+    MEANS_BY_TAG = {
+        "thriving": " is one of the stronger parts of your chart right now &mdash; a good window to act on it rather than wait.",
+        "building": " is moving steadily rather than dramatically right now &mdash; real progress here comes from consistent effort, not a single breakthrough.",
+        "watch": " calls for a bit more patience right now &mdash; it's worth moving carefully here rather than forcing a big decision.",
+    }
 
-    def tcard(area, icon, body_html):
+    def area_block(area, num):
         tag = wheel[area]
         cls = TAG_CLASS[tag]
-        idx = AREA_ORDER.index(area)
-        if tag == "watch":
-            favour = "Keep doing what already works here — steady effort still compounds."
-            watching = (lessons_list[idx % len(lessons_list)] if lessons_list
-                        else "This is the one area worth extra patience right now.")
+        d = area_detail[area]
+        if area == "growth":
+            headline = escape(persona["lagna_line"])
+            why_html = ""
         else:
-            favour = (strengths_list[idx % len(strengths_list)] if strengths_list
-                      else "Your chart backs you here — this is a place to build, not doubt.")
-            watching = "Nothing flagged here — the usual care is enough."
-        return (f'<div class="tcard {cls}">'
-                f'<div class="verdict {cls or "gold"} sum"><svg class="ic"><use href="#{icon}"/></svg> {TAG_LABEL[tag]} right now.</div>'
-                f'{body_html}'
-                f'</div>'
-                f'<div class="dwcard"><div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg>'
-                f'<div class="tx"><b>Favour</b>{escape(favour)}</div></div>'
-                f'<div class="dwrow watch"><svg class="ic pi"><use href="#i-alert"/></svg>'
-                f'<div class="tx"><b>Watching</b>{escape(watching)}</div></div></div>'
-                f'<div class="reflect">&ldquo;{escape(AREA_REFLECT[area])}&rdquo;</div>')
+            headline = escape(AREA_TEXT[area])
+            why_html = f'<div class="reasoncard{" warn" if cls=="warn" else ""}"><div class="rh">Why it reads this way</div><p>{_bp_why_line(d, area, tag)}</p></div>'
+        means = BP_AREA_DOMAIN.get(area, "This area") + MEANS_BY_TAG[tag]
+        str_infl = d.get("strengths_infl") or []
+        chg_infl = d.get("challenges_infl") or []
+        str_items = "".join(f'<div class="bp-scitem">A touch of {quality.get(x["planet"], "its own distinct energy")} supports this area.</div>' for x in str_infl) \
+            or '<div class="bp-scitem">No extra layers here beyond the main pattern above &mdash; a clean, simple picture.</div>'
+        chg_items = "".join(f'<div class="bp-scitem">A touch of {challenge.get(x["planet"], "a little extra patience")} is worth keeping an eye on here.</div>' for x in chg_infl) \
+            or '<div class="bp-scitem">Nothing major working against this area right now &mdash; it&rsquo;s largely free to grow in its own way.</div>'
+        n_help, n_watch = len(str_infl), len(chg_infl)
+        if n_help > n_watch:
+            balance = f"More is working in your favour here than against you &mdash; {n_help} helpful influence{'s' if n_help != 1 else ''} versus {n_watch} to watch. That's a real advantage, but it doesn't replace the effort this area still needs from you."
+        elif n_watch > n_help:
+            balance = f"This area has a few more things to watch ({n_watch}) than clear supports ({n_help}) right now. That doesn't rule out good results &mdash; it just means patience pays off more than rushing."
+        else:
+            balance = f"This area is fairly balanced &mdash; {n_help} helpful influence{'s' if n_help != 1 else ''} and {n_watch} to watch, roughly evenly matched. What happens next will depend more on your own effort than on the chart alone."
+        phase_html = _bp_timeline_rows(d.get("ad_phases") or [], BP_AREA_PHASE_NOTES[area]) if area in BP_AREA_PHASE_NOTES else ""
+        do_items, watch_items = BP_AREA_DO_WATCH.get(area, ([], []))
+        do_html = "".join(f"<li>{x}</li>" for x in do_items)
+        watch_html = "".join(f"<li>{x}</li>" for x in watch_items)
+        boundary = f'<div class="note"><b>Please note:</b> {AREA_BOUNDARY[area]}</div>' if area in AREA_BOUNDARY else ""
+        extra = AREA_EXTRA_PT.get(area, "")
+        reflect = BP_REFLECT.get(area, {}).get(tag, "What would I do here if I already trusted myself?")
+        icon_name = AREA_ICON[area]
+        verdict_icon = "i-check" if cls == "good" else ("i-alert" if cls == "warn" else "i-clock")
+        return f"""<div class="blockhead">
+  <div class="area-open">
+  <div class="eyebrow">Part 1 &middot; {num} of 10</div>
+  <h2 class="head">{BP_AREA_TITLE.get(area, LABEL[area])}</h2>
+  <div class="rule"></div>
+  <div class="verdict {cls or 'gold'} sum"><svg class="ic"><use href="#{verdict_icon}"/></svg> {TAG_LABEL[tag]} right now.</div>
+  <div class="lead" style="text-align:left;margin-top:8px">{headline}.</div>
+  <div class="lead" style="text-align:left;font-size:14.5px;margin-top:8px">{means}</div>
+  {why_html}
+  {AREA_XLINK.get(area, "")}
+  </div>
+  <div class="area-close">
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">{_icon_svg('i-check')} Working in your favour</div>{str_items}</div>
+    <div class="bp-sccard chg"><div class="sch">{_icon_svg('i-alert')} Worth watching</div>{chg_items}</div>
+  </div>
+  <div class="eyebrow" style="margin-top:20px;text-align:left">Part 1 &middot; {num} &middot; {BP_AREA_TITLE.get(area, LABEL[area])}</div>
+  <h3 class="sub" style="text-align:left;margin-top:6px">Through your chapters</h3>
+  <div>{phase_html}{extra}</div>
+  </div>
+  <div class="area-close2">
+  <div class="bp-dosdonts">
+    <div class="bp-ddcol do"><h4>{_icon_svg('i-check')} Do</h4><ul>{do_html}</ul></div>
+    <div class="bp-ddcol dont"><h4>{_icon_svg('i-alert')} Watch</h4><ul>{watch_html}</ul></div>
+  </div>
+  <div class="note">{balance}</div>
+  {boundary}
+  <div class="reflect">&ldquo;{reflect}&rdquo;</div>
+  </div>
+</div>"""
+
+    def _icon_svg(name):
+        return f'<svg class="ic pi"><use href="#{name}"/></svg>'
+
+    area_pages = "".join(area_block(a, f"{i+1:02d}") for i, a in enumerate(AREA_ORDER))
+
+    # ---- Timing (area 10 of 10) ----
+    timing_tag = wheel["timing"]
+    timing_cls = TAG_CLASS[timing_tag]
+    timing_d = area_detail.get("timing") or {}
+    if sade_active:
+        timing_why = (f"Your current Mahadasha is led by {cur_lord}, but Sade Sati is active right now "
+                      f"&mdash; Saturn is transiting near your birth Moon, which is why this reads {TAG_LABEL[timing_tag]} "
+                      f"regardless of {cur_lord}'s own placement.")
+    else:
+        timing_why = (f"{timing_d.get('lord', cur_lord)} is currently {('strongly' if timing_d.get('dignity') in ('exalted','own') else ('weakly' if timing_d.get('dignity')=='debilitated' else 'averagely'))} "
+                      f"placed in {VY_SIGN_EN.get(timing_d.get('lord_sign',''), timing_d.get('lord_sign',''))}. In simple words: this is why the overall period reads {TAG_LABEL[timing_tag]}.") if timing_d else ""
+    roadmap_wins = ""
+    for i, r in enumerate(roadmap):
+        badge = ("mod", "Current") if r["current"] else (("build", "Ahead") if i == 1 else ("hold", "Ahead"))
+        roadmap_wins += (f'<div class="adrow{" good" if i==0 else ""}"><div class="yrs">{r["from"]}&ndash;{r["to"]} <span class="tlrange">{badge[1]}</span></div>'
+                         f'<div><span class="tag{" good" if i==0 else " mut"}">{r["lord"]}</span></div>'
+                         f'<div class="note">{r["theme"]}</div></div>')
+    timing_page = f"""<div class="blockhead">
+  <div class="area-open">
+  <div class="eyebrow">Part 1 &middot; 10 of 10</div>
+  <h2 class="head">Is now the moment?</h2>
+  <div class="rule"></div>
+  <div class="verdict {timing_cls or 'gold'} sum"><svg class="ic"><use href="#{'i-check' if timing_cls=='good' else ('i-alert' if timing_cls=='warn' else 'i-clock')}"/></svg> {TAG_LABEL[timing_tag]} right now.</div>
+  <div class="lead" style="text-align:left;margin-top:8px">{teaser["current_dasha"]}, until {teaser["dasha_till"]}.</div>
+  {f'<div class="reasoncard{" warn" if timing_cls=="warn" else ""}"><div class="rh">Why it reads this way</div><p>{timing_why}</p></div>' if timing_why else ''}
+  </div>
+  <div class="area-close">
+  <h3 class="sub" style="text-align:left;margin-top:6px">Your chapters ahead</h3>
+  <div>{roadmap_wins}</div>
+  <div class="note">Periods are openings, not fixed dates. They raise your odds &mdash; the effort still has to come from you.</div>
+  </div>
+</div>"""
+
+    # ---- Part 2 divider ----
+    divider = """<div class="bp-divider">
+  <div class="dn">II</div>
+  <div class="dt">How We Arrived at These Conclusions</div>
+  <div class="ds">The full reasoning behind every page in Part 1 &mdash; your chart, your houses, your planets and your timing.</div>
+  <div class="dlist">
+    <div>Your kundli</div><div>Lagna, Moon &amp; Nakshatra</div>
+    <div>Every planet, placed</div><div>The houses that matter</div>
+    <div>Dashas &amp; your timeline</div><div>Transits &amp; Sade Sati</div>
+    <div>How every tag was set</div><div>Methodology &amp; glossary</div>
+  </div>
+</div>"""
+
+    # ---- Lagna & Moon ----
+    from engine import SIGN_LORD as _SIGN_LORD
+    lagna_lord = _SIGN_LORD[SIGN_NUM[lagna_sa]]
+    moon_lord = _SIGN_LORD[SIGN_NUM[moon_sa]]
+    lagna_moon_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The starting point</div>
+  <h2 class="head">Your Lagna &amp; Moon</h2>
+  <div class="rule"></div>
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">Your Lagna</div><div class="bp-scitem">{lagna_en} &mdash; ruled by {lagna_lord}.</div></div>
+    <div class="bp-sccard str"><div class="sch">Moon sign</div><div class="bp-scitem">{moon_en} &mdash; {nakp["nakshatra"]}, pada {teaser["pada"]} &middot; ruled by {moon_lord}.</div></div>
+  </div>
+  <h3 class="sub" style="text-align:left">Why the Lagna matters</h3>
+  <div class="lead" style="text-align:left;font-size:14px;margin-top:0">Every house is counted from the Lagna. Career, partnership, home &mdash; all numbered from this one sign.</div>
+  <h3 class="sub" style="text-align:left">How we work it out</h3>
+  <div class="lead" style="text-align:left;font-size:14px;margin-top:0">Your Lagna depends on your exact birth time and place, not just the date &mdash; it changes roughly every two hours.</div>
+</div>"""
+
+    # ---- Loudest voices (retrograde highlights) ----
+    loudest_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The loudest voices</div>
+  <h2 class="head">Placements worth a look</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Not every planet speaks equally loudly. These do the most work behind your Part 1 readings.</div>
+  <div style="margin-top:4px">{retro_rows or '<div class="bp-scitem" style="margin-top:10px">No planet is retrograde in your chart right now &mdash; no extra emphasis to flag here.</div>'}</div>
+</div>"""
+
+    # ---- Twelve houses ----
+    HOUSE_ROLE_EN = {1: "Self, body and outlook", 2: "Savings and family wealth", 3: "Courage, effort and siblings",
+                     4: "Home, comfort and inner base", 5: "Children, creativity and intelligence",
+                     6: "Routine, effort and daily friction", 7: "Partnership and open dealings",
+                     8: "Transformation and shared resources", 9: "Father, fortune and belief",
+                     10: "Career and public standing", 11: "Gains, income and networks",
+                     12: "Distance, rest and letting go"}
+    HOUSE_AREA_LINE = {1: "as Personal growth &amp; identity", 2: "as Money &amp; financial security",
+                       3: "feeds nearby reasoning", 4: "as Home &amp; property", 5: "as Children &amp; family",
+                       6: "as Health &amp; energy", 7: "as Marriage &amp; partnership", 8: "feeds nearby reasoning",
+                       9: "as Family relationships", 10: "as Career &amp; work direction",
+                       11: "feeds nearby reasoning", 12: "as Foreign travel &amp; relocation"}
+
+    def houses_page(rng, title):
+        rows = "".join(f'<tr><td>{h["house"]}</td><td>{HOUSE_ROLE_EN[h["house"]]}</td><td>{VY_SIGN_EN.get(h["sign"], h["sign"])}</td><td>{h["lord"]}</td></tr>' for h in houses_1_12[rng[0]-1:rng[1]])
+        mapping = "".join(f'<div class="bp-scitem" style="border-top:1px dotted var(--line);padding-top:6px;margin-top:6px">{_vy_ordinal(h["house"])} &mdash; {HOUSE_AREA_LINE[h["house"]]}</div>' for h in houses_1_12[rng[0]-1:rng[1]])
+        return f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The twelve houses</div>
+  <h2 class="head">{title}</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Your chart has twelve houses, each covering a different part of life.</div>
+  <div class="tscroll"><table class="k"><tr><th>House</th><th>Covers</th><th>Sign</th><th>Ruler</th></tr>{rows}</table></div>
+  <h3 class="sub" style="text-align:left">Where this shows up in Part 1</h3>
+  <div>{mapping}</div>
+</div>"""
+    houses1_page = houses_page((1, 6), "Houses 1&ndash;6")
+    houses2_page = houses_page((7, 12), "Houses 7&ndash;12")
+
+    # ---- Connections (house rulers & aspects, 4 example areas) ----
+    _CONN_AREAS = ["career", "money", "marriage", "children"]
+    conn_rows = ""
+    for a in _CONN_AREAS:
+        d = area_detail[a]
+        infl = (d.get("strengths_infl") or []) + (d.get("challenges_infl") or [])
+        conn_txt = ", ".join(
+            f'{x["planet"]} ({"sits here" if x.get("how") == "occupies" else "influences from afar"})'
+            for x in infl
+        ) or "No extra connections beyond the ruling planet itself."
+        conn_rows += f'<div class="bp-scitem" style="border-top:1px dotted var(--line);padding-top:8px;margin-top:8px"><b>{LABEL[a]}</b><br>{conn_txt}</div>'
+    connections_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; Connections</div>
+  <h2 class="head">House rulers &amp; links</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">A house is shaped by its ruler, by planets sitting in it, and by planets casting influence from elsewhere &mdash; an aspect.</div>
+  <div style="margin-top:4px">{conn_rows}</div>
+  <div class="note">See each area in Part 1 for the full picture.</div>
+</div>"""
+
+    # ---- Dashas, explained ----
+    dashas_explained_page = """<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The timing system</div>
+  <h2 class="head">Dashas, explained</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Your Timing chapter is built on one system: a 120-year sequence of planetary chapters, worked out from your Moon's exact position at birth.</div>
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">What a Mahadasha is</div><div class="bp-scitem">A main chapter led by one planet, lasting 6 to 20 years. All nine come in a fixed order.</div></div>
+    <div class="bp-sccard str"><div class="sch">What an Antardasha is</div><div class="bp-scitem">A sub-chapter inside each main chapter, led by a second planet &mdash; the finer detail.</div></div>
+  </div>
+  <div class="reasoncard"><div class="rh">Why this isn't fortune-telling</div><p>A Dasha tells you which themes are switched on, not what will happen. That is why every page speaks in windows.</p></div>
+</div>"""
+
+    # ---- Your Dasha timeline (current MD's AD table) ----
+    ad_rows = "".join(
+        f'<tr><td>{a["lord"]}</td><td>{a["from"]} &ndash; {a["to"]}</td><td>{"Now" if a["current"] else ""}</td></tr>'
+        for a in dasha_current_ads
+    )
+    dasha_timeline_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; This chapter</div>
+  <h2 class="head">Your Dasha timeline</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Your current main chapter is led by {dasha_current_md["lord"] if dasha_current_md else cur_lord}, running {dasha_current_md["from"] if dasha_current_md else ""} to {dasha_current_md["to"] if dasha_current_md else ""}.</div>
+  <div class="tscroll"><table class="k"><tr><th>Sub-chapter</th><th>Window</th><th></th></tr>{ad_rows}</table></div>
+  <div class="note">The main chapter is the big season; each sub-chapter the weather within it.</div>
+</div>"""
+
+    # ---- Chapters ahead (the same real global roadmap) ----
+    tl_rows = "".join(
+        f'<div class="adrow{" good" if r["current"] else " mut"}"><div class="yrs">{r["from"]}&ndash;{r["to"]}</div>'
+        f'<span class="tag{" good" if r["current"] else " mut"}">{"Current" if r["current"] else "Ahead"}</span>'
+        f'<div class="note"><b>{r["lord"]} chapter</b> &mdash; {r["theme"]}</div></div>'
+        for r in roadmap
+    )
+    chapters_ahead_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The chapters ahead</div>
+  <h2 class="head">Your Dasha timeline</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">The main chapters this report looks at, in full.</div>
+  <div>{tl_rows}</div>
+  <div class="note">Each &ldquo;Through your chapters&rdquo; page reads these same periods against that area's house.</div>
+</div>"""
+
+    # ---- Transits ----
+    jup_good = year_ahead.get("jup_good")
+    transits_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; Right now</div>
+  <h2 class="head">Where the sky is today</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Your Dasha shows the long chapters. Transits show the slower weather layered on top.</div>
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">Jupiter is in</div><div class="bp-scitem">{VY_SIGN_EN.get(year_ahead.get("jup_sign",""), year_ahead.get("jup_sign",""))} &mdash; your {_vy_ordinal(year_ahead.get("jup_house",1))} house.</div></div>
+    <div class="bp-sccard str"><div class="sch">Saturn is in</div><div class="bp-scitem">{VY_SIGN_EN.get(year_ahead.get("sat_sign",""), year_ahead.get("sat_sign",""))} &mdash; your {_vy_ordinal(year_ahead.get("sat_house",1))} house.</div></div>
+  </div>
+  <div class="bp-sccols" style="margin-top:10px">
+    <div class="bp-sccard str"><div class="sch">Jupiter, passing through</div><div class="bp-scitem">{"A supportive spot &mdash; generally a good sign right now." if jup_good else "A quieter spot &mdash; not a bad sign, just a gentler one than its strongest houses."}</div></div>
+    <div class="bp-sccard chg"><div class="sch">Saturn, passing through</div><div class="bp-scitem">{"This is also behind your Sade Sati reading &mdash; slower, heavier pressure that rewards patience." if sade_active else "A layer separate from Sade Sati &mdash; the usual discipline is enough for now."}</div></div>
+  </div>
+</div>"""
+
+    # ---- Sade Sati ----
+    sade_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The best-known cycle</div>
+  <h2 class="head">Sade Sati</h2>
+  <div class="rule"></div>
+  <div class="verdict {'warn' if sade_active else 'gold'} sum"><svg class="ic"><use href="#i-hourglass"/></svg> {("Active &mdash; " + sade.get("phase","") + ", until " + sade.get("ends","")) if sade_active else "Not currently active"}</div>
+  <div class="lead" style="text-align:left;margin-top:8px">{("You're in Sade Sati right now &mdash; Saturn is transiting near your birth Moon.") if sade_active else "You're not in Sade Sati right now &mdash; Saturn isn't near your birth Moon at the moment."}</div>
+  <h3 class="sub" style="text-align:left">It has a fixed end date</h3>
+  <div class="lead" style="text-align:left;font-size:14px;margin-top:0">Everyone goes through it roughly three times in a lifetime. It is one of the best-understood periods in this kind of astrology.</div>
+  <h3 class="sub" style="text-align:left">Where it shows up</h3>
+  <div class="lead" style="text-align:left;font-size:14px;margin-top:0">This is the reason behind the caution flag on your Timing chapter.</div>
+</div>"""
+
+    # ---- How every tag was set (methodology rule) ----
+    how_set_page = """<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; The rule</div>
+  <h2 class="head">How every tag was set</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">Every tag follows the same open rule &mdash; no hidden scoring, no made-up precision.</div>
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">Thriving</div><div class="bp-scitem">The house's ruling planet is in its strongest position &mdash; exalted, or in a sign it rules.</div></div>
+    <div class="bp-sccard str"><div class="sch">Building</div><div class="bp-scitem">The ruling planet is in an average, steady condition.</div></div>
+  </div>
+  <div class="bp-sccard chg" style="margin-top:10px"><div class="sch">Watch</div><div class="bp-scitem">The ruling planet is in one of its weaker positions, traditionally called debilitated.</div></div>
+  <div class="note">One exception: for the 6th, 8th and 12th houses the rule flips &mdash; a weak ruler there is a relief. A standard technique, not something we invented.</div>
+</div>"""
+
+    # ---- Worked example (career, real data) ----
+    cd = area_detail["career"]
+    cd_tag = wheel["career"]
+    worked_example_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; Worked example</div>
+  <h2 class="head">Why some read stronger</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">An example from your own chart, step by step.</div>
+  <div class="reasoncard"><div class="rh">Career &mdash; why {TAG_LABEL[cd_tag]}</div>
+  <p>Ruled by your {_vy_ordinal(cd["house"])} house, and {cd["lord"]} is in charge of it. {cd["lord"]} sits in {VY_SIGN_EN.get(cd["lord_sign"], cd["lord_sign"])}, in {"an exalted" if cd["dignity"]=="exalted" else ("an own-sign" if cd["dignity"]=="own" else ("a debilitated" if cd["dignity"]=="debilitated" else "an average"))} condition. That condition passes to everything {cd["lord"]} rules &mdash; so the tag reads {TAG_LABEL[cd_tag]}.</p></div>
+  <div class="note">House &rarr; ruler &rarr; ruler's condition. The same three steps sit behind all ten tags.</div>
+</div>"""
+
+    # ---- Everything, mapped ----
+    map_rows = "".join(
+        f'<tr><td>{BP_AREA_TITLE.get(a, LABEL[a]) if a != "timing" else "Timing"}</td>'
+        f'<td>{_vy_ordinal(area_detail[a]["house"]) if area_detail[a]["house"] else "Dasha chapter"}</td>'
+        f'<td>{area_detail[a]["lord"]}</td><td>{TAG_LABEL[wheel[a]]}</td></tr>'
+        for a in AREA_ORDER + ["timing"]
+    )
+    mapped_table_page = f"""<div class="blockhead page-center">
+  <div class="page-center-inner">
+  <div class="eyebrow">Part 2 &middot; Everything, mapped</div>
+  <h2 class="head">Every reading, in one table</h2>
+  <div class="rule"></div>
+  <div class="lead" style="text-align:left">The complete map from Part 1's ten areas back to the house and planet each came from.</div>
+  <div class="tscroll"><table class="k"><tr><th>Area</th><th>House</th><th>Ruler</th><th>Reading</th></tr>{map_rows}</table></div>
+  </div>
+</div>"""
+
+    # ---- What this report is (honesty) ----
+    honesty_page = """<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; Honesty</div>
+  <h2 class="head">What this report is</h2>
+  <div class="rule"></div>
+  <div class="bp-sccols">
+    <div class="bp-sccard str"><div class="sch">What we can honestly tell you</div>
+      <div class="bp-scitem">General tendencies, from your houses and planets.</div>
+      <div class="bp-scitem">Favourable-versus-cautious windows.</div>
+      <div class="bp-scitem">Which life chapter you are in, and what comes next.</div>
+      <div class="bp-scitem">Traditional health tendencies, as a general pattern.</div>
+    </div>
+    <div class="bp-sccard chg"><div class="sch">What we will never claim</div>
+      <div class="bp-scitem">Exact dates for marriage, childbirth or death.</div>
+      <div class="bp-scitem">Any medical, fertility or pregnancy diagnosis.</div>
+      <div class="bp-scitem">Investment advice or specific amounts.</div>
+      <div class="bp-scitem">Guaranteed outcomes, visa advice or exam results.</div>
+    </div>
+  </div>
+  <div class="note"><b>Birth time matters:</b> an inexact time shifts your Lagna and every house built on it. Swiss Ephemeris &middot; Lahiri ayanamsa &middot; whole-sign houses.</div>
+</div>"""
+
+    # ---- Glossary ----
+    terms = [
+        ("Lagna (Ascendant)", "The zodiac sign that was rising in the sky at your exact birth moment and place. The starting point for every house in your chart."),
+        ("House", "One of twelve areas of life, counted from your Lagna. The 10th is career, the 7th is partnership, and so on."),
+        ("House ruler", "The planet in charge of a house &mdash; the single biggest factor in how that house tends to play out."),
+        ("Dignity", "How comfortable a planet is in the sign it sits in. Exalted and own-sign are strong; debilitated is weak."),
+        ("Mahadasha", "A main life chapter led by one planet, lasting 6 to 20 years."),
+        ("Antardasha", "A sub-chapter inside a Mahadasha, led by a second planet."),
+        ("Nakshatra", "One of 27 star-based divisions of the sky. Adds a finer, more personal layer to your Moon sign."),
+    ]
+    terms_html = "".join(f'<div class="bp-gitem"><dt>{t}</dt><dd>{d}</dd></div>' for t, d in terms)
+    glossary_page = f"""<div class="blockhead">
+  <div class="eyebrow">Part 2 &middot; Plain English</div>
+  <h2 class="head">A short glossary</h2>
+  <div class="rule"></div>
+  <div style="margin-top:10px;text-align:left">{terms_html}</div>
+</div>"""
+
+    wheel_svg = blueprint_wheel_svg(wheel, name, compact_dasha)
 
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -2034,7 +2630,7 @@ def render_blueprint(p: dict) -> str:
   <div class="cov-name">{name}</div>
   <div class="cov-type"><svg class="ti" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 4h4v4"/></svg><span>{escape(persona["lagna_line"])}</span></div>
   <div class="cov-pills"><span class="cp"><span class="g">&#9790;</span> Moon in {moon_en}</span><span class="cp"><span class="g">&#9651;</span> {lagna_en} rising</span><span class="cp"><span class="g">&#9796;</span> {compact_dasha}</span></div>
-  <div class="cov-comfort">One report, ten parts of your life, and one honest answer to where you actually stand.</div>
+  <div class="cov-comfort">Ten areas of your life, read from one chart.</div>
   <div class="cov-trust">Swiss Ephemeris &middot; Lahiri ayanamsa &middot; Generated {m.get("generated", "")}</div>
 </div><div class="pno">01</div></section>
 
@@ -2045,24 +2641,35 @@ def render_blueprint(p: dict) -> str:
   <div class="eyebrow">A note for you</div>
   <h2 class="head">Before you read on</h2>
   <div class="rule"></div>
-  <div class="lead">Dear {name}, this report is a map, not a verdict. Ten parts of your life, each read from the same chart &mdash; where you stand right now, and what deserves your attention next.</div>
-  <div class="lead">Nothing here is guessed. Every line traces back to a house, a planet, or a period in your own birth chart &mdash; and every part is honest about what it can and cannot tell you.</div>
+  <div class="lead">Dear {first_name}, this report reads ten areas of your life from a single birth chart &mdash; and then shows you exactly how each reading was reached.</div>
+  <div class="lead">Nothing here is a prediction. Where your chart is strong, we say so. Where it asks for patience, we say that too &mdash; and we tell you when it eases.</div>
+  <div class="lead">Read Part 1 for what it says. Read Part 2 if you want to check our working.</div>
   <div class="lead">&mdash; Your astrologer, Axtroshastra</div>
   <svg class="fan nfbot" viewBox="0 0 54 30" fill="none"><rect x="6" y="13" width="42" height="20" fill="#FBF7EE"/><g stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M27 27 L12 15M27 27 L18 12M27 27 L27 9M27 27 L36 12M27 27 L42 15"/><path d="M12 15 A19 19 0 0 1 42 15"/></g></svg><svg class="crn ctl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn ctr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbl" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg><svg class="crn cbr" viewBox="0 0 12 12"><path d="M6 .5 11.5 6 6 11.5 .5 6Z" fill="#B9862E"/></svg>
   </div>
 </div><div class="pno">02</div></section>
 
-<!-- 03 LIFE WHEEL -->
+<!-- 03 TABLE OF CONTENTS -->
+<section class="page"><div class="col">
+  <div class="eyebrow">What's in this report</div>
+  <h2 class="head">Contents</h2>
+  <div class="rule"></div>
+  <div class="lead" style="font-size:14px">Part 1 reads ten areas of your life. Part 2 shows exactly how each reading was reached.</div>
+  <div style="margin-top:6px;text-align:left">{toc_html}</div>
+  <div class="note">Part 2 &mdash; &ldquo;How We Arrived at These Conclusions&rdquo; begins after Part 1.</div>
+</div><div class="pno">03</div></section>
+
+<!-- 04 LIFE WHEEL -->
 <section class="page"><div class="col">
   <div class="eyebrow">At a glance</div>
-  <h2 class="head">Your Life Wheel</h2>
+  <h2 class="head">Your Life Blueprint</h2>
   <div class="rule"></div>
   <div class="lead">All ten areas this report covers &mdash; each tag comes straight from your chart, not a guess.</div>
   {wheel_svg}
   <div class="sfoot">Thriving &middot; Building &middot; Watch &mdash; a three-way read on each area, from the same chart math behind every page in this report.</div>
-</div><div class="pno">03</div></section>
+</div><div class="pno">04</div></section>
 
-<!-- 04 ABOUT YOU -->
+<!-- 05 ABOUT YOU -->
 <section class="page"><div class="col">
   <div class="eyebrow">About you</div>
   <h2 class="head">Who you are, from the chart</h2>
@@ -2073,137 +2680,55 @@ def render_blueprint(p: dict) -> str:
     <div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>{moon_en} Moon &mdash; how you run inside</b>{escape(persona["moon_line"])}</div></div>
     <div class="pt"><svg class="ic pi"><use href="#i-book"/></svg><div class="tx"><b>{nakp["nakshatra"]} nakshatra</b>{escape(nakp["nature"])}</div></div>
   </div>
-</div><div class="pno">04</div></section>
-
-<!-- 05 CAREER -->
-<section class="page"><div class="col">
-  <div class="eyebrow">01 &middot; Career &amp; work direction</div>
-  <h2 class="head">Where your chart points you</h2>
-  <div class="rule"></div>
-  {tcard("career", "i-compass",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-compass"/></svg><div class="tx"><b>Your natural direction</b>{career["direction"]}.</div></div>'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-clock"/></svg><div class="tx"><b>The moment for a bigger question</b>If switching or building feels urgent, {("your " + cur_lord + " period") if cur_md else "your current period"} is the one shaping that pull.</div></div>'
-    f'</div>')}
-  <a class="xlink" href="#">Time a switch precisely, with our Job Change report &rarr;</a>
 </div><div class="pno">05</div></section>
 
-<!-- 07 MONEY -->
-<section class="page"><div class="col">
-  <div class="eyebrow">02 &middot; Money &amp; financial pattern</div>
-  <h2 class="head">How money moves for you</h2>
-  <div class="rule"></div>
-  {tcard("money", "i-coins",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-coins"/></svg><div class="tx"><b>How you earn &amp; save</b>{wealth["second"]}.</div></div>'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-trend"/></svg><div class="tx"><b>How gains arrive</b>{wealth["gains"]}.</div></div>'
-    f'</div>')}
-</div><div class="pno">06</div></section>
+{area_pages}
+{timing_page}
+{divider}
 
-<!-- 09 MARRIAGE -->
+<!-- KUNDLI -->
 <section class="page"><div class="col">
-  <div class="eyebrow">03 &middot; Marriage &amp; partnership</div>
-  <h2 class="head">What you need in a partner</h2>
+  <div class="eyebrow">Part 2 &middot; Your chart</div>
+  <h2 class="head">Your kundli</h2>
   <div class="rule"></div>
-  {tcard("marriage", "i-people",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>Your partnership style</b>{p["relationship"]["line"]}.</div></div>'
-    f'</div>')}
-  <a class="xlink" href="#">Check real compatibility, with our Milan report &rarr;</a>
-</div><div class="pno">07</div></section>
-
-<!-- 11 CHILDREN -->
-<section class="page"><div class="col">
-  <div class="eyebrow">04 &middot; Children &amp; family formation</div>
-  <h2 class="head">Building a family, your way</h2>
-  <div class="rule"></div>
-  {tcard("children", "i-gem",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-gem"/></svg><div class="tx"><b>Your family-formation pattern</b>{p["children"]}.</div></div>'
-    f'</div>')}
-  <div class="note"><b>A boundary we hold:</b> this reads a tendency, never a date, and never a claim about fertility.</div>
-</div><div class="pno">08</div></section>
-
-<!-- 13 HOME -->
-<section class="page"><div class="col">
-  <div class="eyebrow">05 &middot; Home &amp; property</div>
-  <h2 class="head">Where and how you put down roots</h2>
-  <div class="rule"></div>
-  {tcard("home", "i-shield",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-shield"/></svg><div class="tx"><b>Your property pattern</b>{p["home"]}.</div></div>'
-    f'</div>')}
-</div><div class="pno">09</div></section>
-
-<!-- 15 FOREIGN -->
-<section class="page"><div class="col">
-  <div class="eyebrow">06 &middot; Foreign travel &amp; relocation</div>
-  <h2 class="head">Whether distance suits you</h2>
-  <div class="rule"></div>
-  {tcard("foreign", "i-target",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-target"/></svg><div class="tx"><b>Your relocation pattern</b>{p["foreign"]}.</div></div>'
-    f'</div>')}
-</div><div class="pno">10</div></section>
-
-<!-- 17 HEALTH -->
-<section class="page"><div class="col">
-  <div class="eyebrow">07 &middot; Health &amp; energy</div>
-  <h2 class="head">How your body tends to run</h2>
-  <div class="rule"></div>
-  {tcard("health", "i-moon",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>Your constitutional tendency</b>{p["health"]}.</div></div>'
-    f'</div>')}
-  <div class="note"><b>A boundary we hold:</b> this is a classical tendency, not a medical diagnosis.</div>
-</div><div class="pno">11</div></section>
-
-<!-- 19 GROWTH -->
-<section class="page"><div class="col">
-  <div class="eyebrow">08 &middot; Personal growth &amp; identity</div>
-  <h2 class="head">What comes naturally, and what doesn't</h2>
-  <div class="rule"></div>
-  <div class="pts">
-    {strengths_pts}
-    {lessons_pts}
-    <div class="pt"><svg class="ic pi"><use href="#i-scales"/></svg><div class="tx"><b>Your elemental balance</b>{elements["dominant"]} runs strongest in your chart{("; " + " and ".join(elements["missing"]) + " is quiet") if elements["missing"] else ""}.</div></div>
+  <div class="kundli">
+    {kundli_cells}
+    {kundli_center}
   </div>
-</div><div class="pno">12</div></section>
+  <div class="klegend">Your birth chart, South-Indian style &middot; Ascendant marked in gold. Every reading in this report is calculated from this chart &mdash; nothing is guessed, and any astrologer can verify it.</div>
+</div><div class="pno"></div></section>
 
-<!-- 20 FAMILY -->
+{lagna_moon_page}
+
+<!-- PLANETS -->
 <section class="page"><div class="col">
-  <div class="eyebrow">09 &middot; Family relationships</div>
-  <h2 class="head">Parents, siblings, and old ties</h2>
+  <div class="eyebrow">Part 2 &middot; The full picture</div>
+  <h2 class="head">Every planet, placed</h2>
   <div class="rule"></div>
-  {tcard("family", "i-people",
-    f'<div class="pts">'
-    f'<div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>Your family-relationship pattern</b>{p["family"]}.</div></div>'
-    f'</div>')}
-</div><div class="pno">13</div></section>
+  <div class="lead" style="font-size:14px">Where each of your nine planets sat when you were born, and what shape they were in.</div>
+  <div class="tscroll"><table class="k">
+    <tr><th>Planet</th><th>Sign</th><th>House</th><th>Condition</th></tr>
+    {planet_rows}
+  </table></div>
+  <div class="note">The Condition column matters most &mdash; it feeds every tag in Part 1.</div>
+</div><div class="pno"></div></section>
 
-<!-- 14 CURRENT PERIOD -->
-<section class="page"><div class="col">
-  <div class="eyebrow">10 &middot; Current period &amp; what's next</div>
-  <h2 class="head">The chapter you're in</h2>
-  <div class="rule"></div>
-  <div class="callout"><div class="ch"><svg class="ic"><use href="#i-hourglass"/></svg> Right now</div><p>{teaser["current_dasha"]}, until {teaser["dasha_till"]}.</p></div>
-  {roadmap_wins}
-  <div class="note">Periods are openings, not fixed dates. They raise your odds &mdash; the effort still has to come from you.</div>
-</div><div class="pno">14</div></section>
+{loudest_page}
+{houses1_page}
+{houses2_page}
+{connections_page}
+{dashas_explained_page}
+{dasha_timeline_page}
+{chapters_ahead_page}
+{transits_page}
+{sade_page}
+{how_set_page}
+{worked_example_page}
+{mapped_table_page}
+{honesty_page}
+{glossary_page}
 
-<!-- 15 CAUTION -->
-<section class="page"><div class="col">
-  <div class="eyebrow terra">When to play it safe</div>
-  <h2 class="head">{"Your careful stretch" if sade_active else "No major caution flag right now"}</h2>
-  <div class="rule"></div>
-  <div class="verdict terra sum"><svg class="ic"><use href="#i-alert"/></svg> {("Sade Sati, " + sade.get("phase", "") + " &mdash; until " + sade.get("ends", "")) if sade_active else "Nothing flagged as a hard caution period at the moment."}</div>
-  <div class="pts">
-    <div class="pt {'warn' if sade_active else 'good'}"><svg class="ic pi"><use href="#i-hourglass"/></svg><div class="tx"><b>What it means</b>{("Saturn is transiting near your Moon &mdash; a season for patience on big decisions, not a sign anything is wrong.") if sade_active else "The usual discipline on money and big decisions is enough for now."}</div></div>
-    {("<div class='pt'><svg class=\"ic pi\"><use href=\"#i-check\"/></svg><div class=\"tx\"><b>Areas worth watching</b>" + ", ".join(LABEL[a] for a in watch_areas) + ".</div></div>") if watch_areas else ""}
-  </div>
-</div><div class="pno">15</div></section>
-
-<!-- 16 REMEDIES -->
+<!-- REMEDIES -->
 <section class="page"><div class="col">
   <div class="eyebrow">Remedies &amp; your plan</div>
   <h2 class="head">What to actually do</h2>
@@ -2212,50 +2737,9 @@ def render_blueprint(p: dict) -> str:
   <div class="pts">
     {remedy_pts}
   </div>
-</div><div class="pno">16</div></section>
+</div><div class="pno"></div></section>
 
-<!-- 17 KUNDLI -->
-<section class="page"><div class="col">
-  <div class="eyebrow">Your chart &middot; the proof</div>
-  <h2 class="head">Your kundli</h2>
-  <div class="rule"></div>
-  <div class="kundli">
-    {kundli_cells}
-    {kundli_center}
-  </div>
-  <div class="klegend">Your birth chart, South-Indian style &middot; Ascendant marked in gold. Every reading in this report is calculated from this chart &mdash; nothing is guessed, and any astrologer can verify it.</div>
-</div><div class="pno">17</div></section>
-
-<!-- 18 PLANETS -->
-<section class="page"><div class="col">
-  <div class="eyebrow">Your chart &middot; the proof</div>
-  <h2 class="head">Every planet, placed</h2>
-  <div class="rule"></div>
-  <div class="tscroll"><table class="k">
-    <tr><th>Planet</th><th>Sign</th><th>House</th><th>What it means</th></tr>
-    {planet_rows}
-  </table></div>
-</div><div class="pno">18</div></section>
-
-<!-- 19 METHODOLOGY -->
-<section class="page"><div class="col">
-  <div class="eyebrow">Your chart &middot; methodology</div>
-  <h2 class="head">Which house feeds which page</h2>
-  <div class="rule"></div>
-  <div class="lead">A handful of houses carry each area of this report. Here's the map, so nothing in it reads as a guess.</div>
-  <div class="pts">
-    <div class="pt"><svg class="ic pi"><use href="#i-compass"/></svg><div class="tx"><b>10th house &mdash; career</b>Work, status, and public role.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-coins"/></svg><div class="tx"><b>2nd &amp; 11th houses &mdash; money</b>Saved wealth, and the gains that come from effort.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>7th house &mdash; partnership</b>Marriage, and business partnership too.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-gem"/></svg><div class="tx"><b>5th house &mdash; children</b>Creativity and family formation.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-shield"/></svg><div class="tx"><b>4th house &mdash; home</b>Property, base, and domestic comfort.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-target"/></svg><div class="tx"><b>12th house &mdash; foreign lands</b>Distance, relocation, and what lies beyond home.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>6th house &mdash; health</b>Routine, resilience, and daily friction.</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-people"/></svg><div class="tx"><b>9th house &mdash; family</b>Father, elders, and inherited belief.</div></div>
-  </div>
-</div><div class="pno">19</div></section>
-
-<!-- 20 CLOSING -->
+<!-- CLOSING -->
 <section class="page sand"><div class="col">
   <div class="eyebrow">With gratitude</div>
   <h2 class="head">Thank you, {name}</h2>
@@ -2268,7 +2752,7 @@ def render_blueprint(p: dict) -> str:
     <div class="pt"><svg class="ic pi"><use href="#i-store"/></svg><div class="tx"><b>Vyapar &mdash; Business</b>When to build, and when to hold.</div></div>
   </div>
   <div class="cov-trust">www.axtroshastra.com &middot; Swiss Ephemeris &middot; Lahiri ayanamsa</div>
-</div><div class="pno">20</div></section>
+</div><div class="pno"></div></section>
 
 <style>
 #ax-stickybar{{position:fixed;left:0;right:0;bottom:0;z-index:9997;
@@ -2822,13 +3306,101 @@ html[lang="hi"] .eyebrow,html[lang="hi"] h2.head,html[lang="hi"] .cov-brand,html
 .dwcard{width:100%;text-align:left;background:var(--gold-callout);border-radius:12px;
   padding:12px 14px;margin-top:10px;display:flex;flex-direction:column;gap:10px}
 .dwrow{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.dwrow .pi{flex:0 0 auto;width:23px;height:23px;margin-top:2px}
 .dwrow .tx b{display:block;font-family:var(--sans);font-weight:700;font-size:11px;
   letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
 .dwrow.do .pi{color:var(--green)}.dwrow.do .tx b{color:var(--green)}
 .dwrow.watch .pi{color:var(--terra)}.dwrow.watch .tx b{color:var(--terra)}
 .reflect{width:100%;text-align:left;font-family:var(--serif);font-style:italic;
   font-size:14.5px;color:var(--body);line-height:1.5;margin-top:12px;
-  border-top:1px solid var(--line);padding-top:11px}'''
+  border-top:1px solid var(--line);padding-top:11px}
+/* Life Blueprint Part 1/Part 2 structure -- additive only, new class names,
+   reusing the existing --ink/--gold/--green/--terra/--muted/--line/--serif
+   tokens verbatim. Never redefines .pt/.scard/.callout/.verdict/.card
+   (render_vyapar and render_blueprint's existing pages share those). */
+.blockhead{width:min(430px,92vw);margin:0 auto 24px;min-height:min(830px,192vw);
+  padding:clamp(30px,6.5vw,40px) clamp(22px,5.5vw,30px);
+  display:flex;flex-direction:column;justify-content:flex-start;text-align:center;background:var(--cream);
+  border-radius:22px;box-shadow:0 14px 38px rgba(48,34,14,.18);position:relative}
+/* justify-content:flex-start (not center): once an area page's content
+   (reasoncard + favour/watch + per-area timeline + Do/Watch) exceeds one
+   physical print page, Chrome fragments the flex column across pages --
+   centering then applies per-fragment, so a short trailing fragment (e.g.
+   the Do/Watch block landing alone on its own page) gets vertically
+   centered within that page's remaining height, producing a large blank
+   gap above/below it. Top-aligning removes that failure mode entirely. */
+.blockhead .area-open,.blockhead .area-close,.blockhead .area-close2{width:100%;margin-top:18px}
+/* Standard print-CSS orphan guard: with top-aligned (not centered) content,
+   consecutive .blockhead cards flow continuously with no forced break
+   between them, so a natural page break can otherwise land between a
+   heading and its own content. Keep the eyebrow+title glued to what
+   follows them, on any .blockhead page. */
+.blockhead .eyebrow,.blockhead h2.head,.blockhead h3.sub,.blockhead .rule{break-after:avoid;page-break-after:avoid}
+.blockhead h2.head{break-inside:avoid;page-break-inside:avoid}
+.blockhead .reasoncard{break-before:avoid;page-break-before:avoid}
+.blockhead .note{break-inside:avoid;page-break-inside:avoid}
+.blockhead .area-open:first-child{margin-top:0}
+.blockhead.page-center{align-items:center;justify-content:center;min-height:min(500px,120vw)}
+.page-center-inner{width:100%}
+.bp-divider{width:min(430px,92vw);margin:0 auto 24px;padding:60px 30px;text-align:center;
+  background:linear-gradient(165deg,var(--sand),var(--sand2));border-radius:22px;
+  box-shadow:0 14px 38px rgba(48,34,14,.18);display:flex;flex-direction:column;align-items:center;gap:10px;
+  break-inside:avoid;page-break-inside:avoid}
+.bp-divider .dn{font-family:var(--serif);font-size:40px;color:var(--gold);opacity:.6}
+.bp-divider .dt{font-family:var(--serif);font-weight:600;font-size:26px;color:var(--ink)}
+.bp-divider .ds{font-size:14px;color:var(--muted);max-width:40ch}
+.bp-divider .dlist{margin-top:14px;columns:2;column-gap:18px;text-align:left;width:100%}
+.bp-divider .dlist div{font-size:12.5px;color:var(--body);padding:4px 0}
+.reasoncard{background:var(--gold-callout);border-radius:14px;padding:14px 16px;margin-top:14px;text-align:left}
+.reasoncard.warn{background:var(--terra-bg)}
+.reasoncard .rh{font-weight:700;font-size:12.5px;color:var(--gold);text-transform:uppercase;letter-spacing:.04em}
+.reasoncard p{font-size:13.5px;color:var(--body);margin-top:6px;line-height:1.55}
+.bp-sccols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;text-align:left}
+.bp-sccard{border-radius:13px;padding:12px 14px;break-inside:avoid;page-break-inside:avoid}
+.bp-sccard.str{background:var(--green-bg)} .bp-sccard.chg{background:var(--terra-bg)}
+.bp-sccard .sch{font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px}
+.bp-sccard.str .sch{color:var(--green)} .bp-sccard.chg .sch{color:var(--terra)}
+.bp-sccard .sch svg{width:14px;height:14px;flex:none}
+.bp-scitem{font-size:12.5px;color:var(--body);margin-top:8px;line-height:1.5}
+.bp-dosdonts{margin-top:14px;text-align:left}
+.bp-dosdonts .bp-ddcol+.bp-ddcol{margin-top:10px}
+.bp-ddcol{border-radius:13px;padding:11px 14px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--line);
+  break-inside:avoid;page-break-inside:avoid}
+.bp-ddcol h4{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.bp-ddcol h4 svg{width:14px;height:14px;flex:none}
+.bp-ddcol.do{border-left-color:var(--green)} .bp-ddcol.do h4{color:var(--green)}
+.bp-ddcol.dont{border-left-color:var(--terra)} .bp-ddcol.dont h4{color:var(--terra)}
+.bp-ddcol ul{list-style:none}
+.bp-ddcol li{font-size:12.5px;color:var(--body);line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.bp-ddcol li:first-child{border-top:none;padding-top:0}
+/* per-area Antardasha timeline card -- ported layout from the approved
+   scratchpad build (left-border card, pill tag), scaled to this report's
+   own type sizes; colors reuse the same tokens above. */
+.adrow{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;
+  padding:9px 12px;margin-top:8px;display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px;text-align:left;
+  break-inside:avoid;page-break-inside:avoid}
+.adrow:first-of-type{margin-top:14px}
+.adrow.good{border-left-color:var(--green)}
+.adrow.warn{border-left-color:var(--terra)}
+.adrow.mut{border-left-color:var(--faint)}
+.adrow .yrs{font-family:var(--serif);font-weight:600;font-size:13px;color:var(--ink);min-width:96px}
+.adrow .tag{font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:2px 8px;border-radius:99px;border:1.2px solid var(--gold);color:var(--gold);display:inline-block}
+.adrow .tag.good{border-color:var(--green);color:var(--green)}
+.adrow .tag.warn{border-color:var(--terra);color:var(--terra)}
+.adrow .tag.mut{border-color:var(--faint);color:var(--muted)}
+.adrow .note{font-size:12px;color:var(--muted);line-height:1.45;flex-basis:100%}
+.adrow .tlrange{font-size:10.5px;font-weight:400;color:var(--muted);margin-left:4px}
+.adrow.compact{padding:6px 12px;margin-top:6px}
+.adrow.compact .yrs{font-size:12px}
+.adrow.compact .note{font-size:11px}
+.adrow.beyond{border-left-color:var(--faint);background:var(--sand2);padding:8px 12px}
+.adrow.beyond .yrs{font-size:11.5px;color:var(--muted);min-width:auto;flex-basis:100%}
+.adrow.beyond .note{font-size:11px}
+.adrow.beyond .note b{color:var(--ink);font-family:var(--serif)}
+.bp-gitem{padding:9px 0;border-bottom:1px solid var(--line);text-align:left}
+.bp-gitem dt{font-family:var(--serif);font-weight:600;font-size:14px;color:var(--ink)}
+.bp-gitem dd{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.55}'''
 
 _VYAPAR_DEFS = r'''<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-scales" viewBox="0 0 24 24"><path d="M12 3v18M6 21h12M5 6h14M5 6l-2.5 6a2.7 2.7 0 0 0 5 0zM19 6l2.5 6a2.7 2.7 0 0 1-5 0z"/></symbol>

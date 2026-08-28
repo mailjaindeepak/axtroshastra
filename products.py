@@ -4,7 +4,7 @@ Deterministic classical tables only. Reuses chart computation from engine.py.
 """
 from datetime import datetime, timedelta
 from engine import (compute_chart, nak_of, vimshottari_tree, SIGNS, SIGNS_EN,
-                    NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS, _sade_sati)
+                    NAKSHATRAS, SIGN_LORD, DASHA_SEQ, DASHA_YRS, _sade_sati, aspects_house)
 from jyotish_maps import (NAK_PROFILE, SIGN_ELEMENT, ELEMENT_PAIR, ELEMENT_HI,
                           KOOTA_TEXT, WEALTH_2L, GAINS_11L, HEALTH_6, MD_LORD_HI,
                           HOME_4, CHILDREN_5, FOREIGN_12, FAMILY_9,
@@ -621,9 +621,64 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
     # feeds the Hindi report's Part 2 "how every tag was set" / house-table /
     # dasha-timeline pages without touching the English renderer, which never
     # reads these keys.
+    # ---- per-area Antardasha timeline: ported as-is from the approved,
+    # QA-verified scratchpad implementation (blueprint_a4.py::phase_read /
+    # ad_phases). Same real 40-year vimshottari_tree() already built above for
+    # `roadmap`; each antardasha from today onward is classified by whether
+    # its lord rules, occupies, or aspects (engine.py's own aspects_house())
+    # the area's house -- no new astrology rule, no hardcoded dates/statuses.
+    _BENEFIC = {"Jupiter", "Venus", "Mercury", "Moon"}
+    _MALEFIC = {"Sun", "Mars", "Saturn", "Rahu", "Ketu"}
+    _PLANET_ORDER = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
+
+    def _influences(house_num, exclude):
+        """Same real, already-approved technique as _phase_read (occupancy or
+        aspects_house()), applied statically to find which OTHER planets
+        connect to an area's house right now -- feeds Favour/Watching. No new
+        astrology: reuses the identical occupancy+aspect check."""
+        out = []
+        for pname in _PLANET_ORDER:
+            if pname == exclude:
+                continue
+            occ = g[pname].sign == (ref + house_num - 1) % 12
+            asp = aspects_house(ch, pname, ref, house_num)
+            if occ or asp:
+                out.append({"planet": pname, "kind": "benefic" if pname in _BENEFIC else "malefic",
+                           "how": "occupies" if occ else "aspects"})
+        return out
+
+    def _phase_read(dasha_lord, house_num, house_lord):
+        if dasha_lord == house_lord:
+            return "favorable"
+        occ = g[dasha_lord].sign == (ref + house_num - 1) % 12
+        asp = aspects_house(ch, dasha_lord, ref, house_num)
+        if occ or asp:
+            return "favorable" if dasha_lord in _BENEFIC else "watch"
+        return "steady"
+
+    def _ad_phases(house_num, house_lord):
+        out = []
+        for md in tree:
+            if md["end"] < today:
+                continue
+            for ad in md["ads"]:
+                if ad["end"] < today:
+                    continue
+                kind = _phase_read(ad["lord"], house_num, house_lord)
+                start = max(ad["start"], today)
+                out.append({"lord": ad["lord"], "from": start.strftime("%b %Y"),
+                           "to": ad["end"].strftime("%b %Y"), "kind": kind})
+        return out
+
     def _area_fact(house_num, lord):
-        return {"house": house_num, "lord": lord,
+        d = {"house": house_num, "lord": lord,
                 "lord_sign": SIGNS[g[lord].sign], "dignity": g[lord].dignity}
+        if house_num is not None:
+            d["ad_phases"] = _ad_phases(house_num, lord)
+            infl = _influences(house_num, lord)
+            d["strengths_infl"] = [x for x in infl if x["kind"] == "benefic"][:3]
+            d["challenges_infl"] = [x for x in infl if x["kind"] == "malefic"][:2]
+        return d
     area_detail = {
         "career": _area_fact(10, tenth_lord),
         "money": _area_fact(2, second_lord),
