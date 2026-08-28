@@ -53,21 +53,26 @@ def test_jeevan_legacy_redirect_preserves_query(client):
 
 
 def test_blueprint_report_renders_all_ten_areas(client):
+    """Part 1 (10 life areas) + Part 2 (methodology/proof), restructured to
+    match the finalized reference. See test_blueprint_report_has_reasoncards_
+    and_timelines for the per-area component/timeline assertions."""
     html = _paid_blueprint_report_html(client)
     assert "Blueprint Tester" in html
     assert "Life Blueprint" in html
-    for section in ("Career &amp; work direction", "Money &amp; financial pattern",
-                     "Marriage &amp; partnership", "Children &amp; family formation",
-                     "Home &amp; property", "Foreign travel &amp; relocation",
-                     "Health &amp; energy", "Personal growth &amp; identity",
-                     "Family relationships", "Current period"):
+    for section in ("Where your chart points you", "How money moves for you",
+                     "What you need in a partner", "Building a family, your way",
+                     "Where and how you put down roots", "Whether distance suits you",
+                     "How your body tends to run", "What comes naturally, and what doesn't",
+                     "Parents, siblings, and old ties", "Is now the moment?",
+                     "Your kundli", "Every planet, placed", "Dashas, explained",
+                     "How every tag was set", "A short glossary"):
         assert section in html, section
     # the cross-sell hooks that keep Blueprint a funnel hub, not a dead end
     assert "Job Change report" in html
     assert "Milan report" in html
     # honesty guardrails must survive into the rendered page
     assert "never a claim about fertility" in html
-    assert "not a medical diagnosis" in html
+    assert "not medical advice" in html
 
 
 def test_blueprint_report_has_wheel_and_tag_cards(client):
@@ -75,15 +80,22 @@ def test_blueprint_report_has_wheel_and_tag_cards(client):
     # radial wheel chart (replaces the old two flat "Life Wheel" grid pages)
     assert 'class="wheelchart"' in html
     assert html.count("wheelchart") >= 1
-    # bordered tag-cards + Favour/Watching pair + reflection line on each
-    # of the 8 re-skinned area pages (career..family; growth is untouched)
-    assert html.count('class="tcard') == 8
-    assert html.count('class="dwcard"') == 8
-    assert html.count('class="reflect"') == 8
-    assert "FAVOUR" in html.upper()
-    assert "WATCHING" in html.upper()
-    # the single shared global roadmap page must be untouched by this pass
-    assert "Current period" in html
+    # "why it reads this way" reasoning card: 8 areas (growth is a persona
+    # line, not a house-lord reasoning) + timing + dashas-explained + worked
+    # example = 11
+    assert html.count('class="reasoncard') == 11
+    # favour/watching two-column cards, one pair per of the 9 named areas
+    assert html.count('class="bp-sccols"') >= 9
+    # reflection line on all 9 named areas (career..family, incl. growth)
+    assert html.count('class="reflect"') == 9
+    assert "WORKING IN YOUR FAVOUR" in html.upper()
+    assert "WORTH WATCHING" in html.upper()
+    # per-area Antardasha timeline rows (the ported phase_read()-based
+    # system) -- 9 areas x up to 4 rows, plus the Timing/global roadmap
+    # reusing the same .adrow component
+    assert html.count('class="adrow') >= 9 * 4
+    # the day-of-week-free per-area status vocabulary from the ported bank
+    assert any(w in html for w in ("Favorable", "Steady", "Watch"))
 
 
 def test_blueprint_wheel_has_all_ten_tags(client):
@@ -94,6 +106,44 @@ def test_blueprint_wheel_has_all_ten_tags(client):
     assert set(wheel) == {"career", "money", "marriage", "children", "home",
                           "foreign", "health", "growth", "family", "timing"}
     assert all(v in ("thriving", "building", "watch") for v in wheel.values())
+
+
+def test_blueprint_per_area_timeline_uses_real_ported_classification(client):
+    """The per-area Antardasha timeline (report_view._bp_timeline_rows) must
+    be built from products.compute_blueprint()'s real, ported phase_read()/
+    ad_phases() data -- current AD always standalone, real dates, and
+    genuinely different statuses across areas for the same real chart (not
+    a single shared global roadmap repeated on every page)."""
+    import products
+    p = products.compute_blueprint("Timeline Tester", "1998-12-05", "02:47", 5.5,
+                                    22.7196, 75.8577)
+    career = p["area_detail"]["career"]
+    money = p["area_detail"]["money"]
+    assert career["ad_phases"] and money["ad_phases"]
+    # row 0 is always the live, today-onward Antardasha -- real lord, real dates
+    assert career["ad_phases"][0]["lord"]
+    assert career["ad_phases"][0]["from"] and career["ad_phases"][0]["to"]
+    assert all(ph["kind"] in ("favorable", "watch", "steady") for ph in career["ad_phases"])
+    # "growth" and "timing" don't get a per-area house-based timeline
+    assert "ad_phases" not in p["area_detail"]["timing"]
+
+    html = _paid_blueprint_report_html(client, name="Timeline Tester", dob="1998-12-05",
+                                       tob="02:47", place="Indore")
+    # the ROW_CAP=4 visual budget from the ported implementation
+    from report_view import BP_ROW_CAP
+    assert BP_ROW_CAP == 4
+    assert html.count('class="adrow') >= 9 * 4
+
+
+def test_blueprint_has_full_part2_structure(client):
+    """The restructured report must carry every Part 2 section the old
+    ~20-page design never had -- a direct check that this isn't the old
+    shallow structure with a few pages renamed."""
+    body = _paid_blueprint_report_html(client)
+    for marker in ("Placements worth a look", "House rulers &amp; links",
+                   "Your Dasha timeline", "Every reading, in one table",
+                   "What this report is", "A short glossary"):
+        assert marker in body, marker
 
 
 def test_blueprint_varies_by_birth_data(client):
