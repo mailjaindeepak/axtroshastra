@@ -110,14 +110,14 @@ CONFIG = {
     # per-day breakdown: {day, PageView, Lead, InitiateCheckout, Purchase}.
     "facebook_pixel": {
         "connected": False,
-        "pixel_id": "2417544725436982",   # the real site pixel
+        "pixel_id": "1454249773521031",   # the real site pixel
         "events": {"PageView": None, "ViewContent": None, "Lead": None,
                    "InitiateCheckout": None, "Purchase": None},  # last-7-day totals
         "series_7d": [],   # {day, PageView, Lead, InitiateCheckout, Purchase} — empty until wired (no fake bars)
         "note": "Facebook Pixel isn't connected yet — wire the Meta "
                 "Conversions/Marketing API to see event counts and the events "
                 "funnel.",
-        "events_manager_url": "https://business.facebook.com/events_manager2/list/pixel/2417544725436982",
+        "events_manager_url": "https://business.facebook.com/events_manager2/list/pixel/1454249773521031",
     },
 
     # ---- LLM: Claude credit + generation stats ------------------------------

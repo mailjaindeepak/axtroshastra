@@ -64,7 +64,7 @@ def test_admin_reconcile_requires_key(client):
 # --- Analytics coverage: the report page, /login and static marketing pages all
 # carry GA + Meta Pixel + Clarity, and pages that embed the block by hand are not
 # double-injected. Guards the gap where server-rendered pages had zero tracking.
-_TRACKERS = ("G-NKRQM1HJ97", "2417544725436982", "clarity.ms/tag")
+_TRACKERS = ("G-NKRQM1HJ97", "1454249773521031", "clarity.ms/tag")
 
 
 def test_report_page_has_all_trackers(client):
