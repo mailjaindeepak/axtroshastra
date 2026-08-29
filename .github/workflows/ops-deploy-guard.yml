@@ -67,8 +67,10 @@ jobs:
           echo "label=$LG" >> "$GITHUB_OUTPUT"
 
       # 2) Deploy the new version.
+      #    Same fallback defaults as ci.yml — the OPS_EB_ENV / AWS_REGION
+      #    secrets are optional.
       - name: Deploy
-        run: eb deploy "$OPS_EB_ENV"
+        run: eb deploy "${OPS_EB_ENV:-AxtroShastraProd}"
 
       # 3) Wait for the environment to go Green (up to ~10 min).
       - name: Wait for Green
@@ -76,8 +78,10 @@ jobs:
         continue-on-error: true
         run: |
           for i in $(seq 1 40); do
-            H=$(aws elasticbeanstalk describe-environments --environment-names "$OPS_EB_ENV" \
-                  --region "$AWS_REGION" --query 'Environments[0].Health' --output text)
+            H=$(aws elasticbeanstalk describe-environments \
+                  --environment-names "${OPS_EB_ENV:-AxtroShastraProd}" \
+                  --region "${AWS_REGION:-ap-south-1}" \
+                  --query 'Environments[0].Health' --output text)
             echo "attempt $i: health=$H"
             [ "$H" = "Green" ] && exit 0
             sleep 15
