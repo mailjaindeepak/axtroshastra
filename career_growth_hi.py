@@ -89,7 +89,7 @@ FIELD_FAMILIES_HI = {
     "Education & Training": "शिक्षा और ट्रेनिंग",
     "Content & Media": "कंटेंट और मीडिया",
     "Design": "डिज़ाइन",
-    "Healthcare Administration": "हेल्थकेयर एडमिनिस्ट्रेशन",
+    "Public Administration": "पब्लिक एडमिनिस्ट्रेशन",
     "HR & People": "HR और पीपल",
     "Legal & Compliance": "लीगल और कंप्लायंस",
     "Startups & New Ventures": "स्टार्टअप्स और नए वेंचर",

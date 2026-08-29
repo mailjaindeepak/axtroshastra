@@ -359,7 +359,9 @@ _WEAK_HI = {
     "Keep your profile current and doors open, without forcing outcomes.":
         "अपनी प्रोफ़ाइल अद्यतन और दरवाज़े खुले रखें, नतीजों को ज़बरदस्ती किए बिना।",
     "Invest in yourself: health, work, and the conversations with family that make later 'yes' easier.":
-        "ख़ुद में निवेश करें: सेहत, काम, और परिवार से वे बातचीत जो आगे 'हाँ' को आसान बनाती हैं।",
+        "ख़ुद में निवेश करें: ऊर्जा, काम, और परिवार से वे बातचीत जो आगे 'हाँ' को आसान बनाती हैं।",
+    "Invest in yourself: energy, work, and the conversations with family that make later 'yes' easier.":
+        "ख़ुद में निवेश करें: ऊर्जा, काम, और परिवार से वे बातचीत जो आगे 'हाँ' को आसान बनाती हैं।",
     "Don't read a slow phase as a closed door — it is a low-activation window, not a verdict.":
         "धीमे दौर को बंद दरवाज़ा न समझें — यह कम-सक्रियता की विंडो है, कोई फ़ैसला नहीं।",
     "Don't force a decision that doesn't feel right just because time is passing.":

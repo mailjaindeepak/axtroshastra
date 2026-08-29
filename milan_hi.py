@@ -43,7 +43,7 @@ HI = {
     "How you match, in 5 areas": "आप कैसे मैच करते हैं, 5 क्षेत्रों में",
     "Strongest first": "सबसे मज़बूत पहले",
     "Mind & Values": "सोच और मूल्य",
-    "Health & Vitality": "सेहत और जीवनशक्ति",
+    "Vitality & Lineage": "ऊर्जा और जीवनशक्ति",
     "Everyday Vibe": "रोज़मर्रा का तालमेल",
     "Chemistry & Attraction": "कैमिस्ट्री और आकर्षण",
     "Love & Long-Term": "प्यार और लंबा साथ",
@@ -129,7 +129,7 @@ HI = {
     "A cultural add-on — never a substitute for the actions":
         "एक सांस्कृतिक जोड़ — काम की बातों का विकल्प कभी नहीं",
     "Mutual Pull": "आपसी खिंचाव",
-    "Luck & Wellbeing": "सौभाग्य और कुशलता",
+    "Luck & Ease": "सौभाग्य और सहजता",
     "Physical Chemistry": "शारीरिक कैमिस्ट्री",
 
     # ---- proof (section 21) ----
@@ -180,12 +180,14 @@ HI = {
     # koota names + meanings (appendix rows)
     "· work-ego compatibility": "· काम और अहं का तालमेल",
     "· mutual influence and pull": "· आपसी प्रभाव और खिंचाव",
-    "· health and wellbeing of the bond": "· रिश्ते की सेहत और कुशलता",
+    "· health and wellbeing of the bond": "· रिश्ते की रोज़मर्रा की मज़बूती",
+    "· the day-to-day strength of the bond": "· रिश्ते की रोज़मर्रा की मज़बूती",
     "· physical and instinctive harmony": "· शारीरिक और सहज तालमेल",
     "· mental wavelength and friendship": "· मानसिक तरंग और दोस्ती",
     "· temperament match": "· स्वभाव का मेल",
     "· emotional bond, family growth": "· भावनात्मक बंधन, परिवार की वृद्धि",
-    "· health of progeny, vitality": "· संतान की सेहत, जीवनशक्ति",
+    "· health of progeny, vitality": "· वंश और जीवनशक्ति",
+    "· lineage and vitality": "· वंश और जीवनशक्ति",
     "Appendix · The dosha checks": "परिशिष्ट · दोष जाँचें",
     "The three big ones, shown": "तीन बड़ी जाँचें, दिखाई गईं",
     "The dosha checks, calculated": "दोष जाँचें, कैलकुलेटेड",
@@ -225,7 +227,7 @@ HI = {
 
     # ---- toolkit action headers ----
     "🧲 For mutual pull": "🧲 आपसी खिंचाव के लिए",
-    "🍀 For luck & wellbeing": "🍀 सौभाग्य और कुशलता के लिए",
+    "🍀 For luck & ease": "🍀 सौभाग्य और सहजता के लिए",
     "🔥 For physical chemistry": "🔥 शारीरिक कैमिस्ट्री के लिए",
     "❤️ For emotional bond": "❤️ भावनात्मक बंधन के लिए",
 
@@ -480,13 +482,13 @@ def _template(key):
 
 _TOOLKIT_FOR = {
     "mutual pull": "आपसी खिंचाव के लिए",
-    "luck & wellbeing": "सौभाग्य और कुशलता के लिए",
+    "luck & ease": "सौभाग्य और सहजता के लिए",
     "physical chemistry": "शारीरिक कैमिस्ट्री के लिए",
     "emotional bond": "भावनात्मक बंधन के लिए",
     "drive & ego balance": "जोश और अहं के संतुलन के लिए",
     "vibe & temperament": "अंदाज़ और स्वभाव के लिए",
     "mental wavelength": "मानसिक तरंग के लिए",
-    "health & family": "सेहत और परिवार के लिए",
+    "lineage & vitality": "वंश और जीवनशक्ति के लिए",
 }
 
 

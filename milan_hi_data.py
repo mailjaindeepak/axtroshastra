@@ -25,8 +25,8 @@ HI_DATA = {
         "आपकी रोज़मर्रा की ऊर्जा, सामाजिक अंदाज़ और मूड का असर",
     "long-term closeness and building a life and family together":
         "लंबा साथ और मिलकर एक जीवन व परिवार बनाना",
-    "vitality and the classical health / progeny factor":
-        "जीवनशक्ति और शास्त्रीय सेहत / संतान का पहलू",
+    "vitality and the classical lineage factor":
+        "जीवनशक्ति और शास्त्रीय वंश-परंपरा का पहलू",
     "long-term closeness and how good you are for each other.":
         "लंबा साथ और आप एक-दूसरे के लिए कितने अच्छे हैं।",
 
@@ -39,14 +39,14 @@ HI_DATA = {
         "सहज, शारीरिक अनुकूलता — खिंचाव, नज़दीकी, और आपके शरीर रोज़ किस लय में जगह साझा करते हैं।",
     "Long-term closeness, family life, and shared prosperity — the layer that turns a relationship into a home.":
         "लंबा साथ, पारिवारिक जीवन, और साझा समृद्धि — वह परत जो रिश्ते को घर बना देती है।",
-    "The deepest, most durable layer of compatibility — long-term vitality, health, and (whenever, and if, you want it) family. It's the factor classical astrologers weigh the most.":
-        "अनुकूलता की सबसे गहरी, सबसे टिकाऊ परत — दीर्घकालिक जीवनशक्ति, सेहत, और (जब और अगर आप चाहें) परिवार। यही वह पहलू है जिसे शास्त्रीय ज्योतिषी सबसे ज़्यादा तवज्जो देते हैं।",
+    "The deepest, most durable layer of compatibility — long-term vitality, lineage, and (whenever, and if, you want it) family. It's the factor classical astrologers weigh the most.":
+        "अनुकूलता की सबसे गहरी, सबसे टिकाऊ परत — दीर्घकालिक जीवनशक्ति, वंश-परंपरा, और (जब और अगर आप चाहें) परिवार। यही वह पहलू है जिसे शास्त्रीय ज्योतिषी सबसे ज़्यादा तवज्जो देते हैं।",
 
     # ---- THEME_DEEP (per-theme deep paragraphs) ----
     "The spark is real and it's mutual — you're drawn to each other in a way that doesn't need forcing. That easy physical comfort is something a lot of couples spend years trying to build. Keep novelty alive and it stays a strength, not a given.":
         "चिंगारी असली है और दोतरफ़ा — आप एक-दूसरे की ओर यूँ खिंचते हैं जिसमें ज़ोर नहीं लगाना पड़ता। वो सहज शारीरिक सुकून, जिसे बहुत से जोड़े सालों में बना पाते हैं। नएपन को ज़िंदा रखें, तो यह ताक़त बनी रहती है, दी हुई चीज़ नहीं।",
-    "On the heaviest traditional factor, you're clear — read as vitality and a healthy foundation for a life (and a family) together. It's the factor astrologers weigh the most, and it's working in your favour.":
-        "सबसे भारी पारंपरिक पहलू पर आप साफ़ हैं — इसे जीवनशक्ति और साथ के जीवन (और परिवार) की स्वस्थ नींव के रूप में पढ़ा जाता है। यही वह पहलू है जिसे ज्योतिषी सबसे ज़्यादा तवज्जो देते हैं, और यह आपके पक्ष में है।",
+    "On the heaviest traditional factor, you're clear — read as vitality and a strong foundation for a life (and a family) together. It's the factor astrologers weigh the most, and it's working in your favour.":
+        "सबसे भारी पारंपरिक पहलू पर आप साफ़ हैं — इसे जीवनशक्ति और साथ के जीवन (और परिवार) की मज़बूत नींव के रूप में पढ़ा जाता है। यही वह पहलू है जिसे ज्योतिषी सबसे ज़्यादा तवज्जो देते हैं, और यह आपके पक्ष में है।",
     "Your day-to-day energies just fit — similar social batteries, similar humour, a similar way of handling good days and bad ones. This is the quiet superpower that makes living together feel light instead of like work.":
         "आपकी रोज़मर्रा की ऊर्जाएँ बस मिल जाती हैं — मिलती-जुलती सामाजिक ऊर्जा, मिलता-जुलता हास्य, अच्छे और बुरे दिनों को संभालने का मिलता-जुलता तरीक़ा। यही वह ख़ामोश सुपरपावर है जो साथ रहना मेहनत नहीं, हल्का बना देती है।",
     "You think in the same language. Even your disagreements will make sense to each other, because your values and mental wiring line up. This is the stuff long conversations — and long marriages — are made of.":
@@ -126,7 +126,7 @@ HI_DATA = {
     "Drive & Ego Balance": "जोश और अहं का संतुलन",
     "Vibe & Temperament": "अंदाज़ और स्वभाव",
     "Emotional Bond": "भावनात्मक बंधन",
-    "Health & Family": "सेहत और परिवार",
+    "Lineage & Vitality": "वंश और जीवनशक्ति",
 
     # ---- nakshatra love-lines (NAK_PROFILE) ----
     "In love you move quickly and openly; you need a partner who can keep pace, not one who tests patience":
@@ -222,11 +222,15 @@ HI_DATA = {
     "Mutual pull kam hai — matlab rishta convince karne se nahi, respect karne se chalega. Space dena yahan pyaar dikhaane ka tareeka hai.":
         "आपसी खिंचाव कम है — यानी रिश्ता मनाने से नहीं, सम्मान से चलेगा। जगह देना यहाँ प्यार जताने का तरीक़ा है।",
     "Nakshatra-count dono taraf shubh hai — saath rehne se dono ki wellbeing badhti hai, classical texts ise strong protection maanti hain.":
-        "नक्षत्र-गणना दोनों तरफ़ शुभ है — साथ रहने से दोनों की कुशलता बढ़ती है, शास्त्र इसे मज़बूत रक्षा मानते हैं।",
+        "नक्षत्र-गणना दोनों तरफ़ शुभ है — साथ रहने से दोनों का सुकून और सौभाग्य बढ़ता है, शास्त्र इसे मज़बूत रक्षा मानते हैं।",
+    "Nakshatra-count dono taraf shubh hai — saath rehne se dono ka sukoon aur luck badhta hai, classical texts ise strong protection maanti hain.":
+        "नक्षत्र-गणना दोनों तरफ़ शुभ है — साथ रहने से दोनों का सुकून और सौभाग्य बढ़ता है, शास्त्र इसे मज़बूत रक्षा मानते हैं।",
     "Ek direction shubh, ek nahi — ek partner ko rishtey se zyada milta hai. Balance ke liye giving conscious rakhni hogi.":
         "एक दिशा शुभ, एक नहीं — एक साथी को रिश्ते से ज़्यादा मिलता है। संतुलन के लिए देना सोच-समझकर रखना होगा।",
     "Tara count inauspicious hai — traditionally health/wellbeing par dhyaan. Practical matlab: ek dusre ki sehat aur stress ka khayal is jodi ka zaroori ritual hona chahiye.":
-        "तारा-गणना अशुभ है — परंपरा में सेहत/कुशलता पर ध्यान। व्यावहारिक अर्थ: एक-दूसरे की सेहत और तनाव का ख़याल इस जोड़ी की ज़रूरी आदत होनी चाहिए।",
+        "तारा-गणना अशुभ है — परंपरा में एक-दूसरे का ध्यान रखने पर ज़ोर। व्यावहारिक अर्थ: एक-दूसरे की ऊर्जा और तनाव का ख़याल इस जोड़ी की ज़रूरी आदत होनी चाहिए।",
+    "Tara count inauspicious hai — traditionally ek dusre ka khayal rakhne par zor. Practical matlab: ek dusre ki energy aur stress ka khayal is jodi ka zaroori ritual hona chahiye.":
+        "तारा-गणना अशुभ है — परंपरा में एक-दूसरे का ध्यान रखने पर ज़ोर। व्यावहारिक अर्थ: एक-दूसरे की ऊर्जा और तनाव का ख़याल इस जोड़ी की ज़रूरी आदत होनी चाहिए।",
     "Instinctive aur physical wavelength naturally milti hai — bina koshish ke comfort, jo har jodi ko naseeb nahi hota.":
         "सहज और शारीरिक तरंग स्वाभाविक रूप से मिलती है — बिना कोशिश का सुकून, जो हर जोड़ी को नसीब नहीं होता।",
     "Physical-instinctive match neutral hai — chemistry banayi ja sakti hai, bas dono ki pace alag ho sakti hai; patience rakho.":
@@ -297,21 +301,21 @@ HI_DATA = {
         "असहमति में, जवाब देने से पहले साथी की बात उन्हीं के शब्दों में दोहराएँ — जब तक वे न कहें ‘हाँ, बिल्कुल यही।’",
     "Your energies genuinely differ (say, one loves a crowd, one loves quiet). Don't try to fix it — design around it.":
         "आपकी ऊर्जाएँ सचमुच अलग हैं (जैसे एक को भीड़ पसंद, एक को शांति)। इसे ठीक करने की कोशिश न करें — इसके इर्द-गिर्द तालमेल बनाएँ।",
-    "Make each other's wellbeing a shared project — sleep, food, stress — instead of assuming the other is fine.":
-        "एक-दूसरे की कुशलता को साझा प्रोजेक्ट बनाएँ — नींद, खाना, तनाव — यह मानकर चलने के बजाय कि दूसरा ठीक है।",
+    "Make looking after each other a shared project — sleep, food, stress — instead of assuming the other is fine.":
+        "एक-दूसरे का ख़याल रखना साझा प्रोजेक्ट बनाएँ — नींद, खाना, तनाव — यह मानकर चलने के बजाय कि दूसरा ठीक है।",
     "Name one rhythm — sleep, space or affection — you'd like the other to understand, and ask for theirs.":
         "एक लय बताएँ — नींद, जगह या स्नेह — जिसे आप चाहते हैं दूसरा समझे, और उनकी भी पूछें।",
-    "Book your own basics — a check-up, better sleep, less chronic stress; treat wellbeing as a team sport.":
-        "अपनी बुनियादी बातें तय करें — जाँच, बेहतर नींद, कम लगातार तनाव; कुशलता को टीम-खेल की तरह लें।",
-    "Book the unglamorous stuff — check-ups, good sleep, less chronic stress — as a team.":
-        "साधारण-सी ज़रूरी बातें — जाँच, अच्छी नींद, कम लगातार तनाव — टीम बनकर तय करें।",
-    "Traditionally the heaviest factor, tied to health and children — so the real 'remedy' is proactive care, together.":
-        "परंपरा में सबसे भारी पहलू, सेहत और संतान से जुड़ा — तो असली ‘उपाय’ है साथ मिलकर सक्रिय देखभाल।",
+    "Own your own basics — steady sleep, unhurried mornings, less rushing; treat looking after each other as a team effort.":
+        "अपनी बुनियादी बातें संभालें — नियमित नींद, इत्मीनान भरी सुबहें, कम भागदौड़; एक-दूसरे का ख़याल रखने को टीम-काम की तरह लें।",
+    "Commit to the unglamorous stuff — good sleep, steady routines, unhurried evenings — as a team.":
+        "साधारण-सी ज़रूरी बातें — अच्छी नींद, नियमित दिनचर्या, इत्मीनान भरी शामें — टीम बनकर निभाएँ।",
+    "Traditionally the heaviest factor, tied to lineage and children — so the real 'remedy' is patient, proactive care of each other, together.":
+        "परंपरा में सबसे भारी पहलू, वंश और संतान से जुड़ा — तो असली ‘उपाय’ है साथ मिलकर धैर्य से एक-दूसरे की देखभाल।",
     # remedy rituals
     "A Moon remedy: on Mondays wear white, chant 'Om Somaya Namah', and offer milk or white flowers at a Shiva temple together.":
         "एक चंद्र उपाय: सोमवार को सफ़ेद पहनें, ‘ॐ सोमाय नमः’ जपें, और साथ मिलकर शिव मंदिर में दूध या सफ़ेद फूल अर्पित करें।",
-    "A classical Nadi practice is the Maha Mrityunjaya mantra and donating toward medicines/health; the modern equivalent is a simple pre-marriage health check for both.":
-        "एक शास्त्रीय नाड़ी अभ्यास है महामृत्युंजय मंत्र और दवा/सेहत के लिए दान; आधुनिक समकक्ष है दोनों की एक सरल विवाह-पूर्व स्वास्थ्य जाँच।",
+    "A classical Nadi practice is the Maha Mrityunjaya mantra and quiet acts of giving; the modern equivalent is a shared promise of patience, rest and steady routines for both.":
+        "एक शास्त्रीय नाड़ी अभ्यास है महामृत्युंजय मंत्र और चुपचाप दान-पुण्य; आधुनिक समकक्ष है दोनों के लिए धैर्य, आराम और नियमित दिनचर्या का साझा संकल्प।",
     "A shared calming ritual helps — light a small oil lamp at dusk and chant 'Om Namah Shivaya' together; traditionally it settles temperament clashes.":
         "एक साझा शांत करने वाली रीति मदद करती है — शाम को एक छोटा दीपक जलाएँ और साथ ‘ॐ नमः शिवाय’ जपें; परंपरा में यह स्वभाव के टकराव को शांत करती है।",
     "For mental harmony: green on Wednesdays with 'Om Budhaya Namah' (Mercury), and an unhurried moonlit walk together on Mondays (Moon).":
@@ -342,18 +346,18 @@ HI_DATA = {
         "अलग-अलग मूड को दिल पर लेना बंद हो जाता है।",
     "Different paces stop feeling like rejection.":
         "अलग-अलग रफ़्तारें अस्वीकार जैसी महसूस होना बंद हो जाती हैं।",
-    "You treat wellbeing as a shared project, not a solo one.":
-        "आप कुशलता को साझा प्रोजेक्ट मानते हैं, अकेले का नहीं।",
+    "You treat looking after each other as a shared project, not a solo one.":
+        "आप एक-दूसरे का ख़याल रखने को साझा प्रोजेक्ट मानते हैं, अकेले का नहीं।",
     "You argue in the same language, not past each other.":
         "आप एक ही भाषा में बहस करते हैं, एक-दूसरे से कटकर नहीं।",
     "You both feel better after time together, not more tired.":
         "साथ बिताए समय के बाद आप दोनों बेहतर महसूस करते हैं, ज़्यादा थके नहीं।",
-    "Book your own basics — a check-up, better sleep, less chronic stress; treat wellbeing as a team sport. ":
-        "अपनी बुनियादी बातें तय करें — जाँच, बेहतर नींद, कम लगातार तनाव; कुशलता को टीम-खेल की तरह लें।",
-    "Do one small health thing together — a walk, cooking a real meal, an early night.":
-        "एक छोटा सेहत-काम साथ करें — टहलना, असली खाना पकाना, जल्दी सोना।",
-    "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for mutual wellbeing.":
-        "गुरुवार को एक सरल घर का बना खाना साझा करें और साथ थोड़ा भोजन या अनाज दान करें — आपसी कुशलता के लिए एक पारंपरिक भाव।",
+    "Own your own basics — steady sleep, unhurried mornings, less rushing; treat looking after each other as a team effort. ":
+        "अपनी बुनियादी बातें संभालें — नियमित नींद, इत्मीनान भरी सुबहें, कम भागदौड़; एक-दूसरे का ख़याल रखने को टीम-काम की तरह लें।",
+    "Do one small restorative thing together — a walk, cooking a real meal, an early night.":
+        "एक छोटा सुकून देने वाला काम साथ करें — टहलना, असली खाना पकाना, जल्दी सोना।",
+    "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for shared good fortune.":
+        "गुरुवार को एक सरल घर का बना खाना साझा करें और साथ थोड़ा भोजन या अनाज दान करें — साझा सौभाग्य के लिए एक पारंपरिक भाव।",
     "Compare your daily rhythms — sleep, energy, affection — and pick one to sync.":
         "अपनी रोज़मर्रा की लय की तुलना करें — नींद, ऊर्जा, स्नेह — और एक को मिलाने के लिए चुनें।",
     "Lock one proper date into the calendar for the next two weeks — non-negotiable.":
@@ -386,8 +390,8 @@ HI_DATA = {
         "“ऐसी कोई बात जो आप ढो रहे हैं और मैंने ध्यान नहीं दी?”",
     "“Let me say that back — did I get it right?”":
         "“मैं इसे दोहरा दूँ — क्या मैंने सही समझा?”",
-    "“How do we want to look after each other's health?”":
-        "“हम एक-दूसरे की सेहत का ख़याल कैसे रखना चाहते हैं?”",
+    "“How do we want to look after each other, day to day?”":
+        "“हम रोज़मर्रा में एक-दूसरे का ख़याल कैसे रखना चाहते हैं?”",
     "“What makes you feel closest to me?”":
         "“किस चीज़ से आप मेरे सबसे क़रीब महसूस करते हैं?”",
     "“What's been draining you lately, and how can I help?”":

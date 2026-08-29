@@ -172,9 +172,6 @@ section{padding:52px 0}
 .proof{text-align:center}
 .proof .count{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,46px);color:var(--sindoor)}
 .proof .cap{color:var(--muted);font-size:14px;margin-top:4px}
-.review{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:20px;text-align:left;font-size:14.5px}
-.review .stars{color:var(--haldi);letter-spacing:2px;font-size:15px;margin-bottom:6px}
-.review .who{color:var(--muted);font-size:13px;margin-top:8px}
 
 /* ---------- FAQ ---------- */
 .faq details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
@@ -230,17 +227,8 @@ footer b{color:#B9BBD0}
 .stats-row{display:flex;gap:10px;margin-bottom:22px}
 .stat-tile{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
 .stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
-.stat-tile .n .star{color:var(--haldi)}
 .stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
 
-/* ---------- TESTIMONIAL CAROUSEL ---------- */
-.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
-.revs::-webkit-scrollbar{display:none}
-.rev{flex:0 0 84%;max-width:330px;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
-.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
-.rev p{font-size:14.5px;color:var(--ink);line-height:1.5}
-.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
-.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -304,7 +292,7 @@ fbq('track', 'PageView');
     </div>
 
     <h1>How compatible are you two, <em>really</em>?</h1>
-    <p class="sub">Stop overthinking.<br>Get the truth.</p>
+    <p class="sub">See how you two actually fit —<br>honestly scored.</p>
 
     <form class="form-card" id="milanForm" autocomplete="on">
       <p class="fc-title">Enter both your birth details 👇</p>
@@ -373,7 +361,7 @@ fbq('track', 'PageView');
     <div class="sxcap"><div class="eb">The <span id="tv-pct2">—</span>% is just the surface</div><div class="h">Your full report keeps going</div>
       <div class="s">Every card above is worked out for the two of you — unlock to read them all.</div></div>
     <div class="locked"><svg class="dec d-rock" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="v7r"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#v7r)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/><circle cx="50" cy="30" r="2.5" opacity=".7"/></g></g></svg>
-      <div class="eb">Your relationship, in one breath</div>
+      <div class="eb">Your relationship, in one line</div>
       <div class="lb-wrap"><div class="lb-text" id="tv-breath"></div>
         <div class="lock"><div class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div></div></div>
       <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span></button>
@@ -391,102 +379,8 @@ fbq('track', 'PageView');
     </div>
     <div class="stats-row">
       <div class="stat-tile"><div class="n" id="reportCount">25,000+</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
       <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
-    <div class="revs" id="revsTrack">
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Did this with my boyfriend just for fun and it was scary accurate. It literally called out the one thing we keep fighting about. Worth ₹499."</p>
-        <div class="who">Ananya, 24</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Been together 2 years and kept overthinking whether we're actually compatible or just used to each other. This gave me a real answer with actual logic behind it."</p>
-        <div class="who">Rohan, 26</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Date night pe humne saath me kiya. Vague yes/no ke bajaye report ne asli cheezein di jispe couple ki tarah kaam karna hai. Green flag fr 💚"</p>
-        <div class="who">Sneha &amp; Karan</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"We fight over the smallest things and the report said our friction is communication timing, so now we actually get it. Paisa vasool 💀"</p>
-        <div class="who">Ishita, 23</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"36 me se 28 guna aaye, but asli gold tha wo part jo samjhata hai hum kyun clash karte hain. Bae ko dikhaya aur usne ek baar toh maan liya 🫠"</p>
-        <div class="who">Aditya, 27</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"We did this before going long distance and it showed us exactly where we need patience. Sach me it knew us better than we knew ourselves, all for ₹499 💯"</p>
-        <div class="who">Meera &amp; Dev</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"We had heard so many mixed opinions about the manglik thing, but the report broke it down properly with the actual rules. Everything adds up now."</p>
-        <div class="who">Priya, 25</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Mujhe aur gf ko doubt tha ki hum compatible hain ya bas comfortable. Report ne asli answer diya, thoda surprise bhi tha, but worth it ✨"</p>
-        <div class="who">Arjun, 28</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Situationship se clarity chahiye thi. Nadi wale part ne aankhein khol di ngl, atleast ab pata hai kya kaam karna hai 🫠"</p>
-        <div class="who">Tanvi, 22</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"We're planning to move in together next year so we did this first. The friction points section is so accurate it hurt, in a good way."</p>
-        <div class="who">Nikhil &amp; Riya</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Honestly thought ye sab fake hoga but nope, it called out my temper and her overthinking exactly. We laughed then went quiet 💀"</p>
-        <div class="who">Kabir, 26</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Instead of arguing I just showed the report to my mom. The guna score actually helped her chill about us. Best ₹499 spent this year ❤️"</p>
-        <div class="who">Shreya, 24</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"My boyfriend and I stopped fighting after reading the action plan. It told us exactly which topic to avoid at midnight."</p>
-        <div class="who">Aisha, 23</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Nadi dosh ka darr bohot tha, but report ne calmly samjhaya ki karna kya hai. Ek baar ko sunn liya gaya aisa laga. Worth every rupee ✨"</p>
-        <div class="who">Varun &amp; Neha</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"We did it during a rough fight phase and the compatibility breakdown low key saved us from breaking up. Sach me 😭"</p>
-        <div class="who">Diya, 25</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"3 saal saath rehne ke baad bhi apne clashes ke baare me naya kuch pata chala. Report detailed hai, koi generic yes/no nahi. Paisa vasool 💯"</p>
-        <div class="who">Rehan, 29</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"Date night idea better than a movie. We did this together and talked for hours. The friction part is scary accurate."</p>
-        <div class="who">Pooja &amp; Sameer</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"The manglik matching confusion is finally khatam. The report said we're balanced and told us how to handle the rough patch. Clear answers ❤️"</p>
-        <div class="who">Ananya, 27</div>
-      </div>
-    </div>
-    <p class="revs-hint">← swipe for more →</p>
   </div>
 </section>
 
@@ -508,7 +402,7 @@ fbq('track', 'PageView');
     <div class="cred">
       <span class="badge">⚙️ IIT–IIM ALUMNI BUILT</span>
       <h3>Built by IIT–IIM engineers.</h3>
-      <p>We turned the classical compatibility system into software — so your result comes from your actual birth charts, not from someone's mood or sales target that day.</p>
+      <p>We turned the classical compatibility system into software — so your result comes from your actual birth charts, not from someone's opinion or sales target that day.</p>
     </div>
   </div>
 </section>
@@ -524,7 +418,7 @@ fbq('track', 'PageView');
       <li><b>Your compatibility score</b><span>One clear number out of 36 — and what it really means for you two, not just a pass/fail.</span></li>
       <li><b>Where you click</b><span>The areas you naturally match on — how you think, your values, communication, intimacy, temperament.</span></li>
       <li><b>Where it gets tricky</b><span>Your friction points, in plain language, so you see them coming before they turn into fights.</span></li>
-      <li><b>The dealbreaker checks</b><span>Manglik, Nadi &amp; Bhakoot — checked for both of you, and whether they actually cancel out. (Usually the scary stuff doesn't.)</span></li>
+      <li><b>The dealbreaker checks</b><span>Manglik, Nadi &amp; Bhakoot — checked for both of you, and whether they actually cancel out. (These doshas usually cancel out.)</span></li>
       <li><b>Your action plan</b><span>Specific, doable things each of you can work on to make it stronger. This is the part nobody else gives you.</span></li>
       <li><b>Share-ready PDF</b><span>A clean report you can save or share with your partner.</span></li>
     </ol>
@@ -556,7 +450,7 @@ fbq('track', 'PageView');
       <div class="a">The traditional threshold is 18/36. 18–24 is workable, 25–32 is strong, 33+ is excellent. But the number matters less than <em>which</em> areas are low — a shortfall in one area isn't the same as another. Your report explains that difference clearly instead of leaving you with just a number.</div>
     </details>
     <details><summary>There's a Nadi dosha — is that a dealbreaker?</summary>
-      <div class="a">Usually not. Nadi dosha has classical cancellation rules — different signs, different star-quarters, and a few other conditions. Your report shows the dosha along with its cancellation check, so you get the full picture instead of just the scary headline.</div>
+      <div class="a">Usually not. Nadi dosha has classical cancellation rules — different signs, different star-quarters, and a few other conditions. Your report shows the dosha along with its cancellation check, so you get the full picture instead of just a one-line verdict.</div>
     </details>
     <details><summary>Why might an astrologer's score differ?</summary>
       <div class="a">Different calculation settings and manual shortcuts. We use standard classical tables and show the detail behind every part of the score — so you can get it checked line by line by anyone you trust.</div>
@@ -1198,36 +1092,6 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
 
 <!-- LANGUAGE: English is the source of truth. Legacy Hinglish runtime toggle removed. -->
 
-<script>
-/* Reviews auto-scroll: horizontal auto-scroll; pause on hover (desktop) or tap
-   (mobile); resume when the user scrolls the page up or down. */
-(function(){
-  var track = document.getElementById('revsTrack');
-  if(!track) return;
-  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5, dir = 1;
-  // No cloning: a manual swipe shows only the real reviews, once. The ambient
-  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
-  // no jarring jump from the last review back to the first.
-  function tick(){
-    if(!paused){
-      var mx = track.scrollWidth - track.clientWidth;
-      if(mx > 0){
-        track.scrollLeft += speed * dir;
-        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
-        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  track.addEventListener('mouseenter', function(){ paused = true; });
-  track.addEventListener('mouseleave', function(){ if(!reduce) paused = false; });
-  track.addEventListener('pointerdown', function(){ paused = true; });
-  track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
-  window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
-  requestAnimationFrame(tick);
-})();
-</script>
 <script>
 /* Clear for the time-of-birth selects: their placeholder option is hidden, so a
    picked hour otherwise can't be un-picked. Resets all three + the hidden value. */

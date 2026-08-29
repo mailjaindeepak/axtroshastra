@@ -52,7 +52,7 @@ FIELD_FAMILIES = [
     ["Sales & Business Development", "Marketing & Brand", "Client Relations"],
     ["Real Estate & Assets", "Manufacturing", "Supply Chain"],
     ["Education & Training", "Content & Media", "Design"],
-    ["Healthcare Administration", "HR & People", "Legal & Compliance"],
+    ["Public Administration", "HR & People", "Legal & Compliance"],
     ["Startups & New Ventures", "Product Management", "Growth & Strategy"],
     ["Research & Analysis", "Finance & Banking", "Consulting"],
     ["Consulting", "Higher Education", "Cross-Border Roles"],

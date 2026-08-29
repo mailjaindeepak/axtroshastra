@@ -62,7 +62,7 @@ def test_blueprint_report_renders_all_ten_areas(client):
     for section in ("Where your chart points you", "How money moves for you",
                      "What you need in a partner", "Building a family, your way",
                      "Where and how you put down roots", "Whether distance suits you",
-                     "How your body tends to run", "What comes naturally, and what doesn't",
+                     "How your energy tends to run", "What comes naturally, and what doesn't",
                      "Parents, siblings, and old ties", "Is now the moment?",
                      "Your kundli", "Every planet, placed", "Dashas, explained",
                      "How every tag was set", "A short glossary"):
@@ -72,7 +72,7 @@ def test_blueprint_report_renders_all_ten_areas(client):
     assert "Milan report" in html
     # honesty guardrails must survive into the rendered page
     assert "never a claim about fertility" in html
-    assert "not medical advice" in html
+    assert "a lens for reflection, not a verdict" in html
 
 
 def test_blueprint_report_has_wheel_and_tag_cards(client):

@@ -93,7 +93,7 @@ _BLUEPRINT_WHEEL_ORDER = ["career", "money", "marriage", "children", "home",
                           "foreign", "health", "growth", "family", "timing"]
 _BLUEPRINT_WHEEL_LABEL = {"career": "Career", "money": "Money", "marriage": "Marriage",
                            "children": "Children", "home": "Home", "foreign": "Foreign",
-                           "health": "Health", "growth": "Growth", "family": "Family",
+                           "health": "Energy & Routine", "growth": "Growth", "family": "Family",
                            "timing": "Now"}
 _BLUEPRINT_WHEEL_COLOR = {"thriving": "#3E7D5A", "building": "#B9862E", "watch": "#B4572B"}
 
@@ -608,9 +608,9 @@ MILAN_I18N = r"""<script>
     ["Aap dono ka ek dusre par sway balanced hai — koi kisi ko 'chala' nahi raha, dono saath chal rahe hain.","Your sway over each other is balanced — neither is 'driving' the other, you are both moving together."],
     ["Influence ek taraf thoda zyada hai — jab tak dominant partner ise care se use kare, yeh stability deta hai.","The influence tilts a little to one side — as long as the dominant partner uses it with care, it lends stability."],
     ["Mutual pull kam hai — matlab rishta convince karne se nahi, respect karne se chalega. Space dena yahan pyaar dikhaane ka tareeka hai.","The mutual pull is low — meaning the relationship will run on respect, not persuasion. Giving space is the way to show love here."],
-    ["Nakshatra-count dono taraf shubh hai — saath rehne se dono ki wellbeing badhti hai, classical texts ise strong protection maanti hain.","The nakshatra-count is auspicious both ways — being together raises the wellbeing of both, and classical texts consider this strong protection."],
+    ["Nakshatra-count dono taraf shubh hai — saath rehne se dono ka sukoon aur luck badhta hai, classical texts ise strong protection maanti hain.","The nakshatra-count is auspicious both ways — being together raises the ease and luck of both, and classical texts consider this strong protection."],
     ["Ek direction shubh, ek nahi — ek partner ko rishtey se zyada milta hai. Balance ke liye giving conscious rakhni hogi.","One direction is auspicious, one is not — one partner gains more from the relationship. To keep balance, giving will have to stay conscious."],
-    ["Tara count inauspicious hai — traditionally health/wellbeing par dhyaan. Practical matlab: ek dusre ki sehat aur stress ka khayal is jodi ka zaroori ritual hona chahiye.","The Tara count is inauspicious — traditionally, attention to health/wellbeing. Practical meaning: caring for each other's health and stress should be an essential ritual for this couple."],
+    ["Tara count inauspicious hai — traditionally ek dusre ka khayal rakhne par zor. Practical matlab: ek dusre ki energy aur stress ka khayal is jodi ka zaroori ritual hona chahiye.","The Tara count is inauspicious — traditionally, a call to look after each other. Practical meaning: caring for each other's energy and stress should be an essential ritual for this couple."],
     ["Instinctive aur physical wavelength naturally milti hai — bina koshish ke comfort, jo har jodi ko naseeb nahi hota.","The instinctive and physical wavelength meets naturally — effortless comfort, which not every couple is blessed with."],
     ["Physical-instinctive match neutral hai — chemistry banayi ja sakti hai, bas dono ki pace alag ho sakti hai; patience rakho.","The physical-instinctive match is neutral — chemistry can be built, only your paces may differ; keep patience."],
     ["Yoni enemy-pair hai — instincts alag chalti hain. Yeh attraction ko nahi rokta, par daily-life habits (sona, uthna, touch, space) mein adjustment maangta hai. Naam se mat daro, pattern samjho.","This is a Yoni enemy-pair — instincts run differently. This does not stop attraction, but it asks for adjustment in daily-life habits (sleeping, waking, touch, space). Do not fear the name, understand the pattern."],
@@ -1111,7 +1111,7 @@ KOOTA_UI = {
                      "blurb": "who naturally takes the lead — without it turning into a power struggle"},
     "Vashya":       {"emoji": "🧲", "label": "Mutual Pull",
                      "blurb": "how naturally you're drawn to and influence each other"},
-    "Tara":         {"emoji": "🍀", "label": "Luck & Wellbeing",
+    "Tara":         {"emoji": "🍀", "label": "Luck & Ease",
                      "blurb": "whether being together tends to make life feel smoother for you both"},
     "Yoni":         {"emoji": "🔥", "label": "Physical Chemistry",
                      "blurb": "instinctive, physical and intimate compatibility"},
@@ -1121,8 +1121,8 @@ KOOTA_UI = {
                      "blurb": "your everyday energy, social style and how your moods land"},
     "Bhakoot":      {"emoji": "❤️", "label": "Emotional Bond",
                      "blurb": "long-term closeness and building a life and family together"},
-    "Nadi":         {"emoji": "🧬", "label": "Health & Family",
-                     "blurb": "vitality and the classical health / progeny factor"},
+    "Nadi":         {"emoji": "🧬", "label": "Lineage & Vitality",
+                     "blurb": "vitality and the classical lineage factor"},
 }
 
 # 5 relatable themes that group the 8 kootas (each koota belongs to exactly one).
@@ -1135,7 +1135,7 @@ THEMES = [
      "blurb": "how your minds click, and who leads what"},
     {"emoji": "❤️", "name": "Love & Long-Term", "kootas": ["Bhakoot", "Tara"],
      "blurb": "long-term closeness and how good you are for each other"},
-    {"emoji": "🧬", "name": "Health & Vitality", "kootas": ["Nadi"],
+    {"emoji": "🧬", "name": "Vitality & Lineage", "kootas": ["Nadi"],
      "blurb": "vitality and the traditional family / progeny factor"},
 ]
 
@@ -1177,10 +1177,10 @@ REMEDIES = {
         "p2": "Own the daily thread — keep the small check-ins going through the week.",
         "remedy": "Venus rules attraction — on Fridays keep something white nearby and repeat 'Om Shukraya Namah' a few times together."},
     "Tara": {
-        "work_on": "Make each other's wellbeing a shared project — sleep, food, stress — instead of assuming the other is fine.",
+        "work_on": "Make looking after each other a shared project — sleep, food, stress — instead of assuming the other is fine.",
         "p1": "Keep an eye on the basics — nudge each other on rest, food and sleep.",
         "p2": "Keep an eye on the load — check in on stress and what's draining them.",
-        "remedy": "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for mutual wellbeing."},
+        "remedy": "On Thursdays, share a simple home-cooked meal and donate a little food or grain together — a traditional gesture for shared good fortune."},
     "Yoni": {
         "work_on": "This is about different instincts, not low attraction — so talk openly about pace, touch and daily rhythms.",
         "each": "Name one rhythm — sleep, space or affection — you'd like the other to understand, and ask for theirs.",
@@ -1199,9 +1199,9 @@ REMEDIES = {
         "p2": "Own the emotional rhythm — a regular, honest 'how are we, really?' talk.",
         "remedy": "A Moon remedy: on Mondays wear white, chant 'Om Somaya Namah', and offer milk or white flowers at a Shiva temple together."},
     "Nadi": {
-        "work_on": "Traditionally the heaviest factor, tied to health and children — so the real 'remedy' is proactive care, together.",
-        "each": "Book your own basics — a check-up, better sleep, less chronic stress; treat wellbeing as a team sport.",
-        "remedy": "A classical Nadi practice is the Maha Mrityunjaya mantra and donating toward medicines/health; the modern equivalent is a simple pre-marriage health check for both."},
+        "work_on": "Traditionally the heaviest factor, tied to lineage and children — so the real 'remedy' is patient, proactive care of each other, together.",
+        "each": "Own your own basics — steady sleep, unhurried mornings, less rushing; treat looking after each other as a team effort.",
+        "remedy": "A classical Nadi practice is the Maha Mrityunjaya mantra and quiet acts of giving; the modern equivalent is a shared promise of patience, rest and steady routines for both."},
 }
 
 def _koota_fix_html(k: dict, cancelled: set, names=("Partner 1", "Partner 2")) -> str:
@@ -1275,19 +1275,19 @@ THEME_DEEP = {
     "Everyday Vibe": "Your day-to-day energies just fit — similar social batteries, similar humour, a similar way of handling good days and bad ones. This is the quiet superpower that makes living together feel light instead of like work.",
     "Mind & Values": "You think in the same language. Even your disagreements will make sense to each other, because your values and mental wiring line up. This is the stuff long conversations — and long marriages — are made of.",
     "Love & Long-Term": "Emotionally, you're built to go the distance. Classical texts read this as a green signal for closeness, family and growing together — the deep, settle-in kind of bond rather than just a spark.",
-    "Health & Vitality": "On the heaviest traditional factor, you're clear — read as vitality and a healthy foundation for a life (and a family) together. It's the factor astrologers weigh the most, and it's working in your favour.",
+    "Vitality & Lineage": "On the heaviest traditional factor, you're clear — read as vitality and a strong foundation for a life (and a family) together. It's the factor astrologers weigh the most, and it's working in your favour.",
 }
 
 # Extra action-plan detail for weak factors, keyed by koota.
 ACTION_PLAN = {
     "Varna": {"try": "This week, each of you names one area you'd love to lead and one you'd happily hand over.", "talk": "“Where do you want me to take charge — and where do you want to?”", "green": "You stop quietly keeping score of who decided what."},
     "Vashya": {"try": "Lock one proper date into the calendar for the next two weeks — non-negotiable.", "talk": "“What makes you feel closest to me?”", "green": "Time together starts to feel chosen, not squeezed in."},
-    "Tara": {"try": "Do one small health thing together — a walk, cooking a real meal, an early night.", "talk": "“What's been draining you lately, and how can I help?”", "green": "You both feel better after time together, not more tired."},
+    "Tara": {"try": "Do one small restorative thing together — a walk, cooking a real meal, an early night.", "talk": "“What's been draining you lately, and how can I help?”", "green": "You both feel better after time together, not more tired."},
     "Yoni": {"try": "Compare your daily rhythms — sleep, energy, affection — and pick one to sync.", "talk": "“What does feeling close look like for you, day to day?”", "green": "Different paces stop feeling like rejection."},
     "Graha Maitri": {"try": "One 20-minute, phones-away conversation this week — no fixing, just listening.", "talk": "“Let me say that back — did I get it right?”", "green": "You argue in the same language, not past each other."},
     "Gana": {"try": "Agree a simple signal for 'I need people' vs 'I need quiet' — and honour it once.", "talk": "“What recharges you — a night out, or a night in?”", "green": "Different moods stop getting taken personally."},
     "Bhakoot": {"try": "Do a light 15-minute 'us, money & feelings' check-in.", "talk": "“What's something you've been carrying that I haven't noticed?”", "green": "Small distances get named before they grow."},
-    "Nadi": {"try": "Book the unglamorous stuff — check-ups, good sleep, less chronic stress — as a team.", "talk": "“How do we want to look after each other's health?”", "green": "You treat wellbeing as a shared project, not a solo one."},
+    "Nadi": {"try": "Commit to the unglamorous stuff — good sleep, steady routines, unhurried evenings — as a team.", "talk": "“How do we want to look after each other, day to day?”", "green": "You treat looking after each other as a shared project, not a solo one."},
 }
 
 
@@ -1331,7 +1331,7 @@ THEME_NAME_HI = {
     "Everyday Vibe": "रोज़मर्रा का तालमेल",
     "Mind & Values": "सोच और मूल्य",
     "Love & Long-Term": "प्यार और लंबा साथ",
-    "Health & Vitality": "सेहत और जीवनशक्ति",
+    "Vitality & Lineage": "ऊर्जा और जीवनशक्ति",
 }
 
 
@@ -1903,16 +1903,16 @@ def _bp_quality_challenge():
 
 BP_AREA_NOUN = {"career": "career", "money": "money", "marriage": "marriage",
                 "children": "children and family", "home": "home", "foreign": "travel",
-                "health": "health", "growth": "self and identity", "family": "family"}
+                "health": "energy and routine", "growth": "self and identity", "family": "family"}
 BP_AREA_TITLE = {"career": "Where your chart points you", "money": "How money moves for you",
                  "marriage": "What you need in a partner", "children": "Building a family, your way",
                  "home": "Where and how you put down roots", "foreign": "Whether distance suits you",
-                 "health": "How your body tends to run", "growth": "What comes naturally, and what doesn't",
+                 "health": "How your energy tends to run", "growth": "What comes naturally, and what doesn't",
                  "family": "Parents, siblings, and old ties"}
 BP_AREA_DOMAIN = {"career": "Your career direction", "money": "Your financial picture",
                   "marriage": "Your partnership picture", "children": "This family bond",
                   "home": "Your home and property situation", "foreign": "Your travel and relocation picture",
-                  "health": "Your health and daily routine", "growth": "Your personal growth and self-trust",
+                  "health": "Your energy and daily routine", "growth": "Your personal growth and self-trust",
                   "family": "Your family relationships"}
 BP_AREA_DO_WATCH = {
     "career": (["Keep sharpening the specific skills that already bring you clients or recognition.",
@@ -1990,11 +1990,11 @@ BP_AREA_PHASE_NOTES = {
                "steady": ["A quieter stretch for travel and relocation &mdash; nothing pressing.",
                          "Another steady period; movement stays low-key."]},
     "health": {"favorable": ["A window that supports energy and vitality.",
-                             "Another stretch that favours good health habits sticking."],
+                             "Another stretch that favours good habits sticking."],
               "watch": ["A stretch where your routine and moderation deserve extra attention.",
                         "A later window worth being more careful with habits in."],
-              "steady": ["A quieter stretch for health &mdash; steady, unremarkable, which is a good thing here.",
-                        "Another steady period for health and routine."]},
+              "steady": ["A quieter stretch for energy and routine &mdash; steady, unremarkable, which is a good thing here.",
+                        "Another steady period for rest and routine."]},
     "growth": {"favorable": ["A window that favours personal growth and bigger decisions about yourself.",
                              "Another stretch that supports self-trust and new directions."],
               "watch": ["A stretch where big personal decisions deserve extra patience.",
@@ -2173,7 +2173,7 @@ def render_blueprint(p: dict) -> str:
 
     LABEL = {"career": "Career", "money": "Money", "marriage": "Marriage",
              "children": "Children", "home": "Home", "foreign": "Foreign",
-             "health": "Health", "growth": "Growth", "family": "Family",
+             "health": "Energy & Routine", "growth": "Growth", "family": "Family",
              "timing": "Now"}
     TAG_CLASS = {"thriving": "good", "building": "", "watch": "warn"}
     TAG_LABEL = {"thriving": "Thriving", "building": "Building", "watch": "Watch"}
@@ -2247,7 +2247,7 @@ def render_blueprint(p: dict) -> str:
     }
     AREA_BOUNDARY = {
         "children": "this page describes a general tendency &mdash; never an exact date, and never a claim about fertility.",
-        "health": "this page describes a broad wellness tendency from your chart, not a diagnosis &mdash; it is not medical advice.",
+        "health": "this page describes a broad tendency read from your chart &mdash; a lens for reflection, not a verdict.",
     }
     # cross-sell hooks that keep Blueprint a funnel hub, not a dead end --
     # pre-existing behavior, preserved from the previous design.
@@ -2412,7 +2412,7 @@ def render_blueprint(p: dict) -> str:
                      12: "Distance, rest and letting go"}
     HOUSE_AREA_LINE = {1: "as Personal growth &amp; identity", 2: "as Money &amp; financial security",
                        3: "feeds nearby reasoning", 4: "as Home &amp; property", 5: "as Children &amp; family",
-                       6: "as Health &amp; energy", 7: "as Marriage &amp; partnership", 8: "feeds nearby reasoning",
+                       6: "as Energy &amp; routine", 7: "as Marriage &amp; partnership", 8: "feeds nearby reasoning",
                        9: "as Family relationships", 10: "as Career &amp; work direction",
                        11: "feeds nearby reasoning", 12: "as Foreign travel &amp; relocation"}
 
@@ -2578,7 +2578,7 @@ def render_blueprint(p: dict) -> str:
       <div class="bp-scitem">General tendencies, from your houses and planets.</div>
       <div class="bp-scitem">Favourable-versus-cautious windows.</div>
       <div class="bp-scitem">Which life chapter you are in, and what comes next.</div>
-      <div class="bp-scitem">Traditional health tendencies, as a general pattern.</div>
+      <div class="bp-scitem">Traditional energy and routine tendencies, as a general pattern.</div>
     </div>
     <div class="bp-sccard chg"><div class="sch">What we will never claim</div>
       <div class="bp-scitem">Exact dates for marriage, childbirth or death.</div>

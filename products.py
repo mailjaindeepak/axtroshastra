@@ -198,7 +198,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
         (1.5 if _tara_ok(g["nak"], b["nak"]) else 0)
     kootas.append({"name": "Tara", "max": 3, "score": s,
                    "detail": f"{NAKSHATRAS[g['nak']]} – {NAKSHATRAS[b['nak']]}",
-                   "meaning": "health and wellbeing of the bond"})
+                   "meaning": "the day-to-day strength of the bond"})
 
     y1, y2 = YONI[g["nak"]], YONI[b["nak"]]
     s = _yoni_score(y1, y2)
@@ -245,7 +245,7 @@ def compute_milan(p1: dict, p2: dict) -> dict:
             nadi_cancel = "Moon rashi alag hai — widely-followed classical rule mein Nadi dosha cancelled."
     kootas.append({"name": "Nadi", "max": 8, "score": 0 if nadi_dosha else 8,
                    "detail": f"{NADI_NAME[n1]} – {NADI_NAME[n2]}",
-                   "meaning": "health of progeny, vitality"})
+                   "meaning": "lineage and vitality"})
 
     total = round(sum(k["score"] for k in kootas), 1)
     if total >= 32: verdict, vkey = "Excellent match", "excellent"
@@ -447,7 +447,7 @@ CAREER_HOUSE = [
     "communication and courage — media, sales, writing, hands-on skill",
     "home-linked work — real estate, vehicles, education, working close to your base",
     "creative-speculative fields — teaching, entertainment, markets, working with young people",
-    "service and problem-solving — healthcare, law, operations, competitive fields",
+    "service and problem-solving — law, operations, competitive fields",
     "partnership-driven work — consulting, client business, trade, public dealing",
     "research and transformation — depth fields, insurance, occult, others' resources",
     "knowledge and distance — higher education, publishing, foreign connections, dharma-fields",
@@ -470,7 +470,7 @@ CAREER_ARCHETYPE = [
     {"name": "The Creative", "emoji": "🎨", "tagline": "Original ideas, playful execution",
      "body": "Teaching, entertainment, working with young people — you're built for fields that reward imagination over routine."},
     {"name": "The Fixer", "emoji": "🛠️", "tagline": "You solve what others avoid",
-     "body": "Healthcare, law, operations — competitive, service-driven fields where your problem-solving instinct is the whole point."},
+     "body": "Law, operations, service — competitive, problem-solving fields where your instinct to fix things is the whole point."},
     {"name": "The Connector", "emoji": "🤝", "tagline": "Better work happens with people",
      "body": "Consulting, client relationships, trade — you're built for partnership-driven work, not solo grind."},
     {"name": "The Investigator", "emoji": "🔍", "tagline": "You go where others stop looking",
