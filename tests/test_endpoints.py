@@ -103,13 +103,15 @@ def test_pixel_id_split_by_domain(client):
         assert "1454249773521031" not in html, f"{host} leaked .com pixel"
 
 
-def test_linkedin_removed_on_in_only(client):
-    # LinkedIn (Insight Tag + the fbq-wrapping bridge) stays on .com but is
-    # stripped from .in, so .in's window.fbq is left native.
-    com = client.get("/", headers={"host": "www.axtroshastra.com"}).text
-    assert "snap.licdn.com" in com and "lintrk" in com
+def test_linkedin_removed_on_public_domains(client):
+    # LinkedIn (Insight Tag + the fbq-wrapping bridge) is stripped from BOTH
+    # public domains so window.fbq is left native. Injection itself still runs
+    # (default host keeps it), it's only removed at the edge for .com and .in.
+    default = client.get("/").text
+    assert "snap.licdn.com" in default, "LinkedIn injection unexpectedly off"
 
-    for host in ("axtroshastra.in", "www.axtroshastra.in"):
+    for host in ("axtroshastra.in", "www.axtroshastra.in",
+                 "axtroshastra.com", "www.axtroshastra.com"):
         html = client.get("/", headers={"host": host}).text
         assert "snap.licdn.com" not in html, f"{host} still has LinkedIn tag"
         assert "lintrk" not in html, f"{host} still has LinkedIn bridge"

@@ -74,16 +74,22 @@ async def _pixel_by_domain(request: Request, call_next):
     response = await call_next(request)
     host = (request.headers.get("host") or "").split(":")[0].lower()
     is_in = host == "axtroshastra.in" or host.endswith(".axtroshastra.in")
-    if is_in and response.headers.get("content-type", "").startswith("text/html"):
+    is_com = host == "axtroshastra.com" or host.endswith(".axtroshastra.com")
+    if ((is_in or is_com)
+            and response.headers.get("content-type", "").startswith("text/html")):
         import re
         body = b""
         async for chunk in response.body_iterator:
             body += chunk
         # .in fires its own Meta Pixel so the .in dataset never sees .com traffic.
-        body = body.replace(META_PIXEL_ID_COM.encode(), META_PIXEL_ID_IN.encode())
-        # .in carries NO LinkedIn tag/bridge — strip the server-injected block so
-        # window.fbq is left native (the LinkedIn wrapper could disrupt Meta's
-        # event dispatch). LinkedIn stays on .com, untouched.
+        if is_in:
+            body = body.replace(META_PIXEL_ID_COM.encode(),
+                                META_PIXEL_ID_IN.encode())
+        # Neither public domain carries the client-side LinkedIn tag/bridge:
+        # strip the server-injected block so window.fbq is left native (the
+        # LinkedIn wrapper re-points window.fbq and could disrupt Meta's event
+        # dispatch). Server-side LinkedIn CAPI (tracking.py) is separate and
+        # unaffected.
         body = re.sub(rb"<!--AXLI-START-->.*?<!--AXLI-END-->", b"",
                       body, flags=re.DOTALL)
         response.headers["content-length"] = str(len(body))
