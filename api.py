@@ -57,6 +57,34 @@ app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
+# ---- Meta Pixel, split by domain -------------------------------------------
+# axtroshastra.com and axtroshastra.in serve the same app off one CloudFront
+# distribution, but each domain gets its own Meta Pixel so the .in dataset
+# never ingests events from the .com domain (categorized by Meta). The .com id
+# is the one hardcoded in pages/*.html and _TRACKING_HEAD; for .in requests
+# this middleware rewrites it in every HTML response. CloudFront forwards the
+# viewer Host header (Managed-AllViewer) and never caches our HTML (origin
+# sends no Cache-Control), so the swap is per-request safe.
+META_PIXEL_ID_COM = "1454249773521031"
+META_PIXEL_ID_IN = os.getenv("META_PIXEL_ID_IN", "4575834769362738")
+
+
+@app.middleware("http")
+async def _pixel_by_domain(request: Request, call_next):
+    response = await call_next(request)
+    host = (request.headers.get("host") or "").split(":")[0].lower()
+    if ((host == "axtroshastra.in" or host.endswith(".axtroshastra.in"))
+            and response.headers.get("content-type", "").startswith("text/html")):
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk
+        body = body.replace(META_PIXEL_ID_COM.encode(), META_PIXEL_ID_IN.encode())
+        response.headers["content-length"] = str(len(body))
+        return Response(content=body, status_code=response.status_code,
+                        headers=dict(response.headers),
+                        media_type=response.media_type)
+    return response
+
 @app.on_event("startup")
 def _warm_gazetteer():
     try:

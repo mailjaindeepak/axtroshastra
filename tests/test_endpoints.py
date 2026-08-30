@@ -88,3 +88,16 @@ def test_static_page_not_double_injected(client):
     html = client.get("/en/marriage").text
     assert html.count("clarity.ms/tag") == 1
     assert html.count("fbq('init'") == 1
+
+
+def test_pixel_id_split_by_domain(client):
+    # Same app, two domains: .com keeps its pixel, .in requests get theirs
+    # swapped in by the _pixel_by_domain middleware. Any other host (including
+    # the TestClient default) behaves like .com.
+    com = client.get("/", headers={"host": "www.axtroshastra.com"}).text
+    assert "1454249773521031" in com and "4575834769362738" not in com
+
+    for host in ("axtroshastra.in", "www.axtroshastra.in"):
+        html = client.get("/", headers={"host": host}).text
+        assert "4575834769362738" in html, f"{host} missing .in pixel"
+        assert "1454249773521031" not in html, f"{host} leaked .com pixel"
