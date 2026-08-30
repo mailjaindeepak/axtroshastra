@@ -73,12 +73,19 @@ META_PIXEL_ID_IN = os.getenv("META_PIXEL_ID_IN", "4575834769362738")
 async def _pixel_by_domain(request: Request, call_next):
     response = await call_next(request)
     host = (request.headers.get("host") or "").split(":")[0].lower()
-    if ((host == "axtroshastra.in" or host.endswith(".axtroshastra.in"))
-            and response.headers.get("content-type", "").startswith("text/html")):
+    is_in = host == "axtroshastra.in" or host.endswith(".axtroshastra.in")
+    if is_in and response.headers.get("content-type", "").startswith("text/html"):
+        import re
         body = b""
         async for chunk in response.body_iterator:
             body += chunk
+        # .in fires its own Meta Pixel so the .in dataset never sees .com traffic.
         body = body.replace(META_PIXEL_ID_COM.encode(), META_PIXEL_ID_IN.encode())
+        # .in carries NO LinkedIn tag/bridge — strip the server-injected block so
+        # window.fbq is left native (the LinkedIn wrapper could disrupt Meta's
+        # event dispatch). LinkedIn stays on .com, untouched.
+        body = re.sub(rb"<!--AXLI-START-->.*?<!--AXLI-END-->", b"",
+                      body, flags=re.DOTALL)
         response.headers["content-length"] = str(len(body))
         return Response(content=body, status_code=response.status_code,
                         headers=dict(response.headers),
@@ -807,6 +814,7 @@ def _linkedin_head(is_funnel_page: bool = False) -> str:
     # Only the Landing *conversion* is scoped.
     landing = _LINKEDIN_CONV_LANDING if is_funnel_page else ""
     return """
+<!--AXLI-START-->
 <!-- LinkedIn Insight Tag + funnel bridge (injected server-side; ids from env) -->
 <script type="text/javascript">
 _linkedin_partner_id = "%(pid)s";
@@ -872,6 +880,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   }catch(e){}
 })();
 </script>
+<!--AXLI-END-->
 """ % {"pid": LINKEDIN_PARTNER_ID,
        "conv": json.dumps(_LINKEDIN_CONV),
        "landing": json.dumps(landing)}

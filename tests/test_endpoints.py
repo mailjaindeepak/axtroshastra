@@ -101,3 +101,16 @@ def test_pixel_id_split_by_domain(client):
         html = client.get("/", headers={"host": host}).text
         assert "4575834769362738" in html, f"{host} missing .in pixel"
         assert "1454249773521031" not in html, f"{host} leaked .com pixel"
+
+
+def test_linkedin_removed_on_in_only(client):
+    # LinkedIn (Insight Tag + the fbq-wrapping bridge) stays on .com but is
+    # stripped from .in, so .in's window.fbq is left native.
+    com = client.get("/", headers={"host": "www.axtroshastra.com"}).text
+    assert "snap.licdn.com" in com and "lintrk" in com
+
+    for host in ("axtroshastra.in", "www.axtroshastra.in"):
+        html = client.get("/", headers={"host": host}).text
+        assert "snap.licdn.com" not in html, f"{host} still has LinkedIn tag"
+        assert "lintrk" not in html, f"{host} still has LinkedIn bridge"
+        assert "AXLI-START" not in html, f"{host} left marker behind"
