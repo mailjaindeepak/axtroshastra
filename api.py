@@ -558,7 +558,7 @@ PAGES_DIR = os.path.join(BASE, "pages")
 # any page's own CSS. Injected right after <body> by _inject_nav().
 NAV_LINKS = [
     ("Home", "/"),
-    ("Celebrity Kundlis", "/en/celebrity"),
+    ("Celebrity Kundlis", "/en/celebrity-horoscope"),
     ("Login / My Account", "/account"),
     ("About Us", "/about"),
     ("Privacy Policy", "/privacy"),
@@ -570,7 +570,7 @@ NAV_LINKS = [
 # English-only for now, so their links still point at the English versions.
 NAV_LINKS_HI = [
     ("होम", "/hi"),
-    ("सेलिब्रिटी कुंडली", "/en/celebrity"),
+    ("सेलिब्रिटी कुंडली", "/en/celebrity-horoscope"),
     ("लॉगिन / मेरा अकाउंट", "/account"),
     ("हमारे बारे में", "/about"),
     ("प्राइवेसी पॉलिसी", "/privacy"),
@@ -636,8 +636,8 @@ def _inject_footer_link(html: str, lang: str = "en") -> str:
     row, so we anchor to that and insert directly after it, inheriting whatever
     inline style that row already uses (the styles differ per page). Idempotent
     - a page that already links the index is left alone, so this can never
-    double-insert. The guard must match `href="/en/celebrity"` EXACTLY: a bare
-    substring test for "/en/celebrity" also matches every
+    double-insert. The guard must match `href="/en/celebrity-horoscope"`
+    EXACTLY: a bare substring test for "/en/celebrity-horoscope" also matches every
     /en/celebrity-horoscope/<slug>-kundli link, so it skipped all 9 celebrity
     pages - which is why they shipped without the footer link the first time. Never raises: a footer we can't parse just goes
     unchanged rather than breaking the page."""
@@ -648,14 +648,14 @@ def _inject_footer_link(html: str, lang: str = "en") -> str:
         # Skip if the page already points at the index - either via a real link,
         # or via its own canonical (which is how the index page itself opts out,
         # so it never grows a footer link pointing at itself).
-        if re.search(r'href="(?:https?://[^"]*)?/en/celebrity"', html):
+        if re.search(r'href="(?:https?://[^"]*)?/en/celebrity-horoscope"', html):
             return html
         label = "सेलिब्रिटी कुंडली" if lang == "hi" else "Celebrity Kundlis"
         # Reuse the /blog anchor's own style attribute so the new link matches
         # the row it joins, whatever palette that particular page uses.
         m = re.search(r'<a\s+href="/blog"([^>]*)>.*?</a>', html, re.IGNORECASE | re.DOTALL)
         if m:
-            return html[:m.end()] + f' \u00b7 <a href="/en/celebrity"{m.group(1)}>{label}</a>' + html[m.end():]
+            return html[:m.end()] + f' \u00b7 <a href="/en/celebrity-horoscope"{m.group(1)}>{label}</a>' + html[m.end():]
 
         # Shape 2: celebrity kundli pages have NO <footer> element at all - they end
         # with a `<p class="foot">` attribution paragraph. Insert a link row above it,
@@ -663,7 +663,7 @@ def _inject_footer_link(html: str, lang: str = "en") -> str:
         m = re.search(r'<p class="foot"', html, re.IGNORECASE)
         if m:
             row = ('<p style="text-align:center;margin:0 0 18px;font-size:14px">'
-                   f'<a href="/en/celebrity" style="color:var(--acc);font-weight:700;'
+                   f'<a href="/en/celebrity-horoscope" style="color:var(--acc);font-weight:700;'
                    f'text-decoration:none">\u2190 All {label}</a></p>')
             return html[:m.start()] + row + html[m.start():]
         return html
@@ -2011,7 +2011,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
-            "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity"
+            "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
             ]
@@ -2690,6 +2690,15 @@ def _celebrity_display_name(slug: str) -> str:
 
 
 @app.get("/en/celebrity", include_in_schema=False)
+def celebrity_index_legacy(request: Request):
+    """Legacy /en/celebrity → /en/celebrity-horoscope (301 permanent), matching
+    the /<slug>-kundli path already using the celebrity-horoscope prefix.
+    Preserves query string."""
+    q = request.url.query
+    return RedirectResponse("/en/celebrity-horoscope" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/celebrity-horoscope", include_in_schema=False)
 def celebrity_index():
     """Hub page listing every live celebrity kundli — linked from the site nav."""
     return _serve_page_with_nav(os.path.join(CELEBRITY_DIR, "index.html"))
