@@ -106,19 +106,19 @@ GAINS_11L = ["gains come through personal initiative — you must ask, apply, st
 "a strong gains signature — networks multiply whatever you build",
 "gains that fund growth elsewhere — watch leakage, use it for investment"]
 
-# ---- Health tendencies by 6th-house sign (0-11), classical framing ----
-HEALTH_6 = ["heat and head-related tendencies — manage anger and rushing",
-"throat and weight-related tendencies — routine and moderation protect you",
-"nervous and respiratory sensitivity — rest the mind, breathe deliberately",
-"digestive and emotional-somatic links — the stomach mirrors the mood",
-"heart and vitality themes — sustainable pace over heroic bursts",
-"gut and worry links — precision helps work, hurts sleep; separate them",
-"kidney and balance themes — hydration and equilibrium in all things",
-"deep-seated and hidden tendencies — regular check-ups over guesswork",
-"hip, liver and excess themes — the appetite for more needs a governor",
-"joints, knees and chronic patterns — consistency beats intensity",
-"circulation and stress themes — movement is your medicine",
-"immunity and sleep themes — boundaries protect the body too"]
+# ---- Daily-grind & routine tendencies by 6th-house sign (0-11), classical framing ----
+HEALTH_6 = ["a fast-burning daily pace — manage anger and rushing, and the day runs smoother",
+"comfort that can slide into inertia — routine and moderation protect you",
+"a busy, restless mind — rest it deliberately, one thing at a time",
+"a daily rhythm that mirrors the mood — steady the mood and the day steadies too",
+"big-effort energy — sustainable pace over heroic bursts",
+"precision and worry share a desk — precision helps work, hurts sleep; separate them",
+"balance as the daily theme — steady routines and equilibrium in all things",
+"intense, all-or-nothing patterns — regular small resets over guesswork",
+"an appetite for more of everything — the appetite for more needs a governor",
+"long-haul stamina and old habits — consistency beats intensity",
+"stress that pools when you sit still — movement is your reset",
+"porous boundaries and sleep themes — boundaries protect your energy too"]
 
 # ---- Home & property tendencies by 4th-house sign (0-11) — Blueprint ----
 HOME_4 = ["quick moves and impulsive purchases — good for a first home, less good for holding one long",
@@ -198,9 +198,9 @@ KOOTA_TEXT = {
 "Vashya":("Aap dono ka ek dusre par sway balanced hai — koi kisi ko 'chala' nahi raha, dono saath chal rahe hain.",
  "Influence ek taraf thoda zyada hai — jab tak dominant partner ise care se use kare, yeh stability deta hai.",
  "Mutual pull kam hai — matlab rishta convince karne se nahi, respect karne se chalega. Space dena yahan pyaar dikhaane ka tareeka hai."),
-"Tara":("Nakshatra-count dono taraf shubh hai — saath rehne se dono ki wellbeing badhti hai, classical texts ise strong protection maanti hain.",
+"Tara":("Nakshatra-count dono taraf shubh hai — saath rehne se dono ka sukoon aur luck badhta hai, classical texts ise strong protection maanti hain.",
  "Ek direction shubh, ek nahi — ek partner ko rishtey se zyada milta hai. Balance ke liye giving conscious rakhni hogi.",
- "Tara count inauspicious hai — traditionally health/wellbeing par dhyaan. Practical matlab: ek dusre ki sehat aur stress ka khayal is jodi ka zaroori ritual hona chahiye."),
+ "Tara count inauspicious hai — traditionally ek dusre ka khayal rakhne par zor. Practical matlab: ek dusre ki energy aur stress ka khayal is jodi ka zaroori ritual hona chahiye."),
 "Yoni":("Instinctive aur physical wavelength naturally milti hai — bina koshish ke comfort, jo har jodi ko naseeb nahi hota.",
  "Physical-instinctive match neutral hai — chemistry banayi ja sakti hai, bas dono ki pace alag ho sakti hai; patience rakho.",
  "Yoni enemy-pair hai — instincts alag chalti hain. Yeh attraction ko nahi rokta, par daily-life habits (sona, uthna, touch, space) mein adjustment maangta hai. Naam se mat daro, pattern samjho."),
@@ -290,7 +290,7 @@ WEAK_PERIOD_ACTION = {
     "do": [
         "Use the time for clarity — what you actually want in a partner and a life.",
         "Keep your profile current and doors open, without forcing outcomes.",
-        "Invest in yourself: health, work, and the conversations with family that make later 'yes' easier.",
+        "Invest in yourself: energy, work, and the conversations with family that make later 'yes' easier.",
     ],
     "dont": [
         "Don't read a slow phase as a closed door — it is a low-activation window, not a verdict.",
@@ -399,7 +399,7 @@ BIZ_SECTOR_10L = {
   "sub_short":"You thrive on everyday needs and repeat custom.",
   "types":[
     {"title":"Food & daily essentials","body":"FMCG, groceries, restaurants — steady demand that renews every day."},
-    {"title":"Care, wellness & hospitality","body":"Services that look after people — health, comfort, guest-facing work."},
+    {"title":"Care & hospitality","body":"Services that look after people — comfort, hosting, guest-facing work."},
     {"title":"Public-facing retail","body":"Shops and outlets built on loyalty and repeat customers, not one-off deals."}],
   "avoid":"cold, purely transactional B2B where relationships don't compound over time"},
 "Mars":{"label":"Technical, Property or Competitive trades",
@@ -432,7 +432,7 @@ BIZ_SECTOR_10L = {
   "types":[
     {"title":"Fashion, jewellery & beauty","body":"Luxury and lifestyle goods where aesthetics drive the price."},
     {"title":"Design, arts & events","body":"Creative services, entertainment and experience-led businesses."},
-    {"title":"Hospitality & lifestyle retail","body":"Wellness, décor, fine dining — selling comfort and refinement."}],
+    {"title":"Hospitality & lifestyle retail","body":"Comfort, décor, fine dining — selling ease and refinement."}],
   "avoid":"grim, aesthetic-blind commodity trades that drain your spark"},
 "Saturn":{"label":"Manufacturing, Infrastructure or Long-cycle trade",
   "sub":"you build slow, durable machines that pay out for decades",
@@ -627,8 +627,8 @@ BIZ_SECTOR_10L_HI = {
          "avoid":"ठंडे, महज़ लेन-देन वाले B2B सौदे जहाँ रिश्ते समय के साथ गहरे नहीं होते",
          "types":[{"title":"खाना और रोज़मर्रा की ज़रूरतें",
                    "body":"एफएमसीजी, किराना, रेस्तराँ — ऐसी स्थिर माँग जो हर रोज़ नई होती है।"},
-                  {"title":"देखभाल, तंदुरुस्ती और आतिथ्य",
-                   "body":"लोगों की देखभाल करने वाली सेवाएँ — स्वास्थ्य, आराम, मेहमानों से जुड़ा काम।"},
+                  {"title":"देखभाल और आतिथ्य",
+                   "body":"लोगों की देखभाल करने वाली सेवाएँ — आराम, मेज़बानी, मेहमानों से जुड़ा काम।"},
                   {"title":"जनता से जुड़ी दुकानदारी",
                    "body":"वफ़ादारी और बार-बार लौटने वाले ग्राहकों पर टिकी दुकानें और आउटलेट, न कि एक-बार के सौदे।"}]},
 "Saturn": {"label":"निर्माण, बुनियादी ढाँचा या लंबी-अवधि का कारोबार",
@@ -660,7 +660,7 @@ BIZ_SECTOR_10L_HI = {
                    {"title":"डिज़ाइन, कला और आयोजन",
                     "body":"रचनात्मक सेवाएँ, मनोरंजन और अनुभव-प्रधान कारोबार।"},
                    {"title":"आतिथ्य और लाइफ़स्टाइल खुदरा",
-                    "body":"तंदुरुस्ती, सजावट, बढ़िया भोजन — आराम और नफ़ासत बेचना।"}]}}
+                    "body":"आराम, सजावट, बढ़िया भोजन — सुकून और नफ़ासत बेचना।"}]}}
 
 BIZ_PARTNERSHIP_7L_HI = {
 "Jupiter": {"verdict":"साझेदारी अनुकूल और भाग्यशाली है",

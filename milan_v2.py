@@ -109,7 +109,7 @@ NAK_NADI = {
 }
 
 THEME_MEASURES = {
-    "Health & Vitality": "The deepest, most durable layer of compatibility — long-term vitality, health, and (whenever, and if, you want it) family. It's the factor classical astrologers weigh the most.",
+    "Vitality & Lineage": "The deepest, most durable layer of compatibility — long-term vitality, lineage, and (whenever, and if, you want it) family. It's the factor classical astrologers weigh the most.",
     "Love & Long-Term": "Long-term closeness, family life, and shared prosperity — the layer that turns a relationship into a home.",
     "Everyday Vibe": "Your social batteries, humour, and how your moods land in a shared room — the stuff that decides whether living together feels light or like work.",
     "Chemistry & Attraction": "Instinctive, physical compatibility — the pull, the closeness, the daily rhythm of how your bodies share space.",
@@ -630,7 +630,7 @@ def _weak_pages(t, ks, p, pr1, pr2):
 
 def _why_aced(th, ks, pr1, pr2):
     nak1 = pr1.get("nak", ""); nak2 = pr2.get("nak", "")
-    if th["name"] == "Health & Vitality":
+    if th["name"] == "Vitality & Lineage":
         n1 = NAK_NADI.get(nak1, ""); n2 = NAK_NADI.get(nak2, "")
         if n1 and n2 and n1 != n2:
             return (f'Your two “Nadis” are different ({escape(n1)} &amp; {escape(n2)}) — '

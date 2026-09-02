@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-IN">
 <head>
 <meta charset="UTF-8">
@@ -29,7 +29,7 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '2417544725436982');
+fbq('init', '1454249773521031');
 fbq('track', 'PageView');
 </script>
 <style>
@@ -107,16 +107,6 @@ footer b{color:#B9BBD0}
 .stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
 .stat-tile .n .star{color:var(--haldi)}
 .stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
-.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
-.revs::-webkit-scrollbar{display:none}
-.rev{flex:0 0 84%;max-width:320px;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
-.rev .tag{font-family:var(--display);font-weight:700;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--haldi);margin-bottom:8px}
-.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
-.rev p{font-size:14.5px;color:var(--ink);line-height:1.5;margin:0}
-.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
-.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
-@media(min-width:560px){.rev{flex:0 0 46%}}
-@media(min-width:720px){.rev{flex:0 0 320px}}
 </style>
 <script type="text/javascript">
 (function(c,l,a,r,i,t,y){
@@ -206,8 +196,6 @@ footer b{color:#B9BBD0}
       <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
       <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
-    <div class="revs" id="revsTrack">
-    </div>
   </div>
 </section>
 
@@ -248,7 +236,7 @@ footer b{color:#B9BBD0}
     <div class="cred">
       <span class="badge">⚙️ IIT–IIM ALUMNI BUILT</span>
       <h3>Built by IIT–IIM engineers.</h3>
-      <p>We're not astrologers selling reassurance — we're engineers who encoded classical Vedic principles into software. So the answer comes from your chart, not from someone's mood that day.</p>
+      <p>We're not astrologers selling reassurance — we're engineers who encoded classical Vedic principles into software. So the answer comes from your chart, not from someone's opinion that day.</p>
     </div>
   </div>
 </section>
@@ -267,35 +255,5 @@ footer b{color:#B9BBD0}
   Reports are probability estimates from classical Jyotish principles, not guarantees.
 </footer>
 
-<script>
-/* Reviews auto-scroll: scrolls horizontally on its own; pauses when hovered (desktop)
-   or tapped/clicked (mobile); resumes as soon as the user scrolls the page up or down. */
-(function(){
-  var track = document.getElementById('revsTrack');
-  if(!track) return;
-  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5, dir = 1;
-  // No cloning: a manual swipe shows only the real reviews, once. The ambient
-  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
-  // no jarring jump from the last review back to the first.
-  function tick(){
-    if(!paused){
-      var mx = track.scrollWidth - track.clientWidth;
-      if(mx > 0){
-        track.scrollLeft += speed * dir;
-        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
-        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  track.addEventListener('mouseenter', function(){ paused = true; });
-  track.addEventListener('mouseleave', function(){ if(!reduce) paused = false; });
-  track.addEventListener('pointerdown', function(){ paused = true; });
-  track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
-  window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
-  requestAnimationFrame(tick);
-})();
-</script>
 </body>
 </html>

@@ -172,9 +172,6 @@ section{padding:52px 0}
 .proof{text-align:center}
 .proof .count{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,46px);color:var(--sindoor)}
 .proof .cap{color:var(--muted);font-size:14px;margin-top:4px}
-.review{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:20px;text-align:left;font-size:14.5px}
-.review .stars{color:var(--haldi);letter-spacing:2px;font-size:15px;margin-bottom:6px}
-.review .who{color:var(--muted);font-size:13px;margin-top:8px}
 
 /* ---------- FAQ ---------- */
 .faq details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
@@ -230,17 +227,8 @@ footer b{color:#B9BBD0}
 .stats-row{display:flex;gap:10px;margin-bottom:22px}
 .stat-tile{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
 .stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
-.stat-tile .n .star{color:var(--haldi)}
 .stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
 
-/* ---------- TESTIMONIAL CAROUSEL ---------- */
-.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
-.revs::-webkit-scrollbar{display:none}
-.rev{flex:0 0 84%;max-width:330px;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
-.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
-.rev p{font-size:14.5px;color:var(--ink);line-height:1.55}
-.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
-.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -251,14 +239,14 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-NKRQM1HJ97');
 </script>
-<!-- Meta Pixel: replace 2417544725436982 with your Pixel ID -->
+<!-- Meta Pixel: replace 1454249773521031 with your Pixel ID -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '2417544725436982');
+fbq('init', '1454249773521031');
 fbq('track', 'PageView');
 </script>
 <!-- ============ /ANALYTICS ============ -->
@@ -304,7 +292,7 @@ fbq('track', 'PageView');
     </div>
 
     <h1>आप दोनों की जोड़ी कितनी बनती है, <em>सच में</em>?</h1>
-    <p class="sub">ज़्यादा मत सोचिए।<br>सच जान लीजिए।</p>
+    <p class="sub">देखिए आप दोनों की जोड़ी असल में कैसी है —<br>ईमानदार स्कोर के साथ।</p>
 
     <form class="form-card" id="milanForm" autocomplete="on">
       <p class="fc-title">दोनों की जन्म-कुंडली की जानकारी भरें 👇</p>
@@ -373,7 +361,7 @@ fbq('track', 'PageView');
     <div class="sxcap"><div class="eb">ये <span id="tv-pct2">—</span>% तो बस सतह है</div><div class="h">आपकी पूरी रिपोर्ट यहीं नहीं रुकती</div>
       <div class="s">ऊपर का हर कार्ड आप दोनों के लिए कैलकुलेट किया गया है — सब पढ़ने के लिए अनलॉक करें।</div></div>
     <div class="locked"><svg class="dec d-rock" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="v7r"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#v7r)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/><circle cx="50" cy="30" r="2.5" opacity=".7"/></g></g></svg>
-      <div class="eb">आपका रिश्ता, एक साँस में</div>
+      <div class="eb">आपका रिश्ता, एक लाइन में</div>
       <div class="lb-wrap"><div class="lb-text" id="tv-breath"></div>
         <div class="lock"><div class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div></div></div>
       <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">पूरी रिपोर्ट अनलॉक करें <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span></button>
@@ -391,102 +379,8 @@ fbq('track', 'PageView');
     </div>
     <div class="stats-row">
       <div class="stat-tile"><div class="n" id="reportCount">25,000+</div><div class="c">रिपोर्ट्स बनीं</div></div>
-      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">औसत रेटिंग</div></div>
       <div class="stat-tile"><div class="n">2 मिनट</div><div class="c">आपके रिज़ल्ट तक</div></div>
     </div>
-    <div class="revs" id="revsTrack">
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"अपने बॉयफ्रेंड के साथ मज़े के लिए किया 😭 और ये डरावना सच निकला, जिस एक बात पर हम हमेशा लड़ते हैं, उसे बिल्कुल पकड़ लिया। ₹499 वसूल।"</p>
-        <div class="who">अनन्या, 24</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"2 साल से साथ हैं और सोचते रहते थे कि हम सच में कम्पैटिबल हैं या बस आदत हो गई है। इसने रात 2 बजे की उलझन की जगह एक असली जवाब दिया।"</p>
-        <div class="who">रोहन, 26</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"हमने इसे साथ में डेट नाइट पर किया, बड़ा मज़ा आया। एक बेतुके हाँ/ना के बजाय इसने हमें कपल के तौर पर काम करने लायक असली चीज़ें दीं। पक्का ग्रीन फ्लैग।"</p>
-        <div class="who">स्नेहा और करण</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"ngl हम छोटी छोटी बात पर लड़ते हैं 💀 रिपोर्ट ने बता दिया कि हमारा friction communication timing है, अब समझ आया। पैसा वसूल।"</p>
-        <div class="who">इशिता, 23</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"36 में से 28 गुण आए 👀 पर असली चीज़ थी वो हिस्सा जो बताता है हम clash क्यों करते हैं। bae को दिखाया तो पहली बार मान गया 🫠"</p>
-        <div class="who">आदित्य, 27</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"long distance से पहले हम दोनों ने किया 🥺 पता चला कहाँ patience रखना है। सच में couples therapy जैसा लगा वो भी ₹499 में 💯"</p>
-        <div class="who">मीरा और देव</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"मांगलिक वाली बात से बहुत डर लगता था 😭 रिपोर्ट ने डराने की जगह ठीक से समझाया। अब tension कम है fr।"</p>
-        <div class="who">प्रिया, 25</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"मैं और gf सोचते रहते थे कि compatible हैं या बस comfortable हो गए lol। इसने असली जवाब दिया। थोड़ा sad थोड़ा relief पर worth it ✨"</p>
-        <div class="who">अर्जुन, 28</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"situationship से clarity चाहिए थी 🫠 नाड़ी वाले हिस्से ने आँखें खोल दीं ngl। कम से कम अब पता है क्या काम करना है।"</p>
-        <div class="who">तन्वी, 22</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"अगले साल साथ रहने का प्लान है तो पहले ये किया 🙏 friction points वाला section इतना सही है कि दुख हुआ 😭 अच्छे तरीके से।"</p>
-        <div class="who">निखिल और रिया</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"सच में लगा ये सब fake होगा पर नहीं 💀 मेरे गुस्से और उसकी overthinking को बिल्कुल पकड़ा। हम हँसे फिर चुप हो गए fr।"</p>
-        <div class="who">कबीर, 26</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"लड़ने की जगह मैंने रिपोर्ट मम्मी को दिखाई 🥺 गुण स्कोर देखकर वो हमारे बारे में chill हो गईं। इस साल के best 499 ❤️"</p>
-        <div class="who">श्रेया, 24</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"action plan पढ़ने के बाद bf और मैंने लड़ना बंद कर दिया ngl 😭 इसने बता दिया रात 12 बजे कौन सा topic avoid करना है 💯"</p>
-        <div class="who">आयशा, 23</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"नाड़ी दोष का बहुत डर था 🫠 पर रिपोर्ट ने शांति से समझाया कि क्या करना है। पहली बार सुना गया महसूस हुआ। हर रुपया worth ✨"</p>
-        <div class="who">वरुण और नेहा</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"बड़ी लड़ाई वाले phase में किया था 😭 compatibility breakdown ने low key हमें ब्रेकअप से बचा लिया। सच में।"</p>
-        <div class="who">दीया, 25</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"3 साल साथ हैं फिर भी अपने clashes के बारे में नई चीज़ें पता चलीं 👀 रिपोर्ट detailed af है कोई generic हाँ/ना नहीं। पैसा वसूल 💯"</p>
-        <div class="who">रेहान, 29</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"date night idea > movie 🥺 हमने साथ में किया और घंटों बात की। friction वाला हिस्सा डरावना सच है ngl ❤️✨"</p>
-        <div class="who">पूजा और समीर</div>
-      </div>
-      <div class="rev">
-        <div class="stars">★★★★★</div>
-        <p>"मांगलिक matching की टेंशन खत्म 🙏 रिपोर्ट ने कहा हम balanced हैं और rough patch कैसे संभालें बताया। असली सुकून fr 😭❤️"</p>
-        <div class="who">अनन्या, 27</div>
-      </div>
-    </div>
-    <p class="revs-hint">← और देखने के लिए स्वाइप करें →</p>
   </div>
 </section>
 
@@ -508,7 +402,7 @@ fbq('track', 'PageView');
     <div class="cred">
       <span class="badge">⚙️ IIT–IIM एल्युम्नाई निर्मित</span>
       <h3>IIT–IIM इंजीनियरों द्वारा बनाया गया।</h3>
-      <p>हमने शास्त्रीय मिलान प्रणाली को सॉफ़्टवेयर में बदला — ताकि आपका नतीजा आपकी असली जन्म-कुंडली से आए, किसी के मूड या उस दिन के सेल्स-टारगेट से नहीं।</p>
+      <p>हमने शास्त्रीय मिलान प्रणाली को सॉफ़्टवेयर में बदला — ताकि आपका नतीजा आपकी असली जन्म-कुंडली से आए, किसी की राय या उस दिन के सेल्स-टारगेट से नहीं।</p>
     </div>
   </div>
 </section>
@@ -524,7 +418,7 @@ fbq('track', 'PageView');
       <li><b>आपका कम्पैटिबिलिटी स्कोर</b><span>36 में से एक साफ़ नंबर — और इसका आप दोनों के लिए असली मतलब, सिर्फ़ पास/फेल नहीं।</span></li>
       <li><b>आप कहाँ मैच करते हैं</b><span>वे क्षेत्र जहाँ स्वाभाविक तालमेल है — सोच, मूल्य, बातचीत, नज़दीकियाँ, स्वभाव।</span></li>
       <li><b>कहाँ मुश्किल होती है</b><span>आपके टकराव के बिंदु, आसान भाषा में, ताकि झगड़ा बनने से पहले आप उन्हें भाँप लें।</span></li>
-      <li><b>डीलब्रेकर जाँच</b><span>मांगलिक, नाड़ी और भकूट — दोनों के लिए जाँचे गए, और क्या वे सच में कैंसल होते हैं। (आमतौर पर डरावनी बातें कैंसल हो जाती हैं।)</span></li>
+      <li><b>डीलब्रेकर जाँच</b><span>मांगलिक, नाड़ी और भकूट — दोनों के लिए जाँचे गए, और क्या वे सच में कैंसल होते हैं। (आमतौर पर ये दोष कैंसल हो जाते हैं।)</span></li>
       <li><b>आपका एक्शन प्लान</b><span>दोनों के लिए खास, करने लायक चीज़ें जिनसे रिश्ता मज़बूत हो। ये वो हिस्सा है जो और कोई नहीं देता।</span></li>
       <li><b>शेयर करने लायक PDF</b><span>एक साफ़-सुथरी रिपोर्ट जिसे आप सेव करें या पार्टनर के साथ शेयर करें।</span></li>
     </ol>
@@ -556,7 +450,7 @@ fbq('track', 'PageView');
       <div class="a">पारंपरिक सीमा 18/36 है। 18–24 चलने लायक, 25–32 मज़बूत, 33+ बेहतरीन। पर नंबर से ज़्यादा ये मायने रखता है कि <em>कौन-से</em> क्षेत्र कम हैं — एक क्षेत्र की कमी दूसरे जैसी नहीं होती। आपकी रिपोर्ट सिर्फ़ नंबर देने के बजाय ये फ़र्क साफ़ समझाती है।</div>
     </details>
     <details><summary>नाड़ी दोष है — क्या ये डीलब्रेकर है?</summary>
-      <div class="a">आमतौर पर नहीं। नाड़ी दोष के शास्त्रीय कैंसलेशन नियम हैं — अलग राशि, अलग नक्षत्र-चरण, और कुछ और शर्तें। आपकी रिपोर्ट दोष के साथ उसकी कैंसलेशन जाँच भी दिखाती है, ताकि आपको सिर्फ़ डरावनी हेडलाइन नहीं, पूरी तस्वीर मिले।</div>
+      <div class="a">आमतौर पर नहीं। नाड़ी दोष के शास्त्रीय कैंसलेशन नियम हैं — अलग राशि, अलग नक्षत्र-चरण, और कुछ और शर्तें। आपकी रिपोर्ट दोष के साथ उसकी कैंसलेशन जाँच भी दिखाती है, ताकि आपको सिर्फ़ एक हेडलाइन नहीं, पूरी तस्वीर मिले।</div>
     </details>
     <details><summary>किसी ज्योतिषी का स्कोर अलग क्यों हो सकता है?</summary>
       <div class="a">अलग गणना सेटिंग्स और मैनुअल शॉर्टकट की वजह से। हम मानक शास्त्रीय तालिकाएँ इस्तेमाल करते हैं और स्कोर के हर हिस्से के पीछे का ब्योरा दिखाते हैं — ताकि आप जिस पर भरोसा करें, उससे इसे लाइन-दर-लाइन जँचवा सकें।</div>
@@ -1206,36 +1100,6 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
 
 <!-- LANGUAGE: Devanagari Hindi build. Content authored directly in Hindi (no runtime toggle). -->
 
-<script>
-/* Reviews auto-scroll: horizontal auto-scroll; pause on hover (desktop) or tap
-   (mobile); resume when the user scrolls the page up or down. */
-(function(){
-  var track = document.getElementById('revsTrack');
-  if(!track) return;
-  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var paused = reduce, speed = 0.5, dir = 1;
-  // No cloning: a manual swipe shows only the real reviews, once. The ambient
-  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
-  // no jarring jump from the last review back to the first.
-  function tick(){
-    if(!paused){
-      var mx = track.scrollWidth - track.clientWidth;
-      if(mx > 0){
-        track.scrollLeft += speed * dir;
-        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
-        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  track.addEventListener('mouseenter', function(){ paused = true; });
-  track.addEventListener('mouseleave', function(){ if(!reduce) paused = false; });
-  track.addEventListener('pointerdown', function(){ paused = true; });
-  track.addEventListener('touchstart', function(){ paused = true; }, {passive:true});
-  window.addEventListener('scroll', function(){ if(!reduce) paused = false; }, {passive:true});
-  requestAnimationFrame(tick);
-})();
-</script>
 <script>
 /* जन्म-समय के selects को साफ़ करने का बटन (placeholder छिपा है, इसलिए बिना इसके घंटा unpick नहीं होता) */
 (function(){['p1','p2'].forEach(function(pre){

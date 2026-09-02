@@ -64,7 +64,7 @@ def test_admin_reconcile_requires_key(client):
 # --- Analytics coverage: the report page, /login and static marketing pages all
 # carry GA + Meta Pixel + Clarity, and pages that embed the block by hand are not
 # double-injected. Guards the gap where server-rendered pages had zero tracking.
-_TRACKERS = ("G-NKRQM1HJ97", "2417544725436982", "clarity.ms/tag")
+_TRACKERS = ("G-NKRQM1HJ97", "1454249773521031", "clarity.ms/tag")
 
 
 def test_report_page_has_all_trackers(client):
@@ -88,3 +88,31 @@ def test_static_page_not_double_injected(client):
     html = client.get("/en/marriage").text
     assert html.count("clarity.ms/tag") == 1
     assert html.count("fbq('init'") == 1
+
+
+def test_pixel_id_split_by_domain(client):
+    # Same app, two domains: .com keeps its pixel, .in requests get theirs
+    # swapped in by the _pixel_by_domain middleware. Any other host (including
+    # the TestClient default) behaves like .com.
+    com = client.get("/", headers={"host": "www.axtroshastra.com"}).text
+    assert "1454249773521031" in com and "4575834769362738" not in com
+
+    for host in ("axtroshastra.in", "www.axtroshastra.in"):
+        html = client.get("/", headers={"host": host}).text
+        assert "4575834769362738" in html, f"{host} missing .in pixel"
+        assert "1454249773521031" not in html, f"{host} leaked .com pixel"
+
+
+def test_linkedin_removed_on_public_domains(client):
+    # LinkedIn (Insight Tag + the fbq-wrapping bridge) is stripped from BOTH
+    # public domains so window.fbq is left native. Injection itself still runs
+    # (default host keeps it), it's only removed at the edge for .com and .in.
+    default = client.get("/").text
+    assert "snap.licdn.com" in default, "LinkedIn injection unexpectedly off"
+
+    for host in ("axtroshastra.in", "www.axtroshastra.in",
+                 "axtroshastra.com", "www.axtroshastra.com"):
+        html = client.get("/", headers={"host": host}).text
+        assert "snap.licdn.com" not in html, f"{host} still has LinkedIn tag"
+        assert "lintrk" not in html, f"{host} still has LinkedIn bridge"
+        assert "AXLI-START" not in html, f"{host} left marker behind"
