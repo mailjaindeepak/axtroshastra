@@ -167,7 +167,7 @@ def test_blueprint_hi_full_report_is_rendered(client):
     html = _paid_blueprint_report_html(client, variant="/hi/life-blueprint")
     assert 'lang="hi"' in html
     # Part 1: ten life areas, in Hindi, present regardless of chart data
-    for hi_text in ("आपका जीवन ब्लूप्रिंट", "आपके बारे में", "आपकी कुंडली क्या कहती है",
+    for hi_text in ("आपका जीवन ब्लूप्रिंट", "विषय-सूची", "आपकी कुंडली क्या कहती है",
                      "क्या अभी वह पल है?"):
         assert hi_text in html, hi_text
     # Part 2: the finalized reference's evidence/methodology section, absent

@@ -22,11 +22,15 @@ list) — nothing existing is edited.
 Every personalized fact below is read from `p` (products.compute_blueprint's
 real output for this exact birth chart) — house numbers, lords, signs and
 dignities come from `p["area_detail"]`/`p["houses_1_12"]` (additive fields
-compute_blueprint now returns; see products.py), the global roadmap comes
-from `p["roadmap"]`/`p["dasha_current_md"]`/`p["dasha_current_ads"]`. No new
-astrology is computed here, and no per-area timeline is invented — every
-area's "through your chapters" section reads the SAME real global roadmap,
-because that is the only real timeline compute_blueprint() has.
+compute_blueprint now returns; see products.py). Each of the nine house-based
+areas reads its own real, ported per-area Antardasha classification
+(`p["area_detail"][area]["ad_phases"]`, the same phase_read()/ad_phases()
+system report_view.py's English renderer uses) for its "through your
+chapters" section, and its own real influence lists
+(`strengths_infl`/`challenges_infl`) for its favour/watching cards — no new
+astrology, just the same already-computed real data English already reads.
+Timing (area 10, not house-based) still reads the shared global roadmap from
+`p["roadmap"]`, matching English's own design there.
 """
 from html import escape
 
@@ -406,11 +410,18 @@ BODY_TEXT_HI = {
     "building": "यह क्षेत्र अभी धीरे-धीरे और लगातार मेहनत से मज़बूत हो रहा है — कोई अचानक बड़ा बदलाव नहीं।",
     "watch": "यह क्षेत्र अभी थोड़ी सावधानी माँगता है — जल्दबाज़ी से ज़्यादा धैर्य यहाँ काम आएगा।",
 }
-BALANCE_NOTE_HI = {
-    "thriving": "यह एक असली फ़ायदा है — फिर भी यह मेहनत की जगह नहीं लेता।",
-    "building": "यहाँ मददगार और ध्यान रखने लायक बातें, दोनों मौजूद हैं — बस इतना है कि जल्दबाज़ी से ज़्यादा धैर्य यहाँ काम आता है।",
-    "watch": "यहाँ ध्यान रखने लायक बातें मददगार बातों से थोड़ी ज़्यादा हैं। इसका मतलब यह नहीं कि अच्छे नतीजे नहीं मिलेंगे — बस इतना है कि जल्दबाज़ी से ज़्यादा धैर्य यहाँ काम आता है।",
-}
+def _balance_note_hi(n_help, n_watch):
+    """Real n_help/n_watch counting note -- mirrors report_view.py's English
+    `balance` string exactly (same three branches), Hindi wording matched to
+    the finalized reference PDF's own confirmed phrasing for the watch case."""
+    if n_help > n_watch:
+        return (f"यहाँ आपके पक्ष में काम करने वाली बातें ({n_help}) ध्यान रखने लायक बातों ({n_watch}) से ज़्यादा हैं। "
+                f"यह एक असली फ़ायदा है, लेकिन इसका मतलब यह नहीं कि मेहनत की ज़रूरत नहीं — वह अब भी आपकी अपनी ही है।")
+    if n_watch > n_help:
+        return (f"यहाँ ध्यान रखने लायक बातें ({n_watch}) मौजूदा सहारे ({n_help}) से थोड़ी ज़्यादा हैं। "
+                f"इसका मतलब यह नहीं कि अच्छे नतीजे नहीं मिलेंगे — बस इतना है कि जल्दबाज़ी से ज़्यादा धैर्य यहाँ काम आता है।")
+    return (f"यहाँ बातें लगभग बराबर हैं — {n_help} मददगार और {n_watch} ध्यान रखने लायक। "
+            f"आगे क्या होता है, यह कुंडली से ज़्यादा आपकी अपनी मेहनत पर निर्भर करेगा।")
 
 
 def _ord_hi(n):
@@ -500,44 +511,176 @@ def _why_text(area, p, verdict_tag):
     return lead + " " + tail
 
 
-def _favour_watch(area, p, verdict_tag):
-    """Reuses the exact same strengths[]/lessons[] cycling render_blueprint's
-    own tcard() uses for English -- same real data, same index-cycle logic,
-    just Hindi labels."""
-    strengths, lessons = p.get("strengths") or [], p.get("lessons") or []
-    idx = AREA_ORDER.index(area)
+def _quality_challenge_hi():
+    """Hindi mirror of report_view._bp_quality_challenge() -- same Rahu/Ketu
+    additions, same base PLANET_GIFT_HI/PLANET_LESSON_HI phrase banks."""
+    quality = dict(PLANET_GIFT_HI, Rahu="महत्वाकांक्षा और अनोखी लगन", Ketu="वैराग्य और शांत सहज-बुद्धि")
+    challenge = dict(PLANET_LESSON_HI, Rahu="बेचैनी और और पाने की होड़", Ketu="बहाव और कम ध्यान देना")
+    return quality, challenge
 
-    _fallback_hi = {
-        "A balanced chart — no single dominant planet; versatility is itself the gift":
-            "एक संतुलित कुंडली — कोई एक ग्रह हावी नहीं; हर काम में ढल जाना ही आपकी असली ताकत है",
-        "No major debilitations — your challenges are situational, not structural":
-            "कोई बड़ी कमज़ोर स्थिति नहीं — आपकी चुनौतियाँ हालात पर निर्भर हैं, बुनियादी नहीं",
-    }
 
-    def _tr(entry):
-        if entry in _fallback_hi:
-            return _fallback_hi[entry]
-        planet, rest = entry.split(" — ", 1)
-        planet_hi = PLANET_HI.get(planet, planet)
-        if rest.endswith(" (exalted)"):
-            return f"{planet_hi} — {PLANET_GIFT_HI.get(planet, rest)} (उच्च का)"
-        if rest.endswith(" (own sign)"):
-            return f"{planet_hi} — {PLANET_GIFT_HI.get(planet, rest)} (स्वराशि)"
-        return f"{planet_hi} — {PLANET_LESSON_HI.get(planet, rest)}"
+def _favour_watch_items_hi(str_infl, chg_infl):
+    """Real multi-item favour/watching cards -- Hindi mirror of
+    report_view.py's English `str_items`/`chg_items` construction inside
+    area_block(): one <div class="scitem"> per real planetary influence
+    (occupies or aspects the area's house), same fallback text when a chart
+    genuinely has none. Replaces the old single-line _favour_watch()."""
+    quality, challenge = _quality_challenge_hi()
+    str_items = "".join(
+        f'<div class="scitem">{quality.get(x["planet"], "इसकी अपनी अलग ऊर्जा")} की एक हल्की झलक इस क्षेत्र को सहारा देती है।</div>'
+        for x in str_infl
+    ) or '<div class="scitem">ऊपर बताए मुख्य पैटर्न से अलग यहाँ कोई अतिरिक्त परत नहीं — एक साफ़, सीधी तस्वीर।</div>'
+    chg_items = "".join(
+        f'<div class="scitem">{challenge.get(x["planet"], "थोड़े और धैर्य")} की एक हल्की छाया यहाँ ध्यान रखने लायक है।</div>'
+        for x in chg_infl
+    ) or '<div class="scitem">अभी यहाँ ध्यान देने लायक कुछ खास नहीं — यह क्षेत्र अपनी राह खुद बना सकता है।</div>'
+    return str_items, chg_items
 
-    if verdict_tag == "watch":
-        favour = "जो यहाँ पहले से काम कर रहा है, उसे करते रहें — लगातार मेहनत का फ़ायदा जुड़ता ही जाता है।"
-        watching = _tr(lessons[idx % len(lessons)]) if lessons else "अभी यही एक क्षेत्र है जिसमें थोड़ा ज़्यादा धैर्य रखना सही रहेगा।"
+
+AD_KIND_LABEL_HI = {"favorable": "अच्छा", "watch": "ध्यान ज़रूरी", "steady": "स्थिर"}
+_AD_TAG_CLASS_HI = {"favorable": "good", "watch": "warn", "steady": ""}
+BP_ROW_CAP_HI = 4
+
+BP_AREA_PHASE_NOTES_HI = {
+    "career": {"favorable": ["आपकी करियर दिशा के लिए असली गति वाला दौर — ज़्यादा आगे बढ़ने का अच्छा मौका।",
+                             "करियर के लिए एक और दौर जो आपके पक्ष में झुका है।"],
+              "watch": ["करियर से जुड़े फैसलों में सामान्य से थोड़ी ज़्यादा सावधानी माँगने वाला दौर।",
+                        "आगे एक ऐसा दौर, जिसमें बड़ा करियर फैसला लेने से पहले दोबारा जाँच लेना बेहतर।"],
+              "steady": ["करियर के लिए एक शांत दौर — कोई बड़ा बदलाव नहीं, बस धीरे-धीरे और लगातार बढ़ती प्रगति।",
+                        "करियर के लिए एक और स्थिर दौर; कुछ नाटकीय नहीं, बस लगातार।"]},
+    "money": {"favorable": ["पैसों के मामले में आपके पक्ष में झुका एक दौर।",
+                            "आर्थिक बढ़त के लिए मददगार एक और दौर।"],
+             "watch": ["पैसों से जुड़े फैसलों में अतिरिक्त धैर्य माँगने वाला दौर।",
+                       "आगे एक दौर जिसमें पैसों के मामले में थोड़ी ज़्यादा सावधानी बेहतर रहेगी।"],
+             "steady": ["आर्थिक रूप से एक शांत दौर — कमाई और खर्च दोनों स्थिर, कोई बड़ा उतार-चढ़ाव नहीं।",
+                       "एक और स्थिर आर्थिक दौर; निरंतरता ही इसका सार है।"]},
+    "marriage": {"favorable": ["इस रिश्ते पर असली ध्यान देने वाला दौर — इसमें समय लगाने का अच्छा मौका।",
+                               "साथी के साथ नज़दीकी बढ़ाने के लिए मददगार एक और दौर।"],
+                "watch": ["रिश्ते को अतिरिक्त धैर्य और देखभाल देने वाला दौर।",
+                          "आगे एक दौर जिसमें साथी के साथ थोड़ा और सोच-समझकर आगे बढ़ना बेहतर रहेगा।"],
+                "steady": ["इस रिश्ते के लिए एक शांत दौर — नाटकीय कुछ नहीं, बस स्थिरता।",
+                          "एक और स्थिर दौर; रिश्ता अपनी ही रफ़्तार से चलता रहता है।"]},
+    "children": {"favorable": ["इस बंधन पर असली ध्यान देने वाला दौर — इसे सहेजने का अच्छा मौका।",
+                               "बच्चों या परिवार से नज़दीकी के लिए मददगार एक और दौर।"],
+                "watch": ["इस बंधन को अतिरिक्त धैर्य देने वाला दौर।",
+                          "आगे एक दौर जिसमें इस बंधन को थोड़ी ज़्यादा सावधानी से संभालना बेहतर रहेगा।"],
+                "steady": ["इस बंधन के लिए एक शांत दौर — बस पृष्ठभूमि में बनी हुई नज़दीकी।",
+                          "एक और स्थिर दौर; यहाँ कुछ नाटकीय नहीं।"]},
+    "home": {"favorable": ["घर और संपत्ति से जुड़े फैसलों के लिए मददगार दौर।",
+                           "घर से जुड़ी प्रगति को सहारा देने वाला एक और दौर।"],
+            "watch": ["संपत्ति से जुड़े फैसलों में अतिरिक्त सावधानी माँगने वाला दौर।",
+                      "आगे एक दौर जिसमें घर से जुड़ा फैसला दोबारा जाँच लेना बेहतर।"],
+            "steady": ["घर और संपत्ति के लिए एक शांत दौर — नाटकीय कुछ नहीं।",
+                      "एक और स्थिर दौर; घर की स्थिति बनी रहती है।"]},
+    "foreign": {"favorable": ["यात्रा या स्थानांतरण के फैसले के लिए मददगार दौर।",
+                              "आगे बढ़ने या गति बनाए रखने के लिए सहायक एक और दौर।"],
+               "watch": ["यात्रा या स्थानांतरण से जुड़े फैसलों में अतिरिक्त धैर्य माँगने वाला दौर।",
+                         "आगे एक दौर जिसमें किसी बड़े कदम से पहले थोड़ा और सोचना बेहतर।"],
+               "steady": ["यात्रा और स्थानांतरण के लिए एक शांत दौर — कुछ जल्दबाज़ी वाला नहीं।",
+                         "एक और स्थिर दौर; हलचल कम ही रहती है।"]},
+    "health": {"favorable": ["ऊर्जा और सेहत के लिए सहायक दौर।",
+                             "अच्छी आदतों के टिकने के लिए मददगार एक और दौर।"],
+              "watch": ["दिनचर्या और संयम पर अतिरिक्त ध्यान माँगने वाला दौर।",
+                        "आगे एक दौर जिसमें आदतों को लेकर थोड़ी ज़्यादा सावधानी बेहतर रहेगी।"],
+              "steady": ["ऊर्जा और दिनचर्या के लिए एक शांत दौर — सामान्य, पर यही यहाँ अच्छी बात है।",
+                        "आराम और दिनचर्या के लिए एक और स्थिर दौर।"]},
+    "growth": {"favorable": ["व्यक्तिगत विकास और बड़े फैसलों के लिए मददगार दौर।",
+                             "आत्म-भरोसे और नई दिशा को सहारा देने वाला एक और दौर।"],
+              "watch": ["बड़े निजी फैसलों में अतिरिक्त धैर्य माँगने वाला दौर।",
+                        "आगे एक दौर जिसमें जल्दबाज़ी से पहले थोड़ा और सोचना बेहतर।"],
+              "steady": ["व्यक्तिगत विकास के लिए एक शांत दौर — भीतरी, बाहर से नाटकीय नहीं।",
+                        "एक और स्थिर दौर; विकास चुपचाप जारी रहता है।"]},
+    "family": {"favorable": ["पारिवारिक रिश्तों और पुराने जुड़ावों के लिए मददगार दौर।",
+                             "परिवार के साथ गर्मजोशी को सहारा देने वाला एक और दौर।"],
+              "watch": ["पारिवारिक रिश्तों में अतिरिक्त धैर्य माँगने वाला दौर।",
+                        "आगे एक दौर जिसमें पारिवारिक मामलों को थोड़ी ज़्यादा सावधानी से संभालना बेहतर।"],
+              "steady": ["पारिवारिक रिश्तों के लिए एक शांत दौर — पृष्ठभूमि में बनी गर्मजोशी।",
+                        "एक और स्थिर दौर; पारिवारिक जुड़ाव अपनी राह पर बना रहता है।"]},
+}
+
+
+def _bp_merge_ad_phases_hi(ad_phases):
+    """Hindi mirror of report_view._bp_merge_ad_phases() -- identical merge
+    rule, ported verbatim (row 0, today's live Antardasha, is never merged
+    with what follows)."""
+    if not ad_phases:
+        return []
+    first = ad_phases[0]
+    merged = [{"start": first["from"], "end": first["to"], "kind": first["kind"]}]
+    for ph in ad_phases[1:]:
+        if len(merged) > 1 and merged[-1]["kind"] == ph["kind"]:
+            merged[-1]["end"] = ph["to"]
+        else:
+            merged.append({"start": ph["from"], "end": ph["to"], "kind": ph["kind"]})
+    return merged
+
+
+def _bp_timeline_rows_hi(ad_phases, notes, heading_html=""):
+    """Hindi mirror of report_view._bp_timeline_rows(): real per-area
+    Antardasha rows, merged and capped at BP_ROW_CAP_HI, overflow folded into
+    one closing "आगे" row -- same real dates/lords products.py already
+    computes, Hindi labels only.
+
+    heading_html, when given, is the section's own eyebrow+h3.sub heading
+    -- it's bundled atomically with the first TWO rows (mirroring the
+    existing last-two-rows wrapper below) so a page break can never leave
+    the heading paired with just a single card: that reads as an
+    unfinished, stranded fragment even though nothing is technically
+    split. If even the heading+2 rows don't fit where they'd land, the
+    whole bundle defers to the next page instead."""
+    merged = _bp_merge_ad_phases_hi(ad_phases)
+    if len(merged) > BP_ROW_CAP_HI:
+        head, tail = merged[:BP_ROW_CAP_HI - 1], merged[BP_ROW_CAP_HI - 1:]
+        rows = head + [{"start": tail[0]["start"], "end": tail[-1]["end"],
+                        "kind": tail[0]["kind"], "beyond": True}]
     else:
-        favour = _tr(strengths[idx % len(strengths)]) if strengths else "आपकी कुंडली यहाँ आपके साथ है — यह शक करने की नहीं, आगे बढ़ने की जगह है।"
-        watching = "यहाँ कुछ भी ध्यान देने लायक नहीं — हमेशा जैसी सावधानी ही काफ़ी है।"
-    return favour, watching
+        rows = merged
+    seen, out = {}, []
+    for i, r in enumerate(rows):
+        kind = r["kind"]
+        n = seen.get(kind, 0); seen[kind] = n + 1
+        bank = notes[kind]
+        note = bank[min(n, len(bank) - 1)]
+        c = _AD_TAG_CLASS_HI.get(kind, "")
+        label_hi = AD_KIND_LABEL_HI[kind]
+        if r.get("beyond"):
+            out.append(f'<div class="phaserow beyond"><div class="yrs">आगे</div>'
+                        f'<div class="note"><b>{label_hi}</b> {r["start"]} से &mdash; {note}</div></div>')
+        elif i == 0:
+            out.append(f'<div class="phaserow {c}"><div class="yrs">मौजूदा दौर '
+                        f'<span class="tlrange">{r["start"]}&ndash;{r["end"]}</span></div>'
+                        f'<div><span class="tag">{label_hi}</span></div>'
+                        f'<div class="note">{note}</div></div>')
+        else:
+            out.append(f'<div class="phaserow {c} compact"><div class="yrs">अगला दौर '
+                        f'<span class="tlrange">{r["start"]}&ndash;{r["end"]}</span></div>'
+                        f'<div><span class="tag">{label_hi}</span></div>'
+                        f'<div class="note">{note}</div></div>')
+    if not heading_html:
+        if len(out) >= 2:
+            return "".join(out[:-2]) + f'<div style="page-break-inside:avoid">{out[-2]}{out[-1]}</div>'
+        return "".join(out)
+    # Bundle the heading with the first two rows (or fewer, if there aren't
+    # two) so a break can never land right after a single row -- either at
+    # least a heading-plus-two-cards worth of content fits here, or none of
+    # it does and the whole bundle moves to the next page together. Any
+    # remaining rows beyond that keep the original last-two-rows glue,
+    # since they no longer overlap with the head bundle (BP_ROW_CAP_HI
+    # caps `out` at 4 rows, so head takes at most 2, leaving at most 2 for
+    # the tail -- never both wrappers touching the same row).
+    head, tail = out[:2], out[2:]
+    head_group = f'<div style="page-break-inside:avoid">{heading_html}{"".join(head)}</div>'
+    if len(tail) >= 2:
+        tail_html = "".join(tail[:-2]) + f'<div style="page-break-inside:avoid">{tail[-2]}{tail[-1]}</div>'
+    else:
+        tail_html = "".join(tail)
+    return head_group + tail_html
 
 
 def _roadmap_phase_html(p):
-    """The SAME real global roadmap (current + next 2 Mahadashas) shown
-    identically on every area page -- the only real timeline
-    compute_blueprint() has; no per-area window is invented."""
+    """Timing (area 10) only -- not house-based, so it has no per-area
+    ad_phases; it reads the SAME real global roadmap (current + next 2
+    Mahadashas) English's own Timing page reads, matching that design."""
     rows = p.get("roadmap") or []
     out = []
     for i, r in enumerate(rows):
@@ -565,53 +708,99 @@ def _roadmap_phase_html(p):
 BLUEPRINT_HI_CSS = """
 .blockhead{width:min(430px,92vw);margin:0 auto 24px;min-height:min(830px,192vw);
   padding:clamp(30px,6.5vw,40px) clamp(22px,5.5vw,30px);
-  display:flex;flex-direction:column;justify-content:center;text-align:center;background:var(--cream);
+  display:block;text-align:center;background:var(--cream);
   border-radius:22px;box-shadow:0 14px 38px rgba(48,34,14,.18);position:relative}
+/* display:block, not flex: a flex column's min-height gets re-applied by
+   Chrome to EVERY fragment when the box is split across a page break, not
+   just sized once for the whole element -- so a short trailing or leading
+   fragment (e.g. a single sentence left over from the previous page, or a
+   heading's own intro before its table defers) was rendering as a nearly
+   empty min(830px,192vw)-tall card. A plain block element's min-height
+   only ever constrains its total height, so each print fragment sizes to
+   its own content instead. Block layout stacks these children (all
+   width:100% divs) identically to the flex-column it replaces, so nothing
+   else about the layout changes. */
 .blockhead .area-open,.blockhead .area-close,.blockhead .area-close2{width:100%;margin-top:18px}
 .blockhead .area-open:first-child{margin-top:0}
 .blockhead.page-center{align-items:center;justify-content:center;min-height:min(500px,120vw)}
 .page-center-inner{width:100%}
 .divider{width:min(430px,92vw);margin:0 auto 24px;padding:60px 30px;text-align:center;
   background:linear-gradient(165deg,var(--sand),var(--sand2));border-radius:22px;
-  box-shadow:0 14px 38px rgba(48,34,14,.18);display:flex;flex-direction:column;align-items:center;gap:10px}
+  box-shadow:0 14px 38px rgba(48,34,14,.18);display:flex;flex-direction:column;align-items:center;gap:10px;
+  break-inside:avoid;page-break-inside:avoid}
 .divider .dn{font-family:var(--serif,var(--display));font-size:40px;color:var(--gold);opacity:.6}
 .divider .dt{font-family:var(--serif,var(--display));font-weight:600;font-size:26px;color:var(--ink)}
 .divider .ds{font-size:14px;color:var(--muted);max-width:40ch}
 .divider .dlist{margin-top:14px;columns:2;column-gap:18px;text-align:left;width:100%}
 .divider .dlist div{font-size:12.5px;color:var(--body);padding:5px 0;border-bottom:1px solid var(--line)}
-.sccols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;text-align:left}
+.sccols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;text-align:left;
+  break-inside:avoid;page-break-inside:avoid}
 .sccols.tight{gap:8px}
-.sccard{background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:14px}
-.sccard.str{border-left:3px solid var(--green)}
-.sccard.chg{border-left:3px solid var(--terra)}
-.sch{font-weight:700;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:6px}
-.scitem{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5}
-.reasoncard{background:var(--gold-bg,#FBF4E7);border-radius:14px;padding:14px 16px;margin-top:14px;text-align:left}
+/* Tinted, borderless cards (not white+left-accent-border) -- matches the
+   finalized reference's compact Favour/Watching cards exactly, and mirrors
+   report_view.py's own .bp-sccard rule for the identical English card. */
+.sccard{border-radius:13px;padding:12px 14px;break-inside:avoid;page-break-inside:avoid}
+.sccard.str{background:var(--green-bg)}
+.sccard.chg{background:var(--terra-bg)}
+.sch{font-weight:700;font-size:12px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.sccard.str .sch{color:var(--green)}
+.sccard.chg .sch{color:var(--terra)}
+.sch svg{width:14px;height:14px;flex:none}
+.scitem{font-size:12.5px;color:var(--body);margin-top:8px;line-height:1.5}
+.reasoncard{background:var(--gold-bg,#FBF4E7);border-radius:14px;padding:14px 16px;margin-top:14px;text-align:left;
+  break-inside:avoid;page-break-inside:avoid}
 .reasoncard.warn{background:var(--terra-bg)}
 .reasoncard .rh{font-weight:700;font-size:12.5px;color:var(--gold);text-transform:uppercase;letter-spacing:.04em}
 .reasoncard p{font-size:13.5px;color:var(--body);margin-top:6px;line-height:1.55}
-.notecard{background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
-.chapterband{background:var(--gold-bg,#FBF4E7);border-radius:14px;padding:12px 16px;margin-top:10px;text-align:left}
+.notecard{background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;
+  break-inside:avoid;page-break-inside:avoid}
+.chapterband{background:var(--gold-bg,#FBF4E7);border-radius:14px;padding:12px 16px;margin-top:10px;text-align:left;
+  break-inside:avoid;page-break-inside:avoid}
 .chapterband .cl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:700}
 .chapterband .cv{font-size:14px;color:var(--ink);margin-top:2px}
 .wheel-wrap{margin-top:14px;display:flex;flex-direction:column;align-items:center}
 .wheel-legend{display:flex;justify-content:center;gap:16px;margin-top:6px;flex-wrap:wrap}
 .wheel-legend-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--body)}
 .wheel-legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-.phaserow{border-top:1px solid var(--line);padding:10px 0;text-align:left}
-.phaserow.good{background:rgba(62,125,90,.06)}
-.phaserow .yrs{font-size:12px;font-weight:700;color:var(--ink)}
-.phaserow .tlrange{font-weight:400;color:var(--muted);font-size:11px}
-.phaserow .tag{display:inline-block;font-size:11px;background:var(--gold-bg,#FBF4E7);color:var(--gold);
-  border-radius:999px;padding:2px 9px;margin-top:4px}
-.phaserow .note{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
-.dosdonts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;text-align:left}
-.ddcol{background:var(--card,#fff);border-radius:14px;padding:12px 14px}
-.ddcol h4{font-size:12.5px;display:flex;align-items:center;gap:6px;color:var(--ink)}
-.ddcol.do{border-left:3px solid var(--green)}
-.ddcol.dont{border-left:3px solid var(--terra)}
-.ddcol ul{margin:8px 0 0 16px;padding:0}
-.ddcol li{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
+/* Bordered, left-accented compact card per row (not a bare border-top
+   separator) -- matches the finalized reference's timeline exactly, and
+   mirrors report_view.py's own .adrow rule used for the identical English
+   per-area timeline. */
+.phaserow{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:12px;padding:9px 12px;margin-top:8px;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:3px 10px;text-align:left;break-inside:avoid;page-break-inside:avoid}
+.phaserow:first-of-type{margin-top:14px}
+.phaserow.good{border-left-color:var(--green)}
+.phaserow.warn{border-left-color:var(--terra)}
+.phaserow.beyond{border:1px solid transparent;border-left:4px solid transparent;
+  background:var(--sand2,#F1E9DA);padding:8px 12px}
+.phaserow.compact{padding:6px 12px;margin-top:6px}
+.phaserow.compact .yrs{font-size:12px}
+.phaserow.compact .note{font-size:11px}
+.phaserow .yrs{font-size:13px;font-weight:600;color:var(--ink);min-width:96px}
+.phaserow .tlrange{font-weight:400;color:var(--muted);font-size:10.5px;margin-left:4px}
+.phaserow .tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;
+  text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1.2px solid var(--gold);
+  color:var(--gold)}
+.phaserow.good .tag{border-color:var(--green);color:var(--green)}
+.phaserow.warn .tag{border-color:var(--terra);color:var(--terra)}
+.phaserow .note{font-size:12px;color:var(--muted);line-height:1.45;flex-basis:100%}
+/* Do/Watch stacks as two full-width bordered cards (not a cramped 2-column
+   grid that forces every bullet to wrap) -- matches the finalized
+   reference, mirroring report_view.py's .bp-dosdonts/.bp-ddcol. */
+.dosdonts{margin-top:14px;text-align:left}
+.dosdonts .ddcol+.ddcol{margin-top:10px}
+.ddcol{background:#fff;border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:13px;padding:11px 14px;break-inside:avoid;page-break-inside:avoid}
+.ddcol h4{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px;color:var(--ink)}
+.ddcol h4 svg{width:14px;height:14px;flex:none}
+.ddcol.do{border-left-color:var(--green)}
+.ddcol.do h4{color:var(--green)}
+.ddcol.dont{border-left-color:var(--terra)}
+.ddcol.dont h4{color:var(--terra)}
+.ddcol ul{list-style:none;margin:0;padding:0}
+.ddcol li{font-size:12.5px;color:var(--body);line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.ddcol li:first-child{border-top:none;padding-top:0}
 .reflect{font-style:italic;color:var(--gold);font-size:13.5px;margin-top:12px;text-align:center}
 .tl{margin-top:14px;text-align:left}
 .tlrow{border-top:1px solid var(--line);padding:12px 0;position:relative}
@@ -621,9 +810,85 @@ BLUEPRINT_HI_CSS = """
   padding:2px 9px;margin-left:8px}
 .tlrow .lord{font-size:13px;color:var(--ink);margin-top:4px;font-weight:600}
 .tlrow .theme{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.5}
-.gitem{text-align:left;border-top:1px dotted var(--line);padding:10px 0}
+.gitem{text-align:left;border-top:1px dotted var(--line);padding:10px 0;
+  break-inside:avoid;page-break-inside:avoid}
 .gitem dt{font-weight:700;font-size:13px;color:var(--ink)}
 .gitem dd{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+.tlrow{break-inside:avoid;page-break-inside:avoid}
+/* The 4x4 birth-kundli grid is one diagram, not twelve independent boxes
+   -- keep it (and its "South-Indian style" caption right under it) from
+   splitting across a page boundary. */
+.kundli{break-inside:avoid;page-break-inside:avoid}
+.kundli+.note{break-before:avoid;page-break-before:avoid}
+/* .lead (shared with English/Vyapar via report_view.py's own rule -- these
+   two lines only ADD pagination behaviour, they don't touch its existing
+   width/color/font/margin) is a short 1-4 line intro paragraph everywhere
+   it's used, so forcing it non-splittable never costs more than a few
+   lines of page space, while fixing two real bugs: a lead paragraph
+   splitting mid-sentence across a page break (seen after "हम इसे कैसे
+   निकालते हैं" in Part 2's Lagna & Moon page), and the empty-looking
+   oversized card that .blockhead's min-height produces when only a
+   trailing sliver of a lead paragraph lands alone on a new page. */
+.lead{break-inside:avoid;page-break-inside:avoid}
+h3.sub+.lead{break-before:avoid;page-break-before:avoid}
+.rule+.lead{break-before:avoid;page-break-before:avoid}
+/* The break-after/break-before "avoid" hints above only stop a break from
+   landing at that exact seam -- they can't undo already-placed content, so
+   when a short eyebrow+h2+rule genuinely fits in whatever space is left on
+   a page, the browser places it there anyway and defers the (non-optional,
+   atomic) .lead and table that follow, stranding a bare heading at the
+   page bottom (seen on Part 2's "Everything Mapped" page). Wrapping that
+   opening group in .sechead makes it one atomic unit the browser has to
+   fit or defer as a whole, so the heading always keeps its own intro. */
+.sechead{break-inside:avoid;page-break-inside:avoid}
+/* Keep a Part 2 data table (planet positions, houses, dasha timeline, the
+   full area map) together with its header rather than letting it split
+   row-by-row across a page boundary with the header left behind. */
+.tscroll{break-inside:avoid;page-break-inside:avoid}
+table.k tr{break-inside:avoid;page-break-inside:avoid}
+/* Forcing the whole opening (heading..reasoncard) or the whole closing
+   (Do/Watch..reflection) to move as one atomic group was too blunt: the
+   moment that group didn't fit in whatever space remained, the WHOLE
+   group deferred, leaving a large blank area behind it -- exactly the
+   failure this was meant to avoid, just relocated. Pagination inside a
+   life area now relies only on the individually-guarded pieces below
+   (.reasoncard, .lead, .sccard, .phaserow, .ddcol, .note, .reflect all
+   carry their own break-inside:avoid), plus the shared
+   .eyebrow/h2.head/h3.sub/.rule{break-after:avoid} glue -- so a heading
+   still keeps its immediate next line, and no individual card ever
+   splits, but the browser is free to pack a page as full as those pieces
+   allow instead of moving an entire section at once. */
+.note{break-inside:avoid;page-break-inside:avoid}
+.reflect{break-inside:avoid;page-break-inside:avoid}
+/* Part 2's topic sections are the opposite case from a Part 1 life area:
+   each one (Lagna & Moon, Every Planet Placed, the Houses, Connections,
+   Sade Sati, How Every Tag Was Set, ...) is short enough on its own to be
+   a single natural page, so splitting one mid-way -- e.g. two small cards
+   on one page and their explanatory paragraphs on the next -- just wastes
+   the rest of both pages instead of saving any space. .sec2 marks only
+   those short, self-contained sections atomic; it is never used on a life
+   area's .blockhead (those stay unforced, per the note above), and the
+   handful of Part 2 sections whose length genuinely varies with the
+   user's chart (the remaining-Mahadashas roadmap, the closing thank-you)
+   are deliberately left off this list so they can still split between
+   their own individually-guarded rows/cards if they ever need to. */
+.blockhead.sec2{break-inside:avoid;page-break-inside:avoid}
+.page.hi-cover{justify-content:flex-start;align-items:flex-start;text-align:left;padding-top:clamp(40px,9vw,58px)}
+.page.hi-cover .col{align-items:flex-start;flex:1 1 auto}
+.page.hi-cover .cov-pills{justify-content:flex-start}
+.page.hi-cover .cov-footer{margin-top:auto;padding-top:28px;text-align:left}
+.page.hi-cover::before{content:none}
+/* Forcing area-open/area-close/area-close2 onto separate physical pages
+   (an earlier attempt to match the reference's page count exactly) traded
+   one bug for another: whenever a section's own content ended early, the
+   forced break stranded the rest of that physical page as dead space
+   instead of letting the next section flow up into it. Natural, unforced
+   flow -- governed only by break-inside:avoid on the atomic cards below
+   (.sccard, .phaserow, .ddcol, .reasoncard, .notecard) plus .blockhead's
+   own top-alignment and orphan guards -- packs pages as tightly as the
+   content allows, exactly like Part 2 (which never had a forced break and
+   already paginates cleanly) and exactly like report_view.py's English
+   .blockhead, which uses the same unforced approach. */
 """
 
 # ===========================================================================
@@ -753,11 +1018,16 @@ def _planet_table_html(p):
 
 def area_block(area, p, num):
     """One Part-1 area page: verdict badge, headline, body, why-reasoncard,
-    favour/watching cards, the shared real roadmap timeline, do/watch lists,
-    balance note, reflection quote. Every dynamic value traces back to `p`."""
+    real per-area favour/watching cards, the real per-area Antardasha
+    timeline, do/watch lists, a real balance note, reflection quote. Every
+    dynamic value traces back to `p` -- ad_phases/strengths_infl/
+    challenges_infl come from p["area_detail"][area], already computed and
+    personalized by products.py's compute_blueprint() (same fields English
+    reads)."""
     tag = p["wheel"][area]
     cls = {"thriving": "good", "watch": "warn"}.get(tag, "")
     label_part = AREA_LABEL_HI[area]
+    d = p["area_detail"][area]
     if area == "growth":
         lagna_idx = SIGNS.index(p["chart"]["lagna"])
         headline = LAGNA_PERSONA_HI[lagna_idx]
@@ -766,10 +1036,16 @@ def area_block(area, p, num):
         headline = _area_headline(area, p)
         body_extra = ""
     why_text = _why_text(area, p, tag)
-    favour, watching = _favour_watch(area, p, tag)
+    str_infl = d.get("strengths_infl") or []
+    chg_infl = d.get("challenges_infl") or []
+    str_items, chg_items = _favour_watch_items_hi(str_infl, chg_infl)
+    n_help, n_watch = len(str_infl), len(chg_infl)
+    balance_note = _balance_note_hi(n_help, n_watch)
     do_html = "".join(f"<li>{x}</li>" for x in AREA_DO_HI[area])
     watch_html = "".join(f"<li>{x}</li>" for x in AREA_WATCH_HI[area])
-    phase_html = _roadmap_phase_html(p)
+    timeline_heading_html = (f'<div class="eyebrow" style="margin-top:22px">भाग 1 &middot; {num} &middot; {label_part}</div>'
+                              f'<h3 class="sub" style="margin-top:6px">आपके अध्यायों के हिसाब से</h3>')
+    phase_html = _bp_timeline_rows_hi(d.get("ad_phases") or [], BP_AREA_PHASE_NOTES_HI[area], timeline_heading_html)
     reflect = AREA_REFLECT_HI[area]
     icon_name = AREA_ICON[area]
     verdict_icon = "i-check" if cls == "good" else ("i-alert" if cls == "warn" else "i-clock")
@@ -786,11 +1062,9 @@ def area_block(area, p, num):
   </div>
   <div class="area-close">
   <div class="sccols">
-    <div class="sccard str"><div class="sch">{icon('i-check')} आपके पक्ष में क्या काम कर रहा है</div><div class="scitem">{favour}</div></div>
-    <div class="sccard chg"><div class="sch">{icon('i-alert')} किस पर नज़र रखनी है</div><div class="scitem">{watching}</div></div>
+    <div class="sccard str"><div class="sch">{icon('i-check')} आपके पक्ष में क्या काम कर रहा है</div>{str_items}</div>
+    <div class="sccard chg"><div class="sch">{icon('i-alert')} किस पर नज़र रखनी है</div>{chg_items}</div>
   </div>
-  <div class="eyebrow" style="margin-top:22px">भाग 1 &middot; {num} &middot; {label_part}</div>
-  <h3 class="sub" style="margin-top:6px">आपके अध्यायों के हिसाब से</h3>
   <div>{phase_html}</div>
   </div>
   <div class="area-close2">
@@ -798,7 +1072,7 @@ def area_block(area, p, num):
     <div class="ddcol do"><h4>{icon('i-check')} करें</h4><ul>{do_html}</ul></div>
     <div class="ddcol dont"><h4>{icon('i-alert')} ध्यान रखें</h4><ul>{watch_html}</ul></div>
   </div>
-  <div class="note">{BALANCE_NOTE_HI[tag]}</div>
+  <div class="note">{balance_note}</div>
   <div class="reflect">&ldquo;{reflect}&rdquo;</div>
   </div>
 </div>"""
@@ -862,7 +1136,6 @@ def render_blueprint_hi(p: dict) -> str:
     moon_sa = p["chart"]["planets"]["Moon"]["sign"]
     lagna_idx, moon_idx = SIGNS.index(lagna_sa), SIGNS.index(moon_sa)
     lagna_line_hi = LAGNA_PERSONA_HI[lagna_idx]
-    moon_line_hi = LAGNA_PERSONA_HI[moon_idx]
     teaser = p["teaser"]
     wheel = p["wheel"]
     roadmap = p.get("roadmap") or []
@@ -878,7 +1151,13 @@ def render_blueprint_hi(p: dict) -> str:
               '</div>')
 
     # ---- Cover ----
-    cover = f"""<div class="cover">
+    # Wrapped in the same <section class="page sand"> the English renderer
+    # uses for its cover (report_view.py) instead of the older, unrelated
+    # dark .cover card -- same shared _VYAPAR_CSS .cov-*/​.page.sand rules,
+    # so this gets the finalized reference's actual cream, one-page-exactly,
+    # print-forced-break-after treatment instead of drifting into the next
+    # section.
+    cover = f"""<section class="page sand hi-cover"><div class="col">
   <div class="cov-brand">AXTROSHASTRA &middot; जीवन ब्लूप्रिंट</div>
   <div class="cov-name">{name}</div>
   <div class="cov-line">{lagna_line_hi}</div>
@@ -892,11 +1171,15 @@ def render_blueprint_hi(p: dict) -> str:
     <div class="cov-meta">स्विस इफ़ेमेरिस &middot; लाहिड़ी अयनांश{f" &middot; जन्म समय {_time_of_day_hi(m.get('tob'))}" if _time_of_day_hi(m.get('tob')) else ""}</div>
     <div class="cov-meta right">तैयार की गई {m.get("generated", "")}</div>
   </div>
-</div>"""
+</div></section>"""
 
     # ---- Note for you ----
+    # Same fix: <section class="page"> forces exactly one physical page with
+    # a guaranteed break after (print-only rule, already used by English),
+    # so the note card can no longer split across a page boundary the way it
+    # did as a plain .blockhead with no forced page-break.
     first_name = name.split(" ")[0] if name else ""
-    note = f"""<div class="blockhead" style="margin-top:40pt">
+    note = f"""<section class="page"><div class="col">
   <div class="eyebrow" style="text-align:center;display:block">आपके लिए एक बात</div>
   <h2 class="head" style="text-align:center">आगे पढ़ने से पहले</h2>
   <div class="rule" style="margin-left:auto;margin-right:auto"></div>
@@ -906,26 +1189,23 @@ def render_blueprint_hi(p: dict) -> str:
     <div class="lead" style="font-size:16px;margin-top:10px">भाग 1 में पढ़ें कि यह क्या कहती है। भाग 2 में पढ़ें, अगर आप हमारा काम जाँचना चाहते हैं।</div>
     <div class="note" style="border-top:none;padding-top:6px;font-style:italic;text-align:center;color:var(--gold);font-weight:600">&mdash; आपका ज्योतिष, AxtroShastra</div>
   </div>
-</div>"""
+</div></section>"""
 
     # ---- Contents ----
     toc_rows = [("00", "एक नज़र में")] + [(f"0{i+1}" if i < 9 else str(i+1), AREA_LABEL_HI[a])
                                           for i, a in enumerate(AREA_ORDER + ["timing"])]
     toc_html = "".join(f'<div class="scitem" style="border-top:1px dotted var(--line);padding-top:8px;margin-top:8px"><b>{n}</b> &nbsp; {t}</div>' for n, t in toc_rows)
-    toc = f"""<div class="blockhead">
-  <div class="area-open">
+    toc = f"""<section class="page"><div class="col">
   <div class="eyebrow">इस रिपोर्ट में क्या है</div>
   <h2 class="head">विषय-सूची</h2>
   <div class="rule"></div>
   <div class="lead" style="font-size:16px">भाग 1 आपके जीवन के दस क्षेत्र पढ़ता है। भाग 2 दिखाता है कि हर बात किस आधार पर कही गई।</div>
   <div style="margin-top:6px">{toc_html}</div>
   <div class="note">भाग 2 &mdash; &ldquo;यह निष्कर्ष कैसे निकले&rdquo; भाग 1 के बाद शुरू होता है।</div>
-  </div>
-</div>"""
+</div></section>"""
 
     # ---- At a glance / wheel ----
-    glance = f"""<div class="blockhead">
-  <div class="area-open">
+    glance = f"""<section class="page"><div class="col">
   <div class="eyebrow">एक नज़र में</div>
   <h2 class="head">आपका जीवन ब्लूप्रिंट</h2>
   <div class="rule"></div>
@@ -938,23 +1218,7 @@ def render_blueprint_hi(p: dict) -> str:
     {wheel_svg}
     {legend}
   </div>
-  </div>
-</div>"""
-
-    # ---- About you ----
-    nakp = p["nak_profile"]
-    about = f"""<div class="blockhead">
-  <div class="area-open">
-  <div class="eyebrow">आपके बारे में</div>
-  <h2 class="head">कुंडली के अनुसार, आप कौन हैं</h2>
-  <div class="rule"></div>
-  <div class="pts">
-    <div class="pt"><svg class="ic pi"><use href="#i-scales"/></svg><div class="tx"><b>{SIGN_HI[lagna_sa]} लग्न &mdash; आपका बाहरी रूप</b>{lagna_line_hi}।</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-moon"/></svg><div class="tx"><b>{SIGN_HI[moon_sa]} चंद्रमा &mdash; आप अंदर से कैसे चलते हैं</b>{moon_line_hi}।</div></div>
-    <div class="pt"><svg class="ic pi"><use href="#i-book"/></svg><div class="tx"><b>{NAKSHATRA_HI.get(nakp["nakshatra"], nakp["nakshatra"])} नक्षत्र</b>{_shi(nakp["nature"])}।</div></div>
-  </div>
-  </div>
-</div>"""
+</div></section>"""
 
     # ---- Part 1: nine area pages + timing ----
     area_pages = "".join(area_block(a, p, f"{i+1:02d}") for i, a in enumerate(AREA_ORDER))
@@ -974,7 +1238,7 @@ def render_blueprint_hi(p: dict) -> str:
 </div>"""
 
     # ---- Kundli chart ----
-    kundli = f"""<div class="blockhead">
+    kundli = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; आपकी कुंडली</div>
   <h2 class="head">आपकी जन्म-कुंडली</h2>
   <div class="rule"></div>
@@ -984,9 +1248,10 @@ def render_blueprint_hi(p: dict) -> str:
 </div>"""
 
     # ---- Lagna & Moon ----
+    nakp = p["nak_profile"]
     lagna_lord_hi = PLANET_HI[SIGN_LORD[lagna_idx]]
     moon_lord_hi = PLANET_HI[SIGN_LORD[moon_idx]]
-    lagna_moon = f"""<div class="blockhead">
+    lagna_moon = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; शुरुआती बिंदु</div>
   <h2 class="head">आपका लग्न और चंद्र</h2>
   <div class="rule"></div>
@@ -1001,7 +1266,7 @@ def render_blueprint_hi(p: dict) -> str:
 </div>"""
 
     # ---- Every planet, placed ----
-    planet_table = f"""<div class="blockhead">
+    planet_table = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; पूरी तस्वीर</div>
   <h2 class="head">हर ग्रह, उसकी जगह पर</h2>
   <div class="rule"></div>
@@ -1017,7 +1282,7 @@ def render_blueprint_hi(p: dict) -> str:
         for pl in _PLANET_ORDER for info in [p["chart"]["planets"].get(pl)]
         if info and info.get("retro")
     )
-    loudest = f"""<div class="blockhead">
+    loudest = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; सबसे तेज़ आवाज़ें</div>
   <h2 class="head">ध्यान देने लायक स्थितियाँ</h2>
   <div class="rule"></div>
@@ -1034,7 +1299,7 @@ def render_blueprint_hi(p: dict) -> str:
         conns = [c for c in _house_connections(p, lagna_idx, house_num) if c[0] != p["area_detail"][a]["lord"]]
         items = ", ".join(f'{PLANET_HI[pl]} ({"यहीं बैठा है" if kind == "sit" else "दूर से असर डालता है"})' for pl, kind in conns) or "अभी कोई अतिरिक्त जुड़ाव नहीं।"
         conn_rows += f'<div class="scitem" style="border-top:1px dotted var(--line);padding-top:8px;margin-top:8px"><b>{_CONN_SHORT_HI[a]}</b><br>{items}</div>'
-    connections = f"""<div class="blockhead">
+    connections = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; जुड़ाव</div>
   <h2 class="head">भावों के स्वामी और जुड़ाव</h2>
   <div class="rule"></div>
@@ -1050,7 +1315,7 @@ def render_blueprint_hi(p: dict) -> str:
     h7_12_tr = "".join(f'<tr><td>{h["house"]}वां</td><td>{SIGN_HI[h["sign"]]}</td><td>{PLANET_HI[h["lord"]]}</td></tr>' for h in h7_12)
     h1_6_map = "".join(f'<div class="scitem" style="border-top:none;padding-top:0;margin-top:6px">{h["house"]}वां &mdash; भाग 1 में {HOUSE_AREA_LINE_HI[h["house"]]}</div>' for h in h1_6)
     h7_12_map = "".join(f'<div class="scitem" style="border-top:none;padding-top:0;margin-top:6px">{h["house"]}वां &mdash; भाग 1 में {HOUSE_AREA_LINE_HI[h["house"]]}</div>' for h in h7_12)
-    houses1 = f"""<div class="blockhead">
+    houses1 = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; बारह भाव</div>
   <h2 class="head">भाव 1&ndash;6</h2>
   <div class="rule"></div>
@@ -1059,7 +1324,7 @@ def render_blueprint_hi(p: dict) -> str:
   <h3 class="sub" style="margin-top:14px">भाग 1 में यह कहाँ दिखता है</h3>
   <div>{h1_6_map}</div>
 </div>"""
-    houses2 = f"""<div class="blockhead">
+    houses2 = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; बारह भाव</div>
   <h2 class="head">भाव 7&ndash;12</h2>
   <div class="rule"></div>
@@ -1069,7 +1334,7 @@ def render_blueprint_hi(p: dict) -> str:
 </div>"""
 
     # ---- Dashas, explained ----
-    dashas_explained = """<div class="blockhead">
+    dashas_explained = """<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; समय की व्यवस्था</div>
   <h2 class="head">दशाएँ, समझाई गईं</h2>
   <div class="rule"></div>
@@ -1089,7 +1354,7 @@ def render_blueprint_hi(p: dict) -> str:
         for a in ads
     )
     md = p.get("dasha_current_md")
-    dasha_timeline = f"""<div class="blockhead">
+    dasha_timeline = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; यह अध्याय</div>
   <h2 class="head">आपकी दशा समय-रेखा</h2>
   <div class="rule"></div>
@@ -1117,7 +1382,7 @@ def render_blueprint_hi(p: dict) -> str:
 
     # ---- Where the sky is today (transits) ----
     ya = p.get("year_ahead") or {}
-    transits = f"""<div class="blockhead">
+    transits = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; अभी</div>
   <h2 class="head">आज आसमान कहाँ है</h2>
   <div class="rule"></div>
@@ -1141,7 +1406,7 @@ def render_blueprint_hi(p: dict) -> str:
     else:
         verdict_txt = "अभी सक्रिय नहीं"
         lead_txt = "आप अभी साढ़े साती में नहीं हैं &mdash; इस समय शनि आपके जन्म-चंद्र के पास नहीं है।"
-    sade_page = f"""<div class="blockhead">
+    sade_page = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; सबसे जाना-पहचाना चक्र</div>
   <h2 class="head">साढ़े साती</h2>
   <div class="rule"></div>
@@ -1152,7 +1417,7 @@ def render_blueprint_hi(p: dict) -> str:
 </div>"""
 
     # ---- How every tag was set ----
-    how_set = """<div class="blockhead">
+    how_set = """<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; नियम</div>
   <h2 class="head">हर टैग कैसे तय हुआ</h2>
   <div class="rule"></div>
@@ -1169,7 +1434,7 @@ def render_blueprint_hi(p: dict) -> str:
     cd = p["area_detail"]["career"]
     cd_lord_hi, cd_sign_hi = PLANET_HI[cd["lord"]], SIGN_HI[cd["lord_sign"]]
     cd_tag = wheel["career"]
-    worked_example = f"""<div class="blockhead">
+    worked_example = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; उदाहरण के साथ</div>
   <h2 class="head">किसी क्षेत्र की स्थिति दूसरे से बेहतर क्यों होती है</h2>
   <div class="rule"></div>
@@ -1185,18 +1450,18 @@ def render_blueprint_hi(p: dict) -> str:
         f"<td>{PLANET_HI[p['area_detail'][a]['lord']]}</td><td>{VERDICT_WORD_HI[wheel[a]]}</td></tr>"
         for a in AREA_ORDER + ["timing"]
     )
-    mapped_table = f"""<div class="blockhead page-center">
-  <div class="page-center-inner">
+    mapped_table = f"""<div class="blockhead sec2">
+  <div class="sechead">
   <div class="eyebrow">भाग 2 &middot; सब कुछ, नक़्शे पर</div>
   <h2 class="head">हर रीडिंग, एक तालिका में</h2>
   <div class="rule"></div>
   <div class="lead" style="font-size:16px">भाग 1 के दस क्षेत्रों से वापस उस भाव और ग्रह तक का पूरा नक़्शा, जहाँ से हर बात आई।</div>
-  <div class="tscroll"><table class="k"><tr><th>क्षेत्र</th><th>भाव</th><th>स्वामी</th><th>रीडिंग</th></tr>{map_rows}</table></div>
   </div>
+  <div class="tscroll"><table class="k"><tr><th>क्षेत्र</th><th>भाव</th><th>स्वामी</th><th>रीडिंग</th></tr>{map_rows}</table></div>
 </div>"""
 
     # ---- What this report is ----
-    what_report = f"""<div class="blockhead">
+    what_report = f"""<div class="blockhead sec2">
   <div class="eyebrow">भाग 2 &middot; ईमानदारी</div>
   <h2 class="head">यह रिपोर्ट क्या है</h2>
   <div class="rule"></div>
@@ -1228,7 +1493,7 @@ def render_blueprint_hi(p: dict) -> str:
         ("नक्षत्र", "आकाश के 27 तारा-आधारित विभाजनों में से एक। आपकी चंद्र राशि में एक बारीक, और ज़्यादा निजी परत जोड़ता है।"),
     ]
     terms_html = "".join(f'<div class="gitem"><dt>{t}</dt><dd>{d}</dd></div>' for t, d in terms_hi)
-    glossary = f"""<div class="blockhead">
+    glossary = f"""<div class="blockhead sec2">
   <div class="area-open">
   <div class="eyebrow">भाग 2 &middot; सीधी भाषा में</div>
   <h2 class="head">एक छोटी शब्दावली</h2>
@@ -1251,7 +1516,7 @@ def render_blueprint_hi(p: dict) -> str:
   <div class="cov-trust">www.axtroshastra.com &middot; स्विस इफ़ेमेरिस &middot; लाहिड़ी अयनांश</div>
 </div>"""
 
-    parts = [cover, note, toc, glance, about, area_pages, timing_page, divider,
+    parts = [cover, note, toc, glance, area_pages, timing_page, divider,
              kundli, lagna_moon, planet_table, loudest, houses1, houses2, connections,
              dashas_explained, dasha_timeline, chapters_ahead, transits, sade_page, how_set,
              worked_example, mapped_table, what_report, glossary, closing]
