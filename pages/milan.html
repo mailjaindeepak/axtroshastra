@@ -306,6 +306,7 @@ fbq('track', 'PageView');
       <div class="field"><label>Date of birth</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off"><select id="p1-mm" required aria-label="Month"><option value="" disabled selected hidden>Month</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" required aria-label="Year" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">Time of birth <span style="color:var(--muted);font-weight:400">(don't know? leave it blank)</span></label><div class="tob3"><select id="p1-hh" aria-label="Hour"></select><select id="p1-mm2" aria-label="Minute"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">Place of birth</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="City (e.g., Jaipur)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Just your city or district is enough — a specific locality won't appear in search.</div></div>
+      <div class="field"><label for="wa-phone">WhatsApp Number</label><input id="wa-phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Your report will be sent here — make sure it's your WhatsApp number.</div></div>
       <button class="btn" type="submit">Get your free snapshot →</button>
     </form>
   </div>
@@ -621,6 +622,8 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
   var p1dob = buildDob('p1'), p2dob = buildDob('p2');
   if(!p1dob || !p2dob){ alert('Please enter the full date of birth for both partners.'); return; }
   if(p1dob === 'invalid' || p2dob === 'invalid'){ alert('One of the dates does not exist — please re-check.'); return; }
+  var waPhone = axNormPhone(document.getElementById('wa-phone').value);
+  if(!waPhone){ alert('Please enter a valid 10-digit WhatsApp number.'); document.getElementById('wa-phone').focus(); return; }
   var btn = this.querySelector('.btn');
   btn.textContent = 'Matching…'; btn.disabled = true;
   showAnalyzing();
@@ -639,9 +642,14 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
         p2_tob: document.getElementById('p2-tob').value || null,
         p2_place: document.getElementById('p2-place').value.trim(),
         p2_gender: 'male',     // p2 fields sit under the "BOY" section
+        whatsapp: waPhone,
         variant: location.pathname
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
+    // Pre-fill the pre-payment contact popup with the number just collected here,
+    // so a returning-to-checkout buyer isn't asked for the same number twice.
+    AX_CONTACT = {phone: waPhone, email: (AX_CONTACT && AX_CONTACT.email) || ''};
+    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(__e){}
     var data = await res.json();
     REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
     var t = data.teaser; window.__teaserData = t;

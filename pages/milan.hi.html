@@ -306,6 +306,7 @@ fbq('track', 'PageView');
       <div class="field"><label>जन्म तिथि</label><div class="dob-row"><input id="p1-dd" type="text" inputmode="numeric" maxlength="2" placeholder="दिन" required aria-label="दिन" autocomplete="off"><select id="p1-mm" required aria-label="माह"><option value="" disabled selected hidden>माह</option></select><input id="p1-yy" type="text" inputmode="numeric" maxlength="4" placeholder="वर्ष" required aria-label="वर्ष" autocomplete="off"></div></div>
       <div class="field"><label for="p1-tob">जन्म समय <span style="color:var(--muted);font-weight:400">(पता नहीं? खाली छोड़ दें)</span></label><div class="tob3"><select id="p1-hh" aria-label="घंटा"></select><select id="p1-mm2" aria-label="मिनट"></select><select id="p1-ap" aria-label="AM/PM"></select></div><input id="p1-tob" type="hidden"></div>
       <div class="field"><label for="p1-place">जन्म स्थान</label><div class="place-wrap"><input id="p1-place" type="text" placeholder="शहर (जैसे, जयपुर)" autocomplete="off" required><div id="p1-place-list" class="city-suggest"></div></div><div id="p1-place-hint" class="field-hint"></div><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">सिर्फ़ आपका शहर या ज़िला काफ़ी है — कोई छोटा मोहल्ला सर्च में नहीं आएगा।</div></div>
+      <div class="field"><label for="wa-phone">WhatsApp नंबर</label><input id="wa-phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required><div class="field-sub" style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">आपकी रिपोर्ट यहीं भेजी जाएगी — पक्का करें कि यह आपका WhatsApp नंबर है।</div></div>
       <button class="btn" type="submit">अपना फ़्री स्नैपशॉट पाएँ →</button>
     </form>
   </div>
@@ -624,6 +625,8 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
   var p1dob = buildDob('p1'), p2dob = buildDob('p2');
   if(!p1dob || !p2dob){ alert('कृपया दोनों पार्टनर की पूरी जन्म तिथि भरें।'); return; }
   if(p1dob === 'invalid' || p2dob === 'invalid'){ alert('इनमें से एक तारीख़ मौजूद नहीं है — कृपया दोबारा जाँचें।'); return; }
+  var waPhone = axNormPhone(document.getElementById('wa-phone').value);
+  if(!waPhone){ alert('कृपया एक सही 10-अंकों का WhatsApp नंबर डालें।'); document.getElementById('wa-phone').focus(); return; }
   var btn = this.querySelector('.btn');
   btn.textContent = 'मिलान हो रहा है…'; btn.disabled = true;
   showAnalyzing();
@@ -642,9 +645,14 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
         p2_tob: document.getElementById('p2-tob').value || null,
         p2_place: document.getElementById('p2-place').value.trim(),
         p2_gender: 'male',     // p2 fields sit under the "BOY" section
+        whatsapp: waPhone,
         variant: location.pathname
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'कुछ गड़बड़ हो गई'); }
+    // Pre-fill the pre-payment contact popup with the number just collected here,
+    // so a returning-to-checkout buyer isn't asked for the same number twice.
+    AX_CONTACT = {phone: waPhone, email: (AX_CONTACT && AX_CONTACT.email) || ''};
+    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(__e){}
     var data = await res.json();
     REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
     var t = data.teaser; window.__teaserData = t;

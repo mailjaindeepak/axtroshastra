@@ -1997,6 +1997,7 @@ class MilanIn(BaseModel):
     p1_gender: str | None = None; p2_gender: str | None = None
     variant: str | None = None
     email: str | None = None
+    whatsapp: str | None = None        # collected on the compatibility form itself
     captcha_token: str | None = None
 
 @app.post("/api/milan")
@@ -2016,6 +2017,13 @@ def create_milan(inp: MilanIn):
         report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
     save_report(rid, report)
+    if inp.whatsapp:
+        # Reuses the same normalisation + storage the pre-payment popup uses
+        # (reports.user_phone) — collection only, no message is sent here.
+        try:
+            store_user_contact(rid, phone=inp.whatsapp)
+        except Exception as e:
+            logger.error("[milan] whatsapp capture failed for %s: %s", rid, e)
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
