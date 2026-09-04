@@ -228,6 +228,7 @@ async function fillCompatibility(page) {
     await page.selectOption(`#${p}-ap`, TIME.ap);
     await pickCity(page, p, 'Jaipur');
   }
+  await page.fill('#wa-phone', testPhone());
   await page.locator('#milanForm button[type="submit"]').click();
 }
 
