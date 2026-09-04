@@ -59,6 +59,42 @@ def test_order_persists_popup_phone_and_email(client, monkeypatch):
     assert meta["_email"] == "pdf@example.com"
 
 
+# ------------------------------------------------ /api/milan captures WhatsApp
+MILAN = {"p1_name": "Priya", "p1_dob": "1996-01-20", "p1_tob": "14:00",
+         "p1_place": "Mumbai",
+         "p2_name": "Ravi", "p2_dob": "1995-08-15", "p2_tob": "10:30",
+         "p2_place": "Delhi"}
+
+
+def test_milan_form_captures_whatsapp_number(client):
+    r = client.post("/api/milan", json={**MILAN, "whatsapp": "98765 00002"})
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    with api.db() as c:
+        row = c.execute("SELECT user_phone FROM reports WHERE id=?",
+                        (rid,)).fetchone()
+    assert row[0] == "+919876500002"          # normalised, same as the popup path
+
+
+def test_milan_form_without_whatsapp_still_works(client):
+    """whatsapp stays optional -- existing callers that don't send it must not break."""
+    r = client.post("/api/milan", json=MILAN)
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    with api.db() as c:
+        row = c.execute("SELECT user_phone FROM reports WHERE id=?",
+                        (rid,)).fetchone()
+    assert (row[0] or "") == ""
+
+
+def test_milan_form_bad_whatsapp_never_breaks_report_creation(client):
+    """A value the client-side check should have caught (too short) must never
+    crash report creation server-side, whatever _norm_mobile does with it --
+    the real gate is the form's own axNormPhone() validation before submit."""
+    r = client.post("/api/milan", json={**MILAN, "whatsapp": "123"})
+    assert r.status_code == 200, r.text
+
+
 def test_order_does_not_clobber_existing_form_email(client, monkeypatch):
     rid = _new_report(client, email="form@example.com")
     _stub_rzp(monkeypatch)
