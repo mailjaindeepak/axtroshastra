@@ -217,6 +217,25 @@ footer b{color:#B9BBD0}
   .kundli-bg{width:520px;right:-60px;opacity:.6}
   .hero{padding:48px 0 72px}
 }
+
+/* ---------- MARRIAGE REPORT PREVIEW SECTION: sits AFTER the existing
+   chart/chart-facts/windows-found/timeline block (all unchanged above) —
+   personalized headline, insight cards, a locked-content teaser, and a
+   "reveals" label ahead of the existing paywall bullet list. The
+   .teaser/.chart-facts/.timeline/.paywall rules themselves already exist
+   above (dormant, inherited from the v1 template); everything below is
+   purely new, additive classes. ---------- */
+.mr-headline{text-align:center;margin:22px 0 16px}
+.mr-h{font-family:var(--display);font-weight:800;font-size:19px;color:var(--ink);line-height:1.45}
+.mr-h b{color:var(--sindoor)}
+.mr-sub{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.02em}
+.insights{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.insight-card{background:var(--card);border-left:3px solid var(--haldi);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;line-height:1.55;color:var(--ink);box-shadow:0 4px 14px rgba(35,37,59,.06)}
+.insight-card .lbl{display:block;font-family:var(--display);font-weight:700;font-size:12px;color:var(--sindoor);margin-bottom:3px}
+.locked-teaser{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1.5px dashed var(--haldi);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#6B5A2E}
+.locked-teaser .ic{flex:none;font-size:15px;line-height:1.4}
+.locked-teaser b{color:#5c4a1a}
+.reveals-label{font-family:var(--display);font-weight:700;font-size:14px;color:var(--ink);margin:2px 0 10px}
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -332,6 +351,65 @@ fbq('track', 'PageView');
     <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
+
+<!-- ============ REPORT PREVIEW / TEASER — hidden until first submit. Every
+     value below comes from THIS submission's own /api/kundli response
+     (report["teaser"], api.py) — same real-data pattern as shaadi.html (v1)
+     and the Compatibility teaser (milan.html); nothing here is invented. ============ -->
+<section class="teaser" id="teaser">
+  <div class="wrap">
+    <div class="teaser-head">
+      <p class="eyebrow dark">Free snapshot</p>
+      <h2><span id="t-name">Their</span> kundli is ready ✅</h2>
+    </div>
+
+    <style>#t-chart{max-width:320px;margin:14px auto 2px;background:#151C39;border-radius:12px;padding:10px}#t-chart svg{width:100%;height:auto;display:block}</style>
+    <div id="t-chart" aria-label="Their kundli (free)"></div>
+
+    <div class="chart-facts">
+      <div class="row"><span class="k">Moon sign (Rashi)</span><span class="v" id="t-rashi">—</span></div>
+      <div class="row"><span class="k">Nakshatra</span><span class="v" id="t-nak">—</span></div>
+      <div class="row"><span class="k">Current period</span><span class="v" id="t-dasha">—</span></div>
+      <div class="row"><span class="k">Period till</span><span class="v" id="t-till">—</span></div>
+      <div class="dasha-note">⭐ Their current dasha period is directly relevant to their marriage timing.</div>
+    </div>
+
+    <p class="windows-found" id="wfLine">Calculating their windows…</p>
+
+    <div class="timeline">
+      <p class="tl-title" id="tlTitle">Their marriage timeline</p>
+      <div class="tl-track" id="tlTrack"></div>
+      <div class="tl-years" id="tlYears"></div>
+      <p class="tl-cap">Windows calculated. Exact years, months and strength grade in the report.</p>
+    </div>
+
+    <!-- ============ MARRIAGE REPORT PREVIEW: headline + insights + locked
+         teaser, all built from THIS submission's real teaser data below. ============ -->
+    <div class="mr-headline">
+      <p class="mr-h" id="mrHeadline"></p>
+      <p class="mr-sub" id="mrSub"></p>
+    </div>
+    <div class="insights" id="tInsights"></div>
+    <div class="locked-teaser"><span class="ic">🔒</span><span><b>Still locked in the full report:</b> their Manglik verdict &amp; cancellation check, their likely partner's nature, weak periods to watch, and a personalized action plan.</span></div>
+
+    <div class="paywall">
+      <h3>Full Marriage Timing Report</h3>
+      <div class="price">
+        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">LAUNCH PRICE</span>
+      </div>
+      <p class="reveals-label">Their Full Marriage Report reveals:</p>
+      <ul>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>Their <b>exact marriage windows</b> — years and months, with strength grade</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>Manglik status</b> — and a cancellation check (most charts have one)</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>How <b>the partner pattern</b> works — nature, meeting context</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>Weak periods</b> — when matches will come but won't work out, and why</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>Action plan</b> — what to do in each window</span></li>
+      </ul>
+      <button class="btn" type="button" onclick="startPayment()">🔒 Unlock Their Full Marriage Report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499</button>
+      <p class="btn-note">UPI · Cards · Netbanking &nbsp;|&nbsp; Instant WhatsApp + on-screen delivery</p>
+    </div>
+  </div>
+</section>
 
 <!-- ============ TRUST STRIP (below the form, above the preview) ============ -->
 <div class="trust">
@@ -799,9 +877,9 @@ function timeQuality(){
   return {tq:'T2', band:band};
 }
 
-// form submit -> POST /api/kundli -> straight to Razorpay (no teaser/unlock step;
-// the sample report above already shows what's in the report, and the WhatsApp
-// number is collected right here in the form instead of a separate pre-payment modal)
+// form submit -> POST /api/kundli -> render the real report teaser (same
+// pattern as shaadi.html/v1 and the Compatibility teaser) -> user reviews it
+// -> Unlock button -> the existing startPayment()/Razorpay flow, unchanged.
 document.getElementById('kundliForm').addEventListener('submit', async function(e){
   e.preventDefault();
   var dob = buildDob();
@@ -809,7 +887,11 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   if(dob === 'invalid'){ alert('This date does not exist — please re-check.'); return; }
   var waPhone = axNormPhone(document.getElementById('f-whatsapp').value);
   if(!waPhone){ alert('Please enter a valid 10-digit WhatsApp number.'); document.getElementById('f-whatsapp').focus(); return; }
-  var btn = this.querySelector('.btn');
+  runKundliAndPay(dob, waPhone);
+});
+
+async function runKundliAndPay(dob, waPhone){
+  var btn = document.getElementById('kundliForm').querySelector('.btn');
   btn.disabled = true; btn.textContent = 'Building your kundli…';
   var q = timeQuality();
 
@@ -827,7 +909,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(si < steps.length){ msg.textContent = steps[si]; bar.style.width = (25*(si+1))+'%'; }
   }, 2200);
   var minWait = new Promise(function(res){ setTimeout(res, 9000); });
-  var kundliOk = false;
+  var kundliOk = false, teaserData = null;
 
   try{
     var fetchP = fetch('/api/kundli', {
@@ -845,12 +927,13 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
     var data = await res.json();
     REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
+    teaserData = data.teaser; window.__teaserData = teaserData;
     // WhatsApp number was collected right here in the form — this is the number
-    // the report is delivered to; no separate preview step, no contact popup.
+    // the report is delivered to; no separate contact popup.
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
-    if(window.gtag) gtag('event','generate_lead',{method:'kundli_direct'});
+    if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
     kundliOk = true;
   }catch(err){
     alert(err.message + ' — please try again.');
@@ -859,11 +942,174 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     box.classList.remove('show'); bar.style.width='0';
     btn.innerHTML = 'Get their report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; btn.disabled = false;
   }
-  if(kundliOk) startPayment();
-});
+  if(kundliOk) renderTeaser(teaserData);
+}
 
-// WhatsApp number is collected directly in the main form (no separate preview step,
-// no pre-payment popup) — sent with /api/order, so the account + WhatsApp delivery
+function axEsc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+
+// Classical, deterministic significations keyed by the child's OWN computed
+// moon sign / nakshatra / current dasha lord (engine.py's real teaser fields)
+// — every insight below is selected from real chart data, never invented.
+var MOON_TRAITS = {
+  Aries: "quick to commit once truly convinced, and needs a partner who respects their independence",
+  Taurus: "values stability and loyalty above all, building relationships meant to last",
+  Gemini: "drawn to a partner who keeps things mentally engaging and conversation-rich",
+  Cancer: "leads with emotional depth and instinctively nurtures the people closest to them",
+  Leo: "brings warmth and generosity to relationships, and thrives on being appreciated openly",
+  Virgo: "shows love through practical care and attention to detail, not grand gestures",
+  Libra: "seeks balance and harmony, and is naturally inclined toward partnership itself",
+  Scorpio: "forms deep, intense bonds and values emotional honesty over surface charm",
+  Sagittarius: "needs room to grow and explore even within a committed relationship",
+  Capricorn: "approaches marriage seriously, building it like a long-term shared responsibility",
+  Aquarius: "values friendship and independence as the foundation of a lasting partnership",
+  Pisces: "brings empathy and intuition, and connects most with a partner who feels emotionally safe"
+};
+var NAK_TRAITS = {
+  Ashwini: "brings spontaneity and initiative — they move fast once they decide",
+  Bharani: "carries strong will and deep commitment once a bond is formed",
+  Krittika: "brings sharp clarity about what they want, with little patience for pretense",
+  Rohini: "draws them toward magnetic, sensory connection and lasting devotion",
+  Mrigashira: "keeps them searching for a partner who matches their curiosity",
+  Ardra: "brings intensity and transformation to close relationships",
+  Punarvasu: "gives them a forgiving, renewing approach — able to rebuild after setbacks",
+  Pushya: "makes them a natural nurturer, protective of home and family",
+  Ashlesha: "brings deep emotional perception, sensing more than is said aloud",
+  Magha: "carries a strong pull toward tradition, legacy and family respect",
+  "Purva Phalguni": "brings warmth, romance and an ease in relationships",
+  "Uttara Phalguni": "favors steady, reliable partnership over fleeting romance",
+  Hasta: "brings a hands-on, practical approach to building a life together",
+  Chitra: "draws them toward a partner who appreciates their individuality",
+  Swati: "values independence within partnership — freedom matters as much as closeness",
+  Vishakha: "brings determination and ambition that a partner needs to share",
+  Anuradha: "favors devotion and loyalty, once trust is fully established",
+  Jyeshtha: "brings a protective, responsible role within close relationships",
+  Mula: "pulls toward deep, root-level honesty — surface connections rarely last",
+  "Purva Ashadha": "brings conviction and an unwillingness to settle for less",
+  "Uttara Ashadha": "favors relationships built on shared long-term goals",
+  Shravana: "makes them an attentive listener — connection deepens through real conversation",
+  Dhanishta: "brings rhythm and energy, drawn to a partner who keeps pace",
+  Shatabhisha: "values independence and healing, sometimes needing space within closeness",
+  "Purva Bhadrapada": "brings intensity and depth, uncomfortable with anything superficial",
+  "Uttara Bhadrapada": "favors calm, steady partnership over dramatic beginnings",
+  Revati: "brings compassion and adaptability, gentle in how they connect"
+};
+var DASHA_TRAITS = {
+  Sun: "a Sun period often sharpens clarity about identity and what they want from a partner",
+  Moon: "a Moon period heightens emotional readiness and the pull toward companionship",
+  Mars: "a Mars period often brings decisive action — proposals, decisions or bold moves",
+  Rahu: "a Rahu period can bring unconventional or unexpected relationship developments",
+  Jupiter: "a Jupiter period is classically favorable for marriage and committed partnership",
+  Saturn: "a Saturn period favors patience — commitments made now tend to be built to last",
+  Mercury: "a Mercury period favors communication-led connections and clear-headed decisions",
+  Ketu: "a Ketu period often prompts detachment from old patterns before new ones form",
+  Venus: "a Venus period is classically tied to romance, attraction and marriage itself"
+};
+// Short noun-phrase version of MOON_TRAITS, for the bold headline only —
+// keeps the headline punchy while the full sentence lives in the insight card.
+var HEADLINE_PHRASES = {
+  Aries: "a bold, all-in approach to commitment",
+  Taurus: "a stability-first approach to marriage",
+  Gemini: "a connection built on conversation and mental spark",
+  Cancer: "a deeply nurturing approach to partnership",
+  Leo: "a warm, generous approach to love",
+  Virgo: "a quietly devoted, detail-oriented approach to marriage",
+  Libra: "a natural pull toward partnership itself",
+  Scorpio: "an intense, all-or-nothing approach to bonding",
+  Sagittarius: "a marriage that still leaves room to grow",
+  Capricorn: "a serious, long-term approach to commitment",
+  Aquarius: "a friendship-first approach to marriage",
+  Pisces: "a deeply intuitive, emotionally driven approach to love"
+};
+
+// Builds the headline + insight cards purely from THIS submission's real
+// teaser fields (moon_sign_en, nakshatra, current_dasha, horizon,
+// timeline_hints) — no fabricated astrology, no hardcoded sample data.
+function buildInsights(t, name){
+  var moonTrait = MOON_TRAITS[t.moon_sign_en] || '';
+  var headlinePhrase = HEADLINE_PHRASES[t.moon_sign_en] || '';
+  var nakTrait = NAK_TRAITS[t.nakshatra] || '';
+  var dashaLord = (t.current_dasha || '').split(' ')[0];
+  var dashaTrait = DASHA_TRAITS[dashaLord] || '';
+  var horizon = t.horizon || [2026, 2036];
+  var hints = t.timeline_hints || [];
+  var phase = null;
+  if(hints.length && hints[0].left_pct != null){
+    var pct = hints[0].left_pct;
+    phase = pct < 33 ? 'early' : (pct < 66 ? 'middle' : 'later');
+  }
+  if(headlinePhrase){
+    document.getElementById('mrHeadline').innerHTML = axEsc(name) + "'s chart points to <b>" + axEsc(headlinePhrase) + '</b>.';
+    document.getElementById('mrSub').textContent = (t.moon_sign_en || '') + ' Moon in ' + (t.nakshatra || '') + ' Nakshatra';
+  }
+
+  var cards = '';
+  if(moonTrait){
+    cards += '<div class="insight-card"><span class="lbl">💞 Marriage Tendency</span>' + axEsc(moonTrait) + '.</div>';
+  }
+  if(nakTrait){
+    cards += '<div class="insight-card"><span class="lbl">👤 Partner Tendency — ' + axEsc(t.nakshatra || '') + '</span>' + axEsc(nakTrait) + '.</div>';
+  }
+  cards += '<div class="insight-card"><span class="lbl">⏳ Timing Signal</span>' +
+    (dashaTrait ? (axEsc(dashaTrait) + '. ') : '') +
+    (phase
+      ? ('Their first window trends toward the ' + phase + ' part of ' + horizon[0] + '–' + horizon[1])
+      : ('We are tracking their windows across ' + horizon[0] + '–' + horizon[1])) +
+    ' — exact months and strength grade are in the full report.</div>';
+  document.getElementById('tInsights').innerHTML = cards;
+}
+
+// Renders the free report-teaser section from THIS submission's own
+// report["teaser"] (api.py POST /api/kundli) — moon sign, nakshatra, current
+// dasha and window count/positions are the child's real computed values;
+// nothing here is invented client-side. Adapted from the identical pattern
+// already used by shaadi.html (marriage v1) and milan.html's teaser.
+function renderTeaser(t){
+  t = t || {};
+  var name = document.getElementById('f-name').value.trim();
+  document.getElementById('t-name').textContent = name ? (name + "'s") : 'Their';
+  document.getElementById('t-rashi').textContent = (t.moon_sign || '—') + (t.moon_sign_en ? ' (' + t.moon_sign_en + ')' : '');
+  document.getElementById('t-nak').textContent = (t.nakshatra || '—') + (t.pada ? ' — Pada ' + t.pada : '');
+  document.getElementById('t-dasha').textContent = t.current_dasha || '—';
+  document.getElementById('t-till').textContent = t.dasha_till || '—';
+  var chartEl = document.getElementById('t-chart');
+  if(chartEl){ chartEl.innerHTML = t.chart_svg || ''; chartEl.style.display = t.chart_svg ? '' : 'none'; }
+  buildInsights(t, name || "The child's chart");
+  var wf = document.getElementById('wfLine');
+  var wc = '<b style="color:var(--sindoor)">' + (t.windows_count === 1 ? '1 marriage window' : (t.windows_count || 0) + ' marriage windows') + '</b>';
+  wf.innerHTML = 'We found ' + wc + ' in their chart.';
+  var horizon = t.horizon || [2026, 2036];
+  document.getElementById('tlTitle').textContent = 'Their marriage timeline · ' + horizon[0] + ' – ' + horizon[1];
+  var yrs = document.getElementById('tlYears'); yrs.innerHTML = '';
+  for(var y = horizon[0]; y <= horizon[1]; y += 2){
+    var s = document.createElement('span'); s.textContent = y; yrs.appendChild(s);
+  }
+  var track = document.getElementById('tlTrack'); track.innerHTML = '';
+  var hints = t.timeline_hints || [];
+  var compact = hints.length > 1;
+  hints.forEach(function(h, i){
+    var w = document.createElement('div'); w.className = 'tl-window';
+    w.style.left = h.left_pct + '%'; w.style.width = h.width_pct + '%';
+    if(i > 0) w.style.opacity = .75;
+    var label = compact ? ('🔒 W' + (i + 1)) : ('🔒 Window ' + (i + 1));
+    var chip = '<span class="lockchip"' +
+      (compact ? ' style="font-size:10px;padding:3px 6px' + (i % 2 === 1 ? ';transform:translateY(14px)' : '') + '"' : '') +
+      '>' + label + '</span>';
+    w.innerHTML = '<span class="yrs">20XX–XX</span>' + chip;
+    track.appendChild(w);
+  });
+  var el = document.getElementById('teaser');
+  el.classList.add('show');
+  el.scrollIntoView({behavior: 'smooth'});
+  var sb = document.getElementById('stickyBtn');
+  if(sb){
+    sb.innerHTML = 'Unlock Full Report — <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
+    sb.setAttribute('href', 'javascript:void(0)');
+    sb.onclick = function(ev){ ev.preventDefault(); startPayment(); };
+  }
+}
+
+// WhatsApp number is collected directly in the main form (no separate contact
+// popup) — sent with /api/order, so the account + WhatsApp delivery
 // use exactly the number typed into the form, regardless of what number is used to pay.
 var AX_CONTACT = null;
 try{ AX_CONTACT = JSON.parse(sessionStorage.getItem('axtro_contact') || 'null'); }catch(e){}

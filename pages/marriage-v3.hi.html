@@ -217,6 +217,25 @@ footer b{color:#B9BBD0}
   .kundli-bg{width:520px;right:-60px;opacity:.6}
   .hero{padding:48px 0 72px}
 }
+
+/* ---------- MARRIAGE REPORT PREVIEW SECTION: sits AFTER the existing
+   chart/chart-facts/windows-found/timeline block (all unchanged above) —
+   personalized headline, insight cards, a locked-content teaser, and a
+   "reveals" label ahead of the existing paywall bullet list. The
+   .teaser/.chart-facts/.timeline/.paywall rules themselves already exist
+   above (dormant, inherited from the v1 template); everything below is
+   purely new, additive classes. ---------- */
+.mr-headline{text-align:center;margin:22px 0 16px}
+.mr-h{font-family:var(--display);font-weight:800;font-size:19px;color:var(--ink);line-height:1.45}
+.mr-h b{color:var(--sindoor)}
+.mr-sub{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.02em}
+.insights{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.insight-card{background:var(--card);border-left:3px solid var(--haldi);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;line-height:1.55;color:var(--ink);box-shadow:0 4px 14px rgba(35,37,59,.06)}
+.insight-card .lbl{display:block;font-family:var(--display);font-weight:700;font-size:12px;color:var(--sindoor);margin-bottom:3px}
+.locked-teaser{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1.5px dashed var(--haldi);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#6B5A2E}
+.locked-teaser .ic{flex:none;font-size:15px;line-height:1.4}
+.locked-teaser b{color:#5c4a1a}
+.reveals-label{font-family:var(--display);font-weight:700;font-size:14px;color:var(--ink);margin:2px 0 10px}
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -330,6 +349,65 @@ fbq('track', 'PageView');
     <div class="offer-timer" id="offerTimer">🔥 लॉन्च ऑफ़र खत्म होने में <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
+
+<!-- ============ REPORT PREVIEW / TEASER — hidden until first submit. Every
+     value below comes from THIS submission's own /api/kundli response
+     (report["teaser"], api.py) — same real-data pattern as shaadi.hi.html (v1)
+     and the Compatibility teaser (milan.hi.html); nothing here is invented. ============ -->
+<section class="teaser" id="teaser">
+  <div class="wrap">
+    <div class="teaser-head">
+      <p class="eyebrow dark">फ्री स्नैपशॉट</p>
+      <h2><span id="t-name">बच्चे की</span> कुंडली तैयार है ✅</h2>
+    </div>
+
+    <style>#t-chart{max-width:320px;margin:14px auto 2px;background:#151C39;border-radius:12px;padding:10px}#t-chart svg{width:100%;height:auto;display:block}</style>
+    <div id="t-chart" aria-label="बच्चे की कुंडली (फ्री)"></div>
+
+    <div class="chart-facts">
+      <div class="row"><span class="k">चंद्र राशि (Rashi)</span><span class="v" id="t-rashi">—</span></div>
+      <div class="row"><span class="k">नक्षत्र</span><span class="v" id="t-nak">—</span></div>
+      <div class="row"><span class="k">मौजूदा अवधि</span><span class="v" id="t-dasha">—</span></div>
+      <div class="row"><span class="k">अवधि तक</span><span class="v" id="t-till">—</span></div>
+      <div class="dasha-note">⭐ बच्चे की मौजूदा दशा का दौर सीधे तौर पर उनकी शादी के समय से जुड़ा है।</div>
+    </div>
+
+    <p class="windows-found" id="wfLine">विंडो गिनी जा रही हैं…</p>
+
+    <div class="timeline">
+      <p class="tl-title" id="tlTitle">बच्चे की शादी की समय-रेखा</p>
+      <div class="tl-track" id="tlTrack"></div>
+      <div class="tl-years" id="tlYears"></div>
+      <p class="tl-cap">विंडो निकल गईं। सटीक साल, महीने और मज़बूती ग्रेड रिपोर्ट में।</p>
+    </div>
+
+    <!-- ============ MARRIAGE REPORT PREVIEW: headline + insights + locked
+         teaser, all built from THIS submission's real teaser data below. ============ -->
+    <div class="mr-headline">
+      <p class="mr-h" id="mrHeadline"></p>
+      <p class="mr-sub" id="mrSub"></p>
+    </div>
+    <div class="insights" id="tInsights"></div>
+    <div class="locked-teaser"><span class="ic">🔒</span><span><b>अभी भी लॉक है:</b> बच्चे का मांगलिक वर्डिक्ट और कैंसलेशन जाँच, होने वाले साथी का स्वभाव, कमज़ोर दौर, और पर्सनलाइज़्ड एक्शन प्लान — पूरी रिपोर्ट में।</span></div>
+
+    <div class="paywall">
+      <h3>पूरी मैरिज टाइमिंग रिपोर्ट</h3>
+      <div class="price">
+        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">लॉन्च प्राइस</span>
+      </div>
+      <p class="reveals-label">बच्चे की पूरी मैरिज रिपोर्ट में शामिल है:</p>
+      <ul>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>बच्चे की <b>सटीक शादी की विंडो</b> — साल और महीने, मज़बूती ग्रेड के साथ</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>मांगलिक स्थिति</b> — और एक कैंसलेशन जाँच (ज़्यादातर कुंडलियों में कैंसलेशन होता है)</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>कैसे <b>साथी का योग</b> है — स्वभाव, मिलने का संदर्भ</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>कमज़ोर दौर</b> — कब रिश्ते आएँगे पर बनेंगे नहीं, और क्यों</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>कार्य योजना</b> — हर विंडो में क्या करना चाहिए</span></li>
+      </ul>
+      <button class="btn" type="button" onclick="startPayment()">🔒 बच्चे की पूरी रिपोर्ट अनलॉक करें — <s style="opacity:.65;font-weight:600">₹999</s> ₹499</button>
+      <p class="btn-note">UPI · कार्ड · नेटबैंकिंग | तुरंत WhatsApp + स्क्रीन पर डिलीवरी</p>
+    </div>
+  </div>
+</section>
 
 <!-- ============ TRUST STRIP (below the form, above the preview) ============ -->
 <div class="trust">
@@ -791,9 +869,9 @@ function timeQuality(){
   return {tq:'T2', band:band};
 }
 
-// form submit -> POST /api/kundli -> straight to Razorpay (no teaser/unlock step;
-// the sample report above already shows what's in the report, and the WhatsApp
-// number is collected right here in the form instead of a separate pre-payment modal)
+// form submit -> POST /api/kundli -> render the real report teaser (same
+// pattern as shaadi.hi.html/v1 and the Compatibility teaser) -> user reviews
+// it -> Unlock button -> the existing startPayment()/Razorpay flow, unchanged.
 document.getElementById('kundliForm').addEventListener('submit', async function(e){
   e.preventDefault();
   var dob = buildDob();
@@ -801,7 +879,11 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   if(dob === 'invalid'){ alert('यह तारीख़ मौजूद नहीं है — दोबारा जाँच लीजिए।'); return; }
   var waPhone = axNormPhone(document.getElementById('f-whatsapp').value);
   if(!waPhone){ alert('कृपया सही 10-अंकों का WhatsApp नंबर डालिए।'); document.getElementById('f-whatsapp').focus(); return; }
-  var btn = this.querySelector('.btn');
+  runKundliAndPay(dob, waPhone);
+});
+
+async function runKundliAndPay(dob, waPhone){
+  var btn = document.getElementById('kundliForm').querySelector('.btn');
   btn.disabled = true; btn.textContent = 'कुंडली बन रही है…';
   var q = timeQuality();
 
@@ -819,7 +901,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(si < steps.length){ msg.textContent = steps[si]; bar.style.width = (25*(si+1))+'%'; }
   }, 2200);
   var minWait = new Promise(function(res){ setTimeout(res, 9000); });
-  var kundliOk = false;
+  var kundliOk = false, teaserData = null;
 
   try{
     var fetchP = fetch('/api/kundli', {
@@ -837,12 +919,13 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     if(!res.ok){ throw new Error((await res.json()).detail || 'कुछ ग़लत हो गया'); }
     var data = await res.json();
     REPORT_ID = data.report_id; window.REPORT_ID = REPORT_ID;
+    teaserData = data.teaser; window.__teaserData = teaserData;
     // WhatsApp number was collected right here in the form — this is the number
-    // the report is delivered to; no separate preview step, no contact popup.
+    // the report is delivered to; no separate contact popup.
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
-    if(window.gtag) gtag('event','generate_lead',{method:'kundli_direct'});
+    if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
     kundliOk = true;
   }catch(err){
     alert(err.message + ' — दोबारा कोशिश कीजिए।');
@@ -851,11 +934,176 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     box.classList.remove('show'); bar.style.width='0';
     btn.innerHTML = 'रिपोर्ट पाएं — <s style="opacity:.65;font-weight:600">₹999</s> ₹499'; btn.disabled = false;
   }
-  if(kundliOk) startPayment();
-});
+  if(kundliOk) renderTeaser(teaserData);
+}
 
-// WhatsApp number is collected directly in the main form (no separate preview step,
-// no pre-payment popup) — sent with /api/order, so the account + WhatsApp delivery
+function axEsc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+
+// Classical, deterministic significations keyed by the child's OWN computed
+// moon sign / nakshatra / current dasha lord (engine.py's real teaser fields,
+// always returned in English/transliterated form regardless of page language
+// — same convention the existing chart-facts rows already use) — every
+// insight below is selected from real chart data, never invented.
+var MOON_TRAITS = {
+  Aries: "एक बार पूरी तरह विश्वास हो जाए तो जल्दी कमिटमेंट करते हैं, और ऐसा साथी चाहते हैं जो उनकी स्वतंत्रता का सम्मान करे",
+  Taurus: "स्थिरता और वफ़ादारी को सबसे ऊपर रखते हैं, और ऐसे रिश्ते बनाते हैं जो लंबे समय तक टिकते हैं",
+  Gemini: "ऐसे साथी की ओर आकर्षित होते हैं जो मानसिक रूप से जोड़े रखे और बातचीत को दिलचस्प बनाए",
+  Cancer: "भावनात्मक गहराई के साथ आगे बढ़ते हैं और अपने करीबी लोगों की स्वाभाविक रूप से देखभाल करते हैं",
+  Leo: "रिश्तों में गर्मजोशी और उदारता लाते हैं, और खुलकर सराहा जाना पसंद करते हैं",
+  Virgo: "बड़े इशारों से नहीं, बल्कि व्यावहारिक देखभाल और बारीकियों पर ध्यान देकर प्यार दिखाते हैं",
+  Libra: "संतुलन और सामंजस्य चाहते हैं, और स्वाभाविक रूप से साथी के रिश्ते की ओर झुकाव रखते हैं",
+  Scorpio: "गहरे, तीव्र बंधन बनाते हैं और सतही आकर्षण से ज़्यादा भावनात्मक ईमानदारी को महत्व देते हैं",
+  Sagittarius: "एक प्रतिबद्ध रिश्ते में भी बढ़ने और एक्सप्लोर करने की जगह चाहते हैं",
+  Capricorn: "शादी को गंभीरता से लेते हैं, इसे एक लंबी साझा ज़िम्मेदारी की तरह बनाते हैं",
+  Aquarius: "दोस्ती और स्वतंत्रता को एक टिकाऊ रिश्ते की नींव मानते हैं",
+  Pisces: "सहानुभूति और सहज-बोध लाते हैं, और ऐसे साथी से सबसे ज़्यादा जुड़ते हैं जिसके साथ भावनात्मक रूप से सुरक्षित महसूस हो"
+};
+var NAK_TRAITS = {
+  Ashwini: "सहजता और पहल लाता है — फ़ैसला होते ही वे तेज़ी से आगे बढ़ते हैं",
+  Bharani: "मज़बूत इच्छाशक्ति और गहरी प्रतिबद्धता लाता है, एक बार बंधन बनने पर",
+  Krittika: "वे क्या चाहते हैं इसकी स्पष्टता लाता है, दिखावे के लिए बहुत कम धैर्य के साथ",
+  Rohini: "उन्हें आकर्षक, इंद्रिय-स्तर के जुड़ाव और स्थायी समर्पण की ओर खींचता है",
+  Mrigashira: "उन्हें ऐसा साथी खोजते रहने के लिए प्रेरित करता है जो उनकी जिज्ञासा से मेल खाए",
+  Ardra: "करीबी रिश्तों में तीव्रता और बदलाव लाता है",
+  Punarvasu: "एक क्षमाशील, नवीनीकरण करने वाला नज़रिया देता है — झटकों के बाद फिर से बनाने में सक्षम",
+  Pushya: "उन्हें एक स्वाभाविक पालनहार बनाता है, घर और परिवार की रक्षा करने वाला",
+  Ashlesha: "गहरी भावनात्मक समझ लाता है, जो कहा नहीं जाता उसे भी महसूस करने वाला",
+  Magha: "परंपरा, विरासत और पारिवारिक सम्मान की ओर एक मज़बूत झुकाव लाता है",
+  "Purva Phalguni": "रिश्तों में गर्मजोशी, रोमांस और सहजता लाता है",
+  "Uttara Phalguni": "क्षणिक रोमांस से ज़्यादा स्थिर, भरोसेमंद साथ को तरजीह देता है",
+  Hasta: "साथ मिलकर जीवन बनाने का व्यावहारिक, हाथों-हाथ नज़रिया लाता है",
+  Chitra: "उन्हें ऐसे साथी की ओर खींचता है जो उनकी व्यक्तिगत विशेषताओं की कद्र करे",
+  Swati: "साथ के भीतर भी स्वतंत्रता को महत्व देता है — नज़दीकी जितनी ज़रूरी, आज़ादी भी उतनी ही ज़रूरी",
+  Vishakha: "दृढ़ता और महत्वाकांक्षा लाता है, जिसे एक साथी को साझा करना होगा",
+  Anuradha: "भरोसा पूरी तरह बनने के बाद समर्पण और वफ़ादारी को तरजीह देता है",
+  Jyeshtha: "करीबी रिश्तों में एक सुरक्षात्मक, ज़िम्मेदार भूमिका लाता है",
+  Mula: "गहरी, जड़ स्तर की ईमानदारी की ओर खींचता है — सतही जुड़ाव शायद ही टिकते हैं",
+  "Purva Ashadha": "दृढ़ विश्वास लाता है और कम में समझौता न करने की प्रवृत्ति",
+  "Uttara Ashadha": "साझा दीर्घकालिक लक्ष्यों पर बने रिश्तों को तरजीह देता है",
+  Shravana: "उन्हें एक ध्यान से सुनने वाला बनाता है — असली बातचीत से जुड़ाव गहरा होता है",
+  Dhanishta: "लय और ऊर्जा लाता है, ऐसे साथी की ओर आकर्षित जो उनके साथ कदम मिलाए",
+  Shatabhisha: "स्वतंत्रता और उपचार को महत्व देता है, कभी-कभी नज़दीकी में भी जगह चाहिए होती है",
+  "Purva Bhadrapada": "तीव्रता और गहराई लाता है, सतही किसी भी चीज़ में असहज",
+  "Uttara Bhadrapada": "नाटकीय शुरुआत से ज़्यादा शांत, स्थिर साथ को तरजीह देता है",
+  Revati: "करुणा और अनुकूलनशीलता लाता है, जुड़ने के तरीके में कोमल"
+};
+var DASHA_TRAITS = {
+  Sun: "सूर्य की दशा अक्सर पहचान और साथी से वे क्या चाहते हैं, इसकी स्पष्टता को तेज़ करती है",
+  Moon: "चंद्र की दशा भावनात्मक तैयारी और साथ की चाहत को बढ़ाती है",
+  Mars: "मंगल की दशा अक्सर निर्णायक कदम लाती है — प्रस्ताव, फ़ैसले या साहसी क़दम",
+  Rahu: "राहु की दशा अपरंपरागत या अप्रत्याशित रिश्ते के घटनाक्रम ला सकती है",
+  Jupiter: "गुरु की दशा शास्त्रीय रूप से शादी और प्रतिबद्ध साथ के लिए अनुकूल मानी जाती है",
+  Saturn: "शनि की दशा धैर्य को तरजीह देती है — अभी बने कमिटमेंट लंबे समय तक टिकने वाले होते हैं",
+  Mercury: "बुध की दशा संवाद-आधारित जुड़ाव और स्पष्ट सोच वाले फ़ैसलों को तरजीह देती है",
+  Ketu: "केतु की दशा अक्सर नए बंधन बनने से पहले पुराने पैटर्न से अलगाव लाती है",
+  Venus: "शुक्र की दशा शास्त्रीय रूप से रोमांस, आकर्षण और शादी से ही जुड़ी होती है"
+};
+// MOON_TRAITS का छोटा वाक्यांश-रूप, सिर्फ़ बोल्ड हेडलाइन के लिए — पूरा वाक्य
+// नीचे इनसाइट कार्ड में रहता है, हेडलाइन छोटी और असरदार बनी रहती है।
+var HEADLINE_PHRASES = {
+  Aries: "प्रतिबद्धता को लेकर एक साहसी, पूरी तरह जुड़ने वाला नज़रिया",
+  Taurus: "शादी में स्थिरता को सबसे पहले रखने वाला नज़रिया",
+  Gemini: "बातचीत और मानसिक तालमेल पर बना जुड़ाव",
+  Cancer: "साथ को लेकर गहरी देखभाल वाला नज़रिया",
+  Leo: "प्यार को लेकर गर्मजोशी और उदारता भरा नज़रिया",
+  Virgo: "शादी में शांत, बारीकी पर ध्यान देने वाला समर्पण",
+  Libra: "साथ की ओर एक स्वाभाविक खिंचाव",
+  Scorpio: "जुड़ाव को लेकर तीव्र, पूरी तरह या बिल्कुल नहीं वाला नज़रिया",
+  Sagittarius: "एक ऐसी शादी जिसमें बढ़ने की गुंजाइश बनी रहे",
+  Capricorn: "प्रतिबद्धता को लेकर गंभीर, दीर्घकालिक नज़रिया",
+  Aquarius: "दोस्ती को पहले रखने वाला शादी का नज़रिया",
+  Pisces: "प्यार को लेकर गहरा सहज-बोध और भावनात्मक नज़रिया"
+};
+
+// Builds the headline + insight cards purely from THIS submission's real
+// teaser fields (moon_sign, nakshatra, current_dasha, horizon,
+// timeline_hints) — no fabricated astrology, no hardcoded sample data.
+function buildInsights(t, name){
+  var moonTrait = MOON_TRAITS[t.moon_sign_en] || '';
+  var headlinePhrase = HEADLINE_PHRASES[t.moon_sign_en] || '';
+  var nakTrait = NAK_TRAITS[t.nakshatra] || '';
+  var dashaLord = (t.current_dasha || '').split(' ')[0];
+  var dashaTrait = DASHA_TRAITS[dashaLord] || '';
+  var horizon = t.horizon || [2026, 2036];
+  var hints = t.timeline_hints || [];
+  var phase = null;
+  if(hints.length && hints[0].left_pct != null){
+    var pct = hints[0].left_pct;
+    phase = pct < 33 ? 'शुरुआती' : (pct < 66 ? 'मध्य' : 'आख़िरी');
+  }
+  if(headlinePhrase){
+    document.getElementById('mrHeadline').innerHTML = axEsc(name) + ' का चार्ट <b>' + axEsc(headlinePhrase) + '</b> की ओर इशारा करता है।';
+    document.getElementById('mrSub').textContent = (t.moon_sign || '') + ' चंद्रमा, ' + (t.nakshatra || '') + ' नक्षत्र में';
+  }
+
+  var cards = '';
+  if(moonTrait){
+    cards += '<div class="insight-card"><span class="lbl">💞 मैरिज टेंडेंसी</span>' + axEsc(moonTrait) + '।</div>';
+  }
+  if(nakTrait){
+    cards += '<div class="insight-card"><span class="lbl">👤 पार्टनर टेंडेंसी — ' + axEsc(t.nakshatra || '') + '</span>' + axEsc(nakTrait) + '।</div>';
+  }
+  cards += '<div class="insight-card"><span class="lbl">⏳ टाइमिंग सिग्नल</span>' +
+    (dashaTrait ? (axEsc(dashaTrait) + '। ') : '') +
+    (phase
+      ? ('उनकी पहली विंडो ' + horizon[0] + '–' + horizon[1] + ' दशक के ' + phase + ' हिस्से की ओर झुकी है')
+      : ('हम उनकी विंडो ' + horizon[0] + '–' + horizon[1] + ' के बीच ट्रैक कर रहे हैं')) +
+    ' — सटीक महीने और मज़बूती ग्रेड पूरी रिपोर्ट में हैं।</div>';
+  document.getElementById('tInsights').innerHTML = cards;
+}
+
+// Renders the free report-teaser section from THIS submission's own
+// report["teaser"] (api.py POST /api/kundli) — moon sign, nakshatra, current
+// dasha and window count/positions are the child's real computed values;
+// nothing here is invented client-side. Adapted from the identical pattern
+// already used by shaadi.hi.html (marriage v1) and milan.hi.html's teaser.
+function renderTeaser(t){
+  t = t || {};
+  var name = document.getElementById('f-name').value.trim();
+  document.getElementById('t-name').textContent = name ? (name + ' की') : 'बच्चे की';
+  document.getElementById('t-rashi').textContent = (t.moon_sign || '—') + (t.moon_sign_en ? ' (' + t.moon_sign_en + ')' : '');
+  document.getElementById('t-nak').textContent = (t.nakshatra || '—') + (t.pada ? ' — पद ' + t.pada : '');
+  document.getElementById('t-dasha').textContent = t.current_dasha || '—';
+  document.getElementById('t-till').textContent = t.dasha_till || '—';
+  var chartEl = document.getElementById('t-chart');
+  if(chartEl){ chartEl.innerHTML = t.chart_svg || ''; chartEl.style.display = t.chart_svg ? '' : 'none'; }
+  buildInsights(t, name || 'बच्चे की कुंडली');
+  var wf = document.getElementById('wfLine');
+  var wc = '<b style="color:var(--sindoor)">' + (t.windows_count === 1 ? '1 शादी विंडो' : (t.windows_count || 0) + ' शादी विंडो') + '</b>';
+  wf.innerHTML = 'हमने बच्चे के चार्ट में ' + wc + (t.windows_count === 1 ? ' पहचानी है।' : ' पहचानी हैं।');
+  var horizon = t.horizon || [2026, 2036];
+  document.getElementById('tlTitle').textContent = 'बच्चे की शादी की टाइमलाइन · ' + horizon[0] + ' – ' + horizon[1];
+  var yrs = document.getElementById('tlYears'); yrs.innerHTML = '';
+  for(var y = horizon[0]; y <= horizon[1]; y += 2){
+    var s = document.createElement('span'); s.textContent = y; yrs.appendChild(s);
+  }
+  var track = document.getElementById('tlTrack'); track.innerHTML = '';
+  var hints = t.timeline_hints || [];
+  var compact = hints.length > 1;
+  hints.forEach(function(h, i){
+    var w = document.createElement('div'); w.className = 'tl-window';
+    w.style.left = h.left_pct + '%'; w.style.width = h.width_pct + '%';
+    if(i > 0) w.style.opacity = .75;
+    var label = compact ? ('🔒 वि' + (i + 1)) : ('🔒 विंडो ' + (i + 1));
+    var chip = '<span class="lockchip"' +
+      (compact ? ' style="font-size:10px;padding:3px 6px' + (i % 2 === 1 ? ';transform:translateY(14px)' : '') + '"' : '') +
+      '>' + label + '</span>';
+    w.innerHTML = '<span class="yrs">20XX–XX</span>' + chip;
+    track.appendChild(w);
+  });
+  var el = document.getElementById('teaser');
+  el.classList.add('show');
+  el.scrollIntoView({behavior: 'smooth'});
+  var sb = document.getElementById('stickyBtn');
+  if(sb){
+    sb.innerHTML = 'पूरी रिपोर्ट अनलॉक करें <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
+    sb.setAttribute('href', 'javascript:void(0)');
+    sb.onclick = function(ev){ ev.preventDefault(); startPayment(); };
+  }
+}
+
+// WhatsApp number is collected directly in the main form (no separate contact
+// popup) — sent with /api/order, so the account + WhatsApp delivery
 // use exactly the number typed into the form, regardless of what number is used to pay.
 var AX_CONTACT = null;
 try{ AX_CONTACT = JSON.parse(sessionStorage.getItem('axtro_contact') || 'null'); }catch(e){}
