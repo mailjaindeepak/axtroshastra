@@ -228,6 +228,13 @@ footer b{color:#B9BBD0}
 .stat-tile{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
 .stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
 .stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
+.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
+.revs::-webkit-scrollbar{display:none}
+.rev{flex:0 0 84%;max-width:330px;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
+.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
+.rev p{font-size:14.5px;color:var(--ink);line-height:1.5}
+.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
+.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
@@ -382,6 +389,29 @@ fbq('track', 'PageView');
       <div class="stat-tile"><div class="n" id="reportCount">25,000+</div><div class="c">reports generated</div></div>
       <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
+    <div class="revs" id="revsTrack">
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Good analysis. I found most of the claims about the past are correct. The report is especially good."</p>
+        <div class="who">Ramanpreet</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Good quality report. Worth the money. I liked the Dos and Don'ts section."</p>
+        <div class="who">Vatsala</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Good service. Thanks for the same."</p>
+        <div class="who">Akansha</div>
+      </div>
+      <div class="rev">
+        <div class="stars">★★★★★</div>
+        <p>"Thanks for the guidance in the report. I learnt so much about me and my partner through this."</p>
+        <div class="who">Aman</div>
+      </div>
+    </div>
+    <p class="revs-hint">← swipe for more →</p>
   </div>
 </section>
 
@@ -646,8 +676,8 @@ document.getElementById('milanForm').addEventListener('submit', async function(e
         variant: location.pathname
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'Something went wrong'); }
-    // Pre-fill the pre-payment contact popup with the number just collected here,
-    // so a returning-to-checkout buyer isn't asked for the same number twice.
+    // Store the WhatsApp number collected on the main form as the delivery contact —
+    // startPayment() reads AX_CONTACT.phone directly (there is no pre-payment popup).
     AX_CONTACT = {phone: waPhone, email: (AX_CONTACT && AX_CONTACT.email) || ''};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(__e){}
     var data = await res.json();
@@ -681,71 +711,6 @@ function axNormPhone(v){
   if(d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
   return (d.length === 10 && '6789'.indexOf(d.charAt(0)) >= 0) ? ('+91' + d) : null;
 }
-function axContactModal(onDone){
-  var old = document.getElementById('axContactModal');
-  if(old && old.parentNode) old.parentNode.removeChild(old);
-  var wrap = document.createElement('div');
-  wrap.id = 'axContactModal';
-  wrap.innerHTML = [
-    '<style>',
-    '@media print{#axContactModal{display:none!important}}',
-    '#axContactModal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;font-family:inherit}',
-    '#axContactModal .axc-bg{position:absolute;inset:0;background:rgba(10,12,24,.58)}',
-    '#axContactModal .axc-card{position:relative;width:100%;max-width:392px;background:#FAF6ED;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:22px 20px 20px;color:#151C39}',
-    '#axContactModal .axc-x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:24px;color:#8a7d72;cursor:pointer;line-height:1;padding:4px}',
-    '#axContactModal h3{margin:0 26px 4px 0;font-size:19px;font-weight:800;color:#151C39}',
-    '#axContactModal .axc-sub{font-size:13px;color:#5c554a;margin:0 0 12px}',
-    '#axContactModal label{display:block;font-size:12.5px;font-weight:700;color:#151C39;margin:12px 0 5px}',
-    '#axContactModal .axc-in{display:flex;align-items:center;background:#fff;border:1.5px solid #d9d0bf;border-radius:11px}',
-    '#axContactModal .axc-in:focus-within{border-color:#E4B04A}',
-    '#axContactModal .axc-in span{padding-left:12px;color:#5c554a;font-size:15px;font-weight:600}',
-    '#axContactModal .axc-in input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px;font-size:16px;color:#151C39;font-family:inherit}',
-    '#axContactModal .axc-note{font-size:12px;color:#7a5417;background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);border-radius:9px;padding:8px 10px;margin-top:7px;line-height:1.45}',
-    '#axContactModal .axc-err{display:none;font-size:12.5px;color:#C93B2E;font-weight:700;margin-top:9px}',
-    '#axContactModal .axc-go{width:100%;margin-top:15px;border:0;border-radius:12px;background:#C93B2E;color:#fff;font-size:16.5px;font-weight:800;padding:14px;cursor:pointer;font-family:inherit}',
-    '</style>',
-    '<div class="axc-bg"></div>',
-    '<div class="axc-card" role="dialog" aria-modal="true" aria-label="Your contact details">',
-    '<button type="button" class="axc-x" aria-label="Close">&times;</button>',
-    '<h3>Where should we send your report?</h3>',
-    '<p class="axc-sub">Takes 5 seconds — then you go straight to payment.</p>',
-    '<label for="axcPhone">Mobile number (with WhatsApp)</label>',
-    '<div class="axc-in"><span>+91</span><input id="axcPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210"></div>',
-    '<div class="axc-note">Your report, OTP &amp; account will be created on this number — make sure it\'s your WhatsApp number.</div>',
-    '<label for="axcEmail">Email (optional) — for a PDF copy</label>',
-    '<div class="axc-in"><input id="axcEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>',
-    '<div class="axc-err" id="axcErr"></div>',
-    '<button type="button" class="axc-go">Continue to payment →</button>',
-    '</div>'
-  ].join('');
-  document.body.appendChild(wrap);
-  var phone = wrap.querySelector('#axcPhone'), email = wrap.querySelector('#axcEmail'), err = wrap.querySelector('#axcErr');
-  if(AX_CONTACT){ phone.value = (AX_CONTACT.phone || '').replace('+91', ''); email.value = AX_CONTACT.email || ''; }
-  var prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
-  function close(){
-    document.body.style.overflow = prevOverflow;
-    document.removeEventListener('keydown', onEsc);
-    if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
-  }
-  function onEsc(e){ if(e.key === 'Escape') close(); }
-  document.addEventListener('keydown', onEsc);
-  wrap.querySelector('.axc-bg').addEventListener('click', close);
-  wrap.querySelector('.axc-x').addEventListener('click', close);
-  function fail(msg, el){ err.textContent = msg; err.style.display = 'block'; try{ el.focus(); }catch(e){} }
-  wrap.querySelector('.axc-go').addEventListener('click', function(){
-    var p = axNormPhone(phone.value);
-    if(!p){ fail('Please enter a valid 10-digit mobile number.', phone); return; }
-    var em = (email.value || '').trim();
-    if(em && !/^\S+@\S+\.\S+$/.test(em)){ fail('That email doesn\'t look right — fix it or leave it blank.', email); return; }
-    AX_CONTACT = {phone: p, email: em};
-    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
-    close();
-    onDone();
-  });
-  setTimeout(function(){ try{ phone.focus(); }catch(e){} }, 60);
-}
-
 function _getCookie(name){
   var m = document.cookie.match('(?:^|; )'+name+'=([^;]*)');
   return m ? decodeURIComponent(m[1]) : null;
@@ -754,13 +719,14 @@ function _getCookie(name){
 // Unlock -> POST /api/order -> Razorpay checkout -> poll -> report page
 async function startPayment(){
   if(!REPORT_ID){ document.getElementById('milanForm').scrollIntoView(); return; }
-  // BUG 5: ALWAYS confirm the delivery number for THIS unlock — never silently reuse a
-  // previously-saved number. The modal pre-fills any last-entered value only for convenience.
-  if(!window.__axContactConfirmed){
-    axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });
+  // The WhatsApp number is captured (required) on the main form and stored in
+  // AX_CONTACT at preview time — no pre-payment popup. Guard defensively in case
+  // AX_CONTACT is somehow empty, sending the user back to the WhatsApp field.
+  if(!AX_CONTACT || !AX_CONTACT.phone){
+    var wp = document.getElementById('wa-phone');
+    if(wp){ wp.scrollIntoView(); try{ wp.focus(); }catch(e){} }
     return;
   }
-  window.__axContactConfirmed = false;   // reset so the next unlock click re-asks
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
@@ -1128,5 +1094,36 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   }
   tick();
 })();</script>
+
+<script>
+/* Reviews auto-scroll: always-on horizontal auto-scroll; pause briefly on hover
+   (desktop) or touch (mobile), then resume so it never sits still. */
+(function(){
+  var track = document.getElementById('revsTrack');
+  if(!track) return;
+  var paused = false, speed = 0.7, dir = 1, resumeAt = 0;
+  // No cloning: a manual swipe shows only the real reviews, once. The ambient
+  // auto-scroll gently reverses at each end (ping-pong) so it runs forever with
+  // no jarring jump from the last review back to the first.
+  function tick(now){
+    if(paused && now >= resumeAt) paused = false;
+    if(!paused){
+      var mx = track.scrollWidth - track.clientWidth;
+      if(mx > 0){
+        track.scrollLeft += speed * dir;
+        if(track.scrollLeft >= mx){ track.scrollLeft = mx; dir = -1; }
+        else if(track.scrollLeft <= 0){ track.scrollLeft = 0; dir = 1; }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  function pauseFor(ms){ paused = true; resumeAt = (performance.now ? performance.now() : Date.now()) + ms; }
+  track.addEventListener('mouseenter', function(){ paused = true; });
+  track.addEventListener('mouseleave', function(){ paused = false; });
+  track.addEventListener('pointerdown', function(){ pauseFor(2500); });
+  track.addEventListener('touchstart', function(){ pauseFor(2500); }, {passive:true});
+  requestAnimationFrame(tick);
+})();
+</script>
 </body>
 </html>

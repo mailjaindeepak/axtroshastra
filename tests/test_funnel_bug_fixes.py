@@ -8,6 +8,12 @@ Each of the FOUR funnel pages must carry the SAME fixes:
 
 The tests read each page's SOURCE (like tests/test_gazetteer_hi.py) and assert the
 markers of every fix are present and the buggy patterns are gone.
+
+BUG 5 exception: the compatibility (milan) pages now capture the WhatsApp number on
+the main form (#wa-phone, required), so the pre-payment contact popup was removed
+from them entirely — startPayment goes straight to /api/order using AX_CONTACT. The
+popup (axContactModal / __axContactConfirmed) is therefore asserted PRESENT only on
+the marriage (shaadi) pages and ABSENT on the milan pages.
 """
 import pathlib
 import re
@@ -70,11 +76,19 @@ def test_bug4_name_excluded_from_switch_restore(fname, form_id, sticky_id, name_
 @IDS
 def test_bug5_startpayment_always_asks_contact(fname, form_id, sticky_id, name_ids):
     html = _page(fname)
-    # the old "skip popup when a contact already exists" guard is gone
+    # the old "skip popup when a contact already exists" guard is gone everywhere
     assert "if(!AX_CONTACT){ axContactModal(startPayment); return; }" not in html, fname
-    # per-click confirmation flag drives a single modal open per unlock
-    assert "__axContactConfirmed" in html, fname
-    assert "axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });" in html, fname
+    if form_id == "milanForm":
+        # Compatibility captures the WhatsApp number on the main form, so the
+        # pre-payment popup was removed — startPayment goes straight to /api/order
+        # using the number already in AX_CONTACT.
+        assert "axContactModal" not in html, fname
+        assert "__axContactConfirmed" not in html, fname
+    else:
+        # Marriage still uses the pre-payment popup: a per-click confirmation
+        # flag drives a single modal open per unlock.
+        assert "__axContactConfirmed" in html, fname
+        assert "axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });" in html, fname
 
 
 # --------------------------------------------------------------- BUG 6
@@ -128,6 +142,11 @@ def test_pages_have_required_ids(fname, form_id, sticky_id, name_ids):
     assert 'id="%s"' % sticky_id in html, fname
     for nid in name_ids:
         assert 'id="%s"' % nid in html, "%s missing id=%s" % (fname, nid)
-    # unlock button + payment/contact entry points still present
+    # unlock button + payment entry point still present on every funnel page
     assert "startPayment" in html, fname
-    assert "axContactModal" in html, fname
+    # the pre-payment contact popup exists only on marriage; compatibility
+    # dropped it once the WhatsApp number moved onto the main form
+    if form_id == "milanForm":
+        assert "axContactModal" not in html, fname
+    else:
+        assert "axContactModal" in html, fname
