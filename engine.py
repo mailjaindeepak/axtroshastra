@@ -39,6 +39,7 @@ DASHA_SEQ = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn"
 DASHA_YRS = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
              "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}
 TOTAL_YRS = 120.0
+MAX_WINDOW_DAYS = 365 * 3   # a marriage window wider than ~3 years isn't credible (see vidyarthi.py)
 
 # Rahu/Ketu node model. "mean" = smoothed node (classical default, used here);
 # swe.TRUE_NODE = osculating node (common on Lahiri panchangs). They differ by up
@@ -417,7 +418,8 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
         qualifying = sorted(best, key=lambda c: c["start"])
     merged = []
     for c in qualifying:
-        if merged and (c["start"] - merged[-1]["end"]).days < 120:
+        if merged and (c["start"] - merged[-1]["end"]).days < 120 and \
+           (c["end"] - merged[-1]["start"]).days <= MAX_WINDOW_DAYS:
             m = merged[-1]
             m["end"] = c["end"]; m["score"] = max(m["score"], c["score"])
             m["rules"] = list(dict.fromkeys(m["rules"] + c["rules"]))
@@ -428,14 +430,25 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
     windows = sorted(merged, key=lambda c: -c["score"])[:3]
     windows = sorted(windows, key=lambda c: c["start"])
 
+    # Pad each window's displayed range, but never let the shown start fall in the
+    # past (a still-running AD legitimately started years ago — showing that reads
+    # as a data error), then clamp so adjacent windows never visually overlap.
+    padded_start = [max(w["start"] - timedelta(days=pad_days), today) for w in windows]
+    padded_end = [w["end"] + timedelta(days=pad_days) for w in windows]
+    for i in range(1, len(windows)):
+        if padded_start[i] < padded_end[i - 1]:
+            midpoint = windows[i - 1]["end"] + (windows[i]["start"] - windows[i - 1]["end"]) / 2
+            padded_end[i - 1] = min(padded_end[i - 1], midpoint)
+            padded_start[i] = max(padded_start[i], midpoint)
+
     grade_cap = "Moderate" if time_quality in ("T2", "T3") else "Strong"
     out_windows = []
-    for w in windows:
+    for i, w in enumerate(windows):
         g_ = grade(w["score"]) or "Building"
         if grade_cap == "Moderate" and g_ == "Strong": g_ = "Moderate"
         out_windows.append({
-            "start": (w["start"] - timedelta(days=pad_days)).strftime("%Y-%m"),
-            "end": (w["end"] + timedelta(days=pad_days)).strftime("%Y-%m"),
+            "start": padded_start[i].strftime("%Y-%m"),
+            "end": padded_end[i].strftime("%Y-%m"),
             "core_start": w["start"].strftime("%Y-%m"),
             "core_end": w["end"].strftime("%Y-%m"),
             "grade": g_, "score": w["score"],
