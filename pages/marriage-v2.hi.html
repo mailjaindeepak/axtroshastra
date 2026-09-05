@@ -116,40 +116,15 @@ section{padding:52px 0}
 .trust li b{color:#E8E4D6;font-weight:600}
 .trust .dot{width:5px;height:5px;border-radius:50%;background:var(--haldi);flex:none}
 
-/* ---------- TEASER / PAYWALL ---------- */
-.teaser{background:linear-gradient(var(--paper), #F3ECDD);display:none}
+/* ---------- TEASER / PAYWALL — restyled to match the "premium sample
+   report" palette (warm cream, dark-brown/gold cards, Fraunces serif) so the
+   whole post-submit personalized snapshot reads as one consistent premium
+   report preview instead of two different themes stitched together. Colors
+   are the same ones .premium-sample already uses below (--panel/--pline/
+   --pgold/--phead/--tbox/--pcta), repeated as literals here since this block
+   sits outside .premium-sample's own scope. ---------- */
+.teaser{background:linear-gradient(180deg, #F3ECDD, #E9E1D3);display:none}
 .teaser.show{display:block}
-.teaser-head{text-align:center;margin-bottom:22px}
-.teaser-head h2{font-size:clamp(24px,6vw,30px);font-weight:800}
-.chart-facts{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
-.chart-facts .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
-.chart-facts .row:last-child{border-bottom:0}
-.chart-facts .k{color:var(--muted)}
-.chart-facts .v{font-weight:700;text-align:right}
-.dasha-note{font-size:13.5px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin-top:12px}
-.windows-found{font-family:var(--display);font-weight:800;font-size:19px;text-align:center;margin:22px 0 14px}
-.windows-found b{color:var(--sindoor)}
-
-/* locked timeline */
-.timeline{background:var(--midnight);border-radius:var(--radius);padding:20px 16px 16px;color:#CFCBBB}
-.timeline .tl-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8F92AB;margin-bottom:14px;text-align:center}
-.tl-track{position:relative;height:54px;background:var(--midnight-2);border-radius:8px;overflow:hidden}
-.tl-window{position:absolute;top:0;bottom:0;background:linear-gradient(90deg, rgba(228,176,74,.85), rgba(228,176,74,.55));display:flex;align-items:center;justify-content:center;overflow:visible}
-.tl-window .lockchip{background:rgba(21,28,57,.92);color:var(--haldi);border-radius:8px;font-size:11px;font-weight:700;padding:4px 8px;white-space:nowrap;position:relative;z-index:2;filter:none}
-.tl-window .yrs{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:var(--midnight);filter:blur(7px);user-select:none}
-.tl-years{display:flex;justify-content:space-between;font-size:10.5px;color:#7C7F99;margin-top:8px;padding:0 2px}
-.tl-cap{font-size:12.5px;color:#A9ABC0;text-align:center;margin-top:12px}
-
-/* paywall card */
-.paywall{background:var(--card);border-radius:var(--radius);border:2px solid var(--haldi);padding:24px 20px;margin-top:22px;box-shadow:0 14px 40px rgba(35,37,59,.12)}
-.paywall h3{font-size:22px;font-weight:800}
-.price{display:flex;align-items:baseline;gap:10px;margin:6px 0 16px}
-.price .now{font-family:var(--display);font-weight:800;font-size:32px;color:var(--sindoor)}
-.price .was{color:#8F8A7B;text-decoration:line-through;font-size:21px;font-weight:600}
-.price .tag{font-size:11px;font-weight:700;background:var(--haldi-soft);color:#8a6a1f;border-radius:20px;padding:4px 10px;letter-spacing:.04em}
-.paywall ul{list-style:none;margin-bottom:18px}
-.paywall li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}
-.paywall li svg{flex:none;margin-top:3px}
 
 /* ---------- WHY DIFFERENT ---------- */
 .why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
@@ -218,24 +193,15 @@ footer b{color:#B9BBD0}
   .hero{padding:48px 0 72px}
 }
 
-/* ---------- MARRIAGE REPORT PREVIEW SECTION: sits AFTER the existing
-   chart/chart-facts/windows-found/timeline block (all unchanged above) —
-   personalized headline, insight cards, a locked-content teaser, and a
-   "reveals" label ahead of the existing paywall bullet list. The
-   .teaser/.chart-facts/.timeline/.paywall rules themselves already exist
-   above (dormant, inherited from the v1 template); everything below is
-   purely new, additive classes. ---------- */
-.mr-headline{text-align:center;margin:22px 0 16px}
-.mr-h{font-family:var(--display);font-weight:800;font-size:19px;color:var(--ink);line-height:1.45}
-.mr-h b{color:var(--sindoor)}
-.mr-sub{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.02em}
-.insights{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
-.insight-card{background:var(--card);border-left:3px solid var(--haldi);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;line-height:1.55;color:var(--ink);box-shadow:0 4px 14px rgba(35,37,59,.06)}
-.insight-card .lbl{display:block;font-family:var(--display);font-weight:700;font-size:12px;color:var(--sindoor);margin-bottom:3px}
-.locked-teaser{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1.5px dashed var(--haldi);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#6B5A2E}
-.locked-teaser .ic{flex:none;font-size:15px;line-height:1.4}
-.locked-teaser b{color:#5c4a1a}
-.reveals-label{font-family:var(--display);font-weight:700;font-size:14px;color:var(--ink);margin:2px 0 10px}
+/* ---------- MARRIAGE REPORT PREVIEW SECTION: the ONLY thing shown in
+   .teaser after submit — the old free-snapshot block (kundli chart, moon
+   sign/nakshatra/dasha facts) and the separate paywall card (price, bullet
+   list, its own Unlock button) have both been removed from this flow. The
+   preview body is the existing #sampleReport card, cloned in via script
+   rather than rebuilt here. The real payment trigger is now the sticky bar
+   only (#stickyBtn, wired to startPayment() in renderTeaser() below) — the
+   clone's own "9 things you'll get" CTA (.ps-cta, href="#kundliForm") is
+   unchanged from the static sample and still just scrolls to the form. ---------- */
 </style>
 <!-- ============ ANALYTICS — replace the two IDs below ============ -->
 <!-- Google Analytics 4: replace G-NKRQM1HJ97 with your Measurement ID -->
@@ -356,56 +322,12 @@ fbq('track', 'PageView');
      and the Compatibility teaser (milan.hi.html); nothing here is invented. ============ -->
 <section class="teaser" id="teaser">
   <div class="wrap">
-    <div class="teaser-head">
-      <p class="eyebrow dark">फ्री स्नैपशॉट</p>
-      <h2><span id="t-name">आपकी</span> कुंडली तैयार है ✅</h2>
-    </div>
 
-    <style>#t-chart{max-width:320px;margin:14px auto 2px;background:#151C39;border-radius:12px;padding:10px}#t-chart svg{width:100%;height:auto;display:block}</style>
-    <div id="t-chart" aria-label="आपकी कुंडली (फ्री)"></div>
-
-    <div class="chart-facts">
-      <div class="row"><span class="k">चंद्र राशि (Rashi)</span><span class="v" id="t-rashi">—</span></div>
-      <div class="row"><span class="k">नक्षत्र</span><span class="v" id="t-nak">—</span></div>
-      <div class="row"><span class="k">मौजूदा अवधि</span><span class="v" id="t-dasha">—</span></div>
-      <div class="row"><span class="k">अवधि तक</span><span class="v" id="t-till">—</span></div>
-      <div class="dasha-note">⭐ आपकी मौजूदा दशा का दौर सीधे तौर पर आपकी शादी के समय से जुड़ा है।</div>
-    </div>
-
-    <p class="windows-found" id="wfLine">आपकी विंडो गिनी जा रही हैं…</p>
-
-    <div class="timeline">
-      <p class="tl-title" id="tlTitle">आपकी शादी की समय-रेखा</p>
-      <div class="tl-track" id="tlTrack"></div>
-      <div class="tl-years" id="tlYears"></div>
-      <p class="tl-cap">विंडो निकल गईं। सटीक साल, महीने और मज़बूती ग्रेड रिपोर्ट में।</p>
-    </div>
-
-    <!-- ============ MARRIAGE REPORT PREVIEW: headline + insights + locked
-         teaser, all built from THIS submission's real teaser data below. ============ -->
-    <div class="mr-headline">
-      <p class="mr-h" id="mrHeadline"></p>
-      <p class="mr-sub" id="mrSub"></p>
-    </div>
-    <div class="insights" id="tInsights"></div>
-    <div class="locked-teaser"><span class="ic">🔒</span><span><b>अभी भी लॉक है:</b> आपका मांगलिक वर्डिक्ट और कैंसलेशन जाँच, होने वाले साथी का स्वभाव, कमज़ोर दौर, और आपकी पर्सनलाइज़्ड एक्शन प्लान — पूरी रिपोर्ट में।</span></div>
-
-    <div class="paywall">
-      <h3>पूरी मैरिज टाइमिंग रिपोर्ट</h3>
-      <div class="price">
-        <span class="now">₹499</span><span class="was">₹999</span><span class="tag">लॉन्च प्राइस</span>
-      </div>
-      <p class="reveals-label">आपकी पूरी मैरिज रिपोर्ट में शामिल है:</p>
-      <ul>
-        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>आपके <b>सटीक शादी की विंडो</b> — साल और महीने, मज़बूती ग्रेड के साथ</span></li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>मांगलिक स्थिति</b> — और एक कैंसलेशन जाँच (ज़्यादातर कुंडलियों में कैंसलेशन होता है)</span></li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span>कैसे <b>साथी का योग</b> है — स्वभाव, मिलने का संदर्भ</span></li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>कमज़ोर दौर</b> — कब रिश्ते आएँगे पर बनेंगे नहीं, और क्यों</span></li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5 L6 12.5 L14 3.5" stroke="#2E7D53" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>कार्य योजना</b> — हर विंडो में क्या करना चाहिए</span></li>
-      </ul>
-      <button class="btn" type="button" onclick="startPayment()">🔒 अपनी पूरी मैरिज रिपोर्ट अनलॉक करें — <s style="opacity:.65;font-weight:600">₹999</s> ₹499</button>
-      <p class="btn-note">UPI · कार्ड · नेटबैंकिंग | तुरंत WhatsApp + स्क्रीन पर डिलीवरी</p>
-    </div>
+    <!-- ============ MARRIAGE REPORT PREVIEW: the exact same sample-report
+         card (#sampleReport further down the page) is cloned in here once at
+         load time (see the script by #sampleReport) — same headings, cards,
+         layout and content, reused rather than rebuilt. ============ -->
+    <div id="previewSampleSlot"></div>
   </div>
 </section>
 
@@ -525,8 +447,8 @@ fbq('track', 'PageView');
 </style>
 <section class="premium-sample" id="sampleReport">
   <svg class="ps-dec" width="300" height="300" viewBox="0 0 300 300" fill="none" aria-hidden="true" style="top:-110px;right:-160px"><defs><radialGradient id="psSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F1CB6E" stop-opacity=".85"/><stop offset="55%" stop-color="#E6B457" stop-opacity=".3"/><stop offset="100%" stop-color="#E6B457" stop-opacity="0"/></radialGradient></defs><circle cx="150" cy="150" r="150" fill="url(#psSun)"/><circle cx="150" cy="150" r="42" fill="#EFC469" opacity=".5"/><g stroke="#E3B053" stroke-width="3" stroke-linecap="round" opacity=".38"><line x1="207" y1="150" x2="232" y2="150"/><line x1="190" y1="190" x2="208" y2="208"/><line x1="150" y1="207" x2="150" y2="232"/><line x1="110" y1="190" x2="92" y2="208"/><line x1="93" y1="150" x2="68" y2="150"/><line x1="110" y1="110" x2="92" y2="92"/><line x1="150" y1="93" x2="150" y2="68"/><line x1="190" y1="110" x2="208" y2="92"/></g></svg>
-  <h2 style="text-align:center;font-weight:700;font-size:24px;color:#3a2c18;margin:0 auto 4px;max-width:560px">आपकी रिपोर्ट की एक झलक</h2>
-  <p class="ps-tag">नीचे एक असली, कैलकुलेटेड उदाहरण है — यह आपका डेटा नहीं है। अपनी रिपोर्ट के लिए ऊपर जानकारी भरिए।</p>
+  <h2 style="text-align:center;font-weight:700;font-size:24px;color:#3a2c18;margin:0 auto 8px;max-width:560px">आपकी मैरिज रिपोर्ट का एक सैंपल देखें</h2>
+  <p class="ps-tag">अपनी पूरी मैरिज रिपोर्ट में शामिल जानकारियों की एक झलक पाइए।</p>
   <div class="ps-wrap">
 
     <!-- 1. सबसे संभावित विवाह समय — एक थीम्ड सटीक-महीना कार्ड (फ़ुल-विड्थ) -->
@@ -682,15 +604,87 @@ fbq('track', 'PageView');
     setNav(false);
     if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
   }
-  // Only the small "View the full sample report" link inside the preview opens
-  // the modal. The hero #heroSampleBtn is an anchor that jumps to #sampleReport.
-  var opener=document.getElementById('sampleOpen2'); if(opener) opener.addEventListener('click',open);
+  // Delegated (not bound to a single element) so the cloned copy of
+  // #sampleReport inside the post-submit preview (#previewSampleSlot, below)
+  // opens this same modal too, without needing its own listener rebound.
+  document.addEventListener('click',function(e){ if(e.target.closest('.ps-sample-link')) open(); });
   var x=document.getElementById('sampleModalClose'); if(x) x.addEventListener('click',close);
   modal.addEventListener('click',function(e){ if(e.target===modal) close(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && modal.classList.contains('show')) close(); });
   var buy=document.getElementById('sampleModalBuy');
   if(buy) buy.addEventListener('click',function(){ close(); var f=document.getElementById('kundliForm'); if(f&&f.requestSubmit) f.requestSubmit(); });
 })();
+</script>
+<script>
+// Reuse the existing sample report's UI/CSS (#sampleReport, above) for the
+// post-submit preview (#previewSampleSlot): the same cards/layout are cloned
+// once at load, then re-populated with THIS user's real computed values
+// (moon sign, current dasha) once the kundli is built — see
+// personalizePreviewClone(), called from renderTeaser() below. The static
+// #sampleReport itself is never modified, so "sample report" continues
+// showing the same fixed illustrative example.
+(function(){
+  var src = document.getElementById('sampleReport');
+  var slot = document.getElementById('previewSampleSlot');
+  if(!src || !slot) return;
+  var clone = src.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.id = 'previewSampleClone';
+  var innerId = clone.querySelector('#sampleOpen2'); if(innerId) innerId.removeAttribute('id');
+  // The clone's own heading/tag are set here rather than inherited from the
+  // static sample's copy, so the two stay independent — this preview is
+  // about real data, the static sample above is the fixed example.
+  var h2 = clone.querySelector('h2'); if(h2) h2.textContent = 'आपकी रिपोर्ट की एक झलक';
+  var tag = clone.querySelector('.ps-tag');
+  if(tag) tag.textContent = 'नीचे आपकी असली जन्म जानकारी से बना कैलकुलेशन है।';
+  slot.appendChild(clone);
+})();
+
+// Classical trait tables used to personalize the cloned preview above —
+// keyed off the SAME real moon sign / current dasha lord already computed
+// by engine.compute_report() and returned in the teaser (t.moon_sign_en,
+// t.current_dasha). Presentation of values already computed server-side,
+// not new astrology.
+var AX_MOON_TRAITS = {
+  Aries:       {personality:"साहसी और तेज़-तर्रार",          nature:"सीधा और रक्षात्मक"},
+  Taurus:      {personality:"स्थिर और रसिक स्वभाव वाला",       nature:"वफ़ादार और आरामप्रिय"},
+  Gemini:      {personality:"जिज्ञासु और हाज़िरजवाब",          nature:"लचीला और मिलनसार"},
+  Cancer:      {personality:"पालन-पोषण करने वाला और सहज",      nature:"भावनात्मक रूप से जुड़ा, देखभाल करने वाला"},
+  Leo:         {personality:"आत्मविश्वासी और गर्मजोशी भरा",    nature:"उदार और वफ़ादार"},
+  Virgo:       {personality:"व्यावहारिक और सिद्धांतवादी",      nature:"चौकस और भरोसेमंद"},
+  Libra:       {personality:"आकर्षक और निष्पक्ष",              nature:"सामंजस्य चाहने वाला और स्नेही"},
+  Scorpio:     {personality:"गहन और दृढ़-निश्चयी",             nature:"गहराई से समर्पित और निजी"},
+  Sagittarius: {personality:"आशावादी और सिद्धांतवादी",         nature:"स्वतंत्र सोच वाला और ईमानदार"},
+  Capricorn:   {personality:"अनुशासित और महत्वाकांक्षी",       nature:"भरोसेमंद और संयमित"},
+  Aquarius:    {personality:"स्वतंत्र और आदर्शवादी",           nature:"अपरंपरागत पर वफ़ादार"},
+  Pisces:      {personality:"स्वप्निल और दयालु",               nature:"भावनात्मक रूप से जुड़ा, देखभाल करने वाला"}
+};
+var AX_DASHA_LOVE = {
+  Sun:"अरेंज्ड, पर स्पष्ट राय के साथ", Moon:"प्रेम / स्वयं चुना हुआ साथी",
+  Mars:"जोशीला, स्वयं-आरंभित मेल", Mercury:"व्यावहारिक, आपसी सहमति वाला मेल",
+  Jupiter:"आशीर्वाद-प्राप्त, परिवार-समर्थित मेल", Venus:"प्रेम / स्वयं चुना हुआ साथी",
+  Saturn:"पारंपरिक, परिवार द्वारा तय मेल", Rahu:"अपरंपरागत, अप्रत्याशित मेल",
+  Ketu:"शांत, परिवार-निर्देशित मेल"
+};
+function axMdLord(dashaStr){ var m = /^([A-Za-z]+)/.exec(dashaStr || ''); return m ? m[1] : null; }
+
+// Fills the cloned preview (see IIFE above) with this submission's real
+// values — called from renderTeaser() once /api/kundli returns.
+function personalizePreviewClone(t){
+  var clone = document.getElementById('previewSampleClone');
+  if(!clone) return;
+  t = t || {};
+  var monthEl = clone.querySelector('.ps-month-big');
+  if(monthEl) monthEl.textContent = (t.first_window_teaser && t.first_window_teaser !== '—') ? t.first_window_teaser : 'अपनी रिपोर्ट में देखें';
+  var capEl = clone.querySelector('.ps-tbox.ps-month p');
+  if(capEl) capEl.textContent = 'आपकी सबसे मज़बूत विंडो — सटीक महीना आपकी पूरी रिपोर्ट में है।';
+  var traits = AX_MOON_TRAITS[t.moon_sign_en] || null;
+  var love = AX_DASHA_LOVE[axMdLord(t.current_dasha)] || null;
+  var vals = clone.querySelectorAll('.ps-p3 .v');
+  if(vals[0] && love) vals[0].textContent = love;
+  if(vals[1] && traits) vals[1].textContent = traits.personality;
+  if(vals[2] && traits) vals[2].textContent = traits.nature;
+}
 </script>
 
 <section class="proof">
@@ -937,160 +931,17 @@ async function runKundliAndPay(dob, waPhone){
   if(kundliOk) renderTeaser(teaserData);
 }
 
-function axEsc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
-
-// Classical, deterministic significations keyed by the user's OWN computed
-// moon sign / nakshatra / current dasha lord (engine.py's real teaser fields,
-// always returned in English/transliterated form regardless of page language
-// — same convention the existing chart-facts rows already use) — every
-// insight below is selected from real chart data, never invented.
-var MOON_TRAITS = {
-  Aries: "एक बार पूरी तरह विश्वास हो जाए तो जल्दी कमिटमेंट करते हैं, और ऐसा साथी चाहते हैं जो आपकी स्वतंत्रता का सम्मान करे",
-  Taurus: "स्थिरता और वफ़ादारी को सबसे ऊपर रखते हैं, और ऐसे रिश्ते बनाते हैं जो लंबे समय तक टिकते हैं",
-  Gemini: "ऐसे साथी की ओर आकर्षित होते हैं जो मानसिक रूप से जोड़े रखे और बातचीत को दिलचस्प बनाए",
-  Cancer: "भावनात्मक गहराई के साथ आगे बढ़ते हैं और अपने करीबी लोगों की स्वाभाविक रूप से देखभाल करते हैं",
-  Leo: "रिश्तों में गर्मजोशी और उदारता लाते हैं, और खुलकर सराहा जाना पसंद करते हैं",
-  Virgo: "बड़े इशारों से नहीं, बल्कि व्यावहारिक देखभाल और बारीकियों पर ध्यान देकर प्यार दिखाते हैं",
-  Libra: "संतुलन और सामंजस्य चाहते हैं, और स्वाभाविक रूप से साथी के रिश्ते की ओर झुकाव रखते हैं",
-  Scorpio: "गहरे, तीव्र बंधन बनाते हैं और सतही आकर्षण से ज़्यादा भावनात्मक ईमानदारी को महत्व देते हैं",
-  Sagittarius: "एक प्रतिबद्ध रिश्ते में भी बढ़ने और एक्सप्लोर करने की जगह चाहते हैं",
-  Capricorn: "शादी को गंभीरता से लेते हैं, इसे एक लंबी साझा ज़िम्मेदारी की तरह बनाते हैं",
-  Aquarius: "दोस्ती और स्वतंत्रता को एक टिकाऊ रिश्ते की नींव मानते हैं",
-  Pisces: "सहानुभूति और सहज-बोध लाते हैं, और ऐसे साथी से सबसे ज़्यादा जुड़ते हैं जिसके साथ भावनात्मक रूप से सुरक्षित महसूस हो"
-};
-var NAK_TRAITS = {
-  Ashwini: "सहजता और पहल लाता है — फ़ैसला होते ही आप तेज़ी से आगे बढ़ते हैं",
-  Bharani: "मज़बूत इच्छाशक्ति और गहरी प्रतिबद्धता लाता है, एक बार बंधन बनने पर",
-  Krittika: "आप क्या चाहते हैं इसकी स्पष्टता लाता है, दिखावे के लिए बहुत कम धैर्य के साथ",
-  Rohini: "आपको आकर्षक, इंद्रिय-स्तर के जुड़ाव और स्थायी समर्पण की ओर खींचता है",
-  Mrigashira: "आपको ऐसा साथी खोजते रहने के लिए प्रेरित करता है जो आपकी जिज्ञासा से मेल खाए",
-  Ardra: "करीबी रिश्तों में तीव्रता और बदलाव लाता है",
-  Punarvasu: "एक क्षमाशील, नवीनीकरण करने वाला नज़रिया देता है — झटकों के बाद फिर से बनाने में सक्षम",
-  Pushya: "आपको एक स्वाभाविक पालनहार बनाता है, घर और परिवार की रक्षा करने वाला",
-  Ashlesha: "गहरी भावनात्मक समझ लाता है, जो कहा नहीं जाता उसे भी महसूस करने वाला",
-  Magha: "परंपरा, विरासत और पारिवारिक सम्मान की ओर एक मज़बूत झुकाव लाता है",
-  "Purva Phalguni": "रिश्तों में गर्मजोशी, रोमांस और सहजता लाता है",
-  "Uttara Phalguni": "क्षणिक रोमांस से ज़्यादा स्थिर, भरोसेमंद साथ को तरजीह देता है",
-  Hasta: "साथ मिलकर जीवन बनाने का व्यावहारिक, हाथों-हाथ नज़रिया लाता है",
-  Chitra: "आपको ऐसे साथी की ओर खींचता है जो आपकी व्यक्तिगत विशेषताओं की कद्र करे",
-  Swati: "साथ के भीतर भी स्वतंत्रता को महत्व देता है — नज़दीकी जितनी ज़रूरी, आज़ादी भी उतनी ही ज़रूरी",
-  Vishakha: "दृढ़ता और महत्वाकांक्षा लाता है, जिसे एक साथी को साझा करना होगा",
-  Anuradha: "भरोसा पूरी तरह बनने के बाद समर्पण और वफ़ादारी को तरजीह देता है",
-  Jyeshtha: "करीबी रिश्तों में एक सुरक्षात्मक, ज़िम्मेदार भूमिका लाता है",
-  Mula: "गहरी, जड़ स्तर की ईमानदारी की ओर खींचता है — सतही जुड़ाव शायद ही टिकते हैं",
-  "Purva Ashadha": "दृढ़ विश्वास लाता है और कम में समझौता न करने की प्रवृत्ति",
-  "Uttara Ashadha": "साझा दीर्घकालिक लक्ष्यों पर बने रिश्तों को तरजीह देता है",
-  Shravana: "आपको एक ध्यान से सुनने वाला बनाता है — असली बातचीत से जुड़ाव गहरा होता है",
-  Dhanishta: "लय और ऊर्जा लाता है, ऐसे साथी की ओर आकर्षित जो आपके साथ कदम मिलाए",
-  Shatabhisha: "स्वतंत्रता और उपचार को महत्व देता है, कभी-कभी नज़दीकी में भी जगह चाहिए होती है",
-  "Purva Bhadrapada": "तीव्रता और गहराई लाता है, सतही किसी भी चीज़ में असहज",
-  "Uttara Bhadrapada": "नाटकीय शुरुआत से ज़्यादा शांत, स्थिर साथ को तरजीह देता है",
-  Revati: "करुणा और अनुकूलनशीलता लाता है, जुड़ने के तरीके में कोमल"
-};
-var DASHA_TRAITS = {
-  Sun: "सूर्य की दशा अक्सर पहचान और साथी से आप क्या चाहते हैं, इसकी स्पष्टता को तेज़ करती है",
-  Moon: "चंद्र की दशा भावनात्मक तैयारी और साथ की चाहत को बढ़ाती है",
-  Mars: "मंगल की दशा अक्सर निर्णायक कदम लाती है — प्रस्ताव, फ़ैसले या साहसी क़दम",
-  Rahu: "राहु की दशा अपरंपरागत या अप्रत्याशित रिश्ते के घटनाक्रम ला सकती है",
-  Jupiter: "गुरु की दशा शास्त्रीय रूप से शादी और प्रतिबद्ध साथ के लिए अनुकूल मानी जाती है",
-  Saturn: "शनि की दशा धैर्य को तरजीह देती है — अभी बने कमिटमेंट लंबे समय तक टिकने वाले होते हैं",
-  Mercury: "बुध की दशा संवाद-आधारित जुड़ाव और स्पष्ट सोच वाले फ़ैसलों को तरजीह देती है",
-  Ketu: "केतु की दशा अक्सर नए बंधन बनने से पहले पुराने पैटर्न से अलगाव लाती है",
-  Venus: "शुक्र की दशा शास्त्रीय रूप से रोमांस, आकर्षण और शादी से ही जुड़ी होती है"
-};
-// MOON_TRAITS का छोटा वाक्यांश-रूप, सिर्फ़ बोल्ड हेडलाइन के लिए — पूरा वाक्य
-// नीचे इनसाइट कार्ड में रहता है, हेडलाइन छोटी और असरदार बनी रहती है।
-var HEADLINE_PHRASES = {
-  Aries: "प्रतिबद्धता को लेकर एक साहसी, पूरी तरह जुड़ने वाला नज़रिया",
-  Taurus: "शादी में स्थिरता को सबसे पहले रखने वाला नज़रिया",
-  Gemini: "बातचीत और मानसिक तालमेल पर बना जुड़ाव",
-  Cancer: "साथ को लेकर गहरी देखभाल वाला नज़रिया",
-  Leo: "प्यार को लेकर गर्मजोशी और उदारता भरा नज़रिया",
-  Virgo: "शादी में शांत, बारीकी पर ध्यान देने वाला समर्पण",
-  Libra: "साथ की ओर एक स्वाभाविक खिंचाव",
-  Scorpio: "जुड़ाव को लेकर तीव्र, पूरी तरह या बिल्कुल नहीं वाला नज़रिया",
-  Sagittarius: "एक ऐसी शादी जिसमें बढ़ने की गुंजाइश बनी रहे",
-  Capricorn: "प्रतिबद्धता को लेकर गंभीर, दीर्घकालिक नज़रिया",
-  Aquarius: "दोस्ती को पहले रखने वाला शादी का नज़रिया",
-  Pisces: "प्यार को लेकर गहरा सहज-बोध और भावनात्मक नज़रिया"
-};
-
-// Builds the headline + insight cards purely from THIS submission's real
-// teaser fields (moon_sign, nakshatra, current_dasha, horizon,
-// timeline_hints) — no fabricated astrology, no hardcoded sample data.
-function buildInsights(t, name){
-  var moonTrait = MOON_TRAITS[t.moon_sign_en] || '';
-  var headlinePhrase = HEADLINE_PHRASES[t.moon_sign_en] || '';
-  var nakTrait = NAK_TRAITS[t.nakshatra] || '';
-  var dashaLord = (t.current_dasha || '').split(' ')[0];
-  var dashaTrait = DASHA_TRAITS[dashaLord] || '';
-  var horizon = t.horizon || [2026, 2036];
-  var hints = t.timeline_hints || [];
-  var phase = null;
-  if(hints.length && hints[0].left_pct != null){
-    var pct = hints[0].left_pct;
-    phase = pct < 33 ? 'शुरुआती' : (pct < 66 ? 'मध्य' : 'आख़िरी');
-  }
-  if(headlinePhrase){
-    document.getElementById('mrHeadline').innerHTML = axEsc(name) + ', आपका चार्ट <b>' + axEsc(headlinePhrase) + '</b> की ओर इशारा करता है।';
-    document.getElementById('mrSub').textContent = (t.moon_sign || '') + ' चंद्रमा, ' + (t.nakshatra || '') + ' नक्षत्र में';
-  }
-
-  var cards = '';
-  if(moonTrait){
-    cards += '<div class="insight-card"><span class="lbl">💞 मैरिज टेंडेंसी</span>' + axEsc(moonTrait) + '।</div>';
-  }
-  if(nakTrait){
-    cards += '<div class="insight-card"><span class="lbl">👤 पार्टनर टेंडेंसी — ' + axEsc(t.nakshatra || '') + '</span>' + axEsc(nakTrait) + '।</div>';
-  }
-  cards += '<div class="insight-card"><span class="lbl">⏳ टाइमिंग सिग्नल</span>' +
-    (dashaTrait ? (axEsc(dashaTrait) + '। ') : '') +
-    (phase
-      ? ('आपकी पहली विंडो ' + horizon[0] + '–' + horizon[1] + ' दशक के ' + phase + ' हिस्से की ओर झुकी है')
-      : ('हम आपकी विंडो ' + horizon[0] + '–' + horizon[1] + ' के बीच ट्रैक कर रहे हैं')) +
-    ' — सटीक महीने और मज़बूती ग्रेड आपकी पूरी रिपोर्ट में हैं।</div>';
-  document.getElementById('tInsights').innerHTML = cards;
-}
-
 // Renders the free report-teaser section from THIS submission's own
 // report["teaser"] (api.py POST /api/kundli) — moon sign, nakshatra, current
 // dasha and window count/positions are the user's real computed values;
-// nothing here is invented client-side. Adapted from the identical pattern
-// already used by shaadi.hi.html (marriage v1) and milan.hi.html's teaser.
+// nothing here is invented client-side. The report-preview cards below
+// (personalizePreviewClone) present the same real values through the
+// AX_MOON_TRAITS/AX_DASHA_LOVE lookup tables. Adapted from the identical
+// pattern already used by shaadi.hi.html (marriage v1) and milan.hi.html's
+// teaser.
 function renderTeaser(t){
   t = t || {};
-  var name = document.getElementById('f-name').value.trim();
-  document.getElementById('t-name').textContent = name ? (name + ' की') : 'आपकी';
-  document.getElementById('t-rashi').textContent = (t.moon_sign || '—') + (t.moon_sign_en ? ' (' + t.moon_sign_en + ')' : '');
-  document.getElementById('t-nak').textContent = (t.nakshatra || '—') + (t.pada ? ' — पद ' + t.pada : '');
-  document.getElementById('t-dasha').textContent = t.current_dasha || '—';
-  document.getElementById('t-till').textContent = t.dasha_till || '—';
-  var chartEl = document.getElementById('t-chart');
-  if(chartEl){ chartEl.innerHTML = t.chart_svg || ''; chartEl.style.display = t.chart_svg ? '' : 'none'; }
-  buildInsights(t, name || 'आपकी कुंडली');
-  var wf = document.getElementById('wfLine');
-  var wc = '<b style="color:var(--sindoor)">' + (t.windows_count === 1 ? '1 शादी विंडो' : (t.windows_count || 0) + ' शादी विंडो') + '</b>';
-  wf.innerHTML = 'हमने आपके चार्ट में ' + wc + (t.windows_count === 1 ? ' पहचानी है।' : ' पहचानी हैं।');
-  var horizon = t.horizon || [2026, 2036];
-  document.getElementById('tlTitle').textContent = 'आपकी शादी की टाइमलाइन · ' + horizon[0] + ' – ' + horizon[1];
-  var yrs = document.getElementById('tlYears'); yrs.innerHTML = '';
-  for(var y = horizon[0]; y <= horizon[1]; y += 2){
-    var s = document.createElement('span'); s.textContent = y; yrs.appendChild(s);
-  }
-  var track = document.getElementById('tlTrack'); track.innerHTML = '';
-  var hints = t.timeline_hints || [];
-  var compact = hints.length > 1;
-  hints.forEach(function(h, i){
-    var w = document.createElement('div'); w.className = 'tl-window';
-    w.style.left = h.left_pct + '%'; w.style.width = h.width_pct + '%';
-    if(i > 0) w.style.opacity = .75;
-    var label = compact ? ('🔒 वि' + (i + 1)) : ('🔒 विंडो ' + (i + 1));
-    var chip = '<span class="lockchip"' +
-      (compact ? ' style="font-size:10px;padding:3px 6px' + (i % 2 === 1 ? ';transform:translateY(14px)' : '') + '"' : '') +
-      '>' + label + '</span>';
-    w.innerHTML = '<span class="yrs">20XX–XX</span>' + chip;
-    track.appendChild(w);
-  });
+  personalizePreviewClone(t);
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior: 'smooth'});
