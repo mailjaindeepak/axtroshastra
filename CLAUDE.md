@@ -11,6 +11,11 @@ original story.
 
 ## Quick checklist — read this before starting any new page/product
 
+0. **Before building anything:** surface the open decisions as explicit questions and get
+   answers — don't assume/guess/drift (§17); for a report/page, write the finalised
+   section spec to `docs/` and build strictly against it (§18); and for **any report,
+   mock it visually and get it approved BEFORE writing any renderer/pipeline code —
+   always, no exceptions** (§8).
 1. Confirm the funnel follows the standard shape (§1) — call out anything different.
    Form inputs reject bad data explicitly, never silently guess (§1).
 2. Build both language files together: `<slug>.html` + `<slug>.hi.html` (§7). Ask
@@ -18,9 +23,10 @@ original story.
 3. For Hindi text: reuse the existing dictionaries (§7) — never re-translate from
    scratch. Check JS-built popups too, not just the static HTML (§7). Sanity-check
    Devanagari headlines don't clip (§7).
-4. For the paid report's PDF: reuse an existing theme (§8), mock it visually and get
-   it approved *before* touching the real renderer/pipeline (§8), and hide every
-   non-report chrome element with `@media print` (§8).
+4. For the paid report's PDF: **read the build recipe first —
+   `docs/career-intelligence-report-recipe.md`** (§8) — reuse an existing theme (§8), mock it
+   visually and get it approved *before* touching the real renderer/pipeline (§8), and hide
+   every non-report chrome element with `@media print` (§8).
 5. Every page: the exact `<head>` block (§2), registered in `sitemap.xml` **and**
    `ops/robot_customer`'s route list (§3) — never hand-rolled nav (§6). Renaming a
    live URL keeps a 301 by default — ask whether it's forever or temporary (§2).
@@ -184,6 +190,44 @@ too — same review, or a fresh one, tagged with the product name like the exist
   "robust," "testament to," "in today's world."
 - 5 stars, reviewer as first-name+age / first-name+occupation / two names for a
   couple — same format as every existing review.
+- **No Meta "Health & Wellness" vocabulary** — reviews are ad-facing, so they must
+  avoid the clinical/medical/mental-health words that make Meta classify the site as
+  Health & Wellness (see §5b).
+
+## 5b. Keep Meta "Health & Wellness" vocabulary out of ALL ad-facing content
+
+Meta auto-classifies advertisers from the words on the landing page / report / creative.
+Mental-health, medical and body-health vocabulary pushes Axtroshastra into the **Health &
+Wellness** category — not the category we want, and it restricts ad targeting. **Before
+publishing any page, report template, review or ad, scan the visible text against the
+list below** (a substring grep, minding false positives like "scope"→cope,
+"patience"→patient) and rewrite every real hit as the *idea* in plain non-clinical words.
+
+**The full flagged-word list (do NOT use these in ad-facing content):**
+
+- **Mental-health / emotional-clinical:** anxiety, anxious, stress, stressed, stressful,
+  depression, depressed, panic, panicking, panic attack, trauma, traumatic, therapy,
+  therapist, counselling, mental health, mental wellbeing, wellbeing, well-being, wellness,
+  burnout, burn-out, overwhelmed, overwhelm, breakdown, spiralling, spiraling, coping, cope,
+  self-care, healing, heal, emotional distress, peace of mind, calm your mind, inner peace.
+- **Medical / clinical:** diagnosis, diagnose, symptom, disorder, condition (medical sense),
+  treatment, cure, remedy (as a medical cure), disease, illness, patient, clinical,
+  medication, medicine, prescription, doctor, medical, health, healthy, unhealthy, cancer,
+  chronic, disability, ADHD / any named condition.
+- **Body / fitness:** weight, weight-loss, diet, calories, nutrition, fat, obesity, detox.
+- **Borderline** (only in a clearly non-medical professional sense — safer to swap):
+  pressure → "high stakes" / "demanding moments"; calm/calmer → "steady" / "composed";
+  relief/relieved → "clarity" / "reassurance"; exhausting/exhausted → "draining" / "taxing";
+  tension → "friction"; worry/worried → "unsure" / "questioning"; breathe → (avoid).
+
+Common career-context swaps: "handle stress/pressure" → "perform under high stakes";
+"stay calm under pressure" → "stay steady when stakes rise"; "anxious about the future" →
+"unsure about what's next"; "brings relief / peace of mind" → "brings clarity / a clear
+answer"; "overwhelmed by choices" → "facing a lot of options at once"; "burnout" →
+"stretched too thin"; "healing" → "a fresh chapter"; "mental clarity" → "clear thinking".
+
+The same list with the full rationale lives in `docs/meta-flagged-terms.md` — but the words
+above are the working reference; you don't need to open the doc every time.
 
 **Carousel mechanics:** don't build the auto-scroll with cloned/duplicated review
 elements to fake an infinite loop — that already shipped once as a real bug (duplicate
@@ -278,6 +322,18 @@ form-start-tracking guard), not just the field-carrying part.
 
 ## 8. PDF / report visual theme — reuse the theme, only write new content
 
+> **▶ START HERE for any card-format PDF report or new report page:**
+> **`docs/career-intelligence-report-recipe.md`** (visual version:
+> `docs/career-intelligence-report-recipe.html`). It is the complete build recipe —
+> page-break/`@page` rule, headless-print rule, theme tokens, the exact layout/design rules,
+> the McKinsey exhibit grammar, the **mandala/SVG decoration system** (which mandala goes
+> where, positions, opacity), the three welded pages (cover / "A Note for You" / Thank-you),
+> the verification gate, and the decisions log. **The golden rule: only the section content
+> changes — format, theme, decoration, and the three fixed pages stay identical.** The real
+> mandala SVGs are NOT in the recipe (anti-drift): copy them verbatim from
+> `CareerIntelligence-FINAL.html` (mirror in `report_view.py`). Read it before building or
+> editing any report so you don't re-derive these rules.
+
 **The PDF converter itself (`pdfgen.py`) is already 100% generic** — it turns
 whatever HTML it's handed into a PDF, with zero product-specific logic. The part
 that actually needs "explaining" every time is the report page's own HTML+CSS
@@ -304,15 +360,27 @@ CSS). So think of it as **reusing the Canva theme, not an auto-filled Canva temp
 each section's HTML once, following business-growth's `<!-- 01 COVER --> ... <!-- NN -->`
 section-comment structure as the copy-paste starting skeleton.
 
+**Reusing another product's DESIGN must never leak its CONTENT — gate it.** When you
+copy a design layer from another report (e.g. Business Growth's `_VYAPAR_CSS`, icon defs,
+mandala background, `.notebox`/`.crn`/pill-chip ornaments) into a new product, copy the
+**CSS / SVG / structure only** — never that product's **text** (its copy, archetype names,
+domain-specific prose, or values). After the copy, run a strict leak check: grep the new
+file for the source product's name and signature phrases (e.g. `vyapar`, `business growth`,
+`you do business`) and confirm zero hits; every visible word must belong to the new
+product. Delegated design work especially needs this gate — a builder agent copying a
+design can easily paste source content with it. This is `CLAUDE.md` §13 (never trust a
+build agent's "done") applied to design reuse.
+
 **If a true swap-content-keep-everything template is wanted** (genuinely no new
 section markup, only new text/data per product), that needs a real one-time build —
 a generic renderer that takes a list of `(section_type, content)` and produces the
 HTML, which nothing in the codebase does today. That's a deliberate, scoped project,
 not something to assume — ask before starting it.
 
-**Mock the PDF visually before touching the real renderer — don't iterate on the
-slow path.** This is how Business Growth's PDF was actually built, and it's the
-default for any new product's report:
+**Mock the PDF visually before touching the real renderer — ALWAYS, for every new
+report, no exceptions. Don't iterate on the slow path.** This is how Business Growth's
+PDF was actually built, and it is mandatory for any new product's report — the visual
+mock is built and approved *before* a single line of renderer/pipeline code:
 1. Finalize the report's content and section list first.
 2. Build a standalone preview of the PDF (an HTML mock — an artifact works well for
    this) reusing the shared theme from above, not the real `render_<product>()`
@@ -325,9 +393,40 @@ default for any new product's report:
    narrative → `pdfgen.py`).
 
 The real pipeline is expensive to iterate on for a pure layout/content tweak — it
-involves an LLM narrative pass and a real WeasyPrint/xhtml2pdf conversion. Mocking
-first means every visual fix happens in the cheap, fast loop; the expensive path
-only runs once, after the design is already locked, not on every small correction.
+involves an LLM narrative pass and a real chromium PDF render. Mocking first means
+every visual fix happens in the cheap, fast loop; the expensive path only runs once,
+after the design is already locked, not on every small correction.
+
+**The mock MUST include the production print CSS, or the on-screen mock lies about the
+PDF.** A card-per-page report looks perfect scrolling in a browser but breaks across
+pages / clips content when printed, unless it carries the exact `@media print` rules
+the real reports use: `@page{size:430px 830px;margin:0}` + `.page{width:430px;
+height:830px;break-after:page;break-inside:avoid;overflow:hidden}` (see `_VYAPAR_CSS`).
+The production PDF is **Chrome `--print-to-pdf`** (headless chromium, `pdfgen.py`) —
+which its own comment notes is the *same engine as the browser print dialog*. So
+verify the mock by actually generating a PDF the same way (`chrome --headless
+--print-to-pdf`) and checking two things: (1) page count == card count (no breaking),
+and (2) each card's last element survives (no clipping from the hard `height:830px` +
+`overflow:hidden` — content that overflows is silently cut). A mock reviewed only by
+scrolling will pass while the delivered PDF is broken — this happened on the Career
+Intelligence mock and was only caught by rendering the actual PDF.
+
+**A card-per-page report only saves correctly as a COMPLETE standalone HTML document,
+opened/served as its own page — never printed from inside another page.** Two hard
+lessons from the Career Intelligence build:
+- The report HTML must be a full document (`<!DOCTYPE html><html><head>…</head><body>…
+  </body></html>`), not a fragment. A browser's Cmd+P / "Save as PDF" only honors the
+  custom card `@page{size:430px 830px}` on a complete document opened as its own page
+  (a `file://` file or a served URL). A bare fragment, or printing the report while it
+  sits **inside another page** (an embedded/artifact viewer, an iframe), makes the
+  browser use *that host page's* paper size (A4) and pack the cards — the exact A4 bug
+  we chased for several rounds. Business Growth "just works" via Cmd+P precisely because
+  it's opened as its own served page.
+- Production is safe automatically: `pdfgen.py` renders the full served report page with
+  headless Chrome `--print-to-pdf`, which honors `@page`. Only *manual* "save as PDF"
+  testing has this pitfall — so test by opening the standalone file/served URL directly,
+  not the artifact preview. Verify a saved PDF is correct by its page size: **323×623 pt
+  (= 430×830 px) is right; 595×842 pt (A4) means it was printed from the wrong context.**
 
 **Every non-report UI element needs an explicit `@media print` hide.** The language
 toggle, the download/share buttons, the sticky CTA bar — none of these belong in the
@@ -509,7 +608,161 @@ command run, a file grepped, a test passed) — not an assumption. This is what 
 ("never trust a bare 'done'") looks like when *I'm* the one reporting, not just a
 rule for auditing someone else's agent.
 
-## 17. Secrets
+## 17. Ask the decision-shaping questions before you build — don't assume, don't drift, don't hallucinate
+
+Several rules above are specific "ask, don't assume" points (Hindi build order §7,
+homepage listing §4, URL-redirect lifetime §2, funnel-shape deviations §1, a new PDF
+theme §8). This is the general rule behind all of them:
+
+**Before starting a new page/product/report — or any task with an unstated choice that
+changes what gets built — surface the open decisions as explicit questions and get
+answers first.** Never fill an ambiguous requirement with a plausible-sounding guess and
+build on top of it; a confident wrong assumption is far more expensive to unwind than a
+question is to ask. Batch the questions up front so the dev answers once. If a new
+decision surfaces mid-build, stop and ask rather than silently picking a direction. When
+the dev states something plainly (e.g. "this is a *different* product, not the parked
+one"), take it at face value — don't re-litigate it or quietly reintroduce the thing they
+just ruled out. This is the single biggest guard against confidently building the wrong
+thing.
+
+## 18. For a new report/page, write the finalised section spec to a doc first — then build against it
+
+Before writing any report/page code, capture the **finalised section list + structure +
+what each section contains** in a spec doc under `docs/` (e.g.
+`docs/<product>-report-spec.md`). Build strictly against that doc and cross-check every
+section against it as you go — the doc wins; update it deliberately, never let the build
+drift from it silently.
+
+This is the anti-drift mechanism. A long report (30–40 sections) built from memory or
+straight from a chat message *will* drift — sections get merged, reordered, dropped, or
+invented, and nobody notices until the whole thing is assembled. A written spec is the
+source of truth the build is checked against section by section, the same way
+`_audit_images.py` checks celebrity pages against real gates. Proven need: the Career
+Intelligence Report (38 sections) — its spec lives at
+`docs/career-intelligence-report-spec.md`, written and approved before any report code.
+
+## 19. Secrets
 
 Never write a real key/token/secret value into a file, commit, or chat. Reference the
 env var name only — secrets are generated and set (`eb setenv`) by the repo owner.
+
+## 20. Mandatory convergent audit after every major change — "green" is never proof
+
+A major change (a new feature/product/route, a schema or data-layer change, a migration,
+any money- or identity-touching code) is **NOT done when the tests pass.** It is done only
+after a **convergent, adversarial, whole-codebase audit** confirms it works as intended,
+cuts no corners, and adds no regression. This is not optional and not a nicety: most of this
+codebase was built fast ("vibe-coded"), and a single author's "it's green / it's done" has
+repeatedly been WRONG — including a v2 delivery bug (WhatsApp sent to the Razorpay contact,
+violating §1) that the builder reported as "preserved" and only an independent audit caught.
+This rule hardens §14 ("never trust a build/agent's own 'done' — or a doc's word", and
+CLAUDE.local.md §11) into a required, repeatable gate for every author, human or AI.
+
+### 20a. Run the REAL gate; a favorable subset is a lie
+- Run the actual CI command (the whole `pytest -q` + every §10 gate), never a hand-picked
+  slice. If you can only run a subset, SAY which subset — never call it "all green."
+- A test that only reads back rows the test itself inserted is **not coverage.** Every change
+  ships with a test that drives the **real production path end-to-end** (the wired route / the
+  user flow), not just the module in isolation.
+- Actively hunt for corner-cutting and NAME it if found: code written to satisfy an assertion
+  rather than to be correct; stubs/no-ops that return a canned "success"; errors swallowed
+  into a false 200; assertions weakened after a red run; a test that rubber-stamps a stub.
+  Any one of these means the change is **not done**.
+
+### 20b. The audit LOOP — independent reviewers until it CONVERGES
+After the author's own pass, the change is audited in a loop of **independent** reviewers — a
+**fresh agent each round, none of whom wrote the code**:
+1. **Round 0:** the author self-audits and writes findings to `docs/audits/<change>-<YYYY-MM-DD>.md`.
+2. **Round N:** a NEW reviewer audits the same change with an adversarial brief (bugs,
+   corner-cutting, regressions, rule violations), each finding citing `file:line` + a concrete
+   failure scenario.
+3. Repeat with a **different** reviewer each round, appending to the same audit report.
+4. **STOP only on CONVERGENCE:** two consecutive independent rounds produce the SAME
+   confirmed-findings set and surface ZERO new confirmed bug. A stable, consistent output is
+   the deliverable — not one clean report.
+5. **Hard cap:** if not converged after 4 rounds, STOP and escalate to the owner —
+   non-convergence is itself a red flag (the change is too tangled, or the findings are noise).
+
+### 20c. No phantom bugs — every finding is verified before it counts (cuts BOTH ways)
+The loop must converge on the TRUTH, not manufacture bugs. A finding is **confirmed** only if
+it is either (a) reproduced — a failing test, or an exact input → wrong output — or (b) a
+specific `file:line` with a concrete failure scenario that the NEXT independent round also
+confirms. A finding that no round can reproduce or confirm is **discarded as a false
+positive**, explicitly, in the audit log — never carried forward to scare the next reader.
+"There might be a bug" is not a finding; "line X does Y on input Z, wrong because W" is. This
+verification bar is exactly what lets the loop TERMINATE instead of inventing bugs forever.
+
+### 20d. Fix at the root, then re-converge
+Every confirmed finding is fixed at the **root cause** (not the symptom), and the loop is
+**re-run from a fresh reviewer** afterward — a fix can introduce a new bug. The change ships
+only when a post-fix round is clean AND consistent with the round before it.
+
+### 20e. Make future scaling/upgrades obey this by construction
+- **Definition of done** for every task/PR = the converged audit + its `docs/audits/` report.
+  A PR without that report attached is not ready to hand off or merge.
+- **CI must run the REAL gate.** Fix the harness so "CI passed" means the actual thing (e.g. a
+  MySQL service for the v2 DB tests) — never a config where the hard tests silently skip/error.
+- **Every new feature/product/route ships an end-to-end test of its real path** (the §10
+  gate + §11 pipeline), so the next audit always has something real to check against, not just modules.
+- **`docs/audits/` is the durable record.** A later change re-audits against the prior reports,
+  so the codebase's known-good state is written down, not re-derived from memory each time.
+- Prefer **small, independently-auditable changes** over big tangled ones — convergence is
+  fast on a small diff and slow (or impossible) on a sprawling one.
+
+### 20f. When the loop WON'T converge (hallucinated / churning findings) — terminate, diagnose, heal
+The dangerous failure mode is not a real bug — it is reviewers that keep "finding" new,
+unreproducible bugs so the loop never ends. This clause makes the loop self-terminating and
+self-healing instead of infinite:
+- **Reproduction is the sole tie-breaker.** Any disputed or unconfirmed finding must be turned
+  into a **failing test** (exact input → wrong output) within a small time-box. If it can be,
+  it is real — fix it. If it cannot, it is a hallucination — **discard it in writing**, and it
+  may not be raised again without a reproduction. This converts opinion-churn into binary facts,
+  which is what actually makes the loop terminate.
+- **Terminate early on noise:** if a round produces ONLY unconfirmed findings (nothing
+  reproduced), or the same finding is raised and discarded twice, **stop the bug-hunt** — the
+  confirmed set from the last stable round stands. Do not chase a moving target.
+- **The 4-round cap is a STOP, not a "try harder."** Hitting it without convergence triggers
+  diagnosis, never another blind round.
+- **Diagnose WHY it didn't converge** and write the cause in the audit log, choosing the real
+  one: (a) the change is too large/tangled → **split it** and audit each small piece separately
+  (small diffs converge, sprawling ones don't); (b) the reviewers are unstable/hallucinating →
+  **tighten the brief to "reproduce-or-drop"** and narrow each reviewer to one area; (c) the
+  spec is genuinely ambiguous → **the owner decides**, agents do not get to vote a bug into or
+  out of existence.
+- **Heal + regain momentum:** resume from the last CONVERGED/confirmed baseline (not from the
+  churn), apply the diagnosis (split / tighten / owner-decision), and re-run — never restart the
+  whole hunt from scratch on every wobble.
+- Treat non-convergence as a **process** signal (the change or the reviewers, not necessarily
+  the code), record it, and fix the process so the next audit converges faster.
+
+### 20g. Reviewers who DISAGREE — resolve by reproduction, never by consensus or vote
+When the author and the reviewers return contradictory verdicts — e.g. author: "all correct";
+agent 1: "all wrong"; agent 2: "partly wrong"; agent 3: "one route wrong + these other test
+cases" — do NOT average them, take a majority vote, or trust the loudest/most confident. Verdicts
+are opinions; only reproducible facts decide.
+1. **Throw away the summary verdicts** ("looks fine" / "all wrong" / "partial"). They are not data.
+2. **Take the UNION of every specific finding** from every reviewer, the author included — a
+   superset, so no one's claim is lost just because others disagreed.
+3. **Put each finding through the reproduction gate (§20f):** it becomes a **failing test** →
+   CONFIRMED; it cannot → DISCARDED in writing. **Agreement count is irrelevant** — one agent's
+   reproducible bug that three others missed is REAL; three agents agreeing on an unreproducible
+   claim is still noise and is dropped.
+4. **A head-to-head contradiction on the same line** (A: "bug" / B: "fine") is settled ONLY by
+   writing the test that fails *if A is right* and running it: it fails → A wins, fix it; it
+   passes → B wins, discard. Never by seniority, count, or tone of confidence.
+5. A claim that **cannot be written as a correctness test at all** (pure style/opinion) is not a
+   bug — move it to a separate quality list, outside this gate.
+The confirmed (reproducible) set is the single source of truth; convergence is measured on THAT
+set, never on whether the reviewers agreed in prose. This is why divergent agents do not stall the
+loop: we never needed them to agree, only to hand us claims we can test.
+
+### 20h. Commit discipline — checkpoint locally after every major change; push/PR only after the audit converges
+- **Checkpoint-commit locally after each major change.** Never sit on a large uncommitted diff — a
+  killed session loses it (handover checkpoint rule). A local commit is a safety net.
+- **Pushing / opening a PR / merging is gated on the §20 converged audit AND the owner's explicit
+  approval (§2 / CLAUDE.local.md).** A local checkpoint commit does NOT mean the change is verified
+  or ready to ship, and never authorizes a push.
+- Therefore a change can be **committed locally yet correctly held from push** because its audit
+  hasn't converged or a later phase may still change it — that is the right state, not a
+  contradiction. (Live example: Piece 5's wiring is committed as local checkpoints but held from
+  its PR because the audit surfaced fixes and Phase 4 verification may still change it.)
