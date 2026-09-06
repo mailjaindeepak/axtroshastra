@@ -49,6 +49,11 @@ import tracking              # server-side Purchase -> Meta CAPI + GA4 MP, env-g
 import gazetteer             # (#6) payments, (#7) delivery, endpoints
 from ratelimit import RateLimitMiddleware, captcha_ok   # (#4) rate limit + bot defense
 
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "db"))
+import db_v2, events_v2   # v2 MySQL-native layer (Piece 4 beacon + cutover)
+from beacon import EventIn, beacon_context   # pure /api/event request-parsing
+
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("axtroshastra")
@@ -936,13 +941,80 @@ def _inject_ga_meta_clarity(html: str) -> str:
         return html
 
 
-def _inject_tracking(html: str) -> str:
-    """All analytics for a served page: GA4 + Meta + Clarity, then LinkedIn.
+# First-party beacon: POSTs page_view + the funnel milestones to /api/event, so
+# our own analytics (events_v2) no longer depends on GA4 being reachable. Wraps
+# window.gtag once (like the LinkedIn bridge wraps fbq) to mirror the four funnel
+# gtag('event', ...) calls the pages already fire, then always defers to the
+# original gtag. Fully try/catch-wrapped so it can NEVER break gtag/fbq/the page.
+_BEACON_SCRIPT = """
+<!-- First-party analytics beacon (injected server-side) -->
+<script>/* ax_beacon */
+(function(){
+  try{
+    function send(name, extra){
+      try{
+        var body = {event:name, page_url: location.pathname + location.search};
+        if(extra){ for(var k in extra){ if(extra[k]!==undefined && extra[k]!==null) body[k]=extra[k]; } }
+        var json = JSON.stringify(body);
+        if(navigator.sendBeacon){
+          navigator.sendBeacon('/api/event', new Blob([json], {type:'application/json'}));
+        }else{
+          fetch('/api/event', {method:'POST', headers:{'Content-Type':'application/json'},
+            body:json, keepalive:true, credentials:'same-origin'});
+        }
+      }catch(e){}
+    }
+    send('page_view');
+    var MAP = {form_start:1, generate_lead:1, begin_checkout:1, purchase:1};
+    var orig = window.gtag;
+    window.gtag = function(){
+      try{
+        if(arguments[0]==='event' && MAP[arguments[1]]){
+          var p = arguments[2] || {};
+          var extra = {};
+          if(p.value!==undefined && p.value!==null) extra.value_paise = Math.round(p.value*100);
+          if(p.currency) extra.currency = p.currency;
+          if(p.transaction_id) extra.report_id = p.transaction_id;
+          send(arguments[1], extra);
+        }
+      }catch(e){}
+      if(typeof orig==='function') return orig.apply(this, arguments);
+    };
+  }catch(e){}
+})();
+</script>
+"""
 
-    Order matters - LinkedIn goes in LAST so its funnel bridge is parsed after
-    window.fbq exists, whether the Meta block was hardcoded in the page or
-    injected just above by _inject_ga_meta_clarity."""
-    return _inject_linkedin(_inject_ga_meta_clarity(html))
+
+def _inject_beacon(html: str) -> str:
+    """Add the first-party beacon before </head>. Own idempotency guard (the
+    'ax_beacon' marker) SEPARATE from the clarity guard, because the hardcoded
+    funnel pages already carry clarity and would otherwise never get the beacon.
+    Never raises."""
+    try:
+        if not html or "ax_beacon" in html:
+            return html
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: _BEACON_SCRIPT + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + _BEACON_SCRIPT,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[beacon] injection failed: %s", e)
+        return html
+
+
+def _inject_tracking(html: str) -> str:
+    """All analytics for a served page: GA4 + Meta + Clarity, then LinkedIn, then
+    our first-party beacon.
+
+    Order matters - LinkedIn goes in after the Meta block so its funnel bridge is
+    parsed after window.fbq exists; the beacon goes in LAST (outermost) so it wraps
+    the gtag defined by _inject_ga_meta_clarity (or hardcoded in the page)."""
+    return _inject_beacon(_inject_linkedin(_inject_ga_meta_clarity(html)))
 
 
 def _serve_page_with_nav(path: str, lang: str = "en"):
@@ -1064,6 +1136,40 @@ def landing_hi():
 @app.get("/api/city-suggest", include_in_schema=False)
 def city_suggest(q: str = ""):
     return {"results": gazetteer.suggest(q, 8)}
+
+
+@app.post("/api/event")
+def api_event(inp: EventIn, request: Request):
+    """First-party analytics beacon (Piece 4). Fire-and-forget: mints the visitor +
+    visit cookies itself and records one event. A DB failure NEVER surfaces to the
+    user — we log/swallow and still return 200 with the cookies set. Request parsing
+    lives in beacon.py so it's importable + unit-testable without .env/RDS/DB."""
+    if inp.event not in events_v2.VALID_EVENTS:
+        raise HTTPException(422, "bad event")
+    vid, is_new_vid, vis, is_new_vis, session = beacon_context(request, inp.page_url)
+    try:
+        conn = db_v2.get_conn()
+        try:
+            events_v2.record_event(conn, visitor_id=vid, event_name=inp.event,
+                visit_id=vis, report_id=inp.report_id, product=inp.product,
+                page_url=inp.page_url, sequence=inp.sequence, value_paise=inp.value_paise,
+                currency=inp.currency, is_free_unlock=inp.is_free_unlock, session=session)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error("[beacon] event write failed (%s): %s", inp.event, e)
+    resp = JSONResponse({"ok": True}, status_code=200)
+    if is_new_vid:
+        resp.set_cookie("ax_vid", vid, max_age=63072000, httponly=False,
+                        samesite="lax", secure=auth.cookie_secure(), path="/")
+    if is_new_vis:
+        # ponytail: browser-close session (session cookie, no max-age). Upgrade to a
+        # 30-min sliding window (store last-seen ts in the cookie, mint a new visit_id
+        # on a >30-min gap) if session counts ever need to match GA.
+        resp.set_cookie("ax_vis", vis, httponly=False,
+                        samesite="lax", secure=auth.cookie_secure(), path="/")
+    return resp
 
 
 @app.post("/api/kundli")
