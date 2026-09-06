@@ -563,9 +563,9 @@ def _generate_narrative_task(rid):
 
 # ----------------------------------------------------------------- geocode
 # geocoding lives in geocoding.py: cache -> CITIES_IN -> external -> Delhi fallback (#1)
-payments.ensure_tables(db)   # (#6) webhook_events + refunds tables
-users.ensure_tables(db)      # users + user_mobiles tables + reports.user_id link
-auth.ensure_tables(db)       # sessions + login_otps (OTP login)
+# v2 (Piece 5 / 5c): the v1 module-load table creation is gone — every table is
+# provisioned by db/schema_v2.sql. (payments.ensure_tables still exists for the
+# legacy test suite; it just isn't called on boot any more.)
 
 # ----------------------------------------------------------------- models
 class KundliIn(BaseModel):

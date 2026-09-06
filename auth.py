@@ -26,9 +26,10 @@ OTP delivery is provider-pluggable via `OTP_PROVIDER` (auto-detected when unset)
 All provider HTTP is stdlib ``urllib`` (no SDK), so nothing needs adding to the
 offline wheelhouse in ``packages/``.
 
-All SQL is SQLite dialect, auto-translated to MySQL by dbcompat (same constraints
-as users.py: opaque token PKs, no AUTOINCREMENT, status set on INSERT). Storage
-goes through the app's `db()` connection factory, passed in from api.py.
+Storage is MySQL-native via db_v2 (Piece 5 / 5c): OTP codes live in `login_otps`
+(keyed by `msisdn`) and sessions in `login_sessions`. The `db` argument on the
+public functions is VESTIGIAL — kept for call-site compatibility, ignored inside
+(each opens its own v2 connection); it's removed in 5d.
 """
 import base64
 import hashlib
@@ -42,8 +43,12 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 
-import dbcompat
-import users
+import sys
+# db/ holds the v2 modules; api imports `auth` before it adds db/ to sys.path, so
+# make this import-order-independent (idempotent). Piece 5 / 5c: MySQL-native auth.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "db"))
+import db_v2   # noqa: E402
+import users   # noqa: E402
 
 logger = logging.getLogger("axtroshastra.auth")
 
@@ -123,27 +128,8 @@ def cookie_secure() -> bool:
     return os.getenv("PUBLIC_BASE_URL", "").startswith("https")
 
 
-# --------------------------------------------------------------------------- #
-# schema
-# --------------------------------------------------------------------------- #
-def ensure_tables(db):
-    """Create the auth tables. Safe to call on every boot. `users.ensure_tables`
-    should have run first (this module upserts into it)."""
-    with db() as c:
-        c.execute("""CREATE TABLE IF NOT EXISTS sessions(
-            token TEXT PRIMARY KEY, user_id TEXT, mobile TEXT,
-            created_at TEXT, expires_at TEXT)""")
-        # OTP-in-flight store. PK is the mobile so a fresh request overwrites any
-        # pending code. `code_hash` holds the dev-fallback code; `mc_verification_id`
-        # holds Message Central's per-verification id (replayed to validateOtp).
-        # Twilio Verify uses neither — it tracks the code by phone number itself.
-        c.execute("""CREATE TABLE IF NOT EXISTS login_otps(
-            mobile TEXT PRIMARY KEY, code_hash TEXT,
-            mc_verification_id TEXT,
-            expires_at TEXT, attempts INTEGER)""")
-        # migrate DBs created before the Message Central column existed
-        if not users._column_exists(c, "login_otps", "mc_verification_id"):
-            c.execute("ALTER TABLE login_otps ADD COLUMN mc_verification_id TEXT")
+# Schema note (Piece 5 / 5c): the v1 ensure_tables() is gone — the v2 login_otps
+# (keyed by `msisdn`) and login_sessions tables are provisioned by db/schema_v2.sql.
 
 
 # --------------------------------------------------------------------------- #
@@ -325,11 +311,17 @@ def _mc_send_otp(db, mobile: str) -> dict:
     if not vid:
         logger.error("[auth] MessageCentral send returned no verificationId: %s", resp)
         return {"ok": False, "error": "send_failed"}
-    expires = (datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES)).isoformat()
-    with db() as c:
-        c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        c.execute("INSERT INTO login_otps(mobile,code_hash,mc_verification_id,"
-                  "expires_at,attempts) VALUES(?,?,?,?,0)", (mobile, "", vid, expires))
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+            cur.execute("INSERT INTO login_otps(msisdn, code_hash, mc_verification_id, "
+                        "expires_at, attempts) VALUES(%s, '', %s, "
+                        "DATE_ADD(NOW(), INTERVAL %s MINUTE), 0)",
+                        (mobile, vid, OTP_TTL_MINUTES))
+        conn.commit()
+    finally:
+        conn.close()
     try:
         from dashboard.store import otp_log_add
         otp_log_add(db, mobile, "Message Central")
@@ -339,42 +331,49 @@ def _mc_send_otp(db, mobile: str) -> dict:
 
 
 def _mc_check_otp(db, mobile: str, code: str) -> bool:
-    with db() as c:
-        row = c.execute("SELECT mc_verification_id,expires_at,attempts FROM login_otps "
-                        "WHERE mobile=?", (mobile,)).fetchone()
-    if not row:
-        return False
-    vid, expires_at, attempts = row[0], row[1], (row[2] or 0)
-    if (not vid or attempts >= OTP_MAX_ATTEMPTS
-            or (expires_at and expires_at < datetime.utcnow().isoformat())):
-        with db() as c:
-            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        return False
-    token = _mc_auth_token()
-    if not token:
-        return False
-    params = urllib.parse.urlencode({
-        "customerId": _mc_customer_id(),
-        "verificationId": vid,
-        "code": code,
-    })
-    url = f"{_mc_base()}/verification/v3/validateOtp?{params}"
+    conn = db_v2.get_conn()
     try:
-        resp = _mc_request("GET", url, {"authToken": token})
-    except Exception as e:
-        logger.error("[auth] MessageCentral validate failed for %s: %s", mobile, e)
-        with db() as c:
-            c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
-                      (attempts + 1, mobile))
-        return False
-    status = str((resp.get("data") or {}).get("verificationStatus") or "").upper()
-    ok = status == "VERIFICATION_COMPLETED"
-    with db() as c:
-        if ok:
-            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        else:
-            c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
-                      (attempts + 1, mobile))
+        with conn.cursor() as cur:
+            cur.execute("SELECT mc_verification_id, (expires_at < NOW()) AS expired, "
+                        "attempts FROM login_otps WHERE msisdn=%s", (mobile,))
+            row = cur.fetchone()
+        if not row:
+            return False
+        vid, expired, attempts = row[0], row[1], (row[2] or 0)
+        if not vid or attempts >= OTP_MAX_ATTEMPTS or expired:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+            conn.commit()
+            return False
+        token = _mc_auth_token()
+        if not token:
+            return False
+        params = urllib.parse.urlencode({
+            "customerId": _mc_customer_id(),
+            "verificationId": vid,
+            "code": code,
+        })
+        url = f"{_mc_base()}/verification/v3/validateOtp?{params}"
+        try:
+            resp = _mc_request("GET", url, {"authToken": token})
+        except Exception as e:
+            logger.error("[auth] MessageCentral validate failed for %s: %s", mobile, e)
+            with conn.cursor() as cur:
+                cur.execute("UPDATE login_otps SET attempts=attempts+1 WHERE msisdn=%s",
+                            (mobile,))
+            conn.commit()
+            return False
+        status = str((resp.get("data") or {}).get("verificationStatus") or "").upper()
+        ok = status == "VERIFICATION_COMPLETED"
+        with conn.cursor() as cur:
+            if ok:
+                cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+            else:
+                cur.execute("UPDATE login_otps SET attempts=attempts+1 WHERE msisdn=%s",
+                            (mobile,))
+        conn.commit()
+    finally:
+        conn.close()
     try:
         from dashboard.store import otp_log_update_status
         if ok:
@@ -429,11 +428,16 @@ def _twilio_check_otp(mobile: str, code: str) -> bool:
 # --------------------------------------------------------------------------- #
 def _dev_send_otp(db, mobile: str) -> dict:
     code = f"{secrets.randbelow(1000000):06d}"
-    expires = (datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES)).isoformat()
-    with db() as c:
-        c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        c.execute("INSERT INTO login_otps(mobile,code_hash,expires_at,attempts) "
-                  "VALUES(?,?,?,0)", (mobile, _hash_code(mobile, code), expires))
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+            cur.execute("INSERT INTO login_otps(msisdn, code_hash, expires_at, attempts) "
+                        "VALUES(%s, %s, DATE_ADD(NOW(), INTERVAL %s MINUTE), 0)",
+                        (mobile, _hash_code(mobile, code), OTP_TTL_MINUTES))
+        conn.commit()
+    finally:
+        conn.close()
     logger.warning("[auth][DEV] OTP for %s is %s (no OTP provider configured)",
                    mobile, code)
     out = {"ok": True, "channel": "dev"}
@@ -443,35 +447,47 @@ def _dev_send_otp(db, mobile: str) -> dict:
 
 
 def _dev_check_otp(db, mobile: str, code: str) -> bool:
-    with db() as c:
-        row = c.execute("SELECT code_hash,expires_at,attempts FROM login_otps "
-                        "WHERE mobile=?", (mobile,)).fetchone()
-        if not row:
-            return False
-        code_hash, expires_at, attempts = row[0], row[1], (row[2] or 0)
-        if attempts >= OTP_MAX_ATTEMPTS or expires_at < datetime.utcnow().isoformat():
-            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-            return False
-        ok = hmac.compare_digest(code_hash or "", _hash_code(mobile, code))
-        if ok:
-            c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        else:
-            c.execute("UPDATE login_otps SET attempts=? WHERE mobile=?",
-                      (attempts + 1, mobile))
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT code_hash, (expires_at < NOW()) AS expired, attempts "
+                        "FROM login_otps WHERE msisdn=%s", (mobile,))
+            row = cur.fetchone()
+            if not row:
+                return False
+            code_hash, expired, attempts = row[0], row[1], (row[2] or 0)
+            if attempts >= OTP_MAX_ATTEMPTS or expired:
+                cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+                conn.commit()
+                return False
+            ok = hmac.compare_digest(code_hash or "", _hash_code(mobile, code))
+            if ok:
+                cur.execute("DELETE FROM login_otps WHERE msisdn=%s", (mobile,))
+            else:
+                cur.execute("UPDATE login_otps SET attempts=attempts+1 WHERE msisdn=%s",
+                            (mobile,))
+        conn.commit()
         return ok
+    finally:
+        conn.close()
 
 
 # --------------------------------------------------------------------------- #
 # sessions
 # --------------------------------------------------------------------------- #
 def create_session(db, user_id: str, mobile: str) -> str:
+    # `mobile` is kept for call-site compatibility but v2 login_sessions has no
+    # mobile column — the user row carries the number.
     token = "s_" + secrets.token_urlsafe(24)
-    now = datetime.utcnow()
-    with db() as c:
-        c.execute("INSERT INTO sessions(token,user_id,mobile,created_at,expires_at) "
-                  "VALUES(?,?,?,?,?)",
-                  (token, user_id, mobile, now.isoformat(),
-                   (now + timedelta(days=SESSION_TTL_DAYS)).isoformat()))
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO login_sessions(token, user_id, expires_at) "
+                        "VALUES(%s, %s, DATE_ADD(NOW(), INTERVAL %s DAY))",
+                        (token, user_id, SESSION_TTL_DAYS))
+        conn.commit()
+    finally:
+        conn.close()
     return token
 
 
@@ -479,13 +495,18 @@ def user_for_session(db, token: str):
     """Return the user dict for a valid, unexpired session token, else None."""
     if not token:
         return None
-    with db() as c:
-        row = c.execute("SELECT user_id,expires_at FROM sessions WHERE token=?",
-                        (token,)).fetchone()
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT user_id, (expires_at < NOW()) AS expired "
+                        "FROM login_sessions WHERE token=%s", (token,))
+            row = cur.fetchone()
+    finally:
+        conn.close()
     if not row:
         return None
-    user_id, expires_at = row[0], row[1]
-    if expires_at and expires_at < datetime.utcnow().isoformat():
+    user_id, expired = row[0], row[1]
+    if expired:
         destroy_session(db, token)
         return None
     return users.get_user(db, user_id)
@@ -494,8 +515,13 @@ def user_for_session(db, token: str):
 def destroy_session(db, token: str):
     if not token:
         return
-    with db() as c:
-        c.execute("DELETE FROM sessions WHERE token=?", (token,))
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM login_sessions WHERE token=%s", (token,))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # --------------------------------------------------------------------------- #
