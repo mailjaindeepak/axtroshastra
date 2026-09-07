@@ -44,6 +44,31 @@ def test_capture_marks_paid_and_delivers_once(conn):
         assert c.fetchone() == ("captured", "upi", "pay_realid12345678")
 
 
+def test_capture_persists_actual_charged_amount(conn):
+    """P5-6/§13: capture persists the ACTUAL Razorpay-charged amount over the
+    order-time price; a missing (0/None) amount leaves the order-time value intact."""
+    uid, rid = _user_and_report(conn, "9000000021")
+    payments_v2.record_order(conn, rid, uid, 49900, "order_amt")   # order-time price
+    payments_v2.capture_payment(
+        conn, report_id=rid, amount_paise=39900, razorpay_order_id="order_amt",
+        razorpay_payment_id="pay_amt1234567890", event_id="evt_amt",
+        payment_contact="9000000021")
+    with conn.cursor() as c:
+        c.execute("SELECT amount_paise FROM payments WHERE razorpay_order_id=%s", ("order_amt",))
+        assert c.fetchone()[0] == 39900        # actual charged, NOT the 49900 order price
+
+    # a captured event with no amount (e.g. a verify fetch that failed) must not zero it
+    uid2, rid2 = _user_and_report(conn, "9000000022")
+    payments_v2.record_order(conn, rid2, uid2, 49900, "order_amt2")
+    payments_v2.capture_payment(
+        conn, report_id=rid2, amount_paise=0, razorpay_order_id="order_amt2",
+        razorpay_payment_id="pay_amt2222222222", event_id="evt_amt2",
+        payment_contact="9000000022")
+    with conn.cursor() as c:
+        c.execute("SELECT amount_paise FROM payments WHERE razorpay_order_id=%s", ("order_amt2",))
+        assert c.fetchone()[0] == 49900        # order-time amount preserved (0 didn't clobber)
+
+
 def test_duplicate_webhook_event_not_redelivered(conn):
     uid, rid = _user_and_report(conn, "9000000003")
     payments_v2.record_order(conn, rid, uid, 49900, "order_3")

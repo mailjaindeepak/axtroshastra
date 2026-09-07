@@ -446,11 +446,6 @@ def db():
         token TEXT PRIMARY KEY, used INTEGER DEFAULT 0, created_at TEXT)""")
     return conn
 
-def save_report(rid, payload):
-    with _lock, db() as c:
-        c.execute("INSERT INTO reports(id,payload,created_at) VALUES(?,?,?)",
-                  (rid, json.dumps(payload), datetime.utcnow().isoformat()))
-
 def get_report(rid):
     # v2 (Piece 5): read the report from the v2 tables, reshaped by reports_v2 into
     # the SAME bundle this function always returned {payload,paid,order_id,phone,
@@ -460,74 +455,6 @@ def get_report(rid):
         return reports_v2.read_report(conn, rid)
     finally:
         conn.close()
-
-def set_order(rid, order_id):
-    with _lock, db() as c:
-        c.execute("UPDATE reports SET order_id=? WHERE id=?", (order_id, rid))
-
-def mark_paid(rid, payment_id=None, phone=None):
-    with _lock, db() as c:
-        c.execute("UPDATE reports SET paid=1,payment_id=?,phone=? WHERE id=?",
-                  (payment_id, phone, rid))
-
-def store_user_contact(rid, phone=None, email=None):
-    """Persist the contact typed into the pre-payment popup.
-
-    * reports.user_phone <- normalised popup mobile: this is the user's
-      WhatsApp/account number, used for report delivery + OTP login. It is
-      deliberately SEPARATE from reports.phone, which stays whatever contact
-      Razorpay reports for the payment (mark_paid, unchanged).
-    * meta._email <- popup email, only when the report doesn't already carry
-      one (that key is what email delivery reads)."""
-    user_phone = users._norm_mobile(phone or "")
-    email = (email or "").strip()
-    with _lock, db() as c:
-        if user_phone:
-            c.execute("UPDATE reports SET user_phone=? WHERE id=?",
-                      (user_phone, rid))
-        if email:
-            row = c.execute("SELECT payload FROM reports WHERE id=?",
-                            (rid,)).fetchone()
-            if row:
-                payload = json.loads(row[0])
-                meta = payload.setdefault("meta", {})
-                if not meta.get("_email"):
-                    meta["_email"] = email
-                    c.execute("UPDATE reports SET payload=? WHERE id=?",
-                              (json.dumps(payload), rid))
-    return user_phone
-
-def _store_attribution(rid, fbc=None, fbp=None, ua="", ip="", li_fat_id=None):
-    """Persist ad-click attribution + request context in the report payload so
-    the server-side CAPI fires (webhook / verify) can forward them.
-
-    fbc/fbp are Meta's click + browser cookies; li_fat_id is LinkedIn's click id
-    (see _linkedin_head, which parks it in the ax_li_fat cookie at landing)."""
-    fbc = (fbc or "").strip()
-    fbp = (fbp or "").strip()
-    ua = (ua or "").strip()
-    ip = (ip or "").strip()
-    li_fat_id = (li_fat_id or "").strip()
-    if not (fbc or fbp or ua or ip or li_fat_id):
-        return
-    with _lock, db() as c:
-        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
-        if not row:
-            return
-        payload = json.loads(row[0])
-        meta = payload.setdefault("meta", {})
-        if fbc:
-            meta["_fbc"] = fbc
-        if fbp:
-            meta["_fbp"] = fbp
-        if ua:
-            meta["_ua"] = ua
-        if ip:
-            meta["_ip"] = ip
-        if li_fat_id:
-            meta["_li_fat_id"] = li_fat_id
-        c.execute("UPDATE reports SET payload=? WHERE id=?",
-                  (json.dumps(payload), rid))
 
 def save_narrative(rid, narr: dict):
     """Merge the LLM-written prose into the stored report_data so the renderer can

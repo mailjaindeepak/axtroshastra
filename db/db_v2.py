@@ -138,8 +138,12 @@ def record_payment(conn, report_id: str, user_id: str, amount_paise: int, *,
 
 def mark_payment_captured(conn, payment_id: str, *, razorpay_payment_id=None, method=None,
                           upi_vpa=None, payment_email=None, payment_contact=None,
-                          paid_at=None) -> None:
-    """Mark a payment captured and fill the settlement detail we now know."""
+                          paid_at=None, amount_paise=None) -> None:
+    """Mark a payment captured and fill the settlement detail we now know. When the
+    gateway reports the ACTUAL charged amount (`amount_paise`), persist it — the money
+    truth is what Razorpay charged, not the order-time price (§13/P5-6). A None amount
+    leaves the order-time amount untouched (COALESCE), so a missing/failed fetch never
+    zeroes it."""
     with conn.cursor() as cur:
         cur.execute(
             "UPDATE payments SET status='captured', "
@@ -147,9 +151,10 @@ def mark_payment_captured(conn, payment_id: str, *, razorpay_payment_id=None, me
             "method=COALESCE(%s, method), upi_vpa=COALESCE(%s, upi_vpa), "
             "payment_email=COALESCE(%s, payment_email), "
             "payment_contact=COALESCE(%s, payment_contact), "
+            "amount_paise=COALESCE(%s, amount_paise), "
             "paid_at=COALESCE(%s, paid_at) WHERE id=%s",
             (razorpay_payment_id, method, upi_vpa, payment_email, payment_contact,
-             paid_at, payment_id),
+             amount_paise, paid_at, payment_id),
         )
 
 
