@@ -1110,8 +1110,24 @@ def api_event(inp: EventIn, request: Request):
     return resp
 
 
+def _identify_visitor(conn, request, user_id):
+    """Analytics stitch: link the anonymous beacon visitor (ax_vid cookie) to the
+    now-known user and back-attribute their prior events (events_v2.identify). No-op
+    when there's no user, no cookie, or no visitor row yet (the beacon may not have
+    fired). Wrapped so it can NEVER break the calling route. Caller commits."""
+    if not user_id:
+        return
+    vid = request.cookies.get("ax_vid")
+    if not vid:
+        return
+    try:
+        events_v2.identify(conn, vid, user_id)
+    except Exception as e:
+        logger.error("[identify] visitor stitch failed (user=%s): %s", user_id, e)
+
+
 @app.post("/api/kundli")
-def create_kundli(inp: KundliIn):
+def create_kundli(inp: KundliIn, request: Request):
     if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
         raise HTTPException(400, "captcha_failed")
     if inp.time_quality in ("T0", "T1"):
@@ -1193,8 +1209,9 @@ def create_kundli(inp: KundliIn):
                "birth_tz": tz}
     conn = db_v2.get_conn()
     try:
-        reports_v2.save_report(conn, rid, report, [subject],
-                               product=(inp.product or "marriage"), phone=inp.phone)
+        uid = reports_v2.save_report(conn, rid, report, [subject],
+                                     product=(inp.product or "marriage"), phone=inp.phone)
+        _identify_visitor(conn, request, uid)   # main-form funnels attach the user at submit
         conn.commit()
     finally:
         conn.close()
@@ -1314,6 +1331,7 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         uid = urec.get("user_id") if urec else None
         if not uid:
             raise HTTPException(400, "contact_required")
+        _identify_visitor(conn, request, uid)   # popup funnels attach the user here at order
 
         tok = (body.pass_token or "").strip()
         if tok:
@@ -2048,7 +2066,7 @@ class MilanIn(BaseModel):
     captcha_token: str | None = None
 
 @app.post("/api/milan")
-def create_milan(inp: MilanIn):
+def create_milan(inp: MilanIn, request: Request):
     if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
         raise HTTPException(400, "captcha_failed")
     lat1, lon1, tz1 = geocode(inp.p1_place)
@@ -2076,8 +2094,9 @@ def create_milan(inp: MilanIn):
     ]
     conn = db_v2.get_conn()
     try:
-        reports_v2.save_report(conn, rid, report, subjects, product="milan",
-                               phone=inp.whatsapp)
+        uid = reports_v2.save_report(conn, rid, report, subjects, product="milan",
+                                     phone=inp.whatsapp)
+        _identify_visitor(conn, request, uid)   # milan attaches the user at submit
         conn.commit()
     finally:
         conn.close()
