@@ -530,19 +530,26 @@ def _store_attribution(rid, fbc=None, fbp=None, ua="", ip="", li_fat_id=None):
                   (json.dumps(payload), rid))
 
 def save_narrative(rid, narr: dict):
-    """Merge the LLM-written prose into the stored report payload so the renderer
-    can read it (payload['narrative']). Re-reads the row under the lock so we don't
-    clobber a concurrent update, and is a no-op for empty output."""
+    """Merge the LLM-written prose into the stored report_data so the renderer can
+    read it (report_data['narrative']). Re-reads the row under the lock so we don't
+    clobber a concurrent update, and is a no-op for empty output. v2: report_data
+    JSON (there is no `payload` column) — mirrors reports_v2.store_attribution."""
     if not narr:
         return
-    with _lock, db() as c:
-        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
-        if not row:
-            return
-        payload = json.loads(row[0])
-        payload["narrative"] = narr
-        c.execute("UPDATE reports SET payload=? WHERE id=?",
-                  (json.dumps(payload), rid))
+    with _lock:
+        conn = db_v2.get_conn()
+        try:
+            rec = db_v2.get_report(conn, rid)
+            if not rec:
+                return
+            data = rec.get("report_data") or {}
+            data["narrative"] = narr
+            with conn.cursor() as c:
+                c.execute("UPDATE reports SET report_data=%s WHERE id=%s",
+                          (json.dumps(data), rid))
+            conn.commit()
+        finally:
+            conn.close()
 
 def _generate_narrative_task(rid):
     """Background: turn the computed report into creative prose and cache it on the
@@ -2275,14 +2282,18 @@ def backfill_narrative(background_tasks: BackgroundTasks, key: str = "",
             raise HTTPException(404, "report not found or unpaid")
         rids = [rid]
     else:
-        with db() as c:
-            rows = c.execute(
-                """SELECT id FROM reports
-                   WHERE paid=1
-                     AND json_extract(payload,'$.meta.lang')='hi'
-                     AND COALESCE(json_extract(payload,'$.product'),'marriage')='marriage'
-                     AND json_extract(payload,'$.narrative') IS NULL
-                   ORDER BY rowid LIMIT ?""", (int(limit),)).fetchall()
+        # v2: lang + product are real columns; the narrative lives in report_data.
+        conn = db_v2.get_conn()
+        try:
+            with conn.cursor() as c:
+                c.execute(
+                    "SELECT id FROM reports "
+                    "WHERE status='paid' AND lang='hi' AND product='marriage' "
+                    "AND JSON_EXTRACT(report_data,'$.narrative') IS NULL "
+                    "ORDER BY created_at LIMIT %s", (int(limit),))
+                rows = c.fetchall()
+        finally:
+            conn.close()
         rids = [r[0] for r in rows]
     for r in rids:
         background_tasks.add_task(_backfill_narrative_task, r)
@@ -2327,14 +2338,18 @@ def stats(key: str = ""):
     """Per-variant funnel counts. Protect with STATS_KEY env var."""
     if not _valid_admin_key(key):
         raise HTTPException(403, "forbidden")
-    with db() as c:
-        rows = c.execute(
-            """SELECT COALESCE(json_extract(payload,'$.meta.variant'),'direct') v,
-                      COUNT(*), SUM(paid) FROM reports GROUP BY v"""
-        ).fetchall()
-    return {"variants": [{"page": r[0], "kundlis_created": r[1],
-                          "paid_reports": r[2] or 0,
-                          "revenue_inr": (r[2] or 0) * 499} for r in rows]}
+    # v2: `variant` is a real column now, and paid is status='paid'.
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COALESCE(variant,'direct') v, COUNT(*), "
+                        "SUM(status='paid') FROM reports GROUP BY v")
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+    return {"variants": [{"page": r[0], "kundlis_created": int(r[1]),
+                          "paid_reports": int(r[2] or 0),
+                          "revenue_inr": int(r[2] or 0) * 499} for r in rows]}
 
 
 # ----------------------------------------------------------------- auth (OTP)

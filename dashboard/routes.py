@@ -62,6 +62,60 @@ def _payload_email(payload):
     return ((payload or {}).get("meta") or {}).get("_email") or ""
 
 
+def _v2_rows(where="", params=()):
+    """Report rows from the v2 schema, shaped like the v1 columns the dashboard
+    grew up on, so the classification/revenue logic below is unchanged. Each tuple
+    is (id, created_at, report_data_json, pay_phone, deliver_phone, paid,
+    payment_id, amount_paise):
+      * deliver_phone = the account/popup number (users.country_code+mobile via
+        reports.user_id) — the delivery number (§1), NEVER the Razorpay contact
+      * pay_phone     = payments.payment_contact (the number used AT payment)
+      * paid          = 1 when reports.status='paid'
+      * payment_id    = razorpay_payment_id, or 'free_pass:<id>' for a free pass
+      * amount_paise  = the ACTUAL captured amount (payments.amount_paise)
+    All from the latest (captured-first) payment for the report. `where` may use
+    the aliases above (it filters a derived table); created_at is an ISO string
+    (matching REVENUE_START's format) and report_data is JSON text (callers
+    json.loads it). Native %s placeholders (db_v2 / MySQL)."""
+    import db_v2
+    base = (
+        "SELECT r.id AS id, r.created_at AS created_at, r.report_data AS report_data, "
+        "lp.payment_contact AS pay_phone, "
+        "CONCAT(COALESCE(u.country_code,''), COALESCE(u.mobile,'')) AS deliver_phone, "
+        "(r.status='paid') AS paid, "
+        "CASE WHEN lp.method='free_pass' THEN CONCAT('free_pass:', lp.id) "
+        "ELSE lp.razorpay_payment_id END AS payment_id, "
+        "lp.amount_paise AS amount_paise "
+        "FROM reports r "
+        "LEFT JOIN users u ON u.id = r.user_id "
+        "LEFT JOIN payments lp ON lp.id = ("
+        "  SELECT id FROM payments WHERE report_id = r.id "
+        "  ORDER BY (status='captured') DESC, created_at DESC, id DESC LIMIT 1)"
+    )
+    sql = ("SELECT id, created_at, report_data, pay_phone, deliver_phone, "
+           "paid, payment_id, amount_paise FROM (" + base + ") t")
+    if where:
+        sql += " WHERE " + where
+    sql += " ORDER BY created_at DESC"
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+    out = []
+    for row in rows:
+        row = list(row)
+        ca = row[1]
+        row[1] = ca.isoformat() if hasattr(ca, "isoformat") else (ca or "")
+        rd = row[2]
+        if isinstance(rd, (dict, list)):
+            row[2] = json.dumps(rd)
+        out.append(tuple(row))
+    return out
+
+
 def _mask_phone(mobile):
     """Reveal ONLY the last 2 digits (privacy-first). '+919876543211' ->
     '+91 •••••••• 11'. Never returns more than the trailing 2 digits."""
@@ -96,7 +150,12 @@ def _classify_exclusion(created_at, deliver_phone, pay_phone, email,
     Returns "pre-launch" | "team" | "pass" | "test" | "" (real customer)."""
     if (payment_id or "").startswith("free_pass:") or payment_id == "demo":
         return "pass"
-    if payment_id and not _is_razorpay_id(payment_id):
+    # Any paid row without a genuine Razorpay id is NOT real revenue: a v2 demo
+    # unlock (db_v2.set_report_paid, no payment row) leaves payment_id NULL, and a
+    # no-contact orphan capture likewise has no payment row. v1 caught demo via
+    # payment_id='demo'; here we exclude every non-Razorpay case (matches the
+    # is_real_pay gate in admin_customers, so the tabs agree).
+    if not _is_razorpay_id(payment_id):
         return "test"
     if (created_at or "") < REVENUE_START:
         return "pre-launch"
@@ -235,16 +294,11 @@ def install(app, ctx):
         statuses = store.all_statuses(db)
         team_phones, team_emails = store.team_sets(db)
         team_labels = _team_label_map_from(store.team_all(db))
-        with db() as c:
-            rows = c.execute(
-                "SELECT id, created_at, payload, phone, user_phone, payment_id, "
-                "amount_paise "
-                "FROM reports WHERE paid=1 ORDER BY created_at DESC"
-            ).fetchall()
+        rows = _v2_rows("paid=1")
         out = []
         for row in rows:
-            rid, created_at, payload_json, pay_phone, deliver_phone, payment_id = row[:6]
-            stored_amount = row[6] if len(row) > 6 else None
+            (rid, created_at, payload_json, pay_phone, deliver_phone,
+             _paid, payment_id, stored_amount) = row
             try:
                 payload = json.loads(payload_json) if payload_json else {}
             except (TypeError, ValueError):
@@ -391,24 +445,11 @@ def install(app, ctx):
         team_phones, team_emails = store.team_sets(db)
         team_data = store.team_all(db)
         team_labels = _team_label_map_from(team_data)
-        with db() as c:
-            if q:
-                rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid, "
-                    "payment_id, amount_paise "
-                    "FROM reports WHERE user_phone LIKE ? OR phone LIKE ? "
-                    "ORDER BY created_at DESC",
-                    (like, like),
-                ).fetchall()
-            else:
-                rows = c.execute(
-                    "SELECT id, created_at, payload, phone, user_phone, paid, "
-                    "payment_id, amount_paise "
-                    "FROM reports WHERE "
-                    "(user_phone IS NOT NULL AND user_phone <> '') "
-                    "OR (phone IS NOT NULL AND phone <> '') "
-                    "ORDER BY created_at DESC"
-                ).fetchall()
+        if q:
+            rows = _v2_rows("deliver_phone LIKE %s OR pay_phone LIKE %s", (like, like))
+        else:
+            rows = _v2_rows("(deliver_phone <> '') "
+                            "OR (pay_phone IS NOT NULL AND pay_phone <> '')")
         all_phones = {}
         for row in rows:
             rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id = row[:7]
@@ -457,38 +498,35 @@ def install(app, ctx):
                 testers.append(e)
         dev_spend = {}
         if team_phones:
-            with db() as c:
-                likes = []
-                params = []
+            likes = []
+            params = []
+            for tp in team_phones:
+                likes.append("(deliver_phone LIKE %s OR pay_phone LIKE %s)")
+                params.extend([f"%{tp}%", f"%{tp}%"])
+            # %% : escape the literal % — pymysql treats % as a param placeholder
+            # whenever args are passed.
+            rp = _v2_rows("(" + " OR ".join(likes) + ") AND payment_id LIKE 'pay_%%'",
+                          tuple(params))
+            for row in rp:
+                uph, pph, payload_json, dev_stored_amt = row[4], row[3], row[2], row[7]
+                matched = None
                 for tp in team_phones:
-                    likes.append("(user_phone LIKE ? OR phone LIKE ?)")
-                    params.extend([f"%{tp}%", f"%{tp}%"])
-                params.append("pay_%")
-                rp = c.execute(
-                    "SELECT user_phone, phone, payload, amount_paise FROM reports "
-                    "WHERE (" + " OR ".join(likes) + ") "
-                    "AND payment_id LIKE ?",
-                    tuple(params),
-                ).fetchall()
-                for uph, pph, payload_json, dev_stored_amt in rp:
-                    matched = None
-                    for tp in team_phones:
-                        if tp in (uph or "") or tp in (pph or ""):
-                            matched = tp
-                            break
-                    if not matched:
-                        continue
-                    if dev_stored_amt is not None:
-                        amt = dev_stored_amt // 100
-                    else:
-                        try:
-                            pl = json.loads(payload_json) if payload_json else {}
-                        except (TypeError, ValueError):
-                            pl = {}
-                        amt = order_amount_paise({"payload": pl}) // 100
-                    entry = dev_spend.setdefault(matched, {"spend_inr": 0, "paid_count": 0})
-                    entry["spend_inr"] += amt
-                    entry["paid_count"] += 1
+                    if tp in (uph or "") or tp in (pph or ""):
+                        matched = tp
+                        break
+                if not matched:
+                    continue
+                if dev_stored_amt is not None:
+                    amt = dev_stored_amt // 100
+                else:
+                    try:
+                        pl = json.loads(payload_json) if payload_json else {}
+                    except (TypeError, ValueError):
+                        pl = {}
+                    amt = order_amount_paise({"payload": pl}) // 100
+                entry = dev_spend.setdefault(matched, {"spend_inr": 0, "paid_count": 0})
+                entry["spend_inr"] += amt
+                entry["paid_count"] += 1
         linked_map = {}
         for p in team_data.get("phones", []):
             lt = p.get("linked_to", "")
@@ -551,14 +589,7 @@ def install(app, ctx):
         team_emails = {e["value"] for e in team_data["emails"]}
         team_labels = _team_label_map_from(team_data)
         statuses = store.all_statuses(db)
-        with db() as c:
-            rows = c.execute(
-                "SELECT id, created_at, payload, phone, user_phone, paid, "
-                "payment_id, amount_paise "
-                "FROM reports WHERE user_phone LIKE ? OR phone LIKE ? "
-                "ORDER BY created_at DESC",
-                (like, like),
-            ).fetchall()
+        rows = _v2_rows("deliver_phone LIKE %s OR pay_phone LIKE %s", (like, like))
         history = []
         for row in rows:
             rid, created_at, payload_json, pay_phone, deliver_phone, paid, payment_id = row[:7]
@@ -955,45 +986,11 @@ def install(app, ctx):
         but no stored amount_paise, fetch the amount from Razorpay and store it.
         Free passes get amount_paise=0. Demo gets amount_paise=0."""
         _gate(request, key)
-        with db() as c:
-            rows = c.execute(
-                "SELECT id, payment_id FROM reports "
-                "WHERE paid=1 AND amount_paise IS NULL"
-            ).fetchall()
-        updated = 0
-        errors = 0
-        for rid, payment_id in rows:
-            pid = payment_id or ""
-            if pid.startswith("free_pass:") or pid == "demo":
-                with db() as c:
-                    c.execute("UPDATE reports SET amount_paise=0 WHERE id=?", (rid,))
-                updated += 1
-                continue
-            if not pid.startswith("pay_"):
-                with db() as c:
-                    c.execute("UPDATE reports SET amount_paise=0 WHERE id=?", (rid,))
-                updated += 1
-                continue
-            try:
-                import razorpay as _rzp_mod
-                key_id = os.getenv("RAZORPAY_KEY_ID", "") or os.getenv("RZP_KEY_ID", "")
-                key_secret = os.getenv("RAZORPAY_KEY_SECRET", "") or os.getenv("RZP_KEY_SECRET", "")
-                if not (key_id and key_secret):
-                    errors += 1
-                    continue
-                client = _rzp_mod.Client(auth=(key_id, key_secret))
-                pay = client.payment.fetch(pid)
-                amt = pay.get("amount")
-                if amt is not None:
-                    with db() as c:
-                        c.execute("UPDATE reports SET amount_paise=? WHERE id=?",
-                                  (int(amt), rid))
-                    updated += 1
-                else:
-                    errors += 1
-            except Exception:
-                errors += 1
-        return {"backfilled": updated, "errors": errors, "total": len(rows)}
+        # v2: the ACTUAL charged amount is captured on the payment row at capture
+        # time (payments.amount_paise) — never recomputed later — so there is
+        # nothing to backfill onto reports. Kept as a no-op so the admin URL responds.
+        return {"backfilled": 0, "errors": 0, "total": 0,
+                "note": "obsolete in v2 (amount captured on the payment row)"}
 
     # ------------------------------------------------ OTP login delivery log
     @app.get("/api/admin/otp_logins")

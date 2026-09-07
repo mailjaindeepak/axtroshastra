@@ -110,9 +110,13 @@ def get_user(db, user_id: str):
     if not row:
         return None
     # `mobile` is reassembled to the full +CC number (the shape v1 returned); v2
-    # has no `city` column, so it's always None now.
+    # has no `city` column, so it's always None now. `created_at` is stringified
+    # because MySQL hands back a datetime and this dict is JSON-dumped raw by the
+    # cookie-setting auth routes (raw JSONResponse, no jsonable_encoder).
+    created = row[5]
     return {"id": row[0], "mobile": f"{row[1] or ''}{row[2] or ''}", "email": row[3],
-            "name": row[4], "city": None, "created_at": row[5]}
+            "name": row[4], "city": None,
+            "created_at": created.isoformat() if hasattr(created, "isoformat") else created}
 
 
 def get_user_reports(db, user_id: str, limit: int = 100):
@@ -141,7 +145,8 @@ def get_user_reports(db, user_id: str, limit: int = 100):
         except Exception:
             pass
         out.append({"id": rid, "product": product, "subject": subject,
-                    "created_at": created_at})
+                    "created_at": (created_at.isoformat()
+                                   if hasattr(created_at, "isoformat") else created_at)})
     return out
 
 

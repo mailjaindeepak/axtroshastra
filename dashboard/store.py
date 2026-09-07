@@ -352,18 +352,18 @@ def otp_log_add(db, mobile, provider="Message Central"):
 def otp_log_update_status(db, mobile, status, attempts=None):
     _ensure_otp_log(db)
     with db() as c:
+        # MySQL forbids referencing the target table in a subquery of the same
+        # UPDATE (error 1093), so read the latest id first, then update it.
+        row = c.execute(
+            "SELECT MAX(id) FROM dash_otp_log WHERE mobile=?", (mobile,)).fetchone()
+        if not row or row[0] is None:
+            return
+        mid = row[0]
         if attempts is not None:
-            c.execute(
-                "UPDATE dash_otp_log SET status=?, attempts=? "
-                "WHERE mobile=? AND id=(SELECT MAX(id) FROM dash_otp_log WHERE mobile=?)",
-                (status, attempts, mobile, mobile),
-            )
+            c.execute("UPDATE dash_otp_log SET status=?, attempts=? WHERE id=?",
+                      (status, attempts, mid))
         else:
-            c.execute(
-                "UPDATE dash_otp_log SET status=? "
-                "WHERE mobile=? AND id=(SELECT MAX(id) FROM dash_otp_log WHERE mobile=?)",
-                (status, mobile, mobile),
-            )
+            c.execute("UPDATE dash_otp_log SET status=? WHERE id=?", (status, mid))
 
 
 def otp_log_recent(db, limit=200):
@@ -454,24 +454,35 @@ _ROBOT_PATTERNS = ["%Robot Customer%", "%Robot Student%", "%Robot Aisha%", "%Rob
 
 
 def robot_report_count(db):
-    with db() as c:
-        clauses = " OR ".join(["payload LIKE ?" for _ in _ROBOT_PATTERNS])
-        row = c.execute(
-            "SELECT COUNT(*) FROM reports WHERE " + clauses,
-            tuple(_ROBOT_PATTERNS),
-        ).fetchone()
+    import db_v2                       # v2: robot marker lives in report_data JSON
+    clauses = " OR ".join(["report_data LIKE %s" for _ in _ROBOT_PATTERNS])
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as c:
+            c.execute("SELECT COUNT(*) FROM reports WHERE " + clauses,
+                      tuple(_ROBOT_PATTERNS))
+            row = c.fetchone()
+    finally:
+        conn.close()
     return row[0] if row else 0
 
 
 def robot_cleanup(db, dry_run=True):
-    clauses = " OR ".join(["payload LIKE ?" for _ in _ROBOT_PATTERNS])
+    import db_v2
+    clauses = " OR ".join(["report_data LIKE %s" for _ in _ROBOT_PATTERNS])
     params = tuple(_ROBOT_PATTERNS)
-    with db() as c:
-        count = c.execute(
-            "SELECT COUNT(*) FROM reports WHERE " + clauses, params
-        ).fetchone()[0]
-        if dry_run:
-            return {"deleted": 0, "would_delete": count, "dry_run": True}
-        if count:
-            c.execute("DELETE FROM reports WHERE " + clauses, params)
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as c:
+            c.execute("SELECT COUNT(*) FROM reports WHERE " + clauses, params)
+            count = c.fetchone()[0]
+            if dry_run:
+                return {"deleted": 0, "would_delete": count, "dry_run": True}
+            if count:
+                # report_subjects cascade; a robot report with a payment (FK
+                # RESTRICT) would block, but robot rows are unpaid test data.
+                c.execute("DELETE FROM reports WHERE " + clauses, params)
+                conn.commit()
+    finally:
+        conn.close()
     return {"deleted": count, "would_delete": count, "dry_run": False}
