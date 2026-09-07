@@ -930,7 +930,8 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
         variant: location.pathname,
-        product: 'vyapar'
+        product: 'vyapar',
+        phone: waPhone
       })});
     var results = await Promise.all([fetchP, minWait]);
     var res = results[0];

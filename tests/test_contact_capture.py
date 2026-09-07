@@ -100,6 +100,31 @@ def test_order_persists_popup_phone_and_email(client, monkeypatch):
     assert u["email"] == "pdf@example.com"        # v2: popup email on the account
 
 
+def test_kundli_form_phone_creates_account_at_submit(client, monkeypatch):
+    """Lead-at-submit for the MAIN-FORM kundli funnels (marriage-v2/v3, business-growth):
+    they send `phone` to /api/kundli, so the account is created + linked at REPORT
+    CREATION (like milan), not only at checkout — capturing the lead even if the
+    visitor never pays. Checkout then needs no phone (no contact_required)."""
+    r = client.post("/api/kundli", json={**KUNDLI, "phone": "98765 00042"})
+    assert r.status_code == 200, r.text
+    rid = r.json()["report_id"]
+    u = _user_of(rid)
+    assert u is not None
+    assert u["mobile"] == "+919876500042"        # account created at SUBMIT
+
+    _stub_rzp(monkeypatch)
+    o = client.post("/api/order", json={"report_id": rid})   # no phone in the body
+    assert o.status_code == 200, o.text
+    assert o.json().get("razorpay_order_id")     # succeeds — the user is already attached
+
+
+def test_kundli_without_phone_stays_unattached(client):
+    """Popup funnels omit `phone` on /api/kundli -> user_id stays NULL at create
+    (attached later at /api/order via the popup). Unchanged behaviour."""
+    rid = _new_report(client)                     # KUNDLI has no phone
+    assert _user_of(rid) is None
+
+
 # ------------------------------------------------ /api/milan captures WhatsApp
 def test_milan_form_captures_whatsapp_number(client):
     r = client.post("/api/milan", json={**MILAN, "whatsapp": "98765 00002"})

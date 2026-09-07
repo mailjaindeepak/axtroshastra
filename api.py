@@ -588,6 +588,9 @@ class KundliIn(BaseModel):
     gender: str | None = None
     variant: str | None = None
     email: str | None = None
+    phone: str | None = None           # main-form funnels (marriage-v2/v3, business-growth) send it
+                                       # here so the account/lead is created at submit (popup funnels
+                                       # omit it and attach the user later at /api/order)
     captcha_token: str | None = None
     product: str = "marriage"          # marriage | blueprint | vidyarthi | vyapar | career_growth
     stage: str | None = None           # vidyarthi only: 10th | 12th | college | postgrad
@@ -1253,8 +1256,10 @@ def create_kundli(inp: KundliIn):
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)
     rid = secrets.token_urlsafe(12)
-    # v2 (Piece 5): store the report + one subject. No phone in the solo funnel, so
-    # user_id stays NULL until the payment popup (attached in the order flow, 5b).
+    # v2 (Piece 5): store the report + one subject. Main-form funnels
+    # (marriage-v2/v3, business-growth) send `phone`, so the user/lead is created +
+    # linked HERE at submit (same as milan). Popup funnels omit it -> user_id stays
+    # NULL until the pre-payment popup attaches the user in the order flow.
     subject = {"role": "self", "name": inp.name, "gender": inp.gender,
                "dob": inp.dob, "tob": tob, "time_quality": inp.time_quality,
                "birth_place": inp.place, "birth_lat": lat, "birth_lon": lon,
@@ -1262,7 +1267,7 @@ def create_kundli(inp: KundliIn):
     conn = db_v2.get_conn()
     try:
         reports_v2.save_report(conn, rid, report, [subject],
-                               product=(inp.product or "marriage"))
+                               product=(inp.product or "marriage"), phone=inp.phone)
         conn.commit()
     finally:
         conn.close()

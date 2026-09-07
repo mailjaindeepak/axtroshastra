@@ -914,7 +914,8 @@ async function runKundliAndPay(dob, waPhone){
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
-        variant: location.pathname
+        variant: location.pathname,
+        phone: waPhone
       })});
     var results = await Promise.all([fetchP, minWait]);
     var res = results[0];
