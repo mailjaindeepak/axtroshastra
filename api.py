@@ -1277,19 +1277,23 @@ class OrderIn(BaseModel):
     model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
-def _deliver_paid_report(rid: str, *, pay_phone: str = "", pay_email: str = "",
-                         background=None) -> None:
+def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = "",
+                         pay_email: str = "", background=None) -> None:
     """Shared 'the report is paid -> deliver it' path (Piece 5, 5b). Used by the
     webhook, the /api/verify fallback, the reconcile recovery net, AND the free-pass
     unlock — one place so the money/delivery rules can't drift across copies.
 
-    Runs, in order: cache the PDF, generate the narrative, send the report on
-    WhatsApp to the POPUP/account number ONLY (never Razorpay's payment contact),
-    email the PDF copy, and fire the server-side CAPI purchase backstop. When a
-    `background` (FastAPI BackgroundTasks) is given the heavy steps are scheduled;
-    otherwise they run synchronously (reconcile's daemon thread has no request).
-    Assumes the report is already flipped paid and the user already attached at
-    order — never raises."""
+    WhatsApp goes to `popup_phone` ONLY — the number the buyer typed into the
+    pre-payment popup / order form. It is NEVER derived from the report's user row,
+    because on an orphan (missed-popup) capture the user may have been attached from
+    Razorpay's payment contact, and CLAUDE.md §1 forbids delivering to that number.
+    `pay_phone` (Razorpay's contact) is used ONLY as a CAPI match fallback, never for
+    delivery. When `popup_phone` is empty (a real orphan), WhatsApp is skipped, exactly
+    as v1 did.
+
+    Runs: cache the PDF, generate the narrative, WhatsApp (popup only), email the PDF
+    copy, and fire the server-side CAPI purchase backstop. `background` schedules the
+    heavy steps; else they run synchronously (reconcile's daemon thread). Never raises."""
     rec = get_report(rid)
     if not rec:
         return
@@ -1297,7 +1301,7 @@ def _deliver_paid_report(rid: str, *, pay_phone: str = "", pay_email: str = "",
     meta = payload.get("meta") or {}
     name = _display_name(payload)
     product = payload.get("product", "marriage")
-    wa_phone = rec.get("user_phone") or ""     # popup/account number ONLY
+    wa_phone = popup_phone or ""     # POPUP number ONLY — never Razorpay's contact (§1)
     form_email = meta.get("_email")
 
     def _run(fn, *a, **kw):
@@ -1375,9 +1379,11 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         tok = (body.pass_token or "").strip()
         if tok:
             if payments_v2.redeem_free_pass(conn, token=tok, report_id=rid, user_id=uid):
+                # popup number = the order-popup user (uid) — genuine popup contact.
+                popup_phone = reports_v2.user_phone(conn, uid)
                 conn.commit()
                 # A free-pass unlock is a real paid report -> same delivery as paid.
-                _deliver_paid_report(rid, background=background_tasks)
+                _deliver_paid_report(rid, popup_phone=popup_phone, background=background_tasks)
                 return {"free": True}
             conn.rollback()
             return {"error": "invalid_pass"}
@@ -1421,7 +1427,12 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         urec = db_v2.get_report(conn, rid)
         if not urec:
             return {"ok": True}
+        # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
+        # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
+        popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
         if not urec.get("user_id") and pay_phone:
+            # Orphan (missed popup): attach from the Razorpay contact ONLY so the payment
+            # row can be written (user_id NOT NULL). This number is NOT used for delivery.
             try:
                 reports_v2.attach_user(conn, rid, pay_phone, pay_email)
             except Exception as e:
@@ -1440,8 +1451,8 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     finally:
         conn.close()
     if should_deliver:
-        _deliver_paid_report(rid, pay_phone=pay_phone, pay_email=pay_email,
-                             background=background_tasks)
+        _deliver_paid_report(rid, popup_phone=popup_phone, pay_phone=pay_phone,
+                             pay_email=pay_email, background=background_tasks)
     return {"ok": True}
 
 
@@ -1473,6 +1484,9 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         if not prow:
             raise HTTPException(404, "order not found")
         rid = prow[0]
+        # Delivery number = the order-popup user on the report (never Razorpay's
+        # contact, §1). The report always has one here (record_order attached it).
+        popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
         # Fetch the payment entity for the contact/email/amount typed at checkout.
         # That contact is the PAYMENT number; delivery uses the popup number only.
         pay_phone = body.get("phone") or ""
@@ -1496,8 +1510,8 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
     finally:
         conn.close()
     if should_deliver:
-        _deliver_paid_report(rid, pay_phone=pay_phone, pay_email=pay_email,
-                             background=background_tasks)
+        _deliver_paid_report(rid, popup_phone=popup_phone, pay_phone=pay_phone,
+                             pay_email=pay_email, background=background_tasks)
     return {"ok": True, "report_id": rid}
 
 
@@ -1565,8 +1579,11 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
             urec = db_v2.get_report(conn, rid)
             if not urec:
                 continue
-            # A payment needs a user (NOT NULL); attach from the Razorpay contact if
-            # this orphan never carried the popup number.
+            # Delivery number = the order-popup user, read BEFORE any orphan fallback,
+            # so Razorpay's contact can never leak into WhatsApp delivery (§1).
+            popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
+            # A payment needs a user (NOT NULL); attach from the Razorpay contact ONLY
+            # so the payment row can be written — NOT used for delivery.
             if not urec.get("user_id") and cand["contact"]:
                 try:
                     reports_v2.attach_user(conn, rid, cand["contact"], cand["email"])
@@ -1580,7 +1597,8 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
             conn.commit()
             if should_deliver:
                 try:
-                    _deliver_paid_report(rid, pay_phone=cand["contact"],
+                    _deliver_paid_report(rid, popup_phone=popup_phone,
+                                         pay_phone=cand["contact"],
                                          pay_email=cand["email"], background=None)
                 except Exception as e:
                     logger.error("[reconcile] delivery failed for %s: %s", rid, e)

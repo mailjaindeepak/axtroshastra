@@ -75,6 +75,18 @@ def attach_user(conn, rid: str, phone: str | None, email: str | None = None) -> 
     return f"{cc}{mobile}"
 
 
+def user_phone(conn, user_id: str) -> str:
+    """The full +CC number for a user id, or '' — used to get the ORDER-popup number
+    for delivery BEFORE any orphan/Razorpay fallback attach (so the Razorpay contact
+    can never leak into WhatsApp delivery; CLAUDE.md §1)."""
+    if not user_id:
+        return ""
+    with conn.cursor() as cur:
+        cur.execute("SELECT country_code, mobile FROM users WHERE id=%s", (user_id,))
+        r = cur.fetchone()
+    return f"{r[0] or ''}{r[1] or ''}" if r else ""
+
+
 def store_attribution(conn, rid: str, *, fbc=None, fbp=None, ua=None, ip=None,
                       li_fat_id=None) -> None:
     """Persist ad-click attribution + request context INTO the report body (report_data
