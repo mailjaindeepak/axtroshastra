@@ -69,24 +69,15 @@ def test_demo_pay_creates_no_account(client):
     assert body["account"] is None
 
 
-def test_backfill_links_prepaid_reports(client):
-    """A report paid before the accounts code existed (paid + phone, no user_id)
-    gets an account created and linked by the backfill endpoint, and is then shown
-    to the user like any webhook-created account."""
-    import api
-    rid = _new_report(client)
-    with api.db() as c:   # simulate an old, pre-accounts paid report
-        c.execute("UPDATE reports SET paid=1, payment_id='pay_old', "
-                  "phone='+919650973345' WHERE id=?", (rid,))
-
+def test_backfill_is_a_safe_noop_in_v2(client):
+    """v2: users are attached at form-fill / order / OTP login, so there are no
+    paid-but-unlinked reports to sweep — backfill is an idempotent no-op. It stays
+    as an endpoint so the admin URL keeps responding (see users.backfill)."""
     r = client.get("/api/backfill_users?key=test-stats-key")
     assert r.status_code == 200, r.text
-    assert r.json()["linked"] >= 1
-
-    acct = client.get(f"/api/report/{rid}").json()["account"]
-    assert acct is not None and acct["mobile"] == "+919650973345"
-    # re-running is a no-op for already-linked rows
-    assert client.get("/api/backfill_users?key=test-stats-key").json()["linked"] == 0
+    body = r.json()
+    assert body["linked"] == 0
+    assert body["scanned"] == 0
 
 
 def test_backfill_requires_admin_key(client):

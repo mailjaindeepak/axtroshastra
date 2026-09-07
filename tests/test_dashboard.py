@@ -26,18 +26,35 @@ def _new_report(client, **overrides):
     return r.json()["report_id"]
 
 
-def _make_paid(rid, deliver_phone, pay_phone="9111100001", variant="/milan"):
-    """Directly stamp a report paid with a distinct popup (delivery) number vs
-    the Razorpay (pay) number, via the app's own module-level helpers."""
-    api.store_user_contact(rid, phone=deliver_phone)   # -> reports.user_phone
-    slug = rid.replace("-", "")[:10]
-    api.mark_paid(rid, payment_id=f"pay_TEST{slug}", phone=pay_phone)  # -> reports.phone
-    # tag the funnel variant so the price/label logic has something to read
-    with api._lock, api.db() as c:
-        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
-        payload = json.loads(row[0])
-        payload.setdefault("meta", {})["variant"] = variant
-        c.execute("UPDATE reports SET payload=? WHERE id=?", (json.dumps(payload), rid))
+def _make_paid(rid, deliver_phone, pay_phone="9111100001", variant="/milan",
+               method="upi"):
+    """v2: attach the popup/deliver user (the account/delivery number), tag the
+    funnel variant in report_data, create a CAPTURED payment (pay_phone is the
+    Razorpay contact, kept separate), and mark the report paid. method='free_pass'
+    makes it a non-revenue pass unlock (payment_id surfaces as 'free_pass:…')."""
+    import db_v2
+    from datetime import timezone
+    from flows_v2 import split_phone
+    conn = db_v2.get_conn()
+    try:
+        cc, mob = split_phone(deliver_phone)
+        uid = db_v2.create_or_get_user(conn, cc, mob)
+        rec = db_v2.get_report(conn, rid)
+        data = (rec or {}).get("report_data") or {}
+        data.setdefault("meta", {})["variant"] = variant
+        slug = rid.replace("-", "")[:10]
+        with conn.cursor() as c:
+            c.execute("UPDATE reports SET user_id=%s, report_data=%s WHERE id=%s",
+                      (uid, json.dumps(data), rid))
+        db_v2.record_payment(
+            conn, rid, uid, 49900,
+            razorpay_payment_id=(None if method == "free_pass" else f"pay_TEST{slug}"),
+            status="captured", method=method, payment_contact=pay_phone,
+            paid_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+        db_v2.set_report_paid(conn, rid)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # 1. plugin did not break the site --------------------------------------------
@@ -144,8 +161,8 @@ def test_revenue_cutoff_excludes_team_test_payments(client):
     r_old = _new_report(client); _make_paid(r_old, deliver_phone="9700000091")
     r_new = _new_report(client); _make_paid(r_new, deliver_phone="9700000092")
     with api._lock, api.db() as c:  # force one before and one after the cutoff
-        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2000-01-01T00:00:00", r_old))
-        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-01-01T00:00:00", r_new))
+        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2000-01-01 00:00:00", r_old))
+        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-01-01 00:00:00", r_new))
     ov = client.get(f"/api/admin/overview?key={KEY}").json()
     rows = {r["rid"]: r for r in ov["reports"]}
     assert rows[r_old]["is_test"] is True     # pre go-live team verification
@@ -161,7 +178,7 @@ def test_team_allowlist_excludes_by_phone(client):
     _make_paid(rid, deliver_phone="9312300071", pay_phone="9312300072")
     # force clearly AFTER the cutoff so only the allowlist can exclude it
     with api._lock, api.db() as c:
-        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-06-01T00:00:00", rid))
+        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-06-01 00:00:00", rid))
     before = client.get(f"/api/admin/overview?key={KEY}").json()
     row_before = next(r for r in before["reports"] if r["rid"] == rid)
     assert row_before["is_test"] is False           # a real customer, for now
@@ -538,7 +555,9 @@ def test_forward_message_contains_https_links(client):
 # 20. Customer page empty-query returns reports with only pay-phone (no user_phone)
 def test_customer_empty_query_includes_pay_phone_only(client):
     rid = _new_report(client)
-    api.mark_paid(rid, payment_id="pay_TEST00payonly0", phone="9700000401")
+    # v2 orphan capture: no popup number, so the user is attached from the Razorpay
+    # contact — the account/delivery number == the pay number (9700000401).
+    _make_paid(rid, deliver_phone="9700000401", pay_phone="9700000401")
     cs = client.get(f"/api/admin/customers?key={KEY}").json()["customers"]
     phones = [c["phone"] for c in cs]
     assert any("9700000401" in p for p in phones), \
@@ -681,8 +700,10 @@ def test_customers_returns_three_categories(client):
 
 def test_customers_pass_users_appear_as_testers(client):
     rid = _new_report(client, phone="9877700010")
-    api.store_user_contact(rid, phone="9877700011")
-    api.mark_paid(rid, payment_id="free_pass:abc123", phone="9877700010")
+    # a free-pass unlock: deliver number 9877700011, method free_pass -> not a real
+    # paying customer, so it lands in "testers" (pass = excluded from revenue).
+    _make_paid(rid, deliver_phone="9877700011", pay_phone="9877700010",
+               method="free_pass")
     r = client.get(f"/api/admin/customers?key={KEY}")
     d = r.json()
     testers = d["testers"]
@@ -825,13 +846,18 @@ def test_team_email_exclusion_from_revenue(client):
     from dashboard import store
     rid = _new_report(client)
     _make_paid(rid, deliver_phone="9312300081", pay_phone="9312300082")
-    with api._lock, api.db() as c:
-        c.execute("UPDATE reports SET created_at=? WHERE id=?", ("2999-07-01T00:00:00", rid))
-        row = c.execute("SELECT payload FROM reports WHERE id=?", (rid,)).fetchone()
-        import json as _json
-        payload = _json.loads(row[0])
-        payload.setdefault("meta", {})["_email"] = "teamtest@example.com"
-        c.execute("UPDATE reports SET payload=? WHERE id=?", (_json.dumps(payload), rid))
+    import db_v2
+    conn = db_v2.get_conn()
+    try:                                  # v2: email lives in report_data.meta._email
+        rec = db_v2.get_report(conn, rid)
+        data = (rec or {}).get("report_data") or {}
+        data.setdefault("meta", {})["_email"] = "teamtest@example.com"
+        with conn.cursor() as c:
+            c.execute("UPDATE reports SET report_data=%s, created_at=%s WHERE id=%s",
+                      (json.dumps(data), "2999-07-01 00:00:00", rid))
+        conn.commit()
+    finally:
+        conn.close()
     before = client.get(f"/api/admin/overview?key={KEY}").json()
     row_b = next(r for r in before["reports"] if r["rid"] == rid)
     assert row_b["is_test"] is False

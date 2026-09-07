@@ -258,7 +258,7 @@ def test_blueprint_price_is_999_not_499(client, monkeypatch):
     for variant in ("/en/life-blueprint", "/hi/life-blueprint"):
         r = client.post("/api/kundli", json={**BLUEPRINT, "variant": variant})
         rid = r.json()["report_id"]
-        order = client.post("/api/order", json={"report_id": rid})
+        order = client.post("/api/order", json={"report_id": rid, "phone": "9876520001"})
         assert order.status_code == 200, order.text
         assert order.json()["amount"] == 99900, variant
 
@@ -268,6 +268,6 @@ def test_blueprint_price_is_999_not_499(client, monkeypatch):
                                          "tob": "10:00", "place": "Delhi", "gender": "female",
                                          "product": "marriage", "variant": "/en/marriage"})
     rid = r.json()["report_id"]
-    order = client.post("/api/order", json={"report_id": rid})
+    order = client.post("/api/order", json={"report_id": rid, "phone": "9876520002"})
     assert order.status_code == 200, order.text
     assert order.json()["amount"] == 49900
