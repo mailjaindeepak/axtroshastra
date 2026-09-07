@@ -165,3 +165,31 @@ def test_kundli_identifies_the_beacon_visitor(client):
         uid = cur.fetchone()[0]
     conn.close()
     assert uid, "the beacon visitor should be stitched to the new user"
+
+
+def test_refund_records_into_v2_refunds(client, monkeypatch):
+    """payments.refund (admin /api/refund) issues a Razorpay refund and records it in
+    the v2 `refunds` table, resolved to our payments.id via the FK."""
+    import payments
+    rid = _make_report(client)
+    o = client.post("/api/order", json={"report_id": rid, "phone": "9876500099"})
+    oid = o.json()["razorpay_order_id"]
+    assert _webhook(client, rid, "pay_refund_1", "+911110000099", order_id=oid).status_code == 200
+
+    class _RzpRefund:
+        class payment:
+            @staticmethod
+            def refund(pid, data):
+                return {"id": "rfnd_1", "amount": 49900, "status": "processed"}
+    monkeypatch.setattr(payments, "_rzp", lambda: _RzpRefund())
+
+    r = payments.refund("pay_refund_1")
+    assert r["status"] == "processed"
+    conn = _server_conn(database=ROUTE_DB)
+    with conn.cursor() as cur:
+        cur.execute("SELECT rf.amount_paise, rf.status FROM refunds rf "
+                    "JOIN payments p ON p.id = rf.payment_id "
+                    "WHERE p.razorpay_payment_id=%s", ("pay_refund_1",))
+        row = cur.fetchone()
+    conn.close()
+    assert row == (49900, "processed")
