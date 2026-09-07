@@ -32,6 +32,48 @@ jobs:
         timeout-minutes: 20
         run: pytest -q
 
+  # P5-2b: the v2 MySQL-native data layer (db/) runs against a REAL MySQL service —
+  # not the SQLite path — so "green" actually exercises the v2 schema + FKs. This is
+  # the riskiest code in the project and had ZERO PR coverage before. The db/ tests
+  # build their own throwaway database from schema_v2.sql (see db/conftest.py) using
+  # the creds below. Safe-by-default: a DB is REQUIRED here — if the MySQL service is
+  # unreachable the tests FAIL (they cannot skip, because ALLOW_NO_DB is never set in
+  # CI). See db/conftest.py + CLAUDE.md §20a.
+  db-tests:
+    name: v2 DB layer tests (MySQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run the v2 DB layer tests against MySQL
+        timeout-minutes: 10
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: "3306"
+          DB_USER: root
+          DB_PASSWORD: root
+          # No ALLOW_NO_DB here on purpose: a missing DB is a HARD FAILURE in CI (§20a).
+        run: pytest db/ -q
+
   e2e:
     name: Playwright E2E (mobile + desktop)
     runs-on: ubuntu-latest
