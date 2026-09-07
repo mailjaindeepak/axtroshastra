@@ -61,7 +61,9 @@ def test_order_with_free_pass_unlocks_without_razorpay(client):
     passes = client.get("/api/make_pass?key=test-stats-key&n=1").json()["passes"]
     tok = passes[0]
     rid = _new_report(client)["report_id"]
-    r = client.post("/api/order", json={"report_id": rid, "pass": tok})
+    # v2 needs a popup contact for any unlock (payments.user_id NOT NULL).
+    r = client.post("/api/order", json={"report_id": rid, "pass": tok,
+                                        "phone": "9876530001"})
     assert r.status_code == 200, r.text
     assert r.json().get("free") is True
     # report is now paid and fully retrievable
@@ -73,10 +75,12 @@ def test_order_with_free_pass_unlocks_without_razorpay(client):
 def test_used_pass_is_rejected_second_time(client):
     tok = client.get("/api/make_pass?key=test-stats-key&n=1").json()["passes"][0]
     rid1 = _new_report(client)["report_id"]
-    assert client.post("/api/order", json={"report_id": rid1, "pass": tok}).json().get("free") is True
+    assert client.post("/api/order", json={"report_id": rid1, "pass": tok,
+                                           "phone": "9876530002"}).json().get("free") is True
     # same token on a second report must be refused
     rid2 = _new_report(client)["report_id"]
-    assert client.post("/api/order", json={"report_id": rid2, "pass": tok}).json().get("error") == "invalid_pass"
+    assert client.post("/api/order", json={"report_id": rid2, "pass": tok,
+                                           "phone": "9876530003"}).json().get("error") == "invalid_pass"
 
 
 def test_order_on_already_paid_report_short_circuits(client):
@@ -87,3 +91,18 @@ def test_order_on_already_paid_report_short_circuits(client):
     r = client.post("/api/order", json={"report_id": rid})
     assert r.status_code == 200
     assert r.json().get("already_paid") is True
+
+
+# --------------------------------------------------- narrative persistence
+def test_save_narrative_persists_to_report_data(client):
+    """Regression: save_narrative wrote the v1 `payload` column and silently failed
+    on v2 (Unknown column) — so a generated narrative never persisted and the report
+    rendered the fallback banks forever. It must merge into report_data, readable
+    back as payload['narrative']. (Tests otherwise never hit it: narrative is env-off.)"""
+    import api
+    rid = _new_report(client)["report_id"]
+    api.save_narrative(rid, {"intro": "hello world"})
+    rec = api.get_report(rid)
+    assert rec["payload"].get("narrative") == {"intro": "hello world"}
+    api.save_narrative(rid, {})          # empty output is a safe no-op, keeps the prior
+    assert api.get_report(rid)["payload"].get("narrative") == {"intro": "hello world"}

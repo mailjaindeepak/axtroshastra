@@ -75,16 +75,19 @@ def test_login_creates_account_for_new_number(client):
 
 def test_login_surfaces_prior_paid_reports(client):
     """A report already linked to this mobile's account shows up on the dashboard."""
-    mobile = "+919876500060"
-    uid = api.users.upsert_user_from_payment(api.db, mobile=mobile, name="Prior Buyer")
-    # a paid report owned by that user
-    rid = "r_authtest_1"
-    with api.db() as c:
-        c.execute("INSERT INTO reports(id,payload,paid,phone,user_id,created_at) "
-                  "VALUES(?,?,?,?,?,?)",
-                  (rid, api.json.dumps({"product": "milan",
-                                        "meta": {"p1": "A", "p2": "B"}}),
-                   1, mobile, uid, "2026-07-01T00:00:00"))
+    import db_v2
+    from flows_v2 import split_phone
+    cc, mob = split_phone("+919876500060")
+    conn = db_v2.get_conn()
+    try:                                     # a paid report owned by that user (v2)
+        uid = db_v2.create_or_get_user(conn, cc, mob)
+        rid = db_v2.create_report(conn, uid, "milan",
+                                  {"product": "milan", "meta": {"p1": "A", "p2": "B"}},
+                                  status="paid")
+        conn.commit()
+    finally:
+        conn.close()
+    # login resolves the same user (deduped by country_code+mobile).
     _login(client, "9876500060")
     me = client.get("/api/me").json()
     ids = [x["id"] for x in me["reports"]]
@@ -188,10 +191,10 @@ def test_mc_validate_hits_v3_validate(monkeypatch):
 
     mobile = "+919876500098"
     with api.db() as c:
-        c.execute("DELETE FROM login_otps WHERE mobile=?", (mobile,))
-        c.execute("INSERT INTO login_otps(mobile,code_hash,mc_verification_id,"
+        c.execute("DELETE FROM login_otps WHERE msisdn=?", (mobile,))
+        c.execute("INSERT INTO login_otps(msisdn,code_hash,mc_verification_id,"
                   "expires_at,attempts) VALUES(?,?,?,?,0)",
-                  (mobile, "", "vid-xyz", "2999-01-01T00:00:00"))
+                  (mobile, "", "vid-xyz", "2999-01-01 00:00:00"))
     assert auth._mc_check_otp(api.db, mobile, "123456") is True
     assert "/verification/v3/validateOtp?" in calls["url"]
     assert "/verification/v2/" not in calls["url"]
