@@ -12,6 +12,7 @@ Two idempotency guards, matching the v1 design (so money/delivery happen once):
     and the /api/verify fallback race to capture the same payment, exactly ONE
     wins the right to run delivery (`capture_payment` returns True only for it).
 """
+import logging
 from datetime import datetime, timezone
 
 import db_v2
@@ -80,11 +81,22 @@ def capture_payment(conn, *, report_id, amount_paise, razorpay_order_id=None,
             cur.execute("SELECT user_id FROM reports WHERE id=%s", (report_id,))
             r = cur.fetchone()
         user_id = r[0] if r else None
-        db_v2.record_payment(
-            conn, report_id, user_id, amount_paise, razorpay_order_id=razorpay_order_id,
-            razorpay_payment_id=razorpay_payment_id, status="captured", method=method,
-            upi_vpa=upi_vpa, payment_email=payment_email,
-            payment_contact=payment_contact, paid_at=paid_at)
+        if user_id:
+            db_v2.record_payment(
+                conn, report_id, user_id, amount_paise, razorpay_order_id=razorpay_order_id,
+                razorpay_payment_id=razorpay_payment_id, status="captured", method=method,
+                upi_vpa=upi_vpa, payment_email=payment_email,
+                payment_contact=payment_contact, paid_at=paid_at)
+        else:
+            # P5-3: an orphan captured with NO user at all (payments.user_id is NOT
+            # NULL, so we can't write a payment row). A real Razorpay capture always
+            # carries a contact, so callers normally attach a user first; this is the
+            # last-resort guard. The report is ALREADY flipped to paid by the atomic
+            # claim above — so the customer isn't harmed — we just can't record the
+            # payment row. Log loudly for manual Razorpay reconciliation; never crash.
+            logging.getLogger("axtroshastra").error(
+                "[payments_v2] captured report %s has no user and no contact — marked "
+                "paid but payment row NOT recorded (reconcile from Razorpay).", report_id)
     return should_deliver
 
 
