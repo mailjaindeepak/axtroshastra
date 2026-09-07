@@ -1,8 +1,4 @@
 """Tests for the supporting feature modules: i18n, geocoding, ratelimit, payments."""
-import os
-import sqlite3
-import tempfile
-
 import i18n
 import geocoding
 import ratelimit
@@ -52,29 +48,12 @@ def test_captcha_disabled_returns_true(monkeypatch):
 
 
 # ---- payments -------------------------------------------------------------
-def _tmp_db():
-    path = os.path.join(tempfile.mkdtemp(), "p.db")
-
-    def db():
-        return sqlite3.connect(path)
-    return db
-
-
-def test_webhook_idempotency():
-    db = _tmp_db()
-    payments.ensure_tables(db)
-    evt = {"payload": {"payment": {"entity": {"id": "pay_ABC123"}}}}
-    eid = payments.event_id_of(evt)
-    assert eid == "pay_ABC123"
-    assert payments.already_processed(db, eid) is False
-    payments.mark_processed(db, eid, "payment.captured", "rid1")
-    assert payments.already_processed(db, eid) is True
-
-
-def test_reconcile_noop_without_razorpay(monkeypatch):
-    monkeypatch.delenv("RAZORPAY_KEY_ID", raising=False)
-    monkeypatch.delenv("RAZORPAY_KEY_SECRET", raising=False)
-    db = _tmp_db()
-    payments.ensure_tables(db)
-    res = payments.reconcile(db)
-    assert res["recovered"] == 0
+def test_event_id_of_extracts_payment_entity_id():
+    """event_id_of (still used by the v2 webhook for idempotency) reads the payment
+    entity id, else falls back to the top-level event id. The v1 primitives
+    (webhook_events dedupe / reconcile) were retired with the cutover — their behaviour
+    is now covered on real MySQL by db/test_payments_v2 + db/test_payment_recovery."""
+    assert payments.event_id_of(
+        {"payload": {"payment": {"entity": {"id": "pay_ABC123"}}}}) == "pay_ABC123"
+    assert payments.event_id_of({"id": "evt_1"}) == "evt_1"
+    assert payments.event_id_of({}) == ""

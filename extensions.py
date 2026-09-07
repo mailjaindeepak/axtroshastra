@@ -25,7 +25,6 @@ import payments
 
 
 def install(app, ctx):
-    db = ctx["db"]
     get_report = ctx["get_report"]
     render = ctx["render"]                       # noqa: F841 — kept in ctx contract
     valid_admin_key = ctx["valid_admin_key"]
@@ -61,11 +60,10 @@ def install(app, ctx):
                 "catalog": {k: i18n.t(k, code)
                             for k in i18n.CATALOG[i18n.DEFAULT_LANG]}}
 
-    @app.post("/api/reconcile")
-    def reconcile(key: str = ""):
-        if not valid_admin_key(key):
-            raise HTTPException(403, "forbidden")
-        return payments.reconcile(db)
+    # NOTE: the old v1 /api/reconcile lived here and called payments.reconcile(db).
+    # api.py registers a v2 /api/reconcile (api._reconcile_and_deliver) BEFORE install()
+    # runs, so this one was already shadowed (Starlette serves the first match) — removed
+    # with the v2 cutover rather than left as dead code.
 
     @app.post("/api/refund")
     def refund(key: str = "", payment_id: str = "", amount_paise: int | None = None):
@@ -74,6 +72,6 @@ def install(app, ctx):
         if not payment_id:
             raise HTTPException(422, "payment_id required")
         try:
-            return payments.refund(db, payment_id, amount_paise)
+            return payments.refund(payment_id, amount_paise)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=502)

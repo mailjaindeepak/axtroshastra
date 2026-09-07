@@ -146,3 +146,50 @@ def test_orphan_webhook_no_contact_delivers_or_skips_without_crashing(client):
     rid = _make_report(client)
     assert _webhook(client, rid, "pay_o2", "").status_code == 200   # no contact
     assert client.get(f"/api/report/{rid}").json()["paid"] is True
+
+
+def test_kundli_identifies_the_beacon_visitor(client):
+    """events_v2.identify() wiring: a main-form kundli (with a phone) creates the
+    user AND stitches the anonymous beacon visitor (ax_vid cookie) to it — so the
+    visitor's prior anonymous browsing back-attributes to the account."""
+    conn = _server_conn(database=ROUTE_DB)
+    with conn.cursor() as cur:
+        cur.execute("INSERT INTO visitors(visitor_id) VALUES('vis_idfy')")  # as the beacon would
+    conn.close()
+    r = client.post("/api/kundli", json={**KUNDLI, "phone": "9800012345"},
+                    headers={"Cookie": "ax_vid=vis_idfy"})
+    assert r.status_code == 200, r.text
+    conn = _server_conn(database=ROUTE_DB)
+    with conn.cursor() as cur:
+        cur.execute("SELECT user_id FROM visitors WHERE visitor_id='vis_idfy'")
+        uid = cur.fetchone()[0]
+    conn.close()
+    assert uid, "the beacon visitor should be stitched to the new user"
+
+
+def test_refund_records_into_v2_refunds(client, monkeypatch):
+    """payments.refund (admin /api/refund) issues a Razorpay refund and records it in
+    the v2 `refunds` table, resolved to our payments.id via the FK."""
+    import payments
+    rid = _make_report(client)
+    o = client.post("/api/order", json={"report_id": rid, "phone": "9876500099"})
+    oid = o.json()["razorpay_order_id"]
+    assert _webhook(client, rid, "pay_refund_1", "+911110000099", order_id=oid).status_code == 200
+
+    class _RzpRefund:
+        class payment:
+            @staticmethod
+            def refund(pid, data):
+                return {"id": "rfnd_1", "amount": 49900, "status": "processed"}
+    monkeypatch.setattr(payments, "_rzp", lambda: _RzpRefund())
+
+    r = payments.refund("pay_refund_1")
+    assert r["status"] == "processed"
+    conn = _server_conn(database=ROUTE_DB)
+    with conn.cursor() as cur:
+        cur.execute("SELECT rf.amount_paise, rf.status FROM refunds rf "
+                    "JOIN payments p ON p.id = rf.payment_id "
+                    "WHERE p.razorpay_payment_id=%s", ("pay_refund_1",))
+        row = cur.fetchone()
+    conn.close()
+    assert row == (49900, "processed")
