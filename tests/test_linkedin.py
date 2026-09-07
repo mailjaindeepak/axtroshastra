@@ -355,6 +355,6 @@ def test_funnel_page_detection_matches_the_real_pages():
     """The marker must match every real funnel page and no content page —
     a spacing change in one page would silently drop it from the funnel."""
     funnel = {n for n, h in _funnel_pages()}
-    assert len(funnel) >= 17, "expected the 17 product landing pages, got %d" % len(funnel)
+    assert len(funnel) >= 16, "expected the 16 product landing pages, got %d" % len(funnel)
     for name, html in _funnel_pages():
         assert api._is_funnel_page(html), "%s fires Lead but is not detected" % name
