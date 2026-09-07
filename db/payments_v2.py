@@ -73,7 +73,8 @@ def capture_payment(conn, *, report_id, amount_paise, razorpay_order_id=None,
         db_v2.mark_payment_captured(
             conn, pid, razorpay_payment_id=razorpay_payment_id, method=method,
             upi_vpa=upi_vpa, payment_email=payment_email,
-            payment_contact=payment_contact, paid_at=paid_at)
+            payment_contact=payment_contact, paid_at=paid_at,
+            amount_paise=(amount_paise or None))   # §13/P5-6: persist the ACTUAL charged amount
     else:
         # No order row on file (recovery path): create a captured payment, taking
         # the owner from the report.
