@@ -43,8 +43,11 @@ original story.
    their own test, not just the default one (§12).
 10. Any new money/admin-facing logic: persist the real charged amount, reuse the
     canonical test-data flag (§13).
-11. Before push: all gates green (§10), and upstream checked directly, not assumed
-    from an earlier "merged" statement (§15).
+11. Before push, before handing off any PR link, and before any "stale / new / live /
+    dead-link / error" claim: **`git fetch upstream` again and diff against
+    `upstream/aws-mysql`'s actual content** — never judge from `origin/main`, a stale
+    `origin` branch, or your local base (they drift and manufacture false flags). A
+    fetch from earlier in the session does not count (§15).
 12. Any claim in this file (or anywhere else) about how a live page behaves gets
     checked against the actual live site before it's trusted or repeated (§14).
 13. When the task is done: post the rule-by-rule checklist (§16) — don't wait to be
@@ -234,6 +237,22 @@ elements to fake an infinite loop — that already shipped once as a real bug (d
 clones, a jarring jump from the last review back to the first). The current
 `#revsTrack` implementation deliberately shows the real reviews once, no cloning —
 follow that, not the old pattern.
+
+## 5c. No em-dashes in testimonial/review copy — it must read as a real person wrote it
+
+Content that poses as a real individual's own writing — customer reviews, testimonials, and
+quotes attributed to a named person — must not contain em-dashes ("—") or en-dashes ("–").
+Real people don't type them, so they read as machine-written and make a review look fake. Use
+a comma, a full stop, a semicolon, "and"/"but", or brackets instead, and grep the em-dash
+character out of any review/testimonial before shipping.
+
+Brand/marketing copy and **report/editorial prose are NOT covered**: the reports (e.g. Career
+Intelligence) are written in an analyst voice and use em-dashes deliberately as typography —
+keep that style, don't sweep them out of report or brand copy. Pre-commit check for
+review/testimonial files only:
+```
+git diff --cached -- '*testimonial*' '*review*' | grep -nP '^\+.*[\x{2014}\x{2013}]'
+```
 
 ## 6. Never hand-roll nav/footer/tracking — serve through the injection chain
 
@@ -543,10 +562,28 @@ handover doc, a code comment, or a previous version of this file says should be 
 General git/process discipline, not specific to any one page — applies to anyone
 touching this repo, human or agent:
 
-- **Always check the actual upstream state right before pushing or opening a PR**
-  (`git fetch upstream` + `git log upstream/aws-mysql`), not earlier in the session —
-  state changes. Stack new work onto an unmerged branch that already covers the same
-  area instead of fragmenting into a parallel PR.
+- **HARD GATE — fetch upstream and re-audit against it before ANY assumption or PR
+  hand-off. This is not optional and not a once-per-session step.** Run `git fetch
+  upstream` immediately before: (a) handing off any PR link, and (b) any claim that
+  code is stale / new / missing / already-live / a "dead link" / an "error". Then
+  compare against the **actual file content of the deploy branch — `upstream/aws-mysql`**
+  (`git show upstream/aws-mysql:<path>`, `git diff upstream/aws-mysql...HEAD`). Do
+  **NOT** judge against `origin/main`, `origin/aws-mysql`, or your local branch base:
+  the `origin` fork and `main` drift stale (they can be weeks behind and be *missing
+  live products*), and your local base can be behind the real line — diffing against
+  any of them manufactures false "stale" / "pending" / "dead-link" flags. Fetching
+  earlier in the session does **not** count; fetch again right before you act.
+  - *Real incident (this repo, do not repeat):* a `coming-soon` CTA and a
+    celebrity-URL rename were both flagged as pending/broken by diffing a **stale
+    local base** — both were already correct and live in `upstream/aws-mysql`. The
+    session had even run `git fetch upstream`, but then reasoned against
+    `origin/main` (a July fork-main missing every recent product) instead of
+    `upstream/aws-mysql`. Fetch-then-compare-against-upstream-content is what catches
+    this; a bare fetch is not enough.
+  - Base every feature branch and its PR on `upstream/aws-mysql`, and confirm
+    `git diff upstream/aws-mysql...HEAD` is **only your change** before sending the
+    link. Stack new work onto an unmerged branch that already covers the same area
+    instead of fragmenting into a parallel PR.
 - **Being told "X is merged" is not the same as verifying it.** A PR can merge from
   an earlier commit than the last one actually pushed, if the merge button was
   clicked before the final push landed — this happened for real and was only caught
@@ -766,3 +803,21 @@ loop: we never needed them to agree, only to hand us claims we can test.
   hasn't converged or a later phase may still change it — that is the right state, not a
   contradiction. (Live example: Piece 5's wiring is committed as local checkpoints but held from
   its PR because the audit surfaced fixes and Phase 4 verification may still change it.)
+
+## 21. AstroSage accuracy gate — every chart-reading product routes through the shared engine
+
+Every product that reads a birth chart must route through the shared engine (`compute_chart` /
+`engine.compute_report`) — no product may re-implement or fork the astro math. Validate against
+AstroSage (Lahiri ayanamsa) with max-entropy reference births: assert the sidereal sign of the
+ascendant + all nine grahas + the moon's nakshatra match 50/50. Datasets live in
+`tests/birth_accuracy.json`; grow that set and keep `tests/test_birth_accuracy.py` green. For any
+new product, add a test proving it routes through the shared engine.
+
+## 22. Chart-derived pages must be personalized — never ship the sample persona to a buyer
+
+Any page or section that presents a finding about the user read from their chart (numbers,
+rankings, traits, prose claims) must be generated from their computed data — never ship the
+sample persona's hardcoded values or prose to another buyer. Generic content is allowed only on
+pages that are independent of the chart (methodology, how-to-read, glossary, contents,
+thank-you). Corollary: no first name, number, ranking, or trait from the mock persona may
+survive into a real report.
