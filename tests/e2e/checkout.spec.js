@@ -16,7 +16,7 @@
 // /api/order itself is mocked (a live order needs live keys, which CI doesn't
 // have); its server-side branches are covered separately by the Python tests.
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures'); // ./fixtures aborts external fonts (CI goto-load flake)
 
 async function stubRazorpay(page) {
   // Prevent the real SDK from loading and clobbering our stub.
