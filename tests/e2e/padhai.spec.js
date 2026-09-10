@@ -3,7 +3,7 @@
 // shaadi.spec.js's structure — this file adds the product-specific assertions
 // (product: "vidyarthi" in the request, career-specific teaser copy) rather
 // than re-testing generic form mechanics already covered there.
-const { test, expect } = require('./fixtures'); // ./fixtures aborts external fonts (CI goto-load flake)
+const { test, expect } = require('./fixtures');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/padhai');

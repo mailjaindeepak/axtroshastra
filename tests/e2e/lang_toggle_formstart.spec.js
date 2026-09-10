@@ -7,7 +7,7 @@
 // re-fired `form_start` to GA4 + Pixel. Fix: persist the "already started" flag
 // in the retained state so restore() marks the form started before any restore
 // focus event can fire.
-const { test, expect } = require('./fixtures'); // ./fixtures aborts external fonts (CI goto-load flake)
+const { test, expect } = require('./fixtures');
 
 test('form_start is NOT re-fired when toggling language after starting the compatibility form', async ({ page }) => {
   await page.goto('/en/compatibility');
