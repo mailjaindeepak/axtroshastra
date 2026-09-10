@@ -38,6 +38,7 @@ from report_view_v2 import render_report_v2   # marriage report v2 (4-tier, LLM-
 from products import compute_milan, compute_blueprint, compute_vyapar
 from vidyarthi import compute_vidyarthi_report
 import career_growth_report
+import career_intelligence_report                 # premium /en/career-intelligence product
 from geocoding import resolve as geocode          # (#1) accurate, cached geocoding
 from geocoding import resolve_detailed             # (#1) with resolved/source provenance
 import payments, delivery, extensions
@@ -146,7 +147,8 @@ TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved T
 
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing",
-                  "vyapar": "Business Growth Report", "career_growth": "Career Report"}
+                  "vyapar": "Business Growth Report", "career_growth": "Career Report",
+                  "career_intelligence": "Career Intelligence Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -179,6 +181,11 @@ PRODUCT_SVG = {
     # timing for working professionals, not student career/academic timing).
     "career_growth": _SVG_OPEN + '<path d="M5 23 L12 16 L17 20 L27 9"/>'
                      '<path d="M20 9 H27 V16"/></svg>',
+    # career intelligence — a compass/target: strategic direction for senior
+    # professionals (premium product), distinct from career_growth's trend line.
+    "career_intelligence": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
+                           '<path d="M20.5 11.5 L14.5 14.5 L11.5 20.5 L17.5 17.5 Z"/>'
+                           '<circle cx="16" cy="16" r="1.3"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -363,6 +370,8 @@ def _render_for(product, payload):
         return html
     if product == "vidyarthi":
         return render_vidyarthi(payload)
+    if product == "career_intelligence":         # English-only premium report
+        return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_growth":
         html = career_growth_report.render_career_growth(payload)
         if (payload.get("meta") or {}).get("lang") == "hi":
@@ -401,6 +410,7 @@ DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 49900                 # ₹499 — milan landing price (/milan and /match funnels)
+CAREER_INTEL_PRICE_PAISE = 199900         # ₹1,999 — premium Career Intelligence report
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 LIFE_BLUEPRINT_PRICE_PAISE = 99900        # ₹999 — Life Blueprint only (was ₹499)
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
@@ -408,9 +418,12 @@ _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
 
 
 def _order_amount_paise(rec: dict) -> int:
-    """The price actually charged for a report, by funnel variant. Single source
-    for both order creation and the server-side purchase-tracking value."""
-    variant = ((rec.get("payload") or {}).get("meta") or {}).get("variant") or ""
+    """The price actually charged for a report, by product then funnel variant.
+    Single source for both order creation and the server-side purchase-tracking value."""
+    payload = rec.get("payload") or {}
+    if payload.get("product") == "career_intelligence":
+        return CAREER_INTEL_PRICE_PAISE
+    variant = (payload.get("meta") or {}).get("variant") or ""
     if variant in _MILAN_VARIANTS:
         return MILAN_PRICE_PAISE
     if variant in _LIFE_BLUEPRINT_VARIANTS:
@@ -1166,6 +1179,10 @@ def create_kundli(inp: KundliIn, request: Request):
             inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
             place=inp.place or "", employment_situation=inp.employment_situation,
             experience=inp.experience, time_quality=inp.time_quality)
+    elif inp.product == "career_intelligence":
+        report = career_intelligence_report.compute_career_intelligence(
+            inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
+            place=inp.place or "", time_quality=inp.time_quality)
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -2109,6 +2126,11 @@ def static_file(fname: str):
         raise HTTPException(404, "not found")
     path = os.path.join(BASE, "static", fname)
     if os.path.exists(path):
+        # sample PDFs (vyapar-sample.pdf, career-intel-sample.pdf): download to the
+        # device instead of opening inline in a new tab — a real "Download" button.
+        if fname.lower().endswith(".pdf"):
+            return FileResponse(path, media_type="application/pdf",
+                                headers={"Content-Disposition": f'attachment; filename="{fname}"'})
         return FileResponse(path)
     raise HTTPException(404, "not found")
 
@@ -2137,7 +2159,8 @@ BLOG_SLUGS = ["shaadi-kab-hogi-marriage-timing", "manglik-dosha-cancellation",
 def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
-            "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth", "/blog",
+            "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
+            "/en/career-intelligence", "/blog",
             "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -2741,6 +2764,20 @@ def career_growth_redirect(request: Request):
     query string so already-issued/ad links keep working."""
     q = request.url.query
     return RedirectResponse("/en/career-growth" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/career-intelligence", include_in_schema=False)
+def career_intelligence_en():
+    """English premium Career Intelligence landing at /en/career-intelligence.
+    English-only product (no Hindi twin — deliberate, see the report spec)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "career-intelligence.html"))
+
+
+@app.get("/career-intelligence", include_in_schema=False)
+def career_intelligence_redirect(request: Request):
+    """Legacy bare /career-intelligence → /en/career-intelligence (301). Preserves query."""
+    q = request.url.query
+    return RedirectResponse("/en/career-intelligence" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/en/life-blueprint", include_in_schema=False)

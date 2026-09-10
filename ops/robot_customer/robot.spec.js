@@ -90,6 +90,7 @@ const ALL_PAGES = [
   { path: '/hi/business-growth', label: 'Business Growth (HI)' },
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
+  { path: '/en/career-intelligence', label: 'Career Intelligence (EN)' },
   { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
   { path: '/hi/life-blueprint', label: 'Life Blueprint (HI)' },
   { path: '/login',             label: 'Login' },

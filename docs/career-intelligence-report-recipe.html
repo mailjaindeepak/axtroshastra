@@ -1,0 +1,595 @@
+<title>Axtroshastra Report Recipe</title>
+<meta name="description" content="The reusable build recipe for the card-format premium PDF report — rules, decoration system, fixed pages, and every decision that shaped it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F4EEE1; --panel:#FBF7EE; --panel2:#FFFFFF; --sunk:#EFE7D5;
+  --ink:#1E2030; --body:#33333f; --muted:#6E6858; --faint:#9A8F76;
+  --gold:#A9791F; --gold-line:#E7D3A6; --gold-soft:#FBF3E2;
+  --terra:#AE4E24; --terra-soft:#F8E7DC;
+  --green:#2F6E4C; --line:#E6DCC8; --rule:#DECFB2;
+  --code-bg:#211E18; --code-ink:#EDE3CE; --code-gold:#D8A94A; --code-mut:#9B917B; --code-terra:#E08A5B;
+  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --shadow:0 12px 34px rgba(52,38,14,.13);
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+  --ground:#16140F; --panel:#1E1B15; --panel2:#241F18; --sunk:#100E0A;
+  --ink:#F3ECDA; --body:#DCD2BD; --muted:#A99E85; --faint:#7C725C;
+  --gold:#D9A94A; --gold-line:#4A3D22; --gold-soft:#241C0F;
+  --terra:#E0895A; --terra-soft:#2C1B12;
+  --green:#5FA97E; --line:#332C1F; --rule:#3A3324;
+  --code-bg:#0F0D09; --code-ink:#EDE3CE; --code-gold:#D8A94A; --code-mut:#8E8570; --code-terra:#E08A5B;
+  --shadow:0 12px 34px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#16140F; --panel:#1E1B15; --panel2:#241F18; --sunk:#100E0A;
+  --ink:#F3ECDA; --body:#DCD2BD; --muted:#A99E85; --faint:#7C725C;
+  --gold:#D9A94A; --gold-line:#4A3D22; --gold-soft:#241C0F;
+  --terra:#E0895A; --terra-soft:#2C1B12;
+  --green:#5FA97E; --line:#332C1F; --rule:#3A3324;
+  --code-bg:#0F0D09; --code-ink:#EDE3CE; --code-gold:#D8A94A; --code-mut:#8E8570; --code-terra:#E08A5B;
+  --shadow:0 12px 34px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--body);font-family:var(--sans);font-size:15.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif);color:var(--ink);text-wrap:balance;line-height:1.12;font-weight:500}
+a{color:var(--gold);text-decoration:none}
+code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.08em .38em;border-radius:5px;border:1px solid var(--line)}
+.eyebrow{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.19em;text-transform:uppercase;color:var(--gold)}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(9px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:1080px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-weight:600;color:var(--ink);font-size:16px;letter-spacing:.01em;white-space:nowrap}
+.brand span{color:var(--gold)}
+.nav-links{display:flex;gap:3px;flex-wrap:wrap;margin-left:auto}
+.nav-links a{font-size:12px;color:var(--muted);padding:4px 9px;border-radius:20px;font-weight:500}
+.nav-links a:hover{background:var(--sunk);color:var(--ink)}
+.tog{background:var(--sunk);border:1px solid var(--line);color:var(--body);width:34px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;display:grid;place-items:center}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+section{padding:44px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.snum{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.05em}
+h2.sh{font-size:clamp(25px,4.4vw,33px);margin:6px 0 6px;letter-spacing:-.01em}
+.lead{color:var(--muted);max-width:64ch;font-size:16px}
+
+/* HERO */
+header.hero{padding:64px 0 40px;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;opacity:.5;pointer-events:none;
+  background-image:radial-gradient(circle at 1px 1px, var(--rule) 1px, transparent 0);background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 70% 20%, #000, transparent 75%);mask-image:radial-gradient(ellipse 70% 60% at 70% 20%, #000, transparent 75%)}
+.hero h1{font-size:clamp(38px,7.5vw,66px);font-weight:600;letter-spacing:-.02em;position:relative}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero p{max-width:60ch;font-size:18px;color:var(--body);margin-top:14px;position:relative}
+.hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;position:relative}
+.chip{font-family:var(--mono);font-size:12px;padding:5px 11px;border:1px solid var(--gold-line);border-radius:20px;color:var(--gold);background:var(--gold-soft)}
+
+/* GOLDEN RULE banner */
+.rule-banner{background:linear-gradient(150deg,var(--panel),var(--panel2));border:1px solid var(--gold-line);border-radius:18px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.rule-banner::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;opacity:.10;pointer-events:none;
+  background:conic-gradient(from 0deg, var(--gold), transparent 30%, var(--gold) 60%, transparent 90%, var(--gold));border-radius:50%;
+  -webkit-mask:radial-gradient(circle, transparent 38%, #000 39%, #000 60%, transparent 61%);mask:radial-gradient(circle, transparent 38%, #000 39%, #000 60%, transparent 61%)}
+.rule-banner h3{font-size:23px;margin:0 0 4px}
+.rule-banner .big{font-family:var(--serif);font-size:clamp(20px,3vw,26px);color:var(--ink);font-weight:500;line-height:1.28;margin:8px 0 4px;max-width:32ch}
+.rule-banner .big b{color:var(--gold);font-weight:600}
+
+/* PAGE-TYPE cards */
+.pcols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+@media(max-width:720px){.pcols{grid-template-columns:1fr}}
+.pcard{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--panel)}
+.pcard.fixed{border-color:var(--gold-line)}
+.pcard h4{margin:0;font-family:var(--sans);font-size:12px;letter-spacing:.13em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.pcard.fixed h4{color:var(--gold)}
+.pcard.dyn h4{color:var(--green)}
+.tag{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:6px}
+.tag.f{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-line)}
+.tag.d{background:color-mix(in srgb,var(--green) 12%,transparent);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 30%,transparent)}
+.pcard ul{margin:12px 0 0;padding-left:18px;font-size:14px;color:var(--body)}
+.pcard li{margin:5px 0}
+.pcard li b{color:var(--ink)}
+
+/* generic layout helpers */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.card h3{font-size:18px;margin:0 0 8px}
+.card p{font-size:14.5px;color:var(--body);margin:.4em 0}
+.k{color:var(--ink);font-weight:600}
+
+/* CODE */
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.65;border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
+pre .c{color:var(--code-mut)}
+pre .g{color:var(--code-gold)}
+pre .t{color:var(--code-terra)}
+.codelabel{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.05em;margin:0 0 6px;text-transform:uppercase}
+
+/* swatches */
+.sw-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.sw{display:flex;flex-direction:column;gap:5px;width:98px}
+.sw .chipc{height:46px;border-radius:9px;border:1px solid rgba(0,0,0,.08)}
+.sw small{font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.3}
+.sw b{font-size:11px;color:var(--ink)}
+
+/* opacity table */
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num{font-family:var(--mono);color:var(--gold);text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+
+/* page mini-diagrams */
+.mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+@media(max-width:760px){.mini-row{grid-template-columns:1fr}}
+.mini{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--panel)}
+.card-mock{aspect-ratio:430/560;border-radius:12px;border:1px solid var(--rule);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:22px 16px;text-align:center}
+.card-mock.cream{background:#FAF5ED}
+.card-mock.sand{background:linear-gradient(160deg,#E1D1B9,#E4D5BE)}
+.mock-tile{position:absolute;inset:0;opacity:.5;
+  background-image:radial-gradient(circle at 50% 50%, transparent 30%, #C9A34E 31%, #C9A34E 33%, transparent 34%),radial-gradient(circle at 0 0, transparent 30%, #C9A34E 31%, #C9A34E 33%, transparent 34%);
+  background-size:34px 34px;background-position:0 0}
+.mock-sun{position:absolute;width:120px;height:120px;opacity:.5;
+  background:repeating-conic-gradient(from 0deg, #B9862E 0 2deg, transparent 2deg 30deg);border-radius:50%;
+  -webkit-mask:radial-gradient(circle, transparent 20%, #000 21%);mask:radial-gradient(circle, transparent 20%, #000 21%)}
+.mock-frame{position:relative;z-index:1;background:rgba(255,253,247,.92);border:1px solid #E3D3A8;border-radius:10px;padding:14px 12px;width:88%}
+.m-eye{font-family:var(--sans);font-size:7px;letter-spacing:.16em;color:#A9791F;text-transform:uppercase;font-weight:700}
+.m-h{font-family:var(--serif);font-size:13px;color:#1B1D2A;margin-top:3px;line-height:1.1}
+.m-t{font-family:var(--serif);font-size:7.5px;color:#4C4A57;margin-top:6px;line-height:1.4}
+.mock-constel{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:66%;height:22px;z-index:1}
+.mini h4{margin:12px 0 3px;font-size:15px;font-family:var(--serif);color:var(--ink)}
+.mini .lbl{font-family:var(--mono);font-size:10.5px;color:var(--gold)}
+.mini p{font-size:12.5px;color:var(--muted);margin:5px 0 0;line-height:1.5}
+
+/* decisions log */
+.log{position:relative;margin-top:12px;padding-left:26px}
+.log::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--gold-line)}
+.entry{position:relative;padding:0 0 18px}
+.entry::before{content:"";position:absolute;left:-24px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--gold);border:2px solid var(--ground)}
+.entry h4{margin:0;font-family:var(--sans);font-size:14.5px;color:var(--ink);font-weight:600}
+.entry p{margin:3px 0 0;font-size:13.5px;color:var(--muted)}
+.entry .why{color:var(--body)}
+
+/* gotchas */
+.got{border-left:3px solid var(--terra);background:var(--terra-soft);border-radius:0 10px 10px 0;padding:12px 16px;margin-top:12px}
+.got b{color:var(--terra)}
+.got p{margin:2px 0 0;font-size:13.5px;color:var(--body)}
+
+.callout-note{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:14px 18px;margin-top:16px;font-size:14px;color:var(--body)}
+.callout-note b{color:var(--gold)}
+footer{padding:34px 22px 60px;text-align:center;color:var(--faint);font-size:13px}
+footer a{color:var(--gold)}
+.hl{color:var(--ink);font-weight:600}
+</style>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand"><span>✦</span> Axtroshastra Report Recipe</div>
+    <div class="nav-links">
+      <a href="#rule">Golden rule</a>
+      <a href="#format">Format</a>
+      <a href="#theme">Theme</a>
+      <a href="#design">Design</a>
+      <a href="#exhibit">Exhibits</a>
+      <a href="#mandala">Mandala</a>
+      <a href="#fixed">Fixed pages</a>
+      <a href="#gate">Gate</a>
+      <a href="#log">Decisions</a>
+      <a href="#gotchas">Gotchas</a>
+    </div>
+    <button class="tog" id="tog" aria-label="Toggle theme">◑</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="wrap">
+    <div class="eyebrow">Build playbook · card-format premium PDF</div>
+    <h1>Cook the report <em>from the recipe.</em></h1>
+    <p>Every rule, ratio, and decision behind the Career Intelligence Report — so you tweak values, never re-explain the design. Change the words; the machine stays the same.</p>
+    <div class="meta">
+      <span class="chip">57 pages</span>
+      <span class="chip">430 × 830 px cards</span>
+      <span class="chip">323 × 623 pt PDF</span>
+      <span class="chip">Fraunces + Inter</span>
+      <span class="chip">0 leak · 0 Meta-flagged</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- 1 GOLDEN RULE -->
+<section id="rule">
+  <div class="snum">01 — the one rule everything hangs on</div>
+  <h2 class="sh">Only the content changes. The machine never does.</h2>
+  <p class="lead">The design system — format, theme, layout, decoration, the three fixed pages — is <span class="hl">frozen</span>. Per person, only the <span class="hl">section content and chart-driven values</span> swap in. If you find yourself re-touching CSS, mandalas, or spacing for a new person, stop: that belongs to the machine, not the content.</p>
+
+  <div class="rule-banner" style="margin-top:22px">
+    <h3>What swaps vs. what's welded</h3>
+    <p class="big">The renderer only <b>string-replaces</b> name, birth details and computed numbers into the approved body. Everything visual stays byte-for-byte identical.</p>
+    <div class="pcols">
+      <div class="pcard fixed">
+        <h4>◆ Welded — identical for everyone</h4>
+        <ul>
+          <li><b>Cover page</b> — brand, constellation, title, only the name + birth line change</li>
+          <li><b>"A Note for You" (page 2)</b> — flower-tile mandala, framed note, only the first name changes</li>
+          <li><b>"Thank you" (last page)</b> — closing mandala, cross-sell, constellation; only the name changes</li>
+          <li><b>All CSS</b> — tokens, layout, components</li>
+          <li><b>The whole decoration system</b> — mandalas, positions, opacity, constellations</li>
+        </ul>
+      </div>
+      <div class="pcard dyn">
+        <h4>● Dynamic — filled per person</h4>
+        <ul>
+          <li><b>The name &amp; birth line</b> (cover, note, thank-you)</li>
+          <li><b>Dimension scores</b> — radar, bars, 2×2 positions</li>
+          <li><b>Archetype &amp; decision style</b> — which cell is highlighted</li>
+          <li><b>Phase, timing, life-stage bands</b> — the dated content</li>
+          <li><b>All the prose</b> inside the content sections</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout-note"><b>How:</b> the approved mock's CSS / SVG-defs / body become constants in <code>*_assets.py</code>; <code>render_*(payload)</code> does targeted string replacements (e.g. <code>&gt;Rajesh Menon&lt;</code> → the real name). Never hand-write per-person HTML.</div>
+  </div>
+</section>
+
+<!-- 2 FORMAT -->
+<section id="format">
+  <div class="snum">02 — the physical format</div>
+  <h2 class="sh">One section = one page. The page-break is structural.</h2>
+  <p class="lead">There is no manual "page break." Each <code>&lt;section class="page"&gt;</code> <span class="hl">is</span> a card, and <code>@page{size:430px 830px}</code> makes each card land as exactly one PDF page.</p>
+  <div class="grid2" style="margin-top:20px">
+    <div>
+      <p class="codelabel">The page-break rule</p>
+<pre><span class="c">/* one CSS page == one 430×830 card */</span>
+@page{ size:<span class="g">430px 830px</span>; margin:0 }
+
+.page{
+  width:min(430px,92vw);
+  min-height:min(830px,192vw);
+  padding:46px clamp(22px,5.5vw,30px) 50px;
+  position:relative;
+  <span class="t">overflow:hidden;</span>   <span class="c">/* past the edge = CLIPPED */</span>
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+<span class="c">/* keep gold &amp; tints in print */</span>
+*{ -webkit-print-color-adjust:exact;
+   print-color-adjust:exact }</pre>
+    </div>
+    <div>
+      <p class="codelabel">The headless-print rule</p>
+<pre><span class="c"># production &amp; verification use the SAME engine:</span>
+<span class="c"># headless Chrome, not a PDF library</span>
+"/Applications/Google Chrome.app/Contents/\
+MacOS/Google Chrome" \
+  --headless=new --disable-gpu --no-sandbox \
+  <span class="g">--print-to-pdf</span>=out.pdf \
+  --no-pdf-header-footer \
+  "file://REPORT.html"</pre>
+      <div class="callout-note"><b>Gotcha:</b> if your PDF is <span class="hl">A4 (595×842pt)</span> you printed the browser/viewer, not the file. Open the downloaded <code>.html</code> directly, or use the headless command above → you get <span class="hl">323 × 623 pt</span> cards.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 THEME -->
+<section id="theme">
+  <div class="snum">03 — the theme</div>
+  <h2 class="sh">One token block is the whole palette.</h2>
+  <p class="lead">Re-skin by editing <code>:root</code> only — nothing hard-codes a colour. Gold is the single accent, terracotta is the "watch out" accent, green is positive. Headings are serif; labels and data are sans.</p>
+  <div class="sw-row" style="margin-top:18px">
+    <div class="sw"><div class="chipc" style="background:#FAF5ED"></div><b>Cream</b><small>--cream #FAF5ED · ground</small></div>
+    <div class="sw"><div class="chipc" style="background:#E1D1B9"></div><b>Sand</b><small>--sand #E1D1B9 · statements</small></div>
+    <div class="sw"><div class="chipc" style="background:#1B1D2A"></div><b>Ink</b><small>--ink #1B1D2A · headings</small></div>
+    <div class="sw"><div class="chipc" style="background:#26282F"></div><b>Body</b><small>--body #26282F · prose</small></div>
+    <div class="sw"><div class="chipc" style="background:#B9862E"></div><b>Gold</b><small>--gold #B9862E · accent</small></div>
+    <div class="sw"><div class="chipc" style="background:#C9A34E"></div><b>Gold 2</b><small>--gold2 #C9A34E · mid</small></div>
+    <div class="sw"><div class="chipc" style="background:#B4572B"></div><b>Terra</b><small>--terra #B4572B · caution</small></div>
+    <div class="sw"><div class="chipc" style="background:#3E7D5A"></div><b>Green</b><small>--green #3E7D5A · positive</small></div>
+    <div class="sw"><div class="chipc" style="background:#E9E1D0"></div><b>Line</b><small>--line #E9E1D0 · rules</small></div>
+  </div>
+  <div class="grid2" style="margin-top:20px">
+    <div>
+      <p class="codelabel">Type roles</p>
+<pre><span class="c">/* serif headings, sans labels/data */</span>
+--serif:'Fraunces','Cormorant Garamond',
+        Georgia,serif;
+--sans:'Inter',-apple-system,'Segoe UI',
+       Roboto,sans-serif;</pre>
+    </div>
+    <div>
+      <p class="codelabel">The 3-step gold ramp (used everywhere)</p>
+<pre><span class="c">/* legend dots, bars, chart marks */</span>
+primary  <span class="g">#B9862E</span>
+mid      <span class="g">#C9A34E</span>
+faint    <span class="g">#C9BFA6</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- 4 DESIGN -->
+<section id="design">
+  <div class="snum">04 — the design rules</div>
+  <h2 class="sh">What makes it read "executive," not "astrology PDF."</h2>
+  <p class="lead">The manager's brief, encoded: <em>minimal astrology graphics, lots of white space, an intelligence report — not "I bought an astrology PDF."</em></p>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card">
+      <h3>Alignment</h3>
+      <p><span class="k">Headers centered</span> on every page (<code>.head</code>, <code>.action</code>, <code>.subtit</code>, <code>.eyebrow</code>). Body prose, lists and legends stay <span class="k">left-aligned</span>. Centered title, left body.</p>
+    </div>
+    <div class="card">
+      <h3>Vertical position</h3>
+      <p>Every page <span class="k">vertically centers</span> its content — equal spacing top and bottom on every card, short pages and full pages alike.</p>
+    </div>
+    <div class="card">
+      <h3>White space is on-brand</h3>
+      <p>One idea per page; a lean card centered with balanced top/bottom margins reads as intentional. If a page is thin, add a legend or callout — never stretch the type.</p>
+    </div>
+    <div class="card">
+      <h3>No coloured left-strip</h3>
+      <p>Boxes have <span class="k">no accent rail</span>. A coloured strip reads as "AI-generated," which lowers trust — removed on purpose across every callout and block.</p>
+    </div>
+  </div>
+<pre style="margin-top:18px"><span class="c">/* every card centers its content — equal top &amp; bottom */</span>
+.page{ justify-content:<span class="g">center</span> }</pre>
+</section>
+
+<!-- 5 EXHIBIT -->
+<section id="exhibit">
+  <div class="snum">05 — the McKinsey exhibit format</div>
+  <h2 class="sh">The signature layout: chart, then a read.</h2>
+  <p class="lead">Every data page follows one exhibit grammar — so the middle of the report feels like one consulting deck, not a scrapbook. Order is always the same:</p>
+  <div class="grid2" style="margin-top:18px;align-items:center">
+    <div>
+      <ol style="padding-left:20px;line-height:1.9;color:var(--body)">
+        <li><code>.exlabel</code> — the small gold eyebrow</li>
+        <li><code>.action</code> — a <span class="k">claim as headline</span> ("Judgement and structure lead"), not a topic</li>
+        <li><code>.subtit</code> — the axes / what's plotted</li>
+        <li><code>.exrule</code> — hairline divider</li>
+        <li>the <span class="k">inline-SVG chart</span> (radar, 2×2, bars, donut, timeline)</li>
+        <li><code>.leg</code> — a 2–3 row legend reading the chart</li>
+        <li><code>.take</code> — "THE READ": the one-line takeaway</li>
+      </ol>
+      <div class="callout-note"><b>Winner-cell rule for 2×2s:</b> highlight the winning quadrant with a soft gold <em>fill</em> and a bold gold label; put any marker dot <em>below</em> the label — never a ring on top of the text.</div>
+    </div>
+    <div class="mini"><div class="card-mock cream" style="aspect-ratio:430/620">
+      <div class="m-eye" style="color:#A9791F">Strengths, ranked</div>
+      <div class="m-h" style="font-size:15px">Judgement and structure lead</div>
+      <div style="width:30px;height:2px;background:#B9862E;margin:7px 0 10px;border-radius:2px"></div>
+      <div style="width:100%;display:flex;flex-direction:column;gap:7px;padding:0 4px">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:#4C4A57;width:74px;text-align:left">Strategic</span><span style="height:7px;border-radius:4px;background:#B9862E;flex:0 0 78%"></span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:#4C4A57;width:74px;text-align:left">Follow-through</span><span style="height:7px;border-radius:4px;background:#C9A34E;flex:0 0 70%"></span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:#4C4A57;width:74px;text-align:left">Patience</span><span style="height:7px;border-radius:4px;background:#C9A34E;flex:0 0 66%"></span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:#4C4A57;width:74px;text-align:left">Visibility</span><span style="height:7px;border-radius:4px;background:#C9BFA6;flex:0 0 40%"></span></div>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #E9E1D0;padding-top:8px;width:100%;text-align:left"><span style="font-size:6.5px;letter-spacing:.13em;color:#B9862E;font-weight:700">THE READ</span><div class="m-t" style="margin-top:2px">Your edge is in thinking and finishing, not in being seen.</div></div>
+    </div><p style="text-align:center;margin-top:10px">The exhibit grammar, one card</p></div>
+  </div>
+</section>
+
+<!-- 6 MANDALA -->
+<section id="mandala">
+  <div class="snum">06 — the decoration system</div>
+  <h2 class="sh">Two mandalas. They are not interchangeable.</h2>
+  <p class="lead">Both live in <code>report_view.py</code> as <code>data:image/svg+xml</code> URIs. Use the right one in the right place — and never "optimize" them; the full detail is the point.</p>
+
+  <div class="got" style="border-left-color:var(--gold);background:var(--gold-soft);margin-top:16px">
+    <b style="color:var(--gold)">⚠ Anti-drift rule — this recipe does not contain the real SVGs, on purpose.</b>
+    <p>The art lives in exactly one place: <code>CareerIntelligence-FINAL.html</code> (mirrored in <code>report_view.py</code>). Identify each by its exact length and <span class="k">copy the whole <code>data:image/svg+xml,…</code> string verbatim</span>. <span class="k">Never redraw, simplify, or approximate</span> — every hand-drawn shape on this page (the icon dots, the page thumbnails below) is <em>schematic illustration only</em> and will drift the look. Pull the exact SVGs:</p>
+<pre style="margin-top:10px"><span class="c">python3 - &lt;&lt;'PY'</span>
+import re
+u=sorted(set(re.findall(r"data:image/svg\+xml,[^\"')]+",
+   open("CareerIntelligence-FINAL.html").read())), key=len, reverse=True)
+open("sunburst.txt","w").write(u[0])   <span class="c"># <span class="g">37131</span> chars — scatter / watermark / thank-you</span>
+open("flower.txt","w").write(u[1])     <span class="c"># <span class="g">28461</span> chars — note-page tile</span>
+print(len(u[0]), len(u[1]))            <span class="c"># must print: 37131 28461</span>
+<span class="c">PY</span></pre>
+  </div>
+
+  <div class="grid2" style="margin-top:18px">
+    <div class="card">
+      <h3 style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,transparent 26%,#B9862E 27% 30%,transparent 31%),radial-gradient(circle at 0 0,transparent 26%,#C9A34E 27% 30%,transparent 31%);background-size:13px 13px;display:inline-block;border:1px solid var(--gold-line)"></span> Flower-of-life tile</h3>
+      <p><span class="k">28,461-char SVG</span> (<code>width='224'</code>). Interlocking petal lattice that tiles seamlessly. <span class="k">Only</span> for the note-page repeating background.</p>
+    </div>
+    <div class="card">
+      <h3 style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#B9862E 0 3deg,transparent 3deg 22deg);-webkit-mask:radial-gradient(circle,transparent 24%,#000 25%);mask:radial-gradient(circle,transparent 24%,#000 25%);display:inline-block"></span> Sunburst mandala</h3>
+      <p><span class="k">37,131-char SVG</span> (<code>viewBox='-172 -172 344 344'</code>). Radiating spokes. For scattered <span class="k">corner</span> accents and centered <span class="k">watermarks</span>.</p>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 4px;font-size:19px">Positioning — where each one goes</h3>
+  <div class="grid2" style="margin-top:8px">
+    <div>
+<pre><span class="c">/* NOTE PAGE (p2): flower tile, full-bleed repeat */</span>
+.page.note::before{
+  content:'';position:absolute;inset:0;
+  background:url("&lt;flower tile&gt;") <span class="g">repeat</span>;
+  repeat center/<span class="g">224px 224px</span>, linear-gradient(160deg,#FBF6EC,#F4EBD7);
+  z-index:0; pointer-events:none }
+
+<span class="c">/* SCATTERED corners — pseudo-random, never every page */</span>
+.page:not(.end):not(.note):nth-of-type(<span class="g">6n+1</span>)::before  <span class="c">/* top-left */</span>
+.page:not(.end):not(.note):nth-of-type(<span class="g">6n+3</span>)::before  <span class="c">/* bottom-right */</span>
+.page:not(.end):not(.note):nth-of-type(<span class="g">6n+5</span>)::before  <span class="c">/* top-right */</span>
+  <span class="c">/* 6n+2 / 6n+4 / 6n+6 → no mandala = breathing room */</span>
+  { width:210px;height:210px; opacity:<span class="g">.26</span>;
+    background:url("&lt;sunburst&gt;") center/contain no-repeat }</pre>
+    </div>
+    <div>
+<pre><span class="c">/* THANK-YOU PAGE (last): centered sunburst watermark */</span>
+.page.end::before{
+  content:'';position:absolute; top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:300px;height:300px; opacity:<span class="g">.2</span>;
+  background:url("&lt;sunburst&gt;") center/contain no-repeat;
+  z-index:0; pointer-events:none }
+
+<span class="c">/* STATEMENT page centered watermark — via a CLASS,</span>
+<span class="c">   never inline style (see gotcha #2) */</span>
+.mid-mandala{ position:absolute; top:46%;left:50%;
+  transform:translate(-50%,-50%);
+  width:340px;height:340px; opacity:<span class="g">.28</span>;
+  background:url("&lt;sunburst&gt;") center/contain no-repeat }</pre>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:20px;align-items:start">
+    <div>
+      <h3 style="font-size:19px;margin:0 0 4px">Opacity cheat-sheet</h3>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 4px">Text is always full-strength at <code>z-index:1</code>; every decoration sits behind at <code>z-index:0</code>.</p>
+      <table>
+        <tr><th>Element</th><th style="text-align:right">Opacity (cream)</th></tr>
+        <tr><td>Note repeat tile</td><td class="num">.55–.60</td></tr>
+        <tr><td>Centered watermark</td><td class="num">.25–.30</td></tr>
+        <tr><td>Scattered corner mandala</td><td class="num">.22–.28</td></tr>
+        <tr><td>Planet / sparkle</td><td class="num">.25–.30</td></tr>
+        <tr><td>Constellation</td><td class="num">.40</td></tr>
+      </table>
+      <div class="callout-note" style="margin-top:14px">On the darker <span class="k">sand</span> ground, push every value <b>+0.10–0.15</b> — thin gold strokes wash out on tan.</div>
+    </div>
+    <div>
+      <h3 style="font-size:19px;margin:0 0 4px">Plus: constellation, planet, sparkle</h3>
+      <p style="font-size:14px;color:var(--body)">Small inline SVGs, gold, low opacity, always at the edges — never over text:</p>
+      <ul style="font-size:14px;color:var(--body);padding-left:18px;line-height:1.8">
+        <li><span class="k">Constellation</span> — dashed polyline through dots with two "sparkle-cross" bright stars. Fills an empty lower third; anchors cover &amp; thank-you.</li>
+        <li><span class="k">Ringed planet (Saturn)</span> + <span class="k">4-point sparkle</span> — corner accents on the <code>6n+4</code> / <code>6n+6</code> pages that get no mandala.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 7 FIXED PAGES -->
+<section id="fixed">
+  <div class="snum">07 — the three welded pages</div>
+  <h2 class="sh">Cover · A Note for You · Thank you.</h2>
+  <p class="lead">These three are <span class="hl">templates</span> — their design and copy stay identical for everyone; only the name/birth line is swapped. Don't rebuild them per report.</p>
+  <p style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:6px">↓ diagrams are <b style="color:var(--terra)">schematic</b> — the real pages (with the real mandalas) are in <code>CareerIntelligence-FINAL.html</code></p>
+  <div class="mini-row">
+    <div class="mini">
+      <div class="card-mock sand">
+        <div style="position:relative;z-index:1;font-family:var(--sans);font-size:7px;letter-spacing:.22em;color:#A9791F;font-weight:700;margin-top:6px">A X T R O S H A S T R A</div>
+        <div class="mock-constel" style="top:56px;bottom:auto;height:16px"><svg viewBox="0 0 160 30" style="width:100%"><polyline points="8,24 46,17 90,12 150,5" fill="none" stroke="#B9862E" stroke-width="1" stroke-dasharray="2 4"/><circle cx="8" cy="24" r="2" fill="#B9862E"/><circle cx="46" cy="17" r="2" fill="#B9862E"/><circle cx="90" cy="12" r="2" fill="#B9862E"/><circle cx="150" cy="5" r="2.4" fill="#B9862E"/></svg></div>
+        <div style="margin-top:auto;margin-bottom:auto;position:relative;z-index:1">
+          <div style="font-family:var(--serif);font-size:22px;color:#1B1D2A;line-height:1.05;font-weight:500">Career<br>Intelligence<br>Report</div>
+          <div style="font-family:var(--serif);font-size:8px;color:#A9791F;margin-top:8px;font-style:italic">A Personalised Roadmap</div>
+          <div style="width:26px;height:1px;background:#B9862E;margin:8px auto"></div>
+          <div style="font-family:var(--serif);font-size:11px;color:#1B1D2A;font-weight:600">Rajesh Menon</div>
+          <div style="font-size:7px;color:#4C4A57;font-family:var(--sans);margin-top:2px">14 March 1972 · Bengaluru</div>
+        </div>
+      </div>
+      <div class="lbl">page 1 · .page.sand</div>
+      <h4>The Cover</h4>
+      <p>Sand ground, brand kicker, a constellation, the serif title stack, one-line promise, and the person's name + birth line. Vertically centered.</p>
+    </div>
+    <div class="mini">
+      <div class="card-mock cream"><div class="mock-tile"></div>
+        <div class="mock-frame" style="margin:auto">
+          <div class="m-eye">A note for you</div>
+          <div class="m-h">Where your<br>experience goes next</div>
+          <div class="m-t">You have already built a significant part of your professional story. This report reads your journey through your birth chart…</div>
+          <div style="font-family:var(--sans);font-size:6.5px;color:#A9791F;font-weight:700;margin-top:8px">— Your Axtroshastra analyst</div>
+        </div>
+      </div>
+      <div class="lbl">page 2 · .page.note</div>
+      <h4>A Note for You</h4>
+      <p>The <span class="k">flower-of-life tile</span> fills the whole card; a white framed note (diamond corners + fan crests) sits on top. Only the first name changes.</p>
+    </div>
+    <div class="mini">
+      <div class="card-mock cream"><div class="mock-sun" style="top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+        <div style="position:relative;z-index:1;margin:auto;text-align:center">
+          <div class="m-eye">With gratitude</div>
+          <div class="m-h" style="margin-top:4px">Thank you, Rajesh</div>
+          <div class="m-t" style="max-width:90%;margin:6px auto 0">Have another question about your path? Each of these is on our site…</div>
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:8px;text-align:left;font-family:var(--serif);font-size:7px;color:#1B1D2A">
+            <span>◆ Compatibility</span><span>◆ Marriage Timing</span><span>◆ Career Growth</span><span>◆ Life Blueprint</span>
+          </div>
+        </div>
+        <div class="mock-constel"><svg viewBox="0 0 160 26" style="width:100%"><polyline points="10,20 50,10 100,16 150,6" fill="none" stroke="#B9862E" stroke-width="1" stroke-dasharray="2 4" opacity=".8"/><circle cx="10" cy="20" r="2" fill="#B9862E"/><circle cx="50" cy="10" r="2" fill="#B9862E"/><circle cx="150" cy="6" r="2.3" fill="#B9862E"/></svg></div>
+      </div>
+      <div class="lbl">page 57 · .page.end</div>
+      <h4>Thank You</h4>
+      <p>Centered sunburst watermark + a bottom constellation + a <span class="k">career cross-sell</span> (Compatibility, Marriage Timing, Career Growth, Life Blueprint). Meta-safe copy, no leak.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 GATE -->
+<section id="gate">
+  <div class="snum">08 — the non-negotiable gate</div>
+  <h2 class="sh">Never ship a build without running this.</h2>
+  <p class="lead">Content is persona-driven and must pass two hard filters — <span class="hl">Meta-safe</span> (no medical / mental-health words, or the site gets classified Health &amp; Wellness) and <span class="hl">no data leak</span> (reuse the design, never Business-Growth's text).</p>
+<pre style="margin-top:16px"><span class="c"># 1 · structure, leak, meta</span>
+grep -c '&lt;section class="page' report.html            <span class="c"># expect page count</span>
+grep -ic '<span class="t">vyapar\|business growth\|rohit\|dear rohit</span>' report.html   <span class="c"># → 0</span>
+grep -ioE '\b(<span class="t">calm|stress|anxiety|wellness|mental|medical|pressure|relief|burnout|healing</span>)\b' report.html  <span class="c"># → empty</span>
+
+<span class="c"># 2 · render (production path) &amp; check size</span>
+chrome --headless=new --print-to-pdf=out.pdf --no-pdf-header-footer "file://report.html"
+python3 -c "import pypdf;r=pypdf.PdfReader('out.pdf');p=r.pages[0];print(len(r.pages),p.mediabox.width,p.mediabox.height)"
+<span class="c"># expect: N pages, 323 x 623 pt  (NOT 595x842)</span>
+
+<span class="c"># 3 · overflow — rasterize any changed page &amp; LOOK (nothing clipped at the bottom)</span>
+<span class="c">#     split page → 1-page pdf (pypdf) → sips -s format png</span></pre>
+  <div class="callout-note"><b>Pass =</b> page count right · size 323×623 · leak 0 · meta empty · no page clipped · cross-links (<code>href="#…"</code>) intact. And never trust a build agent's "done" — re-run the gate on its actual output.</div>
+</section>
+
+<!-- 9 DECISIONS -->
+<section id="log">
+  <div class="snum">09 — decisions &amp; corrections log</div>
+  <h2 class="sh">Every call that shaped the final product.</h2>
+  <p class="lead">These are settled — the reasons are baked in so they don't get re-argued or accidentally reverted.</p>
+  <div class="log">
+    <div class="entry"><h4>Standalone HTML document, printed directly</h4><p class="why">Printing the claude.ai viewer gave A4. <span class="hl">Fix:</span> the report is a complete <code>&lt;!DOCTYPE html&gt;</code> doc; open it and Cmd+P (or headless print) → correct 323×623 cards.</p></div>
+    <div class="entry"><h4>Reuse the Business-Growth design, never its words</h4><p class="why">Cloned the note-page frame, medallions and icon set — but every build greps for <code>vyapar / business growth / rohit</code> = 0. Design travels; text does not.</p></div>
+    <div class="entry"><h4>Removed the coloured left-strip from every box</h4><p class="why">It "represents the report is prepared by AI, which reduces trust." Boxes are now clean fills, no rail.</p></div>
+    <div class="entry"><h4>Keep the full-detail mandala — don't optimize</h4><p class="why">A simplified/optimized mandala cheapened the look. Full 37K/28K SVGs restored and kept.</p></div>
+    <div class="entry"><h4>The note page uses the flower-of-life tile — not the sunburst</h4><p class="why">First attempt used the wrong mandala. The reference is the interlocking petal lattice, on the .page.note background at native 224px (copy BG's rule verbatim).</p></div>
+    <div class="entry"><h4>Backgrounds must be visible but never fight text</h4><p class="why">Decoration was invisibly faint (and a <code>%2523</code> encoding bug made it render nothing). Raised opacity, fixed encoding, text pinned above at <code>z-index:1</code>.</p></div>
+    <div class="entry"><h4>Mandalas scatter — they don't sit in one fixed corner</h4><p class="why">A pinned top-left mandala looked mechanical. Now rotated across corners via <code>nth-of-type</code>, with some pages left bare.</p></div>
+    <div class="entry"><h4>Headers horizontally centered; content vertically centered</h4><p class="why">Exhibit headers were left-aligned — centered them all. Content is centered top-to-bottom with equal margins on every card (final-review preference; an earlier top-align was tried, then reverted).</p></div>
+    <div class="entry"><h4>Auto page numbers in the footer</h4><p class="why">Added a CSS-counter footer (<code>01, 02…</code>), hidden on the cover — no manual numbering.</p></div>
+    <div class="entry"><h4>Fill the empty pages with real substance</h4><p class="why">Thin cards got 2–3 row legends / callouts — on-topic, persona-consistent, never filler — to ~85–92% fill.</p></div>
+    <div class="entry"><h4>Fixed the legend two-column bug</h4><p class="why">A <code>&lt;b&gt;</code> that was a direct flex child split label from text. Wrapped both in one <code>.lt</code> span so each row flows as one line.</p></div>
+    <div class="entry"><h4>Added a closing "Thank you" page + constellations &amp; planets</h4><p class="why">Career-appropriate cross-sell, Meta-safe copy, centered watermark + constellation — matching the Business-Growth close without its content.</p></div>
+    <div class="entry"><h4>Locked: the three welded pages &amp; the "content-only changes" contract</h4><p class="why">Cover, note and thank-you are templates; only the name/birth line and computed values ever change per person.</p></div>
+  </div>
+</section>
+
+<!-- 10 GOTCHAS -->
+<section id="gotchas">
+  <div class="snum">10 — gotchas that cost real time</div>
+  <h2 class="sh">Don't step on these twice.</h2>
+  <div class="got"><b>1 · Double-encoded <code>#</code> makes a mandala invisible.</b><p><code>%2523</code> = literal <code>%23</code> = an invalid colour → the SVG paints nothing (looks like opacity, isn't). Colour must be single-encoded <code>%23b9862e</code> inside a data-URI.</p></div>
+  <div class="got"><b>2 · A data-URI in an inline <code>style=""</code> breaks the attribute.</b><p>The SVG's own quotes close <code>style="</code> early, so the background silently never applies. Put mandala/tile backgrounds in a <span class="k">CSS class</span> or <code>&lt;style&gt;</code> block — never inline.</p></div>
+  <div class="got"><b>3 · Regex-replacing an SVG by its <code>viewBox</code> can hit the wrong page.</b><p>Two charts shared <code>viewBox="0 0 300 275"</code>, so a global replace clobbered the radar with the decision matrix. Match by the page's unique heading, or give every chart a unique viewBox.</p></div>
+  <div class="got"><b>4 · Overflow is silent.</b><p><code>overflow:hidden</code> deletes anything past the card bottom with no warning. Always rasterize a changed page and confirm the last line clears the edge.</p></div>
+  <div class="got"><b>5 · <code>--screenshot</code> is unreliable here; verify by rasterizing the PDF.</b><p>Render with <code>--print-to-pdf</code>, split with pypdf, view with <code>sips</code>. That is the trustworthy visual check.</p></div>
+</section>
+
+</div>
+
+<footer>
+  Axtroshastra Report Recipe · the machine stays; only the words change.<br>
+  Source of truth: <a href="#">CareerIntelligence-FINAL.html</a> · full markdown at <code>docs/career-intelligence-report-recipe.md</code>
+</footer>
+
+<script>
+(function(){
+  var t=document.getElementById('tog');
+  var root=document.documentElement;
+  function cur(){ return root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); }
+  try{ var s=localStorage.getItem('recipe-theme'); if(s) root.setAttribute('data-theme',s); }catch(e){}
+  t.addEventListener('click',function(){
+    var n = cur()==='dark' ? 'light':'dark';
+    root.setAttribute('data-theme',n);
+    try{ localStorage.setItem('recipe-theme',n); }catch(e){}
+  });
+})();
+</script>
