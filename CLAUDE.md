@@ -235,6 +235,22 @@ clones, a jarring jump from the last review back to the first). The current
 `#revsTrack` implementation deliberately shows the real reviews once, no cloning —
 follow that, not the old pattern.
 
+## 5c. No em-dashes in testimonial/review copy — it must read as a real person wrote it
+
+Content that poses as a real individual's own writing — customer reviews, testimonials, and
+quotes attributed to a named person — must not contain em-dashes ("—") or en-dashes ("–").
+Real people don't type them, so they read as machine-written and make a review look fake. Use
+a comma, a full stop, a semicolon, "and"/"but", or brackets instead, and grep the em-dash
+character out of any review/testimonial before shipping.
+
+Brand/marketing copy and **report/editorial prose are NOT covered**: the reports (e.g. Career
+Intelligence) are written in an analyst voice and use em-dashes deliberately as typography —
+keep that style, don't sweep them out of report or brand copy. Pre-commit check for
+review/testimonial files only:
+```
+git diff --cached -- '*testimonial*' '*review*' | grep -nP '^\+.*[\x{2014}\x{2013}]'
+```
+
 ## 6. Never hand-roll nav/footer/tracking — serve through the injection chain
 
 Every page must go through `_serve_page_with_nav()` in `api.py`, which pipes
@@ -766,3 +782,21 @@ loop: we never needed them to agree, only to hand us claims we can test.
   hasn't converged or a later phase may still change it — that is the right state, not a
   contradiction. (Live example: Piece 5's wiring is committed as local checkpoints but held from
   its PR because the audit surfaced fixes and Phase 4 verification may still change it.)
+
+## 21. AstroSage accuracy gate — every chart-reading product routes through the shared engine
+
+Every product that reads a birth chart must route through the shared engine (`compute_chart` /
+`engine.compute_report`) — no product may re-implement or fork the astro math. Validate against
+AstroSage (Lahiri ayanamsa) with max-entropy reference births: assert the sidereal sign of the
+ascendant + all nine grahas + the moon's nakshatra match 50/50. Datasets live in
+`tests/birth_accuracy.json`; grow that set and keep `tests/test_birth_accuracy.py` green. For any
+new product, add a test proving it routes through the shared engine.
+
+## 22. Chart-derived pages must be personalized — never ship the sample persona to a buyer
+
+Any page or section that presents a finding about the user read from their chart (numbers,
+rankings, traits, prose claims) must be generated from their computed data — never ship the
+sample persona's hardcoded values or prose to another buyer. Generic content is allowed only on
+pages that are independent of the chart (methodology, how-to-read, glossary, contents,
+thank-you). Corollary: no first name, number, ranking, or trait from the mock persona may
+survive into a real report.
