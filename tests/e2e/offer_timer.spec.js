@@ -3,7 +3,10 @@
 // (A fresh visit / new tab intentionally starts a new 30:00 — that's fine at our
 // current low traffic.) The timer script updates #otClockSticky even before the
 // sticky bar is scrolled into view, so we read its text directly.
-const { test, expect } = require('@playwright/test');
+//
+// Uses ./fixtures (aborts external Google Fonts) so page.goto's 'load' wait can't
+// hang on those hosts — that was the intermittent 30s-timeout flake on CI.
+const { test, expect } = require('./fixtures');
 
 const secs = (c) => { const [m, s] = c.split(':').map(Number); return m * 60 + s; };
 
