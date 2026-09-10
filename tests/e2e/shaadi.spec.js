@@ -2,7 +2,7 @@
 // These assert the things that are easy to break in the browser and invisible
 // to the Python tests: layout, form controls, city autosuggest, language, and
 // the happy-path submit. Runs on both mobile and desktop viewports.
-const { test, expect } = require('./fixtures'); // ./fixtures aborts external fonts (CI goto-load flake)
+const { test, expect } = require('./fixtures');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/en/marriage');

@@ -14,7 +14,7 @@
 // Phone note: the WhatsApp number is unique per run (shared test DB — mobile
 // is the account key; see tests' phone-uniqueness convention).
 
-const { test, expect } = require('./fixtures'); // ./fixtures aborts external fonts (CI goto-load flake)
+const { test, expect } = require('./fixtures');
 
 const uniquePhone = () =>
   '9' + String(Date.now() + Math.floor(Math.random() * 1000)).slice(-9);
