@@ -1,5 +1,5 @@
 """Career Intelligence Report (/en/career-intelligence, product id
-"career_intelligence") regression tests. Premium English-only product, ₹1,999.
+"career_intelligence") regression tests. Premium English-only product, ₹499.
 Same pattern as test_career_growth.py: create via /api/kundli, bypass payment via
 DEMO_MODE's /api/_demo_pay, fetch the served report HTML. English only — no /hi/
 twin, no Hindi assertions (deliberate, per docs/career-intelligence-report-spec.md)."""
@@ -69,12 +69,12 @@ def test_career_intelligence_teaser_fields(client):
         assert leaked not in teaser, leaked
 
 
-def test_career_intelligence_price_is_1999(client):
-    """Server-side price for this product is ₹1,999 (199900 paise), regardless of
-    the client — distinct from the ₹499 products."""
+def test_career_intelligence_price_is_499(client):
+    """Server-side price for this product is ₹499 (49900 paise), regardless of
+    the client — matches the base ₹499 products' price point."""
     rec = {"payload": {"product": "career_intelligence",
                        "meta": {"variant": "/en/career-intelligence"}}}
-    assert api._order_amount_paise(rec) == 199900
+    assert api._order_amount_paise(rec) == 49900
 
 
 def test_career_intelligence_varies_by_birth_data(client):
