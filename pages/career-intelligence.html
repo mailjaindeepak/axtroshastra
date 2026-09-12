@@ -397,7 +397,7 @@ fbq('track', 'PageView');
       <p class="btn-note">Free · No card needed · Takes about 2 minutes</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹4,999</s> <span class="amt">₹1,999</span></div>
+    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹1,999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -507,10 +507,10 @@ fbq('track', 'PageView');
           <div><b>Astrological Foundation</b><span>Your birth chart and career houses — the reasoning behind everything above.</span></div></li>
       </ul>
 
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹4,999</s> ₹1,999</span></button>
+      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹1,999</s> ₹499</span></button>
       <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
       <div class="ps-subnote">Instant WhatsApp + on-screen delivery, right after payment.</div>
-      <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">🔥 Launch offer ends in <b class="clk" id="otClockSample">30:00</b> — <s>₹4,999</s> <span class="amt">₹1,999</span></div>
+      <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">🔥 Launch offer ends in <b class="clk" id="otClockSample">30:00</b> — <s>₹1,999</s> <span class="amt">₹499</span></div>
     </div>
 
   </div>
@@ -606,7 +606,7 @@ fbq('track', 'PageView');
     </div>
     <div class="ps-modal-foot">
       <a class="ps-modal-dl" href="/static/career-intel-sample.pdf?v=5" target="_blank" rel="noopener">Download full sample (PDF)</a>
-      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹4,999</s> ₹1,999</button>
+      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹1,999</s> ₹499</button>
     </div>
   </div>
 </div>
@@ -766,7 +766,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career Intelligence Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹4,999</s> <b style="color:var(--sindoor)">₹1,999</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#9a9cb0">₹1,999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Snapshot</a>
 </div>
@@ -935,7 +935,7 @@ function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock ₹1,999'; sb.setAttribute('href', '#sampleReport'); }
+  if(sb){ sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* Fill the sample-state radar with illustrative values before any submit,
@@ -1037,7 +1037,7 @@ async function startPayment(){
   if(order.error === 'invalid_pass'){ alert('This free-pass link has already been used or is invalid.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:1999});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
@@ -1065,15 +1065,15 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:1999,currency:'INR'},{eventID:REPORT_ID});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:1999});
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹4,999</s> ₹1,999</span>'; btn.disabled = false;
+  btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹1,999</s> ₹499</span>'; btn.disabled = false;
   alert('Payment is processing — please refresh the page in a minute. Your report will be ready.');
 }
 
