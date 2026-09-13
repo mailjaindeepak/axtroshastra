@@ -35,6 +35,24 @@ def test_career_intelligence_page_serves_200(client):
     assert "kundliForm" in r.text and "startPayment" in r.text
 
 
+def test_career_intelligence_preview_is_bars_not_radar(client):
+    """The redesigned preview renders the six dimensions as a BAR chart with the
+    'Your Career DNA' framing, the 'what stands out' block and the 5 locked
+    questions — and no longer the old hexagon radar."""
+    html = client.get("/en/career-intelligence").text
+    assert "Your Career DNA" in html
+    assert "function drawBars(" in html and "id=\"tv-bars\"" in html
+    assert "What stands out" in html and "id=\"tv-combo\"" in html and "id=\"tv-env\"" in html
+    for q in ("When are your strongest career years?",
+              "How are you most likely to build wealth?",
+              "What career moves should you avoid right now?",
+              "What do the next 3 years look like?",
+              "What should you prioritize over the next 12 months?"):
+        assert q in html, q
+    # the old radar is gone
+    assert "function drawRadar(" not in html and "tv-radar" not in html
+
+
 def test_career_intelligence_bare_path_redirects_to_en(client):
     r = client.get("/career-intelligence", follow_redirects=False)
     assert r.status_code == 301
@@ -57,17 +75,28 @@ def test_career_intelligence_teaser_fields(client):
     """The free preview returns exactly the keys pages/career-intelligence.html's
     renderTeaser() reads — and none of the paid-report internals."""
     teaser = _create(client)["teaser"]
-    for key in ("name", "archetype", "top_dimension", "phase",
-                "entrepreneurial_10", "quote"):
+    for key in ("name", "archetype", "archetype_blurb", "top_dimension", "phase",
+                "entrepreneurial_10", "quote", "best_environment"):
         assert key in teaser, key
+    assert teaser["archetype_blurb"] and teaser["best_environment"]
     # the six calibrated dimensions ARE included so the landing-page teaser can draw
-    # the person's own radar exhibit (a deliberate preview hook, not a leak).
+    # the person's own bar chart (a deliberate preview hook, not a leak).
     assert set(teaser["dimensions"]) == {"leadership", "strategic", "independence",
                                          "entrepreneurial", "risk", "stability"}
     assert all(0 <= v <= 100 for v in teaser["dimensions"].values())
     # deeper paid internals must still not leak into the free teaser
     for leaked in ("life_stage", "windows", "decision_style", "three_year"):
         assert leaked not in teaser, leaked
+
+
+def test_career_intelligence_best_environment_matches_report_map(client):
+    """The teaser's 'best_environment' must equal the report's own dimension->environment
+    phrase for the person's top dimension — keeps the landing line and the paid report's
+    §33 consistent (chart-driven, not a generic string). CLAUDE.md §8/§22."""
+    from ci_narr_part4 import NEED_BY_DIM
+    teaser = _create(client, name="Env Tester", dob="1969-11-02", tob="16:40",
+                     place="Chennai")["teaser"]
+    assert teaser["best_environment"] == NEED_BY_DIM[teaser["top_dimension"]]
 
 
 def test_career_intelligence_price_is_199(client):

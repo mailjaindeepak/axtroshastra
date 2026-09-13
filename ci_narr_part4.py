@@ -26,10 +26,14 @@ _THEME = {"leadership": "Authority", "strategic": "Strategy", "independence": "A
 # dimension -> mid-sentence noun for the sweet-spot verdict (page 33)
 _SPOT_WORD = {"leadership": "decision-making", "strategic": "strategy", "independence": "autonomy",
               "entrepreneurial": "building", "risk": "timely calls", "stability": "the long game"}
-# dimension -> the environment that trait needs (page 33 lead + conditions)
-_NEED = {"leadership": "real authority over the call", "strategic": "a genuinely hard problem",
-         "independence": "room to own the outcome", "entrepreneurial": "something to build",
-         "risk": "freedom to move early", "stability": "a long-enough horizon"}
+# dimension -> the environment that trait needs (page 33 lead + conditions).
+# Public so the landing-page teaser (career_intelligence_report.compute_*) can reuse the
+# SAME phrasing for its "you may perform best where …" line — keeps teaser and report
+# consistent (CLAUDE.md §8 anti-drift). `_NEED` stays as a back-compat alias.
+NEED_BY_DIM = {"leadership": "real authority over the call", "strategic": "a genuinely hard problem",
+               "independence": "room to own the outcome", "entrepreneurial": "something to build",
+               "risk": "freedom to move early", "stability": "a long-enough horizon"}
+_NEED = NEED_BY_DIM
 _COND = {
     "leadership": ("Real authority over the call",
                    "The decision is genuinely yours, not recommended upward for someone else to make."),
