@@ -950,8 +950,10 @@ document.getElementById('kundliForm').addEventListener('focusin', function(){
   if(window.fbq) fbq('trackCustom', 'FormStart');
 });
 
-/* form submit -> /api/kundli -> render free preview (no payment yet, same
-   two-step flow as pages/milan.html: birth details only, no WhatsApp here). */
+/* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
+   as pages/milan.html: the WhatsApp number is collected in the main form and sent
+   with /api/kundli, so the user/lead is created + stitched at submit (not only at
+   /api/order). AX_CONTACT still carries it forward for the unlock/payment step. */
 document.getElementById('kundliForm').addEventListener('submit', async function(e){
   e.preventDefault();
   var dob = buildDob();
@@ -985,6 +987,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
+        phone: waPhone,
         product: 'career_intelligence',
         variant: location.pathname
       })});
