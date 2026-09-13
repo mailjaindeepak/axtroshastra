@@ -422,8 +422,6 @@ fbq('track', 'PageView');
   /* Archetype name in milan's couple-name script (Great Vibes), centered like milan's hero. */
   .premium-sample .ps-tbox.wide{text-align:center}
   .premium-sample .ps-tbox.wide .who{justify-content:center}
-  .premium-sample #tv-archetype{font-family:var(--script);font-weight:400;font-size:46px;line-height:1.02;color:#fff;margin-top:2px}
-  @media(max-width:560px){.premium-sample #tv-archetype{font-size:36px}}
   /* Stronger section eyebrow so "CAREER SNAPSHOT" reads as a heading. */
   .premium-sample .ps-sechead .eb{font-size:11px;font-weight:700;letter-spacing:.18em}
   .premium-sample .ps-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:14px;border-radius:12px;overflow:hidden;background:rgba(201,163,78,.22);position:relative}
@@ -449,6 +447,34 @@ fbq('track', 'PageView');
     .premium-sample .ps-dec.d-wheel{left:-150px}
     .premium-sample .ps-dec.d-rock{right:-16px;top:-44px}
   }
+  /* --- redesigned preview: Career DNA + bars + what-stands-out + answers --- */
+  .ps-dnasub{text-align:center;color:var(--pmuted);font-size:14px;margin:4px auto 0;max-width:340px;position:relative;z-index:1}
+  .ps-arche{margin:16px auto 0;max-width:400px;text-align:center;background:linear-gradient(180deg,var(--panel),#F6EEDD);border:1px solid var(--pline);border-radius:14px;padding:13px 16px;box-shadow:0 6px 18px var(--pshadow);position:relative;z-index:1}
+  .ps-arche .k{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pgold)}
+  .ps-arche .nm{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--phead);margin:2px 0}
+  .ps-arche .bl{font-size:13px;color:var(--pmuted);line-height:1.45}
+  .ps-bars{margin-top:2px;text-align:left}
+  .ps-bar{margin:0 0 14px}
+  .ps-bar .r{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .ps-bar .nm{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead)}
+  .ps-bar .vl{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--pgold)}
+  .ps-bar .tk{height:9px;border-radius:6px;background:#EDE4D0;overflow:hidden}
+  .ps-bar .fl{height:100%;border-radius:6px;background:linear-gradient(90deg,#C9A34E,#B98A3A)}
+  .ps-bar.dim .nm{color:#8f8168}.ps-bar.dim .vl{color:#b3a888}.ps-bar.dim .fl{background:#cfc3a6}
+  .ps-stand{margin-top:16px;padding-top:16px;border-top:1px dashed var(--pline);text-align:left}
+  .ps-stand .eb{text-align:left}
+  .ps-standline{margin:9px 0 0;font-size:14.5px;color:var(--pink);line-height:1.55}
+  .ps-standline b{color:var(--phead);font-weight:600;font-family:var(--disp)}
+  .ps-tradeoff{font-family:var(--disp);font-weight:600;font-size:15.5px;color:var(--phead);margin-top:12px}
+  .ps-locknote{display:flex;gap:9px;align-items:flex-start;background:#F3EAD8;border:1px dashed var(--pgold);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:13.5px;color:var(--pink);text-align:left}
+  .ps-locknote .lk{flex:0 0 auto;color:var(--pgold)}
+  .ps-answers{margin-top:18px;text-align:left}
+  .ps-answers-h{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead);margin-bottom:4px}
+  .ps-qlist{list-style:none;margin:0;padding:0}
+  .ps-qlist li{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--pline);font-size:14.5px;color:var(--pink)}
+  .ps-qlist li:last-child{border-bottom:0}
+  .ps-qlist .lk{flex:0 0 auto;color:var(--pgold)}
+  .ps-subnote2{font-size:12.5px;color:var(--pmuted);text-align:center;margin-top:11px}
   </style>
   <p class="ps-tag" id="ps-caption">Sample preview — an illustrative example, not your data. Fill the form above for your own.</p>
   <div class="ps-wrap">
@@ -458,59 +484,43 @@ fbq('track', 'PageView');
   <svg class="ps-dec d-gas" width="100" height="100" viewBox="0 0 100 100" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="psGas"><circle cx="50" cy="50" r="29"/></clipPath><circle cx="50" cy="50" r="29" fill="#E0B072"/><g clip-path="url(#psGas)"><rect x="21" y="30" width="58" height="6" fill="#B9834A" opacity=".55"/><rect x="21" y="42" width="58" height="8" fill="#B9834A" opacity=".7"/><rect x="21" y="57" width="58" height="6" fill="#B9834A" opacity=".5"/><rect x="21" y="67" width="58" height="5" fill="#B9834A" opacity=".6"/><ellipse cx="61" cy="61" rx="7" ry="5" fill="#C05A3A" opacity=".85"/></g></g></svg>
   <svg class="ps-dec d-const" width="220" height="150" viewBox="0 0 220 150" fill="none" aria-hidden="true"><g stroke="#C9A34E" stroke-width="1.2" opacity=".33" fill="none" stroke-linecap="round"><line x1="20" y1="30" x2="70" y2="60"/><line x1="70" y1="60" x2="120" y2="40"/><line x1="120" y1="40" x2="165" y2="80"/><line x1="165" y1="80" x2="200" y2="55"/><line x1="70" y1="60" x2="95" y2="115"/></g><g fill="#C9A34E" opacity=".4"><circle cx="20" cy="30" r="2.4"/><circle cx="70" cy="60" r="2.8"/><circle cx="120" cy="40" r="2.2"/><circle cx="165" cy="80" r="2.6"/><circle cx="200" cy="55" r="2.2"/><circle cx="95" cy="115" r="2.2"/></g><g fill="#E7CE8F" opacity=".5"><path d="M150 20 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z"/><path d="M48 92 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 z"/></g></svg>
 
-    <div class="ps-sechead"><div class="eb">Career snapshot</div><div class="h">A first look at your chart</div></div>
-    <div class="ps-block ps-tbox wide" style="margin-top:14px">
-      <div class="who">💼&nbsp; Your career archetype</div>
+    <div class="ps-sechead"><div class="eb">Your Personal Career Analysis</div><div class="h">Your Career DNA</div></div>
+    <p class="ps-dnasub">We analysed your birth chart across six career dimensions.</p>
+
+    <div class="ps-arche">
+      <div class="k">Your Career Archetype</div>
       <div class="nm" id="tv-archetype">The Strategic Builder</div>
-      <div class="ps-stats">
-        <div class="st"><div class="lb">Top dimension</div><div class="vl" id="tv-dimension">Strategic thinking</div></div>
-        <div class="st"><div class="lb">Current phase</div><div class="vl" id="tv-phase">Consolidation &amp; Repositioning</div></div>
-        <div class="st"><div class="lb">Entrepreneurial inclination</div><div class="vl" id="tv-entrepreneurial">7 / 10</div></div>
-      </div>
-    </div>
-
-    <div class="ps-block">
-      <div class="ps-sechead"><div class="eb">Your strengths, mapped</div><div class="h">Six dimensions, from your chart</div></div>
-      <div id="tv-radar" style="max-width:320px;margin:10px auto 0"></div>
-    </div>
-
-    <div class="ps-block ps-quote">
-      <div class="eb">Who you are at work</div>
-      <p class="qtext" id="tv-quote">&ldquo;You build lasting structures rather than chase quick wins.&rdquo;</p>
-    </div>
-
-    <p class="ps-methodnote">Computed from your <b>birth chart</b> and its <b>career houses</b> — the full analysis (personality, patterns, phases and roadmap) is in your report.</p>
-
-    <div class="ps-sxcap">
-      <div class="eb">This is just the surface</div>
-      <div class="h">Your full report keeps going</div>
-      <div class="s">The full analysis of who you are at work, your journey, and your next chapter is locked below.</div>
+      <div class="bl" id="tv-arche-blurb">You create lasting structures rather than chase quick wins.</div>
     </div>
 
     <div class="ps-locked">
       <svg class="ps-dec d-rock" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="psRock"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#psRock)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/></g></g></svg>
-      <div class="eb">Unlock your full report</div>
-      <div class="h" style="font-family:var(--disp);font-weight:500;font-size:21px;color:var(--phead);margin-top:6px">Your chart already has these answers</div>
 
-      <ul class="ps-locklist">
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Understanding You</b><span>Your personality at work, natural strengths, leadership style and how you make decisions.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your Career Journey</b><span>The patterns that recur across your work life, what motivates you, and your blind spots.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your Next Chapter</b><span>Your current phase, what the next three years may favour, and where your sweet spot lies.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Money &amp; Professional Success</b><span>How your chart indicates income tends to grow, and the routes to success that suit you.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Your Personal Roadmap</b><span>Your priorities, what to pursue and what to avoid, and a practical 12-month plan.</span></div></li>
-        <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span>
-          <div><b>Astrological Foundation</b><span>Your birth chart and career houses — the reasoning behind everything above.</span></div></li>
-      </ul>
+      <div class="ps-bars" id="tv-bars"></div>
 
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹199</span></button>
+      <div class="ps-stand">
+        <div class="eb">What stands out</div>
+        <p class="ps-standline">Your strongest career combination is <b id="tv-combo">strategy &amp; autonomy</b>.</p>
+        <p class="ps-standline">You may perform best where you have <b id="tv-env">room to own the outcome</b>.</p>
+        <p class="ps-tradeoff">But this creates an important career trade-off&hellip;</p>
+        <div class="ps-locknote"><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>Your full report explains what it is and how to manage it.</span></div>
+      </div>
+
+      <div class="ps-answers">
+        <div class="ps-answers-h">Your chart also answers:</div>
+        <ul class="ps-qlist">
+          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>When are your strongest career years?</span></li>
+          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>How are you most likely to build wealth?</span></li>
+          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What career moves should you avoid right now?</span></li>
+          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What do the next 3 years look like?</span></li>
+          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What should you prioritize over the next 12 months?</span></li>
+        </ul>
+      </div>
+
+      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>&#8377;999</s> &#8377;199</span></button>
       <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
-      <div class="ps-subnote">Instant WhatsApp + on-screen delivery, right after payment.</div>
-      <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">🔥 Launch offer ends in <b class="clk" id="otClockSample">30:00</b> — <s>₹999</s> <span class="amt">₹199</span></div>
+      <div class="ps-subnote2">Personalized to your birth chart &bull; Instant access</div>
+      <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;199</span></div>
     </div>
 
   </div>
@@ -893,42 +903,43 @@ function _getCookie(name){
 }
 function _esc(s){ var d=document.createElement('div'); d.textContent=(s==null?'':s); return d.innerHTML; }
 
-/* Per-person career radar — reproduces the report radar (grid + gold polygon
-   + labels) from the teaser's own t.dimensions (each 0-100). */
-function drawRadar(d){
-  d = d || {};
-  var C=150, CY=145, R=100;
-  var axes=[['leadership',-90],['strategic',-30],['independence',30],['stability',90],['risk',150],['entrepreneurial',210]];
-  var lab={leadership:'LEADERSHIP',strategic:'STRAT.',independence:'INDEP.',stability:'STABILITY',risk:'RISK',entrepreneurial:'ENTREP.'};
-  var lpos={leadership:[150,36,'middle'],strategic:[248,94,'start'],independence:[248,198,'start'],stability:[150,262,'middle'],risk:[52,198,'end'],entrepreneurial:[52,94,'end']};
-  var pts=[],dots='',labs='';
-  axes.forEach(function(a){
-    var k=a[0], ang=a[1]*Math.PI/180, v=Math.max(0,Math.min(1,(+d[k]||0)/100));
-    var x=Math.round((C+R*v*Math.cos(ang))*10)/10, y=Math.round((CY+R*v*Math.sin(ang))*10)/10;
-    pts.push(x+','+y); dots+='<circle cx="'+x+'" cy="'+y+'" r="3"/>';
-    var p=lpos[k]; labs+='<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="'+p[2]+'">'+lab[k]+' '+(+d[k]||0)+'</text>';
-  });
-  return '<svg viewBox="0 0 300 275" width="100%" role="img" aria-label="Your six career dimensions">'
-    +'<polygon points="150,45 240.9,97.5 240.9,192.5 150,245 59.1,192.5 59.1,97.5" fill="none" stroke="#DCCFB2"/>'
-    +'<polygon points="150,80.6 210.6,115.6 210.6,174.4 150,209.4 89.4,174.4 89.4,115.6" fill="none" stroke="#E4D8C0"/>'
-    +'<polygon points="150,116.3 180.3,133.8 180.3,156.2 150,173.7 119.7,156.2 119.7,133.8" fill="none" stroke="#EAE0CC"/>'
-    +'<g stroke="#DCCFB2"><line x1="150" y1="145" x2="150" y2="45"/><line x1="150" y1="145" x2="240.9" y2="97.5"/><line x1="150" y1="145" x2="240.9" y2="192.5"/><line x1="150" y1="145" x2="150" y2="245"/><line x1="150" y1="145" x2="59.1" y2="192.5"/><line x1="150" y1="145" x2="59.1" y2="97.5"/></g>'
-    +'<polygon points="'+pts.join(' ')+'" fill="rgba(201,163,78,.22)" stroke="#B9862E" stroke-width="2"/>'
-    +'<g fill="#B9862E">'+dots+'</g>'
-    +'<g font-family="Inter,sans-serif" font-size="9.5" fill="#8A8199" font-weight="600">'+labs+'</g></svg>';
+/* Per-person career dimensions — horizontal bar chart from the teaser's own
+   t.dimensions (each 0-100), sorted high->low with the lowest bar dimmed. Replaces
+   the old radar (clearer to read). Friendly labels match the report's wording. */
+var DIM_LABEL={leadership:'Leadership',strategic:'Strategic thinking',independence:'Independence',
+               entrepreneurial:'Enterprise drive',risk:'Risk appetite',stability:'Stability & follow-through'};
+function _dimRows(d){
+  d=d||{};
+  return Object.keys(DIM_LABEL).map(function(k){
+    return {k:k, v:Math.max(0,Math.min(100,Math.round(+d[k]||0)))};
+  }).sort(function(a,b){ return b.v-a.v; });
+}
+function drawBars(d){
+  var rows=_dimRows(d);
+  return rows.map(function(r,i){
+    var dim=(i===rows.length-1)?' dim':'';
+    return '<div class="ps-bar'+dim+'"><div class="r"><span class="nm">'+DIM_LABEL[r.k]
+      +'</span><span class="vl">'+r.v+'</span></div>'
+      +'<div class="tk"><div class="fl" style="width:'+r.v+'%"></div></div></div>';
+  }).join('');
+}
+/* the person's top-two dimensions, as a "x + y" phrase for the "stands out" line */
+function topCombo(d){
+  var rows=_dimRows(d);
+  if(rows.length<2) return '';
+  return DIM_LABEL[rows[0].k].toLowerCase()+' + '+DIM_LABEL[rows[1].k].toLowerCase();
 }
 
 /* Reusable teaser renderer — fills the free-preview #teaser section from the
    buyer's own real /api/kundli response. Same technique as pages/milan.html. */
 function renderTeaser(t){
   t = t || {};
-  var titleCase = function(s){ return String(s||'').replace(/[_-]+/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); }).trim(); };
+  var d = t.dimensions || {};
   document.getElementById('tv-archetype').textContent = t.archetype || '—';
-  document.getElementById('tv-dimension').textContent = t.top_dimension ? titleCase(t.top_dimension) : '—';
-  document.getElementById('tv-phase').textContent = t.phase || '—';
-  document.getElementById('tv-entrepreneurial').textContent = (t.entrepreneurial_10 != null) ? (t.entrepreneurial_10 + ' / 10') : '—';
-  document.getElementById('tv-quote').innerHTML = '&ldquo;' + _esc(t.quote || '') + '&rdquo;';
-  var rc=document.getElementById('tv-radar'); if(rc) rc.innerHTML = drawRadar(t.dimensions);
+  var ab = document.getElementById('tv-arche-blurb'); if(ab) ab.textContent = t.archetype_blurb || '';
+  var bc = document.getElementById('tv-bars'); if(bc) bc.innerHTML = drawBars(d);
+  var cm = document.getElementById('tv-combo'); if(cm) cm.textContent = topCombo(d);
+  var ev = document.getElementById('tv-env'); if(ev) ev.textContent = t.best_environment || 'room to do your best work';
   var cap = document.getElementById('ps-caption');
   if(cap){ cap.textContent = 'Your preview — computed from your birth chart.'; }
   var el = document.getElementById('sampleReport');
@@ -938,9 +949,13 @@ function renderTeaser(t){
   if(sb){ sb.textContent = 'Unlock ₹199'; sb.setAttribute('href', '#sampleReport'); }
 }
 
-/* Fill the sample-state radar with illustrative values before any submit,
-   matching the report's sample look. */
-(function(){ var rc=document.getElementById('tv-radar'); if(rc) rc.innerHTML = drawRadar({leadership:86,strategic:88,independence:82,entrepreneurial:58,risk:66,stability:54}); })();
+/* Fill the sample-state bars with illustrative values (defensive — the inline
+   preview is display:none until renderTeaser runs with the buyer's real data). */
+(function(){
+  var sample={risk:70,entrepreneurial:65,strategic:60,independence:59,stability:54,leadership:48};
+  var bc=document.getElementById('tv-bars'); if(bc) bc.innerHTML = drawBars(sample);
+  var cm=document.getElementById('tv-combo'); if(cm) cm.textContent = topCombo(sample);
+})();
 
 /* funnel event: fires once when user starts filling the form */
 window._formStarted = false;
@@ -1076,7 +1091,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹199</span>'; btn.disabled = false;
+  btn.innerHTML = 'Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>₹999</s> ₹199</span>'; btn.disabled = false;
   alert('Payment is processing — please refresh the page in a minute. Your report will be ready.');
 }
 

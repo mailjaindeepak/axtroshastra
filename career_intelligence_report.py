@@ -35,6 +35,7 @@ from career_growth_report import (
     _naukri_apnakaam_meter, _strength_bucket, ABOUT_YOU_TRAITS, _fmt_range,
 )
 import ci_narrative
+from ci_narr_part4 import NEED_BY_DIM   # dimension -> "environment that trait needs" (teaser reuse)
 
 
 def _d(g, planet):
@@ -194,15 +195,20 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
     lessons = [{"planet": pl.name, "lesson": PLANET_LESSON[pl.name]} for pl in g.values()
                if (pl.dignity == "debilitated" or pl.combust) and pl.name in PLANET_LESSON]
 
+    top_dim = max(dims, key=dims.get)
     teaser = {
         "name": name,
         "archetype": archetype["name"],
-        "top_dimension": max(dims, key=dims.get),
+        "archetype_blurb": archetype["blurb"],       # one-line identity hook for the landing preview
+        "top_dimension": top_dim,
         "phase": phase["name"],
         "entrepreneurial_10": entre_10,
         "quote": about_you.get("strength") or persona_line,
-        # display-calibrated six dimensions (same band the report radar shows) so the
-        # landing-page teaser can draw the person's OWN radar exhibit, not a generic one.
+        # "you may perform best where you have {best_environment}" — reuses the report's own
+        # dimension->environment map (page 33) so the teaser and the paid report agree.
+        "best_environment": NEED_BY_DIM.get(top_dim, "room to do your best work"),
+        # display-calibrated six dimensions (same band the report bars show) so the
+        # landing-page teaser can draw the person's OWN bar chart, not a generic one.
         "dimensions": {k: _disp(v) for k, v in dims.items()},
     }
 
