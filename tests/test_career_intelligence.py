@@ -5,6 +5,7 @@ DEMO_MODE's /api/_demo_pay, fetch the served report HTML. English only — no /h
 twin, no Hindi assertions (deliberate, per docs/career-intelligence-report-spec.md)."""
 
 import api
+import db_v2
 
 # exactly the 5 fields the funnel form sends — no employment_situation/experience.
 CAREER_INTEL = {"name": "Intel Tester", "dob": "1972-03-14", "tob": "10:30",
@@ -106,6 +107,33 @@ def test_career_intelligence_narrative_varies(client):
     pb = [s for s in re.split(r'(?=<section class="page)', b) if 'class="page' in s]
     differ = sum(1 for x, y in zip(pa, pb) if x != y)
     assert differ >= 40, f"only {differ}/57 pages differ — narrative not personalized"
+
+
+def test_career_intelligence_form_sends_phone_to_kundli(client):
+    """Regression: this page REQUIRES the WhatsApp number in the main form, so it must
+    send it with /api/kundli — otherwise the lead is created only at /api/order and
+    every visitor who gets the free snapshot but doesn't click unlock is dropped
+    (their number lived only in the browser). Guards the exact bug that shipped."""
+    html = client.get("/en/career-intelligence").text
+    assert 'id="f-whatsapp"' in html           # the number IS collected up front in the form
+    assert "phone: waPhone" in html            # ...and IS sent in the /api/kundli create body
+
+
+def test_career_intelligence_phone_creates_lead_at_submit(client):
+    """Real-path: posting the funnel payload WITH phone (as the page now does) creates
+    + links the account at report creation, capturing the lead even if the visitor
+    never reaches checkout — same lead-at-submit contract as the main-form funnels."""
+    rid = _create(client, phone="98765 01199")["report_id"]
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT u.country_code, u.mobile FROM reports r "
+                        "JOIN users u ON u.id = r.user_id WHERE r.id=%s", (rid,))
+            row = cur.fetchone()
+    finally:
+        conn.close()
+    assert row is not None, "no user linked at submit — lead not captured"
+    assert f"{row[0] or ''}{row[1] or ''}" == "+919876501199"
 
 
 def test_career_intelligence_pdf_generates(client):
