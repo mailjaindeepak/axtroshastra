@@ -186,19 +186,19 @@ def _stay_switch_verdict(phase, windows, peak_year, dims):
 
     if peak_year == 1 and md_lord in _GROWTH_LORDS and best_score >= 6.0:
         verdict = "Switch"
-        tag = "Your chart favours making the move now."
+        tag = "Your chart favours making the move now — your current dasha supports forward action."
         detail = ("The strongest career-movement window of the next three years is open now, and "
                   "your current phase supports forward action.")
     elif peak_year <= 2 and has_windows and md_lord in _GROWTH_LORDS:
         verdict = "Explore"
-        tag = "Your chart favours exploring options and acting within the next two years."
+        tag = "Your chart favours exploring options — your current dasha supports initiative."
         detail = ("A career-movement window is approaching, and your current phase supports "
                   "initiative — this is a time to position and be ready.")
     elif has_windows and peak_year >= 2:
         verdict = "Prepare"
         tag = "Your chart favours preparing before making the bigger move."
-        detail = (f"The strongest window opens in Year {peak_year}. The current phase is better "
-                  f"suited to groundwork than to the move itself.")
+        detail = ("A stronger window is ahead. The current phase is better "
+                  "suited to groundwork than to the move itself.")
     else:
         verdict = "Stay"
         tag = "Your chart favours consolidating where you are for now."
@@ -209,15 +209,16 @@ def _stay_switch_verdict(phase, windows, peak_year, dims):
 
 def _best_window_verdict(windows, peak_year, three_year):
     """Q3: When is the best time to change jobs?"""
+    bwr = three_year.get("best_window")
     if not windows:
-        return {"has_window": False, "year": None,
+        return {"has_window": False, "year": None, "best_window_range": None,
                 "signal": "No strong job-change window in the next three years — a steadier period.",
                 "detail": "Your chart does not show a qualifying career-movement window in the near term. "
                           "This favours deepening where you are over seeking a move."}
     return {"has_window": True, "year": peak_year,
-            "best_window_range": three_year.get("best_window"),
-            "signal": "We've identified a stronger window for career movement.",
-            "detail": f"The strongest career-movement opening falls in Year {peak_year} of the next three."}
+            "best_window_range": bwr,
+            "signal": f"Around {bwr} — the strongest career-movement opening in the next three years." if bwr else "We've identified a stronger window for career movement.",
+            "detail": f"The strongest career-movement opening falls around {bwr}." if bwr else f"The strongest career-movement opening falls in Year {peak_year} of the next three."}
 
 
 def _promotion_outlook(g, dims, windows, peak_year):
@@ -244,8 +245,7 @@ def _promotion_outlook(g, dims, windows, peak_year):
         route_detail = "a role change or external move rather than promotion within the current structure"
 
     signal = f"Your chart shows {visibility} professional visibility and authority ahead."
-    detail = (f"Growth is more likely through {route_detail}. "
-              f"The timing lines up with Year {peak_year} of the next three.")
+    detail = f"Growth is more likely through {route_detail}."
     return {"visibility": visibility, "route": route, "how": how,
             "signal": signal, "detail": detail, "year": peak_year}
 
@@ -271,6 +271,7 @@ def _income_periods(dims, life_stage, g):
     peak_band = max(life_stage, key=lambda b: b["score"])
     return {"shape": shape, "signal": signal,
             "peak_band": peak_band["band"],
+            "peak_band_label": f"ages {peak_band['band']}",
             "financial_strength": fin_strength}
 
 
@@ -299,7 +300,7 @@ def _business_verdict(naukri):
             "score": round(score), "lean": lean}
 
 
-def _three_year_phases(phase, peak_year, three_year):
+def _three_year_phases(phase, peak_year, three_year, today=None):
     """Q7: What will the next 3 years of my career look like?"""
     PHASE_MAP = {
         1: ["The window — make the move", "Build on the move", "Consolidate the gain"],
@@ -307,8 +308,11 @@ def _three_year_phases(phase, peak_year, three_year):
         3: ["Position and prepare", "Build momentum", "The window — make the move"],
     }
     phases = PHASE_MAP.get(peak_year, PHASE_MAP[2])
+    yr = today.year if today else datetime.utcnow().year
+    year_labels = [str(yr), str(yr + 1), str(yr + 2)]
     return {"year_phases": phases, "peak_year": peak_year,
-            "best_window": three_year.get("best_window")}
+            "best_window": three_year.get("best_window"),
+            "year_labels": year_labels}
 
 
 def _best_role(archetype, dims, top_dim):
@@ -329,22 +333,29 @@ def _best_role(archetype, dims, top_dim):
             "signal": f"Roles built around {environment}."}
 
 
-def _twelve_month_focus(phase, peak_year, dims):
+def _twelve_month_focus(phase, peak_year, dims, year_labels=None):
     """Q9: What should I do — and what should I avoid — over the next 12 months?"""
     md_lord = phase["md_lord"]
     ranked = sorted(dims, key=dims.get, reverse=True)
     top = ranked[0]
     bottom = ranked[-1]
 
+    peak_yr = year_labels[peak_year - 1] if year_labels else str(peak_year)
+
+    DIM_LABEL = {"leadership": "leadership visibility", "strategic": "strategic depth",
+                 "independence": "independent positioning", "entrepreneurial": "entrepreneurial bets",
+                 "risk": "high-stakes opportunities", "stability": "structural foundations"}
+    top_action = DIM_LABEL.get(top, "your strongest trait")
+
     if peak_year == 1:
-        do_focus = "Act on career opportunities now — the window is open"
-        avoid = "Waiting for a 'better' moment — this is the moment"
+        do_focus = f"Act on career opportunities now — lean into {top_action}"
+        avoid = "Overthinking the timing — your chart says move"
     elif peak_year == 2:
-        do_focus = "Position yourself for the Year 2 window — build relationships and visibility"
+        do_focus = f"Build relationships and visibility — position for {peak_yr}"
         avoid = "Making a premature move before the groundwork is set"
     else:
-        do_focus = "Invest in deepening expertise and building your professional base"
-        avoid = "Forcing a career move before Year 3's window opens"
+        do_focus = f"Invest in {top_action} — strengthen your base before {peak_yr}"
+        avoid = "Forcing a career move in a preparation phase"
 
     return {"do": do_focus, "avoid": avoid,
             "signal": f"A concrete plan for what to pursue and what to hold off on."}
@@ -407,15 +418,16 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
     top_dim = max(dims, key=dims.get)
 
     # --- 9-question verdicts (NEW) -------------------------------------------
+    bwr = three_year.get("best_window")
     v_outlook = _career_outlook_verdict(phase, windows, peak_year, life_stage)
     v_stay_switch = _stay_switch_verdict(phase, windows, peak_year, dims)
     v_window = _best_window_verdict(windows, peak_year, three_year)
     v_promotion = _promotion_outlook(g, dims, windows, peak_year)
     v_income = _income_periods(dims, life_stage, g)
     v_business = _business_verdict(naukri)
-    v_3year = _three_year_phases(phase, peak_year, three_year)
+    v_3year = _three_year_phases(phase, peak_year, three_year, today=today)
     v_role = _best_role(archetype, dims, top_dim)
-    v_12month = _twelve_month_focus(phase, peak_year, dims)
+    v_12month = _twelve_month_focus(phase, peak_year, dims, year_labels=v_3year["year_labels"])
 
     verdicts = {
         "outlook": v_outlook,           # Q1

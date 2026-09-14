@@ -253,13 +253,13 @@ CI_BODY = r'''<section class="page sand"><div class="col">
   <div class="vdash">
     <div class="vq"><div class="vn">1</div><div class="vb"><div class="vql">Will my career improve from here?</div><div class="vt v-grn" id="vd-outlook">YES — Stronger career growth lies ahead.</div></div></div>
     <div class="vq"><div class="vn">2</div><div class="vb"><div class="vql">Should I stay in my current job or switch?</div><div class="vt v-amb" id="vd-stayswitch">Prepare — your chart favours preparing before making the bigger move.</div></div></div>
-    <div class="vq"><div class="vn">3</div><div class="vb"><div class="vql">When is the best time to change jobs?</div><div class="vt v-blu" id="vd-window">Year 3 — the strongest career-movement opening falls in Year 3 of the next three.</div></div></div>
+    <div class="vq"><div class="vn">3</div><div class="vb"><div class="vql">When is the best time to change jobs?</div><div class="vt v-blu" id="vd-window">Around Apr – Sep 2029 — the strongest career-movement opening in the next three years.</div></div></div>
     <div class="vq"><div class="vn">4</div><div class="vb"><div class="vql">When will I get my next promotion or breakthrough?</div><div class="vt v-grn" id="vd-promotion">Visibility rising — growth is more likely through promotion into a named authority role.</div></div></div>
-    <div class="vq"><div class="vn">5</div><div class="vb"><div class="vql">When will my income and career growth improve?</div><div class="vt v-blu" id="vd-income">Steady compounding — your chart indicates a compounding financial trajectory.</div></div></div>
+    <div class="vq"><div class="vn">5</div><div class="vb"><div class="vql">When will my income and career growth improve?</div><div class="vt v-blu" id="vd-income">Steady compounding — your chart indicates a compounding financial trajectory, peaking around ages 45–50.</div></div></div>
     <div class="vq"><div class="vn">6</div><div class="vb"><div class="vql">Should I stay in a job or start a business?</div><div class="vt v-amb" id="vd-business">Career-leaning — your chart leans toward senior career and advisory work.</div></div></div>
-    <div class="vq"><div class="vn">7</div><div class="vb"><div class="vql">What will the next 3 years look like?</div><div class="vt v-blu" id="vd-3year">Position &rarr; Build momentum &rarr; The window.</div></div></div>
+    <div class="vq"><div class="vn">7</div><div class="vb"><div class="vql">What will the next 3 years look like?</div><div class="vt v-blu" id="vd-3year">2027: Position &rarr; 2028: Build momentum &rarr; 2029: The window.</div></div></div>
     <div class="vq"><div class="vn">8</div><div class="vb"><div class="vql">What kind of role will bring the most success?</div><div class="vt v-grn" id="vd-role">Roles built around authority and decision-making responsibility.</div></div></div>
-    <div class="vq"><div class="vn">9</div><div class="vb"><div class="vql">What should I do — and avoid — over the next 12 months?</div><div class="vt v-amb" id="vd-12month">Invest in deepening expertise. Avoid forcing a career move before Year 3.</div></div></div>
+    <div class="vq"><div class="vn">9</div><div class="vb"><div class="vql">What should I do — and avoid — over the next 12 months?</div><div class="vt v-amb" id="vd-12month">Invest in leadership visibility — strengthen your base before 2029. Avoid: forcing a career move in a preparation phase.</div></div></div>
   </div>
   <div class="take" style="margin-top:10px"><b>The rest of this report</b>Each answer above is explored in detail across the pages that follow — the reasoning, the astrological basis, and the action plan.</div>
 </div><div class="pgn"></div></section>
@@ -267,19 +267,19 @@ CI_BODY = r'''<section class="page sand"><div class="col">
 <!-- V2 YOUR CAREER TIMELINE (exhibit) -->
 <section class="page"><div class="col">
   <div class="eyebrow">Your career timeline</div>
-  <h2 class="action" id="vd-tl-head">Your best window for a career move is in Year 3 — position for it now.</h2>
+  <h2 class="action" id="vd-tl-head">Your best window for a career move is around Apr – Sep 2029 — position for it now.</h2>
   <div class="subtit" id="vd-tl-sub">Your next three years at a glance</div>
   <div class="tl3" id="vd-timeline">
-    <div class="tly"><div class="tlyh">Year 1</div><div class="tlyphase ph-pos">Positioning</div><div class="tlyp">Sharpen focus. Build relationships. Invisible groundwork.</div></div>
-    <div class="tly"><div class="tlyh">Year 2</div><div class="tlyphase ph-exp">Building</div><div class="tlyp">Wider scope. Doors opening. Momentum compounding.</div></div>
-    <div class="tly pk"><div class="tlyh">Year 3</div><div class="tlyphase ph-win">The window</div><div class="tlyp">The strongest opening. Make the move here.</div><div class="tlypeak" id="vd-peak">Peak: the strongest stretch of the three years</div></div>
+    <div class="tly"><div class="tlyh">2027</div><div class="tlyphase ph-pos">Positioning</div><div class="tlyp">Sharpen focus. Build relationships. Invisible groundwork.</div></div>
+    <div class="tly"><div class="tlyh">2028</div><div class="tlyphase ph-exp">Building</div><div class="tlyp">Wider scope. Doors opening. Momentum compounding.</div></div>
+    <div class="tly pk"><div class="tlyh">2029</div><div class="tlyphase ph-win">The window</div><div class="tlyp">The strongest opening. Make the move here.</div><div class="tlypeak" id="vd-peak">Peak: around Apr – Sep 2029</div></div>
   </div>
   <div class="scores" style="margin-top:14px">
-    <div class="sr"><div class="num" style="background:#E8F5E9;color:#2D7A3A">1</div><div class="st"><b>Year 1 — Groundwork</b><br><span style="font-size:12px;color:var(--muted)">Not visible moves. Name it, seed relationships.</span></div></div>
-    <div class="sr"><div class="num" style="background:#FFF8E1;color:#B8860B">2</div><div class="st"><b>Year 2 — Build momentum</b><br><span style="font-size:12px;color:var(--muted)">The connective year. Scope widens.</span></div></div>
-    <div class="sr"><div class="num" style="background:#E8EAF6;color:#5E35B1">3</div><div class="st"><b>Year 3 — The window</b><br><span style="font-size:12px;color:var(--muted)">Strongest opening. The move belongs here.</span></div></div>
+    <div class="sr"><div class="num" style="background:#E8F5E9;color:#2D7A3A">1</div><div class="st"><b>2027 — Groundwork</b><br><span style="font-size:12px;color:var(--muted)">Not visible moves. Name it, seed relationships.</span></div></div>
+    <div class="sr"><div class="num" style="background:#FFF8E1;color:#B8860B">2</div><div class="st"><b>2028 — Build momentum</b><br><span style="font-size:12px;color:var(--muted)">The connective year. Scope widens.</span></div></div>
+    <div class="sr"><div class="num" style="background:#E8EAF6;color:#5E35B1">3</div><div class="st"><b>2029 — The window</b><br><span style="font-size:12px;color:var(--muted)">Strongest opening. The move belongs here.</span></div></div>
   </div>
-  <div class="take"><b>The read</b>Lay the groundwork through Years 1 and 2 so the larger move in Year 3 lands with full force.</div>
+  <div class="take"><b>The read</b>Lay the groundwork through 2027 and 2028 so the larger move around Apr – Sep 2029 lands with full force.</div>
 </div><div class="pgn"></div></section>
 
 <!-- 2 NOTE -->

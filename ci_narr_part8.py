@@ -19,21 +19,23 @@ def _v(p):
 # -------------------------------------------------------- V1: verdict dashboard
 
 _VD_OUTLOOK_OLD = 'YES — Stronger career growth lies ahead.'
-_VD_STAYSWITCH_OLD = ('Prepare — your chart favours preparing before '
-                      'making the bigger move.')
-_VD_WINDOW_OLD = ('Year 3 — the strongest career-movement opening '
-                  'falls in Year 3 of the next three.')
+_VD_STAYSWITCH_OLD = ('Prepare — your chart favours preparing before making '
+                      'the bigger move.')
+_VD_WINDOW_OLD = ('Around Apr – Sep 2029 — the strongest career-movement '
+                  'opening in the next three years.')
 _VD_PROMOTION_OLD = ('Visibility rising — growth is more likely through '
                      'promotion into a named authority role.')
-_VD_INCOME_OLD = ('Steady compounding — your chart indicates a '
-                  'compounding financial trajectory.')
+_VD_INCOME_OLD = ('Steady compounding — your chart indicates a compounding '
+                  'financial trajectory, peaking around ages 45–50.')
 _VD_BUSINESS_OLD = ('Career-leaning — your chart leans toward senior '
                     'career and advisory work.')
-_VD_3YEAR_OLD = ('Position &rarr; Build momentum &rarr; The window.')
+_VD_3YEAR_OLD = ('2027: Position &rarr; 2028: Build momentum '
+                 '&rarr; 2029: The window.')
 _VD_ROLE_OLD = ('Roles built around authority and decision-making '
                 'responsibility.')
-_VD_12MONTH_OLD = ('Invest in deepening expertise. Avoid forcing a '
-                   'career move before Year 3.')
+_VD_12MONTH_OLD = ('Invest in leadership visibility — strengthen your '
+                   'base before 2029. Avoid: forcing a career move '
+                   'in a preparation phase.')
 
 
 def _verdict_dashboard(p, dd):
@@ -47,16 +49,15 @@ def _verdict_dashboard(p, dd):
             pairs.append((_VD_OUTLOOK_OLD, new))
 
     ss = v.get("stay_switch") or {}
-    if ss.get("verdict"):
-        new = f'{ss["verdict"]} — {ss.get("tag", "")}'.rstrip(' — ')
+    if ss.get("tag"):
+        new = f'{ss["verdict"]} — {ss["tag"]}'
         if new != _VD_STAYSWITCH_OLD:
             pairs.append((_VD_STAYSWITCH_OLD, new))
 
     win = v.get("window") or {}
-    peak = win.get("year")
-    if win.get("has_window") and peak:
-        new = (f'Year {peak} — the strongest career-movement opening '
-               f'falls in Year {peak} of the next three.')
+    bwr = win.get("best_window_range")
+    if win.get("has_window") and bwr:
+        new = f'Around {bwr} — the strongest career-movement opening in the next three years.'
     elif win.get("has_window") is False:
         new = win.get("signal", "No strong job-change window in the next three years.")
     else:
@@ -84,10 +85,12 @@ def _verdict_dashboard(p, dd):
                        "step-up": "Step-up growth",
                        "gradual": "Gradual trajectory"}.get(inc["shape"], "Steady compounding")
         shape_detail = {"steady-compound": "your chart indicates a compounding financial trajectory",
-                        "step-up": "your chart indicates income growth in steps — periods of plateau, then a step up",
+                        "step-up": "your chart indicates income growth in steps, then a significant jump",
                         "gradual": "your chart indicates a gradual but dependable earning trajectory"
                         }.get(inc["shape"], "")
-        new = f'{shape_label} — {shape_detail}.'
+        peak_band = inc.get("peak_band_label", "")
+        peak_txt = f", peaking around {peak_band}" if peak_band else ""
+        new = f'{shape_label} — {shape_detail}{peak_txt}.'
         if new != _VD_INCOME_OLD:
             pairs.append((_VD_INCOME_OLD, new))
 
@@ -104,8 +107,9 @@ def _verdict_dashboard(p, dd):
 
     ty = v.get("three_year") or {}
     yp = ty.get("year_phases")
-    if yp and len(yp) == 3:
-        new = f'{yp[0]} &rarr; {yp[1]} &rarr; {yp[2]}.'
+    yl = ty.get("year_labels")
+    if yp and len(yp) == 3 and yl and len(yl) == 3:
+        new = f'{yl[0]}: {yp[0]} &rarr; {yl[1]}: {yp[1]} &rarr; {yl[2]}: {yp[2]}.'
         if new != _VD_3YEAR_OLD:
             pairs.append((_VD_3YEAR_OLD, new))
 
@@ -118,8 +122,6 @@ def _verdict_dashboard(p, dd):
     tm = v.get("twelve_month") or {}
     if tm.get("do") and tm.get("avoid"):
         new = f'{tm["do"]}. Avoid: {tm["avoid"].lower() if tm["avoid"][0].isupper() else tm["avoid"]}.'
-        if '— ' in new:
-            new = new.replace('— ', '— ').rstrip('.')  + '.'
         if new != _VD_12MONTH_OLD:
             pairs.append((_VD_12MONTH_OLD, new))
 
@@ -128,39 +130,35 @@ def _verdict_dashboard(p, dd):
 
 # -------------------------------------------------------- V2: career timeline
 
-_TL_HEAD_OLD = ('Your best window for a career move is in Year 3 '
-                '— position for it now.')
-_TL_SUB_OLD = 'Your next three years at a glance'
+_TL_HEAD_OLD = ('Your best window for a career move is around '
+                'Apr – Sep 2029 — position for it now.')
 
-_TL_Y1_PHASE_OLD = 'Positioning'
-_TL_Y1_DESC_OLD = 'Sharpen focus. Build relationships. Invisible groundwork.'
-_TL_Y2_PHASE_OLD = 'Building'
-_TL_Y2_DESC_OLD = 'Wider scope. Doors opening. Momentum compounding.'
-_TL_Y3_PHASE_OLD = 'The window'
-_TL_Y3_DESC_OLD = 'The strongest opening. Make the move here.'
-_TL_PEAK_OLD = 'Peak: the strongest stretch of the three years'
-
-_TL_READ_OLD = ('Lay the groundwork through Years 1 and 2 so the '
-                'larger move in Year 3 lands with full force.')
-
-# The entire 3-year timeline block (mock = peak at Year 3)
 _TL3_OLD = (
     '<div class="tl3" id="vd-timeline">\n'
-    '    <div class="tly"><div class="tlyh">Year 1</div>'
+    '    <div class="tly"><div class="tlyh">2027</div>'
     '<div class="tlyphase ph-pos">Positioning</div>'
     '<div class="tlyp">Sharpen focus. Build relationships. Invisible groundwork.</div></div>\n'
-    '    <div class="tly"><div class="tlyh">Year 2</div>'
+    '    <div class="tly"><div class="tlyh">2028</div>'
     '<div class="tlyphase ph-exp">Building</div>'
     '<div class="tlyp">Wider scope. Doors opening. Momentum compounding.</div></div>\n'
-    '    <div class="tly pk"><div class="tlyh">Year 3</div>'
+    '    <div class="tly pk"><div class="tlyh">2029</div>'
     '<div class="tlyphase ph-win">The window</div>'
     '<div class="tlyp">The strongest opening. Make the move here.</div>'
-    '<div class="tlypeak" id="vd-peak">Peak: the strongest stretch of the three years</div></div>\n'
+    '<div class="tlypeak" id="vd-peak">Peak: around Apr – Sep 2029</div></div>\n'
     '  </div>'
 )
 
+_SC_OLD = [
+    ('<b>2027 — Groundwork</b>', 'Not visible moves. Name it, seed relationships.'),
+    ('<b>2028 — Build momentum</b>', 'The connective year. Scope widens.'),
+    ('<b>2029 — The window</b>', 'Strongest opening. The move belongs here.'),
+]
 
-def _tl3_block(pk, descs, labels, peak_txt):
+_TL_READ_OLD = ('Lay the groundwork through 2027 and 2028 so the '
+                'larger move around Apr – Sep 2029 lands with full force.')
+
+
+def _tl3_block(pk, descs, labels, peak_txt, year_labels):
     """Build the entire timeline block with .pk on the correct year."""
     CSS_MAP = {
         1: ["ph-win", "ph-exp", "ph-pos"],
@@ -174,7 +172,7 @@ def _tl3_block(pk, descs, labels, peak_txt):
         peak_div = (f'<div class="tlypeak" id="vd-peak">{peak_txt}</div>'
                     if (i + 1) == pk else '')
         rows.append(
-            f'    <div class="{cls}"><div class="tlyh">Year {i+1}</div>'
+            f'    <div class="{cls}"><div class="tlyh">{year_labels[i]}</div>'
             f'<div class="tlyphase {css[i]}">{labels[i]}</div>'
             f'<div class="tlyp">{descs[i]}</div>{peak_div}</div>'
         )
@@ -186,19 +184,23 @@ def _career_timeline(p, dd):
     ty = v.get("three_year") or {}
     pk = ty.get("peak_year")
     yp = ty.get("year_phases")
+    yl = ty.get("year_labels")
     win = v.get("window") or {}
     best_window = ty.get("best_window") or win.get("best_window_range")
 
-    if not pk or not yp or len(yp) != 3:
+    if not pk or not yp or len(yp) != 3 or not yl or len(yl) != 3:
         return []
 
     pairs = []
 
-    head = {
-        1: "Your best window for a career move is right now — act on it.",
-        2: "Your best window for a career move is in Year 2 — position for it now.",
-        3: "Your best window for a career move is in Year 3 — position for it now.",
-    }[pk]
+    if best_window:
+        head = f"Your best window for a career move is around {best_window} — {'act on it' if pk == 1 else 'position for it now'}."
+    else:
+        head = {
+            1: "Your best window for a career move is right now — act on it.",
+            2: "Your best window for a career move is in the next two years — position for it now.",
+            3: "Your best window for a career move is ahead — position for it now.",
+        }[pk]
     if head != _TL_HEAD_OLD:
         pairs.append((_TL_HEAD_OLD, head))
 
@@ -229,37 +231,38 @@ def _career_timeline(p, dd):
     descs = YEAR_DESC[pk]
     peak_txt = f'Peak: around {best_window}' if best_window else 'Peak: the strongest stretch of the three years'
 
-    tl3_new = _tl3_block(pk, descs, labels, peak_txt)
+    tl3_new = _tl3_block(pk, descs, labels, peak_txt, yl)
     if tl3_new != _TL3_OLD:
         pairs.append((_TL3_OLD, tl3_new))
 
     # scores section — uses <b> tags so replacements are unique
-    _SC_OLD = [
-        ('<b>Year 1 — Groundwork</b>', 'Not visible moves. Name it, seed relationships.'),
-        ('<b>Year 2 — Build momentum</b>', 'The connective year. Scope widens.'),
-        ('<b>Year 3 — The window</b>', 'Strongest opening. The move belongs here.'),
-    ]
-    _SC_NEW = {
-        1: [('<b>Year 1 — The window</b>', 'The strongest opening. Make the move now.'),
-            ('<b>Year 2 — Build on the move</b>', 'The connective year. Scope widens.'),
-            ('<b>Year 3 — Consolidate</b>', 'Settle into the new ground.')],
-        2: [('<b>Year 1 — Groundwork</b>', 'Not visible moves. Name it, seed relationships.'),
-            ('<b>Year 2 — The window</b>', 'The strongest opening. Make the move here.'),
-            ('<b>Year 3 — Consolidate</b>', 'Settle into the new ground.')],
-        3: _SC_OLD,
+    _SC_NEW_LABELS = {
+        1: [(f'<b>{yl[0]} — The window</b>', 'The strongest opening. Make the move now.'),
+            (f'<b>{yl[1]} — Build on the move</b>', 'The connective year. Scope widens.'),
+            (f'<b>{yl[2]} — Consolidate</b>', 'Settle into the new ground.')],
+        2: [(f'<b>{yl[0]} — Groundwork</b>', 'Not visible moves. Name it, seed relationships.'),
+            (f'<b>{yl[1]} — The window</b>', 'The strongest opening. Make the move here.'),
+            (f'<b>{yl[2]} — Consolidate</b>', 'Settle into the new ground.')],
+        3: [(f'<b>{yl[0]} — Groundwork</b>', 'Not visible moves. Name it, seed relationships.'),
+            (f'<b>{yl[1]} — Build momentum</b>', 'The connective year. Scope widens.'),
+            (f'<b>{yl[2]} — The window</b>', 'Strongest opening. The move belongs here.')],
     }
-    sc = _SC_NEW.get(pk, _SC_OLD)
+    sc = _SC_NEW_LABELS.get(pk, _SC_NEW_LABELS[3])
     for i in range(3):
         if _SC_OLD[i][0] != sc[i][0]:
             pairs.append((_SC_OLD[i][0], sc[i][0]))
         if _SC_OLD[i][1] != sc[i][1]:
             pairs.append((_SC_OLD[i][1], sc[i][1]))
 
-    read = {
-        1: "The window is open now — act in Year 1, then spend Years 2 and 3 compounding it.",
-        2: "Prepare in Year 1 so you can act decisively in Year 2.",
-        3: "Lay the groundwork through Years 1 and 2 so the larger move in Year 3 lands with full force.",
-    }[pk]
+    peak_yr_label = yl[pk - 1]
+    if pk == 1:
+        read = f"The window is open now — act in {yl[0]}, then spend {yl[1]} and {yl[2]} compounding it."
+    elif pk == 2:
+        bw = f" around {best_window}" if best_window else ""
+        read = f"Prepare in {yl[0]} so you can act decisively{bw} in {yl[1]}."
+    else:
+        bw = f" around {best_window}" if best_window else ""
+        read = f"Lay the groundwork through {yl[0]} and {yl[1]} so the larger move{bw} in {yl[2]} lands with full force."
     if read != _TL_READ_OLD:
         pairs.append((_TL_READ_OLD, read))
 
