@@ -456,7 +456,7 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
         "career_outlook_detail": v_outlook["detail"],
         "stay_switch_verdict": v_stay_switch["verdict"],
         "stay_switch_tag": v_stay_switch["tag"],
-        "window_signal": v_window["signal"],
+        "window_signal": "We've identified your strongest career-movement window — month and year inside.",
         "promotion_signal": v_promotion["signal"],
         "business_signal": v_business["signal"],
     }
