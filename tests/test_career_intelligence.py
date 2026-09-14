@@ -35,22 +35,24 @@ def test_career_intelligence_page_serves_200(client):
     assert "kundliForm" in r.text and "startPayment" in r.text
 
 
-def test_career_intelligence_preview_is_bars_not_radar(client):
-    """The redesigned preview renders the six dimensions as a BAR chart with the
-    'Your Career DNA' framing, the 'what stands out' block and the 5 locked
-    questions — and no longer the old hexagon radar."""
+def test_career_intelligence_preview_is_verdict_style(client):
+    """The redesigned preview renders verdict-style answers: a cover card,
+    Q1 career outlook answered fully, Q2 stay/switch with bold verdict word,
+    Q3-Q6 teased with signal + lock, and Q5/Q7-Q9 listed as 'also answers'."""
     html = client.get("/en/career-intelligence").text
-    assert "Your Career DNA" in html
-    assert "function drawBars(" in html and "id=\"tv-bars\"" in html
-    assert "What stands out" in html and "id=\"tv-combo\"" in html and "id=\"tv-env\"" in html
-    for q in ("When are your strongest career years?",
-              "How are you most likely to build wealth?",
-              "What career moves should you avoid right now?",
-              "What do the next 3 years look like?",
-              "What should you prioritize over the next 12 months?"):
-        assert q in html, q
-    # the old radar is gone
-    assert "function drawRadar(" not in html and "tv-radar" not in html
+    assert "Career Intelligence Report" in html
+    assert "ps-cover" in html
+    assert "tv-cv-name" in html
+    assert "YOUR CAREER OUTLOOK" in html or "Your career outlook" in html
+    assert "tv-outlook" in html
+    assert "tv-ss-verdict" in html
+    assert "Should you stay or switch?" in html
+    assert "When should you change jobs?" in html
+    assert "Job or business?" in html
+    assert "also answers" in html.lower() or "also answers" in html
+    # the old Career DNA bars and radar are gone
+    assert "Your Career DNA" not in html
+    assert "function drawRadar(" not in html
 
 
 def test_career_intelligence_bare_path_redirects_to_en(client):
@@ -64,9 +66,9 @@ def test_career_intelligence_is_english_only(client):
     assert client.get("/hi/career-intelligence").status_code == 404
 
 
-def test_career_intelligence_report_renders_57_cards(client):
+def test_career_intelligence_report_renders_59_cards(client):
     html = _paid_report_html(client)
-    assert html.count('<section class="page') == 57
+    assert html.count('<section class="page') == 59
     assert "Intel Tester" in html            # identity injected
     assert "Rajesh Menon" not in html        # the mock persona must not leak
 
