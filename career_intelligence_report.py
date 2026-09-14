@@ -140,6 +140,215 @@ MD_PHASE_BASIS = {
     "Ketu": "a Ketu-ruled period — letting go of the old and refocusing",
 }
 
+# --- phase-based growth direction (used by Q1 outlook + Q2 stay/switch) ----------
+_GROWTH_LORDS = {"Sun", "Jupiter", "Mars", "Rahu"}       # lords whose MD reads as forward/up
+_CONSOLIDATION_LORDS = {"Saturn", "Venus", "Moon", "Mercury", "Ketu"}
+
+
+# ============================================================ VERDICT FUNCTIONS
+# Package existing engine data into direct-answer objects for the 9 career
+# questions. Every claim traces to computed chart data — no LLM, no guessing.
+# Non-deterministic language per spec ("your chart indicates", "may favour").
+
+def _career_outlook_verdict(phase, windows, peak_year, life_stage):
+    """Q1: Will my career improve from here?"""
+    md_lord = phase["md_lord"]
+    has_windows = bool(windows)
+    if md_lord in _GROWTH_LORDS and has_windows:
+        direction = "improving"
+        verdict = "YES — Stronger career growth lies ahead."
+        detail = (f"You are currently in a {phase['name'].lower()} phase. Your chart indicates "
+                  f"that the stronger professional period is still ahead of you.")
+    elif md_lord in _GROWTH_LORDS:
+        direction = "improving"
+        verdict = "YES — Your current phase favours forward movement."
+        detail = (f"You are in a {phase['name'].lower()} phase — a period that tends to "
+                  f"reward initiative and expansion.")
+    elif has_windows:
+        direction = "building"
+        verdict = "YES — After a repositioning phase, growth lies ahead."
+        detail = (f"You are currently in a {phase['name'].lower()} phase. Your chart indicates "
+                  f"that the stronger professional period is still ahead of you.")
+    else:
+        direction = "preparing"
+        verdict = "YES — A transition period that opens into stronger ground."
+        detail = (f"You are currently in a {phase['name'].lower()} phase. The chart favours "
+                  f"using this period to prepare — the returns come once the ground is set.")
+    return {"direction": direction, "verdict": verdict, "detail": detail}
+
+
+def _stay_switch_verdict(phase, windows, peak_year, dims):
+    """Q2: Should I stay in my current job or switch?
+    4-way classification: Switch / Explore / Prepare / Stay."""
+    md_lord = phase["md_lord"]
+    has_windows = bool(windows)
+    best_score = max((w["score"] for w in windows), default=0)
+
+    if peak_year == 1 and md_lord in _GROWTH_LORDS and best_score >= 6.0:
+        verdict = "Switch"
+        tag = "Your chart favours making the move now."
+        detail = ("The strongest career-movement window of the next three years is open now, and "
+                  "your current phase supports forward action.")
+    elif peak_year <= 2 and has_windows and md_lord in _GROWTH_LORDS:
+        verdict = "Explore"
+        tag = "Your chart favours exploring options and acting within the next two years."
+        detail = ("A career-movement window is approaching, and your current phase supports "
+                  "initiative — this is a time to position and be ready.")
+    elif has_windows and peak_year >= 2:
+        verdict = "Prepare"
+        tag = "Your chart favours preparing before making the bigger move."
+        detail = (f"The strongest window opens in Year {peak_year}. The current phase is better "
+                  f"suited to groundwork than to the move itself.")
+    else:
+        verdict = "Stay"
+        tag = "Your chart favours consolidating where you are for now."
+        detail = ("The current phase reads as a consolidation period — strengthen your position "
+                  "rather than chase a new one.")
+    return {"verdict": verdict, "tag": tag, "detail": detail}
+
+
+def _best_window_verdict(windows, peak_year, three_year):
+    """Q3: When is the best time to change jobs?"""
+    if not windows:
+        return {"has_window": False, "year": None,
+                "signal": "No strong job-change window in the next three years — a steadier period.",
+                "detail": "Your chart does not show a qualifying career-movement window in the near term. "
+                          "This favours deepening where you are over seeking a move."}
+    return {"has_window": True, "year": peak_year,
+            "best_window_range": three_year.get("best_window"),
+            "signal": "We've identified a stronger window for career movement.",
+            "detail": f"The strongest career-movement opening falls in Year {peak_year} of the next three."}
+
+
+def _promotion_outlook(g, dims, windows, peak_year):
+    """Q4: When will I get my next promotion or major career breakthrough?"""
+    sun = _d(g, "Sun")
+    saturn = _d(g, "Saturn")
+    leadership = dims["leadership"]
+
+    if sun >= 62:
+        visibility = "rising"
+        how = "through growing professional visibility and recognition"
+    else:
+        visibility = "emerging"
+        how = "through consistent delivery rather than sudden recognition"
+
+    if saturn >= 62 and leadership >= 70:
+        route = "promotion"
+        route_detail = "promotion into a named authority role or a significantly bigger mandate"
+    elif leadership >= 70:
+        route = "bigger mandate"
+        route_detail = "a larger responsibility or mandate — possibly through an external move"
+    else:
+        route = "external move"
+        route_detail = "a role change or external move rather than promotion within the current structure"
+
+    signal = f"Your chart shows {visibility} professional visibility and authority ahead."
+    detail = (f"Growth is more likely through {route_detail}. "
+              f"The timing lines up with Year {peak_year} of the next three.")
+    return {"visibility": visibility, "route": route, "how": how,
+            "signal": signal, "detail": detail, "year": peak_year}
+
+
+def _income_periods(dims, life_stage, g):
+    """Q5: When will my income and career growth improve?"""
+    venus = _d(g, "Venus")
+    jupiter = _d(g, "Jupiter")
+    fin_strength = _avg(venus, jupiter)
+    stability = dims["stability"]
+    entrepreneurial = dims["entrepreneurial"]
+
+    if fin_strength >= 62 and stability >= 60:
+        shape = "steady-compound"
+        signal = "Your chart indicates a compounding financial trajectory — each phase builds on the last."
+    elif entrepreneurial >= 65:
+        shape = "step-up"
+        signal = "Your chart indicates income growth in steps — periods of plateau, then a step up."
+    else:
+        shape = "gradual"
+        signal = "Your chart indicates a gradual but dependable earning trajectory."
+
+    peak_band = max(life_stage, key=lambda b: b["score"])
+    return {"shape": shape, "signal": signal,
+            "peak_band": peak_band["band"],
+            "financial_strength": fin_strength}
+
+
+def _business_verdict(naukri):
+    """Q6: Should I stay in a job or start my own business?"""
+    label = naukri["label"]
+    lean = naukri["lean"]
+    score = naukri["apnakaam_score"]
+
+    if label == "Naukri-leaning":
+        verdict = "Career-leaning"
+        signal = "One path shows stronger long-term potential for you."
+        detail = ("Your chart leans toward building wealth through a senior career "
+                  "or advisory role, with enterprise as a strong secondary option.")
+    elif label == "Apnakaam-leaning":
+        verdict = "Business-leaning"
+        signal = "One path shows stronger long-term potential for you."
+        detail = ("Your chart leans toward building through ownership and enterprise, "
+                  "with a structured career as the dependable base.")
+    else:
+        verdict = "Balanced"
+        signal = "Both paths show potential — the combined play may be your strongest."
+        detail = ("Your chart reads close to even between career and enterprise. "
+                  "A hybrid approach — ownership within a structured setting — may suit you best.")
+    return {"verdict": verdict, "signal": signal, "detail": detail,
+            "score": round(score), "lean": lean}
+
+
+def _three_year_phases(phase, peak_year, three_year):
+    """Q7: What will the next 3 years of my career look like?"""
+    PHASE_MAP = {
+        1: ["The window — make the move", "Build on the move", "Consolidate the gain"],
+        2: ["Position and prepare", "The window — make the move", "Consolidate the gain"],
+        3: ["Position and prepare", "Build momentum", "The window — make the move"],
+    }
+    phases = PHASE_MAP.get(peak_year, PHASE_MAP[2])
+    return {"year_phases": phases, "peak_year": peak_year,
+            "best_window": three_year.get("best_window")}
+
+
+def _best_role(archetype, dims, top_dim):
+    """Q8: What kind of role/work will bring me the most success?"""
+    DIM_ENVIRONMENT = {
+        "leadership": "authority and decision-making responsibility",
+        "strategic": "complexity, long-horizon planning and analytical depth",
+        "independence": "autonomy and self-direction",
+        "entrepreneurial": "ownership and a stake in the outcome",
+        "risk": "calculated bets and fast-moving opportunities",
+        "stability": "structure, reliability and long-term commitment",
+    }
+    ranked = sorted(dims, key=dims.get, reverse=True)
+    top2 = [ranked[0], ranked[1]]
+    environment = DIM_ENVIRONMENT.get(top_dim, "room to use your strongest traits")
+    return {"archetype": archetype["name"], "top_traits": top2,
+            "environment": environment,
+            "signal": f"Roles built around {environment}."}
+
+
+def _twelve_month_focus(phase, peak_year, dims):
+    """Q9: What should I do — and what should I avoid — over the next 12 months?"""
+    md_lord = phase["md_lord"]
+    ranked = sorted(dims, key=dims.get, reverse=True)
+    top = ranked[0]
+    bottom = ranked[-1]
+
+    if peak_year == 1:
+        do_focus = "Act on career opportunities now — the window is open"
+        avoid = "Waiting for a 'better' moment — this is the moment"
+    elif peak_year == 2:
+        do_focus = "Position yourself for the Year 2 window — build relationships and visibility"
+        avoid = "Making a premature move before the groundwork is set"
+    else:
+        do_focus = "Invest in deepening expertise and building your professional base"
+        avoid = "Forcing a career move before Year 3's window opens"
+
+    return {"do": do_focus, "avoid": avoid,
+            "signal": f"A concrete plan for what to pursue and what to hold off on."}
+
 
 def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: float, lon: float,
                                 gender: str = "male", place: str = "",
@@ -196,20 +405,48 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
                if (pl.dignity == "debilitated" or pl.combust) and pl.name in PLANET_LESSON]
 
     top_dim = max(dims, key=dims.get)
+
+    # --- 9-question verdicts (NEW) -------------------------------------------
+    v_outlook = _career_outlook_verdict(phase, windows, peak_year, life_stage)
+    v_stay_switch = _stay_switch_verdict(phase, windows, peak_year, dims)
+    v_window = _best_window_verdict(windows, peak_year, three_year)
+    v_promotion = _promotion_outlook(g, dims, windows, peak_year)
+    v_income = _income_periods(dims, life_stage, g)
+    v_business = _business_verdict(naukri)
+    v_3year = _three_year_phases(phase, peak_year, three_year)
+    v_role = _best_role(archetype, dims, top_dim)
+    v_12month = _twelve_month_focus(phase, peak_year, dims)
+
+    verdicts = {
+        "outlook": v_outlook,           # Q1
+        "stay_switch": v_stay_switch,   # Q2
+        "window": v_window,             # Q3
+        "promotion": v_promotion,       # Q4
+        "income": v_income,             # Q5
+        "business": v_business,         # Q6
+        "three_year": v_3year,          # Q7
+        "role": v_role,                 # Q8
+        "twelve_month": v_12month,      # Q9
+    }
+
     teaser = {
         "name": name,
         "archetype": archetype["name"],
-        "archetype_blurb": archetype["blurb"],       # one-line identity hook for the landing preview
+        "archetype_blurb": archetype["blurb"],
         "top_dimension": top_dim,
         "phase": phase["name"],
         "entrepreneurial_10": entre_10,
         "quote": about_you.get("strength") or persona_line,
-        # "you may perform best where you have {best_environment}" — reuses the report's own
-        # dimension->environment map (page 33) so the teaser and the paid report agree.
         "best_environment": NEED_BY_DIM.get(top_dim, "room to do your best work"),
-        # display-calibrated six dimensions (same band the report bars show) so the
-        # landing-page teaser can draw the person's OWN bar chart, not a generic one.
         "dimensions": {k: _disp(v) for k, v in dims.items()},
+        # verdict teasers — partial answers for the free preview
+        "career_outlook": v_outlook["verdict"],
+        "career_outlook_detail": v_outlook["detail"],
+        "stay_switch_verdict": v_stay_switch["verdict"],
+        "stay_switch_tag": v_stay_switch["tag"],
+        "window_signal": v_window["signal"],
+        "promotion_signal": v_promotion["signal"],
+        "business_signal": v_business["signal"],
     }
 
     return {
@@ -227,6 +464,7 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
         "entrepreneurial": {"score_10": entre_10, "lean": naukri["lean"], "label": naukri["label"]},
         "phase": phase, "three_year": three_year, "life_stage": life_stage,
         "windows": windows, "best_window": best_window,
+        "verdicts": verdicts,
         "strengths": strengths, "lessons": lessons,
         "sade_sati": _sade_sati(g["Moon"].sign, today),
         "current_md": md_lord,
@@ -647,7 +885,7 @@ if __name__ == "__main__" and os.environ.get("CI_RENDER"):
                                     12.9716, 77.5946, place="Bengaluru",
                                     as_of=datetime(2026, 8, 28))
     html = render_career_intelligence(r)
-    assert html.count('<section class="page') == 57, "expected 57 cards (Version C: 55 + contents + thank-you)"
+    assert html.count('<section class="page') == 59, "expected 59 cards (Version C: 55 + contents + thank-you + 2 verdict pages)"
     assert r["archetype"]["name"].replace("The ", "") in html
     open("/tmp/ci_render.html", "w").write(html)
-    print("rendered OK ->", len(html), "chars, 57 pages; wrote /tmp/ci_render.html")
+    print("rendered OK ->", len(html), "chars, 59 pages; wrote /tmp/ci_render.html")

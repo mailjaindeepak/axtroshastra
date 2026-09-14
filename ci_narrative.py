@@ -211,7 +211,7 @@ def _part_builders():
     exposing BUILDERS. Picked up automatically once present."""
     import importlib
     extra = []
-    for n in range(2, 8):
+    for n in range(2, 9):
         try:
             mod = importlib.import_module(f"ci_narr_part{n}")
         except ModuleNotFoundError:

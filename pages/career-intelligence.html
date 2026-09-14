@@ -475,6 +475,37 @@ fbq('track', 'PageView');
   .ps-qlist li:last-child{border-bottom:0}
   .ps-qlist .lk{flex:0 0 auto;color:var(--pgold)}
   .ps-subnote2{font-size:12.5px;color:var(--pmuted);text-align:center;margin-top:11px}
+  /* --- verdict preview (redesigned Sep 2026) --- */
+  .ps-outlook{background:linear-gradient(180deg,var(--panel),#F6EEDD);border:1px solid var(--pline);border-radius:14px;padding:18px 20px;margin:12px 0 0;position:relative;z-index:1;text-align:left}
+  .ps-outlook-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pgold);margin-bottom:6px}
+  .ps-outlook-verdict{font-family:var(--disp);font-weight:600;font-size:20px;color:var(--phead);line-height:1.3;margin-bottom:8px}
+  .ps-outlook-detail{font-size:14px;color:var(--pink);line-height:1.55;margin:0}
+  .ps-verdict-q{text-align:left;padding:14px 0;border-bottom:1px solid var(--pline)}
+  .ps-verdict-q:last-of-type{border-bottom:0}
+  .ps-vq-head{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead);margin-bottom:6px}
+  .ps-vq-signal{font-size:14px;color:var(--pink);line-height:1.5;margin:0 0 6px;display:flex;align-items:flex-start;gap:8px}
+  .ps-vq-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+  .ps-vq-dot.grn{background:#2D7A3A}.ps-vq-dot.amb{background:#B8860B}.ps-vq-dot.blu{background:#5A7EC9}
+  .ps-vq-lock{font-size:12.5px;color:#2D7A3A;font-weight:600;display:flex;align-items:center;gap:6px}
+  .ps-ss-verdict{margin:4px 0 8px}
+  .ps-ss-label{display:inline-block;font-family:var(--disp);font-weight:700;font-size:22px;color:var(--phead);background:linear-gradient(180deg,#FFF8E1,#F6EEDD);border:1.5px solid var(--pgold);border-radius:8px;padding:4px 16px;letter-spacing:.02em}
+  .ps-ss-tag{font-size:13px!important;color:var(--pmuted)!important}
+  .ps-also{margin-top:18px;padding-top:14px;border-top:1px dashed var(--pline);text-align:left}
+  .ps-also-h{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead);margin-bottom:4px}
+  .ps-also-list{font-size:13.5px;color:var(--pink);margin:0;line-height:1.5}
+  /* --- preview cover card --- */
+  .ps-cover{background:#1E1E1E;border-radius:14px;padding:32px 24px 26px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+  .ps-cover::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,163,78,.18) 0%,transparent 70%);pointer-events:none}
+  .ps-cover::after{content:'';position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(201,163,78,.1) 0%,transparent 70%);pointer-events:none}
+  .ps-cv-brand{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#C9A34E;font-weight:700;margin-bottom:20px}
+  .ps-cv-title{font-family:var(--disp);font-size:22px;font-weight:600;color:#F5F0E6;line-height:1.25;margin-bottom:6px}
+  .ps-cv-sub{font-size:13px;color:#C9A34E;font-style:italic;margin-bottom:22px;letter-spacing:.02em}
+  .ps-cv-rule{width:48px;height:1.5px;background:linear-gradient(90deg,transparent,#C9A34E,transparent);margin:0 auto 18px}
+  .ps-cv-name{font-family:var(--disp);font-size:18px;font-weight:600;color:#F5F0E6;margin-bottom:4px}
+  .ps-cv-dob{font-size:12.5px;color:#B8A98A;margin-bottom:22px}
+  .ps-cv-hook{font-size:11px;color:#C9A34E;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
+  .ps-cv-qs{font-size:11.5px;color:#9A8E7A;line-height:1.6;margin-bottom:18px}
+  .ps-cv-date{font-size:10.5px;color:#7A7060;letter-spacing:.06em}
   </style>
   <p class="ps-tag" id="ps-caption">Sample preview — an illustrative example, not your data. Fill the form above for your own.</p>
   <div class="ps-wrap">
@@ -484,42 +515,66 @@ fbq('track', 'PageView');
   <svg class="ps-dec d-gas" width="100" height="100" viewBox="0 0 100 100" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="psGas"><circle cx="50" cy="50" r="29"/></clipPath><circle cx="50" cy="50" r="29" fill="#E0B072"/><g clip-path="url(#psGas)"><rect x="21" y="30" width="58" height="6" fill="#B9834A" opacity=".55"/><rect x="21" y="42" width="58" height="8" fill="#B9834A" opacity=".7"/><rect x="21" y="57" width="58" height="6" fill="#B9834A" opacity=".5"/><rect x="21" y="67" width="58" height="5" fill="#B9834A" opacity=".6"/><ellipse cx="61" cy="61" rx="7" ry="5" fill="#C05A3A" opacity=".85"/></g></g></svg>
   <svg class="ps-dec d-const" width="220" height="150" viewBox="0 0 220 150" fill="none" aria-hidden="true"><g stroke="#C9A34E" stroke-width="1.2" opacity=".33" fill="none" stroke-linecap="round"><line x1="20" y1="30" x2="70" y2="60"/><line x1="70" y1="60" x2="120" y2="40"/><line x1="120" y1="40" x2="165" y2="80"/><line x1="165" y1="80" x2="200" y2="55"/><line x1="70" y1="60" x2="95" y2="115"/></g><g fill="#C9A34E" opacity=".4"><circle cx="20" cy="30" r="2.4"/><circle cx="70" cy="60" r="2.8"/><circle cx="120" cy="40" r="2.2"/><circle cx="165" cy="80" r="2.6"/><circle cx="200" cy="55" r="2.2"/><circle cx="95" cy="115" r="2.2"/></g><g fill="#E7CE8F" opacity=".5"><path d="M150 20 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z"/><path d="M48 92 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 z"/></g></svg>
 
-    <div class="ps-sechead"><div class="eb">Your Personal Career Analysis</div><div class="h">Your Career DNA</div></div>
-    <p class="ps-dnasub">We analysed your birth chart across six career dimensions.</p>
-
-    <div class="ps-arche">
-      <div class="k">Your Career Archetype</div>
-      <div class="nm" id="tv-archetype">The Strategic Builder</div>
-      <div class="bl" id="tv-arche-blurb">You create lasting structures rather than chase quick wins.</div>
+    <div class="ps-cover" id="tv-cover">
+      <div class="ps-cv-brand">Axtroshastra</div>
+      <div class="ps-cv-title">Career Intelligence Report</div>
+      <div class="ps-cv-sub">Your Answers. Your Timing. Your Next Move.</div>
+      <div class="ps-cv-rule"></div>
+      <div class="ps-cv-name" id="tv-cv-name">Rajesh Menon</div>
+      <div class="ps-cv-dob" id="tv-cv-dob">14 March 1972 · Bengaluru</div>
+      <div class="ps-cv-hook">5 career decisions decoded from your birth chart</div>
+      <div class="ps-cv-qs">Should you switch? · When to move? · Job or business? · What role next? · What to do now?</div>
+      <div class="ps-cv-date" id="tv-cv-date">Report prepared 14 September 2026</div>
     </div>
 
+    <div class="ps-sechead"><div class="eb">Your Personal Career Reading</div><div class="h" id="tv-heading">Your Career Reading is ready</div></div>
+
+    <!-- Q1: Career Outlook — answered fully in the preview -->
+    <div class="ps-outlook">
+      <div class="ps-outlook-label">Your career outlook</div>
+      <div class="ps-outlook-verdict" id="tv-outlook">YES — Stronger career growth lies ahead.</div>
+      <p class="ps-outlook-detail" id="tv-outlook-detail">You are currently in a repositioning phase. Your chart indicates that the stronger professional period is still ahead of you.</p>
+    </div>
+
+    <!-- Q2-Q6: Teased questions — one-liner signal, detail locked -->
     <div class="ps-locked">
       <svg class="ps-dec d-rock" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="psRock"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#psRock)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/></g></g></svg>
 
-      <div class="ps-bars" id="tv-bars"></div>
+      <div class="ps-answers-h">Here's what you need to know next:</div>
 
-      <div class="ps-stand">
-        <div class="eb">What stands out</div>
-        <p class="ps-standline">Your strongest career combination is <b id="tv-combo">strategy &amp; autonomy</b>.</p>
-        <p class="ps-standline">You may perform best where you have <b id="tv-env">room to own the outcome</b>.</p>
-        <p class="ps-tradeoff">But this creates an important career trade-off&hellip;</p>
-        <div class="ps-locknote"><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>Your full report explains what it is and how to manage it.</span></div>
+      <div class="ps-verdict-q ps-vq-ss">
+        <div class="ps-vq-head">Should you stay or switch?</div>
+        <div class="ps-ss-verdict"><span class="ps-ss-label" id="tv-ss-verdict">Prepare</span></div>
+        <p class="ps-vq-signal ps-ss-tag"><span class="ps-vq-dot amb"></span><span id="tv-stayswitch">Your chart favours preparing before making the bigger move.</span></p>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See the full reasoning + timing</div>
       </div>
 
-      <div class="ps-answers">
-        <div class="ps-answers-h">Your chart also answers:</div>
-        <ul class="ps-qlist">
-          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>When are your strongest career years?</span></li>
-          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>How are you most likely to build wealth?</span></li>
-          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What career moves should you avoid right now?</span></li>
-          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What do the next 3 years look like?</span></li>
-          <li><span class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></span><span>What should you prioritize over the next 12 months?</span></li>
-        </ul>
+      <div class="ps-verdict-q">
+        <div class="ps-vq-head">When should you change jobs?</div>
+        <p class="ps-vq-signal" id="tv-window">We've identified a stronger window for career movement.</p>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See your best timing</div>
       </div>
 
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>&#8377;999</s> &#8377;199</span></button>
+      <div class="ps-verdict-q">
+        <div class="ps-vq-head">When is your next promotion / breakthrough?</div>
+        <p class="ps-vq-signal" id="tv-promotion">Your chart shows rising professional visibility and authority ahead.</p>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See when + how it is most likely to happen</div>
+      </div>
+
+      <div class="ps-verdict-q">
+        <div class="ps-vq-head">Job or business?</div>
+        <p class="ps-vq-signal" id="tv-business">One path shows stronger long-term potential for you.</p>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See your stronger path + timing</div>
+      </div>
+
+      <div class="ps-also">
+        <div class="ps-also-h">Your full report also answers:</div>
+        <p class="ps-also-list"><b>Income &amp; career growth</b> &middot; Next 3 years &middot; Best-fit roles &middot; What to do &amp; avoid</p>
+      </div>
+
+      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;199</button>
+      <div class="ps-subnote2">Personalised using your exact birth details</div>
       <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
-      <div class="ps-subnote2">Personalized to your birth chart &bull; Instant access</div>
       <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;199</span></div>
     </div>
 
@@ -932,14 +987,45 @@ function topCombo(d){
 
 /* Reusable teaser renderer — fills the free-preview #teaser section from the
    buyer's own real /api/kundli response. Same technique as pages/milan.html. */
+function _fmtDob(dob, place){
+  if(!dob) return '';
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var parts = dob.split('-');
+  if(parts.length !== 3) return dob;
+  var d = parseInt(parts[2],10), m = parseInt(parts[1],10)-1, y = parts[0];
+  var s = d + ' ' + (months[m]||'') + ' ' + y;
+  return place ? s + ' · ' + place : s;
+}
+function _fmtToday(){
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var d = new Date();
+  return 'Report prepared ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
 function renderTeaser(t){
   t = t || {};
-  var d = t.dimensions || {};
-  document.getElementById('tv-archetype').textContent = t.archetype || '—';
-  var ab = document.getElementById('tv-arche-blurb'); if(ab) ab.textContent = t.archetype_blurb || '';
-  var bc = document.getElementById('tv-bars'); if(bc) bc.innerHTML = drawBars(d);
-  var cm = document.getElementById('tv-combo'); if(cm) cm.textContent = topCombo(d);
-  var ev = document.getElementById('tv-env'); if(ev) ev.textContent = t.best_environment || 'room to do your best work';
+  var firstName = (t.name || '').split(' ')[0] || 'You';
+  var cvn = document.getElementById('tv-cv-name');
+  if(cvn) cvn.textContent = t.name || 'Your Name';
+  var cvd = document.getElementById('tv-cv-dob');
+  if(cvd) cvd.textContent = _fmtDob(t.dob, t.place);
+  var cvdt = document.getElementById('tv-cv-date');
+  if(cvdt) cvdt.textContent = _fmtToday();
+  var hd = document.getElementById('tv-heading');
+  if(hd) hd.textContent = firstName + ', your Career Reading is ready';
+  var ol = document.getElementById('tv-outlook');
+  if(ol) ol.textContent = t.career_outlook || 'YES — Stronger career growth lies ahead.';
+  var od = document.getElementById('tv-outlook-detail');
+  if(od) od.textContent = t.career_outlook_detail || '';
+  var sv = document.getElementById('tv-ss-verdict');
+  if(sv) sv.textContent = t.stay_switch_verdict || 'Prepare';
+  var ss = document.getElementById('tv-stayswitch');
+  if(ss) ss.textContent = t.stay_switch_tag || 'Your chart favours preparing before making the bigger move.';
+  var wn = document.getElementById('tv-window');
+  if(wn) wn.textContent = t.window_signal || "We've identified a stronger window for career movement.";
+  var pr = document.getElementById('tv-promotion');
+  if(pr) pr.textContent = t.promotion_signal || 'Your chart shows rising professional visibility and authority ahead.';
+  var bs = document.getElementById('tv-business');
+  if(bs) bs.textContent = t.business_signal || 'One path shows stronger long-term potential for you.';
   var cap = document.getElementById('ps-caption');
   if(cap){ cap.textContent = 'Your preview — computed from your birth chart.'; }
   var el = document.getElementById('sampleReport');
@@ -949,13 +1035,7 @@ function renderTeaser(t){
   if(sb){ sb.textContent = 'Unlock ₹199'; sb.setAttribute('href', '#sampleReport'); }
 }
 
-/* Fill the sample-state bars with illustrative values (defensive — the inline
-   preview is display:none until renderTeaser runs with the buyer's real data). */
-(function(){
-  var sample={risk:70,entrepreneurial:65,strategic:60,independence:59,stability:54,leadership:48};
-  var bc=document.getElementById('tv-bars'); if(bc) bc.innerHTML = drawBars(sample);
-  var cm=document.getElementById('tv-combo'); if(cm) cm.textContent = topCombo(sample);
-})();
+/* Sample-state preview is now text-based (verdict preview), no bar initialization needed. */
 
 /* funnel event: fires once when user starts filling the form */
 window._formStarted = false;
