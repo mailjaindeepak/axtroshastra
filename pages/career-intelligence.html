@@ -493,6 +493,8 @@ fbq('track', 'PageView');
   .ps-also{margin-top:18px;padding-top:14px;border-top:1px dashed var(--pline);text-align:left}
   .ps-also-h{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead);margin-bottom:4px}
   .ps-also-list{font-size:13.5px;color:var(--pink);margin:0;line-height:1.5}
+  .ps-also-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .ps-also-box{background:var(--panel);border:1px solid var(--pline);border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600;color:var(--phead);text-align:center;line-height:1.35}
   /* --- preview cover card --- */
   .ps-cover{background:#1E1E1E;border-radius:14px;padding:32px 24px 26px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
   .ps-cover::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,163,78,.18) 0%,transparent 70%);pointer-events:none}
@@ -546,30 +548,35 @@ fbq('track', 'PageView');
         <div class="ps-vq-head">Should you stay or switch?</div>
         <div class="ps-ss-verdict"><span class="ps-ss-label" id="tv-ss-verdict">Prepare</span></div>
         <p class="ps-vq-signal ps-ss-tag"><span class="ps-vq-dot amb"></span><span id="tv-stayswitch">Your chart favours preparing before making the bigger move.</span></p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See the full reasoning + timing</div>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Reasoning and Timing in Full Report</div>
       </div>
 
       <div class="ps-verdict-q">
         <div class="ps-vq-head">When should you change jobs?</div>
         <p class="ps-vq-signal" id="tv-window">We've identified a stronger window for career movement.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See your best timing</div>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Best Month and Year in Full Report</div>
       </div>
 
       <div class="ps-verdict-q">
         <div class="ps-vq-head">When is your next promotion / breakthrough?</div>
         <p class="ps-vq-signal" id="tv-promotion">Your chart shows rising professional visibility and authority ahead.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See when + how it is most likely to happen</div>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Full Report has the details</div>
       </div>
 
       <div class="ps-verdict-q">
         <div class="ps-vq-head">Job or business?</div>
         <p class="ps-vq-signal" id="tv-business">One path shows stronger long-term potential for you.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> See your stronger path + timing</div>
+        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Full Report has the details</div>
       </div>
 
       <div class="ps-also">
         <div class="ps-also-h">Your full report also answers:</div>
-        <p class="ps-also-list"><b>Income &amp; career growth</b> &middot; Next 3 years &middot; Best-fit roles &middot; What to do &amp; avoid</p>
+        <div class="ps-also-grid">
+          <div class="ps-also-box">Income &amp; career growth</div>
+          <div class="ps-also-box">Next 3 years</div>
+          <div class="ps-also-box">Best-fit roles</div>
+          <div class="ps-also-box">What to do &amp; avoid</div>
+        </div>
       </div>
 
       <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;199</button>
