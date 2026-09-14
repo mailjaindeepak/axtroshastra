@@ -185,12 +185,12 @@ def _stay_switch_verdict(phase, windows, peak_year, dims):
     best_score = max((w["score"] for w in windows), default=0)
 
     if peak_year == 1 and md_lord in _GROWTH_LORDS and best_score >= 6.0:
-        verdict = "Switch"
+        verdict = "Switch Jobs"
         tag = "Your chart favours making the move now — your current dasha supports forward action."
         detail = ("The strongest career-movement window of the next three years is open now, and "
                   "your current phase supports forward action.")
     elif peak_year <= 2 and has_windows and md_lord in _GROWTH_LORDS:
-        verdict = "Explore"
+        verdict = "Start Exploring Options"
         tag = "Your chart favours exploring options — your current dasha supports initiative."
         detail = ("A career-movement window is approaching, and your current phase supports "
                   "initiative — this is a time to position and be ready.")
@@ -200,7 +200,7 @@ def _stay_switch_verdict(phase, windows, peak_year, dims):
         detail = ("A stronger window is ahead. The current phase is better "
                   "suited to groundwork than to the move itself.")
     else:
-        verdict = "Stay"
+        verdict = "Not right time to switch"
         tag = "Your chart favours consolidating where you are for now."
         detail = ("The current phase reads as a consolidation period — strengthen your position "
                   "rather than chase a new one.")
