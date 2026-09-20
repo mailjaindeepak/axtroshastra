@@ -967,7 +967,7 @@ def _inject_oaiq(html: str) -> str:
     if not OAIQ_PIXEL_ID:
         return html
     try:
-        if not html or "oaiq" in html:
+        if not html or "oaiq.min.js" in html:
             return html
         snippet = ('<script>!function(w,d,s,u){if(w.oaiq)return;var q=function()'
                    '{q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);'
