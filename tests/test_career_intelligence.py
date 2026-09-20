@@ -36,22 +36,23 @@ def test_career_intelligence_page_serves_200(client):
 
 
 def test_career_intelligence_preview_is_verdict_style(client):
-    """The redesigned preview renders verdict-style answers: a cover card,
-    Q1 career outlook answered fully, Q2 stay/switch with bold verdict word,
-    Q3-Q6 teased with signal + lock, and Q5/Q7-Q9 listed as 'also answers'."""
+    """The redesigned preview shows trust-first data (kundli, archetype, Career DNA)
+    with all 5 career answers locked behind curiosity-driving descriptions."""
     html = client.get("/en/career-intelligence").text
     assert "Career Intelligence Report" in html
     assert "ps-cover" in html
     assert "tv-cv-name" in html
-    assert "YOUR CAREER OUTLOOK" in html or "Your career outlook" in html
-    assert "tv-outlook" in html
-    assert "tv-ss-verdict" in html
-    assert "Should you stay or switch?" in html
-    assert "When should you change jobs?" in html
-    assert "Job or business?" in html
-    assert "also answers" in html.lower() or "also answers" in html
-    # the old Career DNA bars and radar are gone
-    assert "Your Career DNA" not in html
+    assert "Your Birth Chart (Kundli)" in html
+    assert "tv-kundli" in html
+    assert "Your Career DNA" in html
+    assert "tv-dna" in html
+    assert "Your Career Archetype" in html
+    assert "tv-arch-name" in html
+    assert "Will your career grow from here?" in html
+    assert "Should you stay or switch jobs?" in html
+    assert "When is your best window to change jobs?" in html
+    assert "Should you do a job or start a business?" in html
+    assert "ps-locked" in html
     assert "function drawRadar(" not in html
 
 
@@ -78,16 +79,20 @@ def test_career_intelligence_teaser_fields(client):
     renderTeaser() reads — and none of the paid-report internals."""
     teaser = _create(client)["teaser"]
     for key in ("name", "archetype", "archetype_blurb", "top_dimension", "phase",
-                "entrepreneurial_10", "quote", "best_environment"):
+                "entrepreneurial_10", "quote", "best_environment",
+                "decision_style", "current_md", "md_ends", "chart", "about_you"):
         assert key in teaser, key
     assert teaser["archetype_blurb"] and teaser["best_environment"]
+    assert teaser["chart"]["lagna_en"] and teaser["chart"]["ref_sign"] is not None
+    assert teaser["chart"]["planets"]
+    assert teaser["about_you"]
     # the six calibrated dimensions ARE included so the landing-page teaser can draw
     # the person's own bar chart (a deliberate preview hook, not a leak).
     assert set(teaser["dimensions"]) == {"leadership", "strategic", "independence",
                                          "entrepreneurial", "risk", "stability"}
     assert all(0 <= v <= 100 for v in teaser["dimensions"].values())
     # deeper paid internals must still not leak into the free teaser
-    for leaked in ("life_stage", "windows", "decision_style", "three_year"):
+    for leaked in ("life_stage", "windows", "three_year"):
         assert leaked not in teaser, leaked
 
 
