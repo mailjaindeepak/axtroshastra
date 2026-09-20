@@ -63,6 +63,9 @@ app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
+# ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
+OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
+
 # ---- Meta Pixel, split by domain -------------------------------------------
 # axtroshastra.com and axtroshastra.in serve the same app off one CloudFront
 # distribution, but each domain gets its own Meta Pixel so the .in dataset
@@ -958,14 +961,41 @@ def _inject_beacon(html: str) -> str:
         return html
 
 
+def _inject_oaiq(html: str) -> str:
+    """Add the OpenAI Ads (OAIQ) pixel to a page's <head>. Idempotent: skips any
+    page already loading the OAIQ SDK. Set OAIQ_PIXEL_ID="" to disable."""
+    if not OAIQ_PIXEL_ID:
+        return html
+    try:
+        if not html or "oaiq" in html:
+            return html
+        snippet = ('<script>!function(w,d,s,u){if(w.oaiq)return;var q=function()'
+                   '{q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);'
+                   'j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];'
+                   'f.parentNode.insertBefore(j,f)}(window,document,"script",'
+                   '"https://bzrcdn.openai.com/sdk/oaiq.min.js");'
+                   'oaiq("init",{pixelId:"' + OAIQ_PIXEL_ID + '"});</script>\n')
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: snippet + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + snippet,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[oaiq] injection failed: %s", e)
+        return html
+
+
 def _inject_tracking(html: str) -> str:
-    """All analytics for a served page: GA4 + Meta + Clarity, then LinkedIn, then
-    our first-party beacon.
+    """All analytics for a served page: GA4 + Meta + Clarity, then OAIQ, then
+    LinkedIn, then our first-party beacon.
 
     Order matters - LinkedIn goes in after the Meta block so its funnel bridge is
     parsed after window.fbq exists; the beacon goes in LAST (outermost) so it wraps
     the gtag defined by _inject_ga_meta_clarity (or hardcoded in the page)."""
-    return _inject_beacon(_inject_linkedin(_inject_ga_meta_clarity(html)))
+    return _inject_beacon(_inject_linkedin(_inject_oaiq(_inject_ga_meta_clarity(html))))
 
 
 def _serve_page_with_nav(path: str, lang: str = "en"):

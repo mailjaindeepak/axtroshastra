@@ -38,8 +38,10 @@ ACTIVATION (owner's step — set these on Elastic Beanstalk, like the Twilio key
                                 purchase conversion — LinkedIn requires one rule
                                 per data source (browser vs server) and dedups
                                 across them on eventId. See docs/linkedin_ads.md.
+    OAIQ_CAPI_TOKEN     OpenAI Ads Manager -> Tools -> Conversions -> (data
+                        source) -> Conversions API -> API Key. Dormant until set.
     (Optional overrides: META_PIXEL_ID, GA4_MEASUREMENT_ID, META_API_VERSION,
-     LINKEDIN_API_VERSION — they default to the site's live IDs.)
+     LINKEDIN_API_VERSION, OAIQ_PIXEL_ID — they default to the site's live IDs.)
 
 WHY LINKEDIN TAKES NO PHONE
     Meta matches on hashed phone; LinkedIn's Conversions API does not support it
@@ -70,6 +72,8 @@ LINKEDIN_CONV_PURCHASE_CAPI = os.getenv("LINKEDIN_CONV_PURCHASE_CAPI", "")
 # Marketing API version, "YYYYMM". LinkedIn sunsets each version ~12 months on;
 # bump this env var when the deprecation warning appears in the response body.
 LINKEDIN_API_VERSION = os.getenv("LINKEDIN_API_VERSION", "202608")
+OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU")
+OAIQ_CAPI_TOKEN = os.getenv("OAIQ_CAPI_TOKEN", "")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://www.axtroshastra.com").rstrip("/")
 
 _TIMEOUT = 5   # seconds; a slow ad-network call must never hold a request
@@ -78,7 +82,8 @@ _TIMEOUT = 5   # seconds; a slow ad-network call must never hold a request
 def enabled() -> bool:
     """True if at least one destination is configured. Cheap gate so callers
     (and tests) can skip work entirely when the feature is dormant."""
-    return bool(META_CAPI_TOKEN or GA4_API_SECRET or LINKEDIN_CAPI_TOKEN)
+    return bool(META_CAPI_TOKEN or GA4_API_SECRET or LINKEDIN_CAPI_TOKEN
+                or OAIQ_CAPI_TOKEN)
 
 
 def _sha256(value: str):
@@ -248,13 +253,44 @@ def _linkedin_purchase(rid, value, currency, email,
         logger.error("[li-capi] purchase failed for %s: %s", rid, e)
 
 
+def _oaiq_purchase(rid):
+    """Stream a Purchase (order_created) to OpenAI's Conversions API.
+    Server-side backstop for the browser oaiq('measure','order_created') fire.
+    Dedup: event id = report id, same value the browser pixel would send."""
+    if not (OAIQ_CAPI_TOKEN and OAIQ_PIXEL_ID):
+        return
+    payload = {
+        "validate_only": False,
+        "events": [{
+            "id": rid,
+            "type": "order_created",
+            "timestamp_ms": int(time.time() * 1000),
+            "source_url": f"{PUBLIC_BASE_URL}/report/{rid}",
+            "action_source": "web",
+            "data": {"type": "contents"},
+        }],
+    }
+    url = f"https://bzr.openai.com/v1/events?pid={urllib.parse.quote(OAIQ_PIXEL_ID)}"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OAIQ_CAPI_TOKEN}",
+    }
+    try:
+        status, body = _post_json(url, payload, headers)
+        if status >= 300:
+            logger.error("[oaiq-capi] purchase %s -> %s %s", rid, status, body[:300])
+    except Exception as e:
+        logger.error("[oaiq-capi] purchase failed for %s: %s", rid, e)
+
+
 def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
                    ga_client_id=None, fbc=None, fbp=None,
                    client_user_agent=None, client_ip_address=None,
                    li_fat_id=None):
-    """Fire a Purchase to Meta CAPI + GA4 MP + LinkedIn CAPI. No-op unless a
-    secret is set. Never raises — safe to hand to a payment background task. Do
-    NOT call for free-pass unlocks (no real revenue; the browser skips them too).
+    """Fire a Purchase to Meta CAPI + GA4 MP + LinkedIn CAPI + OpenAI CAPI.
+    No-op unless a secret is set. Never raises — safe to hand to a payment
+    background task. Do NOT call for free-pass unlocks (no real revenue; the
+    browser skips them too).
 
     Each destination is wrapped separately so one network failure cannot stop
     the others from reporting the same sale."""
@@ -269,6 +305,7 @@ def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
         lambda: _linkedin_purchase(rid, value, currency, email,
                                    li_fat_id=li_fat_id,
                                    client_ip_address=client_ip_address),
+        lambda: _oaiq_purchase(rid),
     ):
         try:
             fire()
