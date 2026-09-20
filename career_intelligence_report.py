@@ -443,6 +443,9 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
 
     teaser = {
         "name": name,
+        "dob": dob,
+        "tob": tob,
+        "place": place,
         "archetype": archetype["name"],
         "archetype_blurb": archetype["blurb"],
         "top_dimension": top_dim,
@@ -451,14 +454,17 @@ def compute_career_intelligence(name: str, dob: str, tob: str, tz: float, lat: f
         "quote": about_you.get("strength") or persona_line,
         "best_environment": NEED_BY_DIM.get(top_dim, "room to do your best work"),
         "dimensions": {k: _disp(v) for k, v in dims.items()},
-        # verdict teasers — partial answers for the free preview
-        "career_outlook": v_outlook["verdict"],
-        "career_outlook_detail": v_outlook["detail"],
-        "stay_switch_verdict": v_stay_switch["verdict"],
-        "stay_switch_tag": v_stay_switch["tag"],
-        "window_signal": "We've identified your strongest career-movement window — month and year inside.",
-        "promotion_signal": v_promotion["signal"],
-        "business_signal": v_business["signal"],
+        "about_you": about_you,
+        "decision_style": decision["name"],
+        "current_md": md_lord,
+        "md_ends": phase["ends"],
+        "chart": {
+            "lagna_en": SIGNS_EN[ref_sign],
+            "ref_sign": ref_sign,
+            "planets": {p.name: {"sign_en": SIGNS_EN[p.sign], "sign": p.sign,
+                                  "dignity": p.dignity, "retro": p.retro}
+                        for p in g.values()},
+        },
     }
 
     return {

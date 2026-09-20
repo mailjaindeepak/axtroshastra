@@ -505,9 +505,80 @@ fbq('track', 'PageView');
   .ps-cv-rule{width:48px;height:1.5px;background:linear-gradient(90deg,transparent,#C9A34E,transparent);margin:0 auto 18px}
   .ps-cv-name{font-family:var(--disp);font-size:18px;font-weight:600;color:#F5F0E6;margin-bottom:4px}
   .ps-cv-dob{font-size:12.5px;color:#B8A98A;margin-bottom:22px}
-  .ps-cv-hook{font-size:11px;color:#C9A34E;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
-  .ps-cv-qs{font-size:11.5px;color:#9A8E7A;line-height:1.6;margin-bottom:18px}
   .ps-cv-date{font-size:10.5px;color:#7A7060;letter-spacing:.06em}
+  .ps-cv-qlabel{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#C9A34E;font-weight:700;margin-bottom:14px;position:relative}
+  .ps-cv-qlist{list-style:none;margin:0 0 22px;padding:0;text-align:left;max-width:340px;margin-left:auto;margin-right:auto;position:relative}
+  .ps-cv-qlist li{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:13.5px;color:#D8CDBA;border-bottom:1px solid rgba(201,163,78,.12)}
+  .ps-cv-qlist li:last-child{border-bottom:0}
+  .ps-cv-qlist .qn{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:rgba(201,163,78,.15);border:1px solid rgba(201,163,78,.3);font-family:var(--disp);font-weight:700;font-size:11px;color:#C9A34E;display:flex;align-items:center;justify-content:center}
+  /* trust strip */
+  .ps-trust{display:flex;gap:1px;margin-bottom:12px;border-radius:12px;overflow:hidden;background:rgba(201,163,78,.15);position:relative;z-index:1}
+  .ps-trust-stat{flex:1;background:#1E1E1E;padding:12px 10px;text-align:center}
+  .ps-trust-stat .tn{font-family:var(--disp);font-weight:700;font-size:17px;color:#F5F0E6;font-variant-numeric:tabular-nums}
+  .ps-trust-stat .tl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9A8E7A;font-weight:600;margin-top:2px}
+  /* preview card */
+  .ps-pcard{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:22px 20px;margin-bottom:12px;position:relative;z-index:1;box-shadow:0 6px 18px var(--pshadow)}
+  .ps-plabel{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pgold);margin-bottom:10px}
+  /* kundli */
+  .ps-kundli-wrap{max-width:320px;margin:12px auto 16px}
+  .ps-kundli-wrap svg{width:100%;height:auto;display:block}
+  .ps-planet-tbl{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:12.5px}
+  .ps-planet-tbl th{text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmuted);font-weight:600;padding:0 0 6px;border-bottom:1px solid var(--pline)}
+  .ps-planet-tbl td{padding:5px 0;border-bottom:1px dashed rgba(201,163,78,.18);color:var(--pink)}
+  .ps-planet-tbl tr:last-child td{border-bottom:0}
+  .ps-planet-tbl .pn{font-family:var(--disp);font-weight:600;color:var(--phead)}
+  .ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+  .ps-dig.own{color:var(--pgold);background:rgba(201,163,78,.12)}
+  .ps-dig.exalted{color:var(--go);background:rgba(79,122,92,.1)}
+  .ps-dig.retro{color:#7A6B8A;background:rgba(122,107,138,.1)}
+  .ps-md-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline);display:flex;justify-content:space-between;align-items:center}
+  .ps-md-bar .lb{font-size:12px;color:var(--pmuted)}
+  .ps-md-bar .vl{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead)}
+  .ps-chart-sum{margin-top:10px;font-size:12px;color:var(--pmuted);text-align:center}
+  .ps-chart-sum span{color:var(--pgold);font-weight:600}
+  /* traits */
+  .ps-traits{display:flex;flex-direction:column;gap:10px}
+  .ps-trait{display:flex;gap:10px;align-items:baseline}
+  .ps-trait .tl{flex:0 0 auto;font-size:11px;font-weight:600;color:var(--pgold);text-transform:uppercase;letter-spacing:.06em;min-width:90px}
+  .ps-trait .tv{font-size:13.5px;color:var(--phead);line-height:1.45}
+  /* stat pills */
+  .ps-stat-row{display:flex;gap:8px;margin-top:12px}
+  .ps-stat-pill{flex:1;background:rgba(201,163,78,.12);border:1px solid rgba(201,163,78,.25);border-radius:10px;padding:10px 12px;text-align:center}
+  .ps-stat-pill .sl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--pgold);margin-bottom:3px}
+  .ps-stat-pill .sv{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--phead)}
+  /* phase */
+  .ps-phase-row{display:flex;align-items:center;gap:14px}
+  .ps-phase-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:rgba(201,163,78,.12);border:1.5px solid rgba(201,163,78,.3);display:flex;align-items:center;justify-content:center}
+  .ps-phase-row .pl{font-size:11px;color:var(--pmuted);margin-bottom:2px}
+  .ps-phase-row .pv{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead)}
+  /* locked questions redesign */
+  .ps-locked{background:var(--panel);border:1.5px dashed rgba(201,163,78,.45);border-radius:14px;padding:22px 20px;margin-top:12px;text-align:left;position:relative;z-index:1}
+  .ps-locked-heading{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--phead);margin-bottom:4px}
+  .ps-locked-sub{font-size:12.5px;color:var(--pmuted);margin-bottom:16px}
+  .ps-lq{padding:13px 0;border-bottom:1px solid var(--pline);display:flex;gap:12px;align-items:flex-start}
+  .ps-lq:last-of-type{border-bottom:0}
+  .ps-lq-icon{flex:0 0 auto;width:32px;height:32px;border-radius:8px;background:#F3EAD8;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .ps-lq-icon svg{color:var(--pgold)}
+  .ps-lq-text .qt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead);line-height:1.3;margin-bottom:3px}
+  .ps-lq-text .qd{font-size:12.5px;color:var(--pmuted);line-height:1.4}
+  .ps-also-box{background:#F3EAD8;border:1px dashed rgba(201,163,78,.3);border-radius:8px;padding:10px 12px;font-size:12.5px;font-weight:600;color:var(--phead);text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.3}
+  .ps-also-box svg{color:var(--pgold);flex-shrink:0}
+  /* social proof */
+  .ps-proof{margin-top:20px;padding-top:18px;border-top:1px dashed var(--pline)}
+  .ps-proof-h{font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--pgold);text-align:center;margin-bottom:12px}
+  .ps-proof-list{display:flex;flex-direction:column;gap:10px}
+  .ps-proof-item{background:#F3EAD8;border-radius:10px;padding:12px 14px}
+  .ps-proof-stars{font-size:12px;color:var(--pgold);margin-bottom:4px;letter-spacing:1px}
+  .ps-proof-text{font-size:13px;color:var(--phead);line-height:1.5;margin-bottom:6px}
+  .ps-proof-who{font-size:11.5px;color:var(--pmuted);font-weight:600}
+  .ps-cred-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .ps-cred-badge{font-size:10px;font-weight:600;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:100px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+  .ps-cred-badge svg{flex-shrink:0}
+  @media(max-width:480px){
+    .ps-trait{flex-direction:column;gap:2px}
+    .ps-trait .tl{min-width:unset}
+    .ps-stat-row{flex-direction:column}
+  }
   </style>
   <p class="ps-tag" id="ps-caption">Sample preview — an illustrative example, not your data. Fill the form above for your own.</p>
   <div class="ps-wrap">
@@ -524,65 +595,158 @@ fbq('track', 'PageView');
       <div class="ps-cv-rule"></div>
       <div class="ps-cv-name" id="tv-cv-name">Rajesh Menon</div>
       <div class="ps-cv-dob" id="tv-cv-dob">14 March 1972 · Bengaluru</div>
-      <div class="ps-cv-hook">5 career decisions decoded from your birth chart</div>
-      <div class="ps-cv-qs">Should you switch? · When to move? · Job or business? · What role next? · What to do now?</div>
+      <div class="ps-cv-qlabel">This report answers:</div>
+      <ol class="ps-cv-qlist">
+        <li><span class="qn">1</span> Will your career grow from here?</li>
+        <li><span class="qn">2</span> Should you stay or switch jobs?</li>
+        <li><span class="qn">3</span> When is your best window to move?</li>
+        <li><span class="qn">4</span> When is your next breakthrough?</li>
+        <li><span class="qn">5</span> Job or business: which path is stronger?</li>
+      </ol>
       <div class="ps-cv-date" id="tv-cv-date">Report prepared 14 September 2026</div>
     </div>
 
-    <div class="ps-sechead"><div class="eb">Your Personal Career Reading</div><div class="h" id="tv-heading">Your Career Reading is ready</div></div>
-
-    <!-- Q1: Career Outlook — answered fully in the preview -->
-    <div class="ps-outlook">
-      <div class="ps-outlook-label">Your career outlook</div>
-      <div class="ps-outlook-verdict" id="tv-outlook">YES — Stronger career growth lies ahead.</div>
-      <p class="ps-outlook-detail" id="tv-outlook-detail">You are currently in a repositioning phase. Your chart indicates that the stronger professional period is still ahead of you.</p>
+    <!-- ======== TRUST STRIP ======== -->
+    <div class="ps-trust">
+      <div class="ps-trust-stat"><div class="tn">14,200+</div><div class="tl">Reports</div></div>
+      <div class="ps-trust-stat"><div class="tn">4.8 &#9733;</div><div class="tl">Avg Rating</div></div>
+      <div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>
     </div>
 
-    <!-- Q2-Q6: Teased questions — one-liner signal, detail locked -->
+    <!-- ======== KUNDLI CARD ======== -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">Your Birth Chart (Kundli)</div>
+      <div class="ps-kundli-wrap" id="tv-kundli"></div>
+      <table class="ps-planet-tbl" id="tv-planets">
+        <thead><tr><th>Planet</th><th>Sign</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="ps-md-bar">
+        <div class="lb">Current Mahadasha</div>
+        <div class="vl" id="tv-md">Saturn (ends 2029)</div>
+      </div>
+      <div class="ps-chart-sum" id="tv-chart-sum"></div>
+    </div>
+
+    <!-- ======== ABOUT YOU ======== -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">About You</div>
+      <div class="ps-arche" id="tv-arche">
+        <div class="k">Your Career Archetype</div>
+        <div class="nm" id="tv-arch-name">The Strategic Builder</div>
+        <div class="bl" id="tv-arch-blurb">You create lasting structures rather than chase quick wins.</div>
+      </div>
+      <div class="ps-traits" id="tv-traits"></div>
+    </div>
+
+    <!-- ======== CAREER DNA ======== -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">Your Career DNA</div>
+      <div class="ps-bars" id="tv-dna"></div>
+      <div class="ps-stand" id="tv-stand">
+        <div class="eb" style="text-align:left">What stands out</div>
+        <div class="ps-standline" id="tv-standline"></div>
+      </div>
+      <div class="ps-stat-row" id="tv-stats">
+        <div class="ps-stat-pill"><div class="sl">Entrepreneurial Score</div><div class="sv" id="tv-entre">4.8 / 10</div></div>
+        <div class="ps-stat-pill"><div class="sl">Decision Style</div><div class="sv" id="tv-decision">The Analyst</div></div>
+      </div>
+    </div>
+
+    <!-- ======== CURRENT PHASE ======== -->
+    <div class="ps-pcard" style="padding:16px 20px">
+      <div class="ps-phase-row">
+        <div class="ps-phase-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <div class="pl">Your current career phase</div>
+          <div class="pv" id="tv-phase">Growth &amp; Acceleration</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== LOCKED QUESTIONS ======== -->
     <div class="ps-locked">
-      <svg class="ps-dec d-rock" width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true"><g opacity=".5"><clipPath id="psRock"><circle cx="40" cy="40" r="20"/></clipPath><circle cx="40" cy="40" r="20" fill="#D8C09A"/><g clip-path="url(#psRock)" fill="#B99B6F"><circle cx="33" cy="35" r="5" opacity=".7"/><circle cx="46" cy="43" r="3.8" opacity=".7"/><circle cx="38" cy="50" r="3" opacity=".7"/></g></g></svg>
+      <div class="ps-locked-heading">Your 5 career answers are ready</div>
+      <div class="ps-locked-sub">Computed from your birth chart. Unlock to read them.</div>
 
-      <div class="ps-answers-h">Here's what you need to know next:</div>
-
-      <div class="ps-verdict-q ps-vq-ss">
-        <div class="ps-vq-head">Should you stay or switch?</div>
-        <div class="ps-ss-verdict"><span class="ps-ss-label" id="tv-ss-verdict">Prepare</span></div>
-        <p class="ps-vq-signal ps-ss-tag"><span class="ps-vq-dot amb"></span><span id="tv-stayswitch">Your chart favours preparing before making the bigger move.</span></p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Reasoning and Timing in Full Report</div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">Will your career grow from here?</div>
+          <div class="qd">A definitive yes or no, with the planetary reasoning behind it.</div>
+        </div>
       </div>
-
-      <div class="ps-verdict-q">
-        <div class="ps-vq-head">When should you change jobs?</div>
-        <p class="ps-vq-signal" id="tv-window">We've identified a stronger window for career movement.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Best Month and Year in Full Report</div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">Should you stay or switch jobs?</div>
+          <div class="qd">A clear verdict: stay, switch, or prepare. With timing for when to act.</div>
+        </div>
       </div>
-
-      <div class="ps-verdict-q">
-        <div class="ps-vq-head">When is your next promotion / breakthrough?</div>
-        <p class="ps-vq-signal" id="tv-promotion">Your chart shows rising professional visibility and authority ahead.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Full Report has the details</div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">When is your best window to change jobs?</div>
+          <div class="qd">The exact month and year, identified from your Mahadasha and transits.</div>
+        </div>
       </div>
-
-      <div class="ps-verdict-q">
-        <div class="ps-vq-head">Job or business?</div>
-        <p class="ps-vq-signal" id="tv-business">One path shows stronger long-term potential for you.</p>
-        <div class="ps-vq-lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Full Report has the details</div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">When is your next promotion or breakthrough?</div>
+          <div class="qd">A specific period pinpointed from your 10th house and Dasha timeline.</div>
+        </div>
       </div>
-
-      <div class="ps-also">
-        <div class="ps-also-h">Your full report also answers:</div>
-        <div class="ps-also-grid">
-          <div class="ps-also-box">Income &amp; career growth</div>
-          <div class="ps-also-box">Next 3 years</div>
-          <div class="ps-also-box">Best-fit roles</div>
-          <div class="ps-also-box">What to do &amp; avoid</div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">Should you do a job or start a business?</div>
+          <div class="qd">One path scored significantly higher. The report explains which and why.</div>
         </div>
       </div>
 
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;199</button>
-      <div class="ps-subnote2">Personalised using your exact birth details</div>
-      <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
-      <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;199</span></div>
+      <div class="ps-also-grid" style="margin:16px 0">
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Income growth</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Next 3 years</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Best-fit roles</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> 12-month plan</div>
+      </div>
+
+      <div style="text-align:center">
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;199</button>
+        <div class="ps-subnote2">Personalised using your exact birth details</div>
+        <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;199</span></div>
+      </div>
+
+      <!-- Social proof -->
+      <div class="ps-proof">
+        <div class="ps-proof-h">What others are saying</div>
+        <div class="ps-proof-list">
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">The timing section was spot on. I was already thinking about switching and this gave me the exact month to aim for.</div>
+            <div class="ps-proof-who">Ankit, 29 &middot; Product Manager</div>
+          </div>
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">Got this done in 2 minutes and the accuracy on my personality was scary good. 199 felt like nothing for what I got.</div>
+            <div class="ps-proof-who">Riya, 34</div>
+          </div>
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">Showed it to my dad and even he agreed with the analysis. Definitely worth it if you're confused about next steps.</div>
+            <div class="ps-proof-who">Varun, 26 &middot; Software Engineer</div>
+          </div>
+        </div>
+        <div class="ps-cred-row">
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -994,8 +1158,9 @@ function topCombo(d){
   return DIM_LABEL[rows[0].k].toLowerCase()+' + '+DIM_LABEL[rows[1].k].toLowerCase();
 }
 
-/* Reusable teaser renderer — fills the free-preview #teaser section from the
-   buyer's own real /api/kundli response. Same technique as pages/milan.html. */
+/* Reusable teaser renderer — fills the free-preview section from the
+   buyer's own real /api/kundli response. Builds Kundli SVG, planet table,
+   archetype, traits, Career DNA bars, phase from teaser dict. */
 function _fmtDob(dob, place){
   if(!dob) return '';
   var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1010,49 +1175,164 @@ function _fmtToday(){
   var d = new Date();
   return 'Report prepared ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 }
+
+var _SIGNS_SHORT=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'];
+var _SIGNS_FULL=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+var _PL_ABBR={Sun:'Su',Moon:'Mo',Mars:'Ma',Mercury:'Me',Jupiter:'Ju',Venus:'Ve',Saturn:'Sa',Rahu:'Ra',Ketu:'Ke'};
+var _PL_ORDER=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+
+/* North Indian diamond chart: house positions (clockwise from top = H1).
+   Each house has a sign-label position (outer tip) and a planet-text position (center area). */
+var _H_SIGN=[{x:150,y:28},{x:232,y:16},{x:285,y:55},{x:265,y:153},{x:285,y:252},{x:232,y:290},{x:150,y:278},{x:68,y:290},{x:15,y:252},{x:35,y:153},{x:15,y:55},{x:68,y:16}];
+var _H_PLANET=[{x:150,y:80},{x:225,y:48},{x:265,y:95},{x:218,y:125},{x:265,y:215},{x:225,y:258},{x:150,y:228},{x:75,y:258},{x:35,y:215},{x:82,y:125},{x:35,y:95},{x:75,y:48}];
+
+function _buildKundli(chart, name, dob, place){
+  var ref = chart.ref_sign;
+  var planets = chart.planets || {};
+  var byHouse = {};
+  for(var pn in planets){
+    var pi = planets[pn];
+    var house = ((pi.sign - ref) % 12 + 12) % 12;
+    if(!byHouse[house]) byHouse[house] = [];
+    var abbr = _PL_ABBR[pn] || pn.slice(0,2);
+    if(pi.retro) abbr += '(R)';
+    var fill = '#3A2C18', fw = '500';
+    if(pi.dignity === 'exalted' || pi.dignity === 'own'){ fill = '#2D7A3A'; fw = '600'; }
+    else if(pi.retro){ fill = '#7A6B8A'; }
+    byHouse[house].push({abbr:abbr, fill:fill, fw:fw});
+  }
+  var svg = '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="1" y="1" width="298" height="298" fill="#FBF7EF" stroke="#C9A34E" stroke-width="1.5" rx="2"/>'
+    + '<polygon points="150,0 300,150 150,300 0,150" fill="none" stroke="#C9A34E" stroke-width="1"/>'
+    + '<line x1="0" y1="0" x2="300" y2="300" stroke="#C9A34E" stroke-width="0.7" opacity=".5"/>'
+    + '<line x1="300" y1="0" x2="0" y2="300" stroke="#C9A34E" stroke-width="0.7" opacity=".5"/>'
+    + '<polygon points="150,0 225,75 150,150 75,75" fill="rgba(201,163,78,.07)" stroke="none"/>';
+  for(var h=0;h<12;h++){
+    var si = (ref + h) % 12;
+    var sp = _H_SIGN[h];
+    if(h === 0){
+      svg += '<text x="'+sp.x+'" y="'+sp.y+'" text-anchor="middle" font-size="8" fill="#C9A34E" opacity=".7" font-weight="600" letter-spacing=".5">' + _SIGNS_SHORT[si] + '</text>';
+      svg += '<text x="'+sp.x+'" y="'+(sp.y+12)+'" text-anchor="middle" font-size="7" fill="#C9A34E" font-weight="700" letter-spacing=".5">ASC</text>';
+    } else {
+      svg += '<text x="'+sp.x+'" y="'+sp.y+'" text-anchor="middle" font-size="7" fill="#8A7E6E" opacity=".6">' + _SIGNS_SHORT[si] + '</text>';
+    }
+    var pls = byHouse[h];
+    if(pls && pls.length){
+      var pp = _H_PLANET[h];
+      if(pls.length === 1){
+        svg += '<text x="'+pp.x+'" y="'+pp.y+'" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="'+(h===0?'13':'11')+'" font-weight="'+pls[0].fw+'" fill="'+pls[0].fill+'">'+_esc(pls[0].abbr)+'</text>';
+      } else {
+        for(var pi=0;pi<pls.length;pi++){
+          var yoff = pp.y - 7*(pls.length-1)/2 + 14*pi;
+          svg += '<text x="'+pp.x+'" y="'+yoff+'" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="10" font-weight="'+pls[pi].fw+'" fill="'+pls[pi].fill+'">'+_esc(pls[pi].abbr)+'</text>';
+        }
+      }
+    }
+  }
+  var firstName = (name||'').split(' ')[0] || 'You';
+  svg += '<text x="150" y="143" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="11" font-weight="600" fill="#3A2C18">'+_esc(firstName)+'</text>';
+  var dobParts = (dob||'').split('-');
+  var dobShort = dobParts.length===3 ? dobParts[2]+'-'+dobParts[1]+'-'+dobParts[0] : dob;
+  svg += '<text x="150" y="158" text-anchor="middle" font-size="8.5" fill="#8A7E6E">'+_esc(dobShort)+'</text>';
+  if(place) svg += '<text x="150" y="170" text-anchor="middle" font-size="8.5" fill="#8A7E6E">'+_esc(place)+'</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+function _buildPlanetTable(planets){
+  var html = '';
+  for(var i=0;i<_PL_ORDER.length;i++){
+    var pn = _PL_ORDER[i];
+    var pi = planets[pn]; if(!pi) continue;
+    var badge = '';
+    if(pi.dignity === 'exalted') badge = '<span class="ps-dig exalted">Exalted</span>';
+    else if(pi.dignity === 'own') badge = '<span class="ps-dig own">Own Sign</span>';
+    if(pi.retro) badge += (badge?' ':'') + '<span class="ps-dig retro">Retro</span>';
+    html += '<tr><td class="pn">'+_esc(pn)+'</td><td>'+_esc(pi.sign_en)+'</td><td>'+badge+'</td></tr>';
+  }
+  return html;
+}
+
 function renderTeaser(t){
   t = t || {};
   var firstName = (t.name || '').split(' ')[0] || 'You';
+
+  /* Cover card */
   var cvn = document.getElementById('tv-cv-name');
   if(cvn) cvn.textContent = t.name || 'Your Name';
   var cvd = document.getElementById('tv-cv-dob');
   if(cvd) cvd.textContent = _fmtDob(t.dob, t.place);
   var cvdt = document.getElementById('tv-cv-date');
   if(cvdt) cvdt.textContent = _fmtToday();
-  var hd = document.getElementById('tv-heading');
-  if(hd) hd.textContent = firstName + ', your Career Reading is ready';
-  var ol = document.getElementById('tv-outlook');
-  if(ol) ol.textContent = t.career_outlook || 'YES — Stronger career growth lies ahead.';
-  var od = document.getElementById('tv-outlook-detail');
-  if(od) od.textContent = t.career_outlook_detail || '';
-  var sv = document.getElementById('tv-ss-verdict');
-  if(sv) sv.textContent = t.stay_switch_verdict || 'Prepare';
-  var ss = document.getElementById('tv-stayswitch');
-  if(ss) ss.textContent = t.stay_switch_tag || 'Your chart favours preparing before making the bigger move.';
-  var wn = document.getElementById('tv-window');
-  if(wn) wn.textContent = t.window_signal || "We've identified a stronger window for career movement.";
-  var pr = document.getElementById('tv-promotion');
-  if(pr) pr.textContent = t.promotion_signal || 'Your chart shows rising professional visibility and authority ahead.';
-  var bs = document.getElementById('tv-business');
-  if(bs) bs.textContent = t.business_signal || 'One path shows stronger long-term potential for you.';
+
+  /* Kundli chart */
+  if(t.chart){
+    var kw = document.getElementById('tv-kundli');
+    if(kw) kw.innerHTML = _buildKundli(t.chart, t.name, t.dob, t.place);
+    var pt = document.getElementById('tv-planets');
+    if(pt){ var tb = pt.querySelector('tbody'); if(tb) tb.innerHTML = _buildPlanetTable(t.chart.planets || {}); }
+    /* Mahadasha */
+    var md = document.getElementById('tv-md');
+    if(md) md.textContent = (t.current_md || 'Saturn') + (t.md_ends ? ' (ends ' + t.md_ends + ')' : '');
+    /* Chart summary: count strong + retro */
+    var strong = 0, retro = 0;
+    for(var pn in t.chart.planets){
+      var pi = t.chart.planets[pn];
+      if(pi.dignity === 'exalted' || pi.dignity === 'own') strong++;
+      if(pi.retro) retro++;
+    }
+    var cs = document.getElementById('tv-chart-sum');
+    if(cs) cs.innerHTML = '<span>'+strong+'</span> planet'+(strong!==1?'s':'')+' in strong positions' + (retro ? ' &middot; <span>'+retro+'</span> retrograde' : '');
+  }
+
+  /* Archetype */
+  var an = document.getElementById('tv-arch-name');
+  if(an) an.textContent = t.archetype || 'The Strategic Builder';
+  var ab = document.getElementById('tv-arch-blurb');
+  if(ab) ab.textContent = t.archetype_blurb || '';
+
+  /* About You traits */
+  if(t.about_you){
+    var tr = document.getElementById('tv-traits');
+    if(tr){
+      var th = '';
+      if(t.about_you.work_ethic) th += '<div class="ps-trait"><div class="tl">How you work</div><div class="tv">'+_esc(t.about_you.work_ethic)+'</div></div>';
+      if(t.about_you.approach) th += '<div class="ps-trait"><div class="tl">How you operate</div><div class="tv">'+_esc(t.about_you.approach)+'</div></div>';
+      if(t.about_you.strength) th += '<div class="ps-trait"><div class="tl">Your strength</div><div class="tv">'+_esc(t.about_you.strength)+'</div></div>';
+      tr.innerHTML = th;
+    }
+  }
+
+  /* Career DNA bars */
+  if(t.dimensions){
+    var dna = document.getElementById('tv-dna');
+    if(dna) dna.innerHTML = drawBars(t.dimensions);
+    var sl = document.getElementById('tv-standline');
+    if(sl){
+      var combo = topCombo(t.dimensions);
+      sl.innerHTML = 'Your strongest combination is <b>'+_esc(combo)+'</b>. This shapes how you make career decisions and what roles suit you best.';
+    }
+  }
+
+  /* Stat pills */
+  var entre = document.getElementById('tv-entre');
+  if(entre && t.entrepreneurial_10 != null) entre.textContent = (+(t.entrepreneurial_10)).toFixed(1) + ' / 10';
+  var dec = document.getElementById('tv-decision');
+  if(dec && t.decision_style) dec.textContent = t.decision_style;
+
+  /* Phase */
+  var ph = document.getElementById('tv-phase');
+  if(ph && t.phase) ph.textContent = t.phase;
+
+  /* Caption + show */
   var cap = document.getElementById('ps-caption');
-  if(cap){ cap.textContent = 'Your preview — computed from your birth chart.'; }
+  if(cap) cap.textContent = 'Your preview — computed from your birth chart.';
   var el = document.getElementById('sampleReport');
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
   if(sb){ sb.textContent = 'Unlock ₹199'; sb.setAttribute('href', '#sampleReport'); }
 }
-
-/* Sample-state preview is now text-based (verdict preview), no bar initialization needed. */
-
-/* funnel event: fires once when user starts filling the form */
-window._formStarted = false;
-document.getElementById('kundliForm').addEventListener('focusin', function(){
-  if(window._formStarted) return; window._formStarted = true;
-  if(window.gtag) gtag('event', 'form_start');
-  if(window.fbq) fbq('trackCustom', 'FormStart');
-});
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
    as pages/milan.html: the WhatsApp number is collected in the main form and sent
@@ -1174,6 +1454,7 @@ async function awaitReport(){
       if(!window.FREE_UNLOCK){
         if(window.fbq) fbq('track','Purchase',{value:199,currency:'INR'},{eventID:REPORT_ID});
         if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:199});
+        if(window.oaiq) oaiq('measure','order_created',{type:'contents'});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
