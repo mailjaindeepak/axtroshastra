@@ -74,7 +74,7 @@ OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
 # this middleware rewrites it in every HTML response. CloudFront forwards the
 # viewer Host header (Managed-AllViewer) and never caches our HTML (origin
 # sends no Cache-Control), so the swap is per-request safe.
-META_PIXEL_ID_COM = "1454249773521031"
+META_PIXEL_ID_COM = "1498790608627206"
 META_PIXEL_ID_IN = os.getenv("META_PIXEL_ID_IN", "4575834769362738")
 
 
@@ -693,7 +693,7 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1454249773521031');
+fbq('init', '1498790608627206');
 fbq('track', 'PageView');
 </script>
 <script type="text/javascript">

@@ -64,7 +64,7 @@ def test_admin_reconcile_requires_key(client):
 # --- Analytics coverage: the report page, /login and static marketing pages all
 # carry GA + Meta Pixel + Clarity, and pages that embed the block by hand are not
 # double-injected. Guards the gap where server-rendered pages had zero tracking.
-_TRACKERS = ("G-NKRQM1HJ97", "1454249773521031", "clarity.ms/tag")
+_TRACKERS = ("G-NKRQM1HJ97", "1498790608627206", "clarity.ms/tag")
 
 
 def test_report_page_has_all_trackers(client):
@@ -95,12 +95,12 @@ def test_pixel_id_split_by_domain(client):
     # swapped in by the _pixel_by_domain middleware. Any other host (including
     # the TestClient default) behaves like .com.
     com = client.get("/", headers={"host": "www.axtroshastra.com"}).text
-    assert "1454249773521031" in com and "4575834769362738" not in com
+    assert "1498790608627206" in com and "4575834769362738" not in com
 
     for host in ("axtroshastra.in", "www.axtroshastra.in"):
         html = client.get("/", headers={"host": host}).text
         assert "4575834769362738" in html, f"{host} missing .in pixel"
-        assert "1454249773521031" not in html, f"{host} leaked .com pixel"
+        assert "1498790608627206" not in html, f"{host} leaked .com pixel"
 
 
 def test_linkedin_removed_on_public_domains(client):

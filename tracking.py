@@ -62,7 +62,7 @@ import urllib.error
 
 logger = logging.getLogger("uvicorn.error")
 
-META_PIXEL_ID = os.getenv("META_PIXEL_ID", "1454249773521031")
+META_PIXEL_ID = os.getenv("META_PIXEL_ID", "1498790608627206")
 META_CAPI_TOKEN = os.getenv("META_CAPI_TOKEN", "")
 META_API_VERSION = os.getenv("META_API_VERSION", "v19.0")
 GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "G-NKRQM1HJ97")

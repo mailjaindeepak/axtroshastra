@@ -386,7 +386,7 @@ def test_config_has_facebook_pixel_block_without_fabricated_numbers(client):
     cfg = client.get(f"/api/admin/config?key={KEY}").json()["config"]
     fp = cfg["facebook_pixel"]
     # the real site pixel id is carried through
-    assert fp["pixel_id"] == "1454249773521031"
+    assert fp["pixel_id"] == "1498790608627206"
     assert fp["events_manager_url"].endswith(fp["pixel_id"])
     # NOT connected -> every event count is null and the series is empty
     assert fp.get("connected") is False
