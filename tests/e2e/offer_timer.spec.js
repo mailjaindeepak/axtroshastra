@@ -31,9 +31,9 @@ test('offer timer does not reset to 30:00 on refresh', async ({ page }) => {
   expect(secs(after)).toBeLessThanOrEqual(secs(before) + 1); // moved forward in time
 });
 
-test('compat keeps the ₹999 -> ₹499 cut on the sticky bar', async ({ page }) => {
+test('compat keeps the ₹999 -> ₹249 cut on the sticky bar', async ({ page }) => {
   await page.goto('/en/compatibility');
   const l2 = page.locator('.sticky .l2');
   await expect(l2).toContainText('₹999');
-  await expect(l2).toContainText('₹499');
+  await expect(l2).toContainText('₹249');
 });
