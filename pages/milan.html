@@ -9,13 +9,13 @@
 <link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/compatibility">
 <link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/compatibility">
 <link rel="alternate" hreflang="x-default" href="https://www.axtroshastra.com/en/compatibility">
-<meta property="og:title" content="Love Compatibility Report ₹499 — How Compatible Are You Two, Really?">
+<meta property="og:title" content="Love Compatibility Report ₹249 — How Compatible Are You Two, Really?">
 <meta property="og:description" content="Your couple score, strengths, frictions and an action plan — calculated honestly from both kundlis.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/en/compatibility">
 <meta property="og:type" content="website">
 
-<meta name="description" content="See your real compatibility as a couple — a 36-guna score, where you match, where friction shows up, and an action plan to grow stronger. ₹499, in 2 minutes.">
+<meta name="description" content="See your real compatibility as a couple — a 36-guna score, where you match, where friction shows up, and an action plan to grow stronger. ₹249, in 2 minutes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -372,10 +372,10 @@ fbq('track', 'PageView');
       <div class="eb">Your relationship, in one line</div>
       <div class="lb-wrap"><div class="lb-text" id="tv-breath"></div>
         <div class="lock"><div class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div></div></div>
-      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span></button>
+      <button class="pay" id="unlockBtn" type="button" onclick="startPayment()">Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;249</span></button>
       <div class="subnote">All 8 areas scored · friction points · Manglik &amp; Nadi verdicts · action plan &amp; more.</div>
     </div>
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
+    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹249</span></div>
   </div>
 </section>
 
@@ -517,7 +517,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Full Compatibility Report</p>
-    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹249</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#milanForm" id="stickyBtn">Get Free Report</a>
 </div>
@@ -590,7 +590,7 @@ function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser'); }
+  if(sb){ sb.textContent = 'Unlock ₹249'; sb.setAttribute('href', '#teaser'); }
 }
 window.__renderTeaser = renderTeaser;
 var PASS = null; try{ PASS = new URLSearchParams(location.search).get('pass'); }catch(e){}
@@ -739,7 +739,7 @@ async function startPayment(){
   if(order.error === 'invalid_pass'){ alert('This free-pass link has already been used or is invalid.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:249});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
@@ -767,15 +767,15 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
+        if(window.fbq) fbq('track','Purchase',{value:249,currency:'INR'},{eventID:REPORT_ID});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:249});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;499</span>'; btn.disabled = false;
+  btn.innerHTML = 'Pay to unlock <span class="amt">&mdash; <s>&#8377;999</s> &#8377;249</span>'; btn.disabled = false;
   alert('Your payment is processing — please refresh the page in a minute and your report will be ready.');
 }
 
@@ -815,7 +815,7 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
-// BUG 7: on mobile the on-screen keyboard shoves the fixed ₹499 bar over the form.
+// BUG 7: on mobile the on-screen keyboard shoves the fixed ₹249 bar over the form.
 // Hide the bar while any form field is focused (keyboard likely open); restore on blur.
 // This is independent of the scroll-based .hidden toggle above.
 (function(){
