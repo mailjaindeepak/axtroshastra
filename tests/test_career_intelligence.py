@@ -1,5 +1,5 @@
 """Career Intelligence Report (/en/career-intelligence, product id
-"career_intelligence") regression tests. Premium English-only product, ₹199.
+"career_intelligence") regression tests. Premium English-only product, ₹251.
 Same pattern as test_career_growth.py: create via /api/kundli, bypass payment via
 DEMO_MODE's /api/_demo_pay, fetch the served report HTML. English only — no /hi/
 twin, no Hindi assertions (deliberate, per docs/career-intelligence-report-spec.md)."""
@@ -106,12 +106,12 @@ def test_career_intelligence_best_environment_matches_report_map(client):
     assert teaser["best_environment"] == NEED_BY_DIM[teaser["top_dimension"]]
 
 
-def test_career_intelligence_price_is_199(client):
-    """Server-side price for this product is ₹199 (19900 paise), regardless of
+def test_career_intelligence_price_is_251(client):
+    """Server-side price for this product is ₹251 (25100 paise), regardless of
     the client — distinct from the base ₹499 products' price point."""
     rec = {"payload": {"product": "career_intelligence",
                        "meta": {"variant": "/en/career-intelligence"}}}
-    assert api._order_amount_paise(rec) == 19900
+    assert api._order_amount_paise(rec) == 25100
 
 
 def test_career_intelligence_varies_by_birth_data(client):

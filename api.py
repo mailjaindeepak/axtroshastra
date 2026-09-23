@@ -413,7 +413,7 @@ DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
-CAREER_INTEL_PRICE_PAISE = 19900          # ₹199 — Career Intelligence report
+CAREER_INTEL_PRICE_PAISE = 25100          # ₹251 — Career Intelligence report
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 LIFE_BLUEPRINT_PRICE_PAISE = 99900        # ₹999 — Life Blueprint only (was ₹499)
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
