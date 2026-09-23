@@ -18,7 +18,7 @@ manager's brief; do not re-interpret from memory while building.
 | **Theme (APPROVED)** | **LIGHT — the Business-Growth (`_VYAPAR_CSS`) palette**: cream/sand cards, gold accents, dark serif ink. Reuses Business-Growth design elements — `_VYAPAR_DEFS` icon set (via `<use href="#i-…">`), the cover **constellation**, the **fan** ornament. (A charcoal/dark variant was built and rejected; light is the one to ship. Approved output = `career-intelligence report - v5.pdf`, 55 pages, 323×623 pt.) |
 | **Report shape (APPROVED)** | 55 pages: each content card followed by its McKinsey **exhibit** card (radar, 2×2 matrices, roadmap/journey arcs, donut, venn, ranked/comparison bars, life-stage bars, priority matrix, spectrum dials, timelines). The approved static mock is the visual target the renderer must reproduce per-person. |
 | Audience | 40–60, LinkedIn professionals (NOT the Meta/₹499 audience) |
-| Price | **Display: ~~₹999~~ ₹199.** Actual amount charged = **₹199** (`amount_paise = 19900`). (Price history: launched at ₹1,999 with a ₹4,999 anchor → reduced to ₹499 with a ₹1,999 anchor → now ₹199 with a ₹999 anchor. The current struck-through anchor is ₹999; ₹199 is the real selling price.) |
+| Price | **Display: ~~₹999~~ ₹251.** Actual amount charged = **₹251** (`amount_paise = 25100`). (Price history: launched at ₹1,999 with a ₹4,999 anchor → reduced to ₹499 with a ₹1,999 anchor → reduced to ₹199 with a ₹999 anchor → raised to ₹251, anchor unchanged at ₹999.) |
 | Length | 38 pages (36–40 target) |
 | Form / funnel | Reuse the **career-growth** funnel (form → teaser → contact popup → payment → report + PDF + WhatsApp), but a **slimmed form: exactly 5 fields — Name, Date of birth, Time of birth, Gender, Place of birth (city)**. Drop career-growth's two extra fields (employment situation, experience) — they never affected scoring, and this premium product doesn't ask them. The `compute_career_intelligence()` call passes only these 5 (+ derived tz/lat/lon from the geocoded city, + time_quality when TOB is unknown). |
 | Homepage | NOT listed on homepage for now. Reviews DO go on its own landing page. |
@@ -130,7 +130,7 @@ manager's brief; do not re-interpret from memory while building.
 > A personalised analysis of your career strengths, professional patterns, leadership
 > style, opportunities and upcoming phases — based on your individual birth chart.
 > **38 pages • Personalised • Private**
-> ~~₹999~~ **₹199** — *Founding Launch Price*
+> ~~₹999~~ **₹251** — *Founding Launch Price*
 > **[ GET MY CAREER INTELLIGENCE REPORT ]**
 
 ## Open engine-design questions (resolve before/at build, don't guess)
