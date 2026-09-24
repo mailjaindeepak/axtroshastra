@@ -134,25 +134,99 @@ section{padding:52px 0}
 .ps-wheel-legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
 .ps-dec{position:absolute;z-index:0;pointer-events:none;max-width:none;opacity:.9}
 
-/* Unlock grid (9-card locked teaser) */
-.ps-unlock-head{text-align:center;margin-top:36px}
-.ps-unlock-head .h{font-family:var(--disp);font-weight:600;font-size:23px;color:var(--phead);margin-top:6px}
-.ps-unlock-head .s{font-size:13px;color:var(--pmuted);margin-top:8px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5}
-.ps-unlock-box{background:var(--panel);border:1px solid var(--pline);border-radius:24px;padding:26px 18px;margin-top:20px;text-align:center;box-shadow:0 14px 36px var(--pshadow);position:relative;overflow:hidden;z-index:1}
-.ps-unlock-box .h{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--phead);margin-top:6px}
-.ps-unlock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.ps-ucard{background:var(--tbox);border-radius:16px;padding:14px 10px 12px;position:relative;text-align:left;min-height:112px;display:flex;flex-direction:column;justify-content:flex-end}
-.ps-ucard .ic{width:18px;height:18px;color:var(--pgold-lt);opacity:.9}
-.ps-ucard .lk{position:absolute;top:10px;right:10px;width:13px;height:13px;color:#C9BBA0;opacity:.8}
-.ps-ucard .t{font-family:var(--disp);font-weight:600;font-size:13.5px;color:#F3EFE4;line-height:1.3;margin-top:10px}
+/* CTA pill */
 .ps-cta{display:inline-flex;align-items:center;gap:9px;background:var(--pcta);color:#fff;border:0;border-radius:100px;padding:15px 30px;font-size:15.5px;font-weight:700;font-family:var(--body);cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.22);text-decoration:none}
 .ps-cta:hover{background:var(--pcta-h)}
-.ps-unlock-box .ps-cta{margin-top:22px}
+.ps-cta-ghost{background:transparent;border:1.5px solid #C9A34E;color:#C9A34E;box-shadow:none;font-size:14px;padding:12px 26px}
+.ps-cta-ghost:hover{background:rgba(201,163,78,.12);color:#C9A34E}
+
+/* Cover card */
+.ps-cover{background:#1E1E1E;border-radius:14px;padding:32px 24px 26px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.ps-cover::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,163,78,.18) 0%,transparent 70%);pointer-events:none}
+.ps-cv-brand{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#C9A34E;font-weight:700;margin-bottom:20px}
+.ps-cv-title{font-family:var(--disp);font-size:22px;font-weight:600;color:#F5F0E6;line-height:1.25;margin-bottom:6px}
+.ps-cv-sub{font-size:13px;color:#C9A34E;font-style:italic;margin-bottom:22px;letter-spacing:.02em}
+.ps-cv-rule{width:48px;height:1.5px;background:linear-gradient(90deg,transparent,#C9A34E,transparent);margin:0 auto 18px}
+.ps-cv-name{font-family:var(--disp);font-size:18px;font-weight:600;color:#F5F0E6;margin-bottom:4px}
+.ps-cv-dob{font-size:12.5px;color:#B8A98A;margin-bottom:22px}
+.ps-cv-qlabel{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#C9A34E;font-weight:700;margin-bottom:14px}
+.ps-cv-qlist{list-style:none;margin:0 0 22px;padding:0;text-align:left;max-width:340px;margin-left:auto;margin-right:auto}
+.ps-cv-qlist li{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:13.5px;color:#D8CDBA;border-bottom:1px solid rgba(201,163,78,.12)}
+.ps-cv-qlist li:last-child{border-bottom:0}
+.ps-cv-qlist .qn{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:rgba(201,163,78,.15);border:1px solid rgba(201,163,78,.3);font-family:var(--disp);font-weight:700;font-size:11px;color:#C9A34E;display:flex;align-items:center;justify-content:center}
+.ps-cv-date{font-size:10.5px;color:#7A7060;letter-spacing:.06em}
+
+/* Trust strip */
+.ps-trust{display:flex;gap:1px;margin-bottom:12px;border-radius:12px;overflow:hidden;background:rgba(201,163,78,.15);position:relative;z-index:1}
+.ps-trust-stat{flex:1;background:#1E1E1E;padding:12px 10px;text-align:center}
+.ps-trust-stat .tn{font-family:var(--disp);font-weight:700;font-size:17px;color:#F5F0E6;font-variant-numeric:tabular-nums}
+.ps-trust-stat .tl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9A8E7A;font-weight:600;margin-top:2px}
+
+/* Kundli / preview card */
+.ps-pcard{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:22px 20px;margin-bottom:12px;position:relative;z-index:1;box-shadow:0 6px 18px var(--pshadow)}
+.ps-plabel{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pgold);margin-bottom:10px}
+.ps-kundli-wrap{max-width:320px;margin:12px auto 16px}
+.ps-kundli-wrap svg{width:100%;height:auto;display:block}
+.ps-planet-tbl{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:12.5px}
+.ps-planet-tbl th{text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmuted);font-weight:600;padding:0 0 6px;border-bottom:1px solid var(--pline)}
+.ps-planet-tbl td{padding:5px 0;border-bottom:1px dashed rgba(201,163,78,.18);color:var(--pink)}
+.ps-planet-tbl tr:last-child td{border-bottom:0}
+.ps-planet-tbl .pn{font-family:var(--disp);font-weight:600;color:var(--phead)}
+.ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+.ps-dig.own{color:var(--pgold);background:rgba(201,163,78,.12)}
+.ps-dig.exalted{color:var(--pgreen);background:rgba(62,125,90,.1)}
+.ps-dig.retro{color:#7A6B8A;background:rgba(122,107,138,.1)}
+.ps-md-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline);display:flex;justify-content:space-between;align-items:center}
+.ps-md-bar .lb{font-size:12px;color:var(--pmuted)}
+.ps-md-bar .vl{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead)}
+
+/* About You — persona card */
+.ps-persona{text-align:left;margin-top:8px}
+.ps-persona-line{margin:6px 0 0;font-size:14px;color:var(--pink);line-height:1.55}
+.ps-persona-line b{color:var(--phead);font-weight:600;font-family:var(--disp)}
+
+/* Standout callout */
+.ps-standout{margin-top:10px;padding:12px 14px;background:#F3EAD8;border:1px dashed var(--pgold);border-radius:12px;font-size:13.5px;color:var(--pink);line-height:1.5;text-align:left}
+
+/* Phase row */
+.ps-phase-row{display:flex;align-items:center;gap:14px}
+.ps-phase-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:rgba(201,163,78,.12);border:1.5px solid rgba(201,163,78,.3);display:flex;align-items:center;justify-content:center}
+.ps-phase-row .pl{font-size:11px;color:var(--pmuted);margin-bottom:2px}
+.ps-phase-row .pv{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead)}
+
+/* Locked questions */
+.ps-locked{background:var(--panel);border:1.5px dashed rgba(201,163,78,.45);border-radius:14px;padding:22px 20px;margin-top:12px;text-align:left;position:relative;z-index:1}
+.ps-locked-heading{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--phead);margin-bottom:4px}
+.ps-locked-sub{font-size:12.5px;color:var(--pmuted);margin-bottom:16px}
+.ps-lq{padding:13px 0;border-bottom:1px solid var(--pline);display:flex;gap:12px;align-items:flex-start}
+.ps-lq:last-of-type{border-bottom:0}
+.ps-lq-icon{flex:0 0 auto;width:32px;height:32px;border-radius:8px;background:#F3EAD8;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.ps-lq-icon svg{color:var(--pgold)}
+.ps-lq-text .qt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead);line-height:1.3;margin-bottom:3px}
+.ps-lq-text .qd{font-size:12.5px;color:var(--pmuted);line-height:1.4}
+
+/* Also-included grid */
+.ps-also-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.ps-also-box{background:#F3EAD8;border:1px dashed rgba(201,163,78,.3);border-radius:8px;padding:10px 12px;font-size:12.5px;font-weight:600;color:var(--phead);text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.3}
+.ps-also-box svg{color:var(--pgold);flex-shrink:0}
+
+/* Social proof */
+.ps-proof{margin-top:20px;padding-top:18px;border-top:1px dashed var(--pline)}
+.ps-proof-h{font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--pgold);text-align:center;margin-bottom:12px}
+.ps-proof-list{display:flex;flex-direction:column;gap:10px}
+.ps-proof-item{background:#F3EAD8;border-radius:10px;padding:12px 14px}
+.ps-proof-stars{font-size:12px;color:var(--pgold);margin-bottom:4px;letter-spacing:1px}
+.ps-proof-text{font-size:13px;color:var(--phead);line-height:1.5;margin-bottom:6px}
+.ps-proof-who{font-size:11.5px;color:var(--pmuted);font-weight:600}
+.ps-cred-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.ps-cred-badge{font-size:10px;font-weight:600;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:100px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.ps-subnote2{font-size:12.5px;color:var(--pmuted);text-align:center;margin-top:11px}
+
 @media(max-width:420px){
   .ps-snap .c .v{font-size:13.5px}
-  .ps-unlock-grid{gap:8px}
-  .ps-ucard{padding:12px 8px 10px;min-height:100px}
-  .ps-ucard .t{font-size:12.3px}
+  .ps-lq-text .qt{font-size:13px}
+  .ps-also-grid{gap:6px}
+  .ps-also-box{font-size:11.5px;padding:8px 10px}
 }
 
 /* ---------- WHY DIFFERENT ---------- */
@@ -369,46 +443,166 @@ fbq('track', 'PageView');
   <p class="ps-tag">Free preview — a real glimpse of your paid report, computed from your own birth chart.</p>
   <div class="ps-wrap">
 
-    <!-- 1. Chart snapshot -->
-    <div class="ps-sechead"><div class="eb">At a glance</div><div class="h">Your Life Blueprint</div></div>
-    <div class="ps-snap">
-      <div class="c"><div class="k">Rising sign</div><div class="v" id="tv-lagna">—</div></div>
-      <div class="c"><div class="k">Moon sign</div><div class="v" id="tv-moon">—</div></div>
-      <div class="c"><div class="k">Nakshatra</div><div class="v" id="tv-nak">—</div></div>
+    <!-- 1. Cover card -->
+    <div class="ps-cover" id="tv-cover">
+      <div class="ps-cv-brand">Axtroshastra</div>
+      <div class="ps-cv-title">Your Life Blueprint</div>
+      <div class="ps-cv-sub">Your Chart. Your Story. Your Next Chapter.</div>
+      <div class="ps-cv-rule"></div>
+      <div class="ps-cv-name" id="tv-cv-name">—</div>
+      <div class="ps-cv-dob" id="tv-cv-dob">—</div>
+      <div class="ps-cv-qlabel">This report answers:</div>
+      <ol class="ps-cv-qlist">
+        <li><span class="qn">1</span> Are your best years still ahead of you?</li>
+        <li><span class="qn">2</span> When is your next major turning point?</li>
+        <li><span class="qn">3</span> Are you on the right career path?</li>
+        <li><span class="qn">4</span> How does the future of your relationships look?</li>
+        <li><span class="qn">5</span> What is blocking your financial growth?</li>
+      </ol>
+      <div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#unlockBtn" onclick="document.getElementById('unlockBtn').scrollIntoView({behavior:'smooth'});return false;">Unlock Answers</a></div>
+      <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
 
-    <!-- 2. Current chapter -->
-    <div class="ps-block ps-tbox">
-      <div class="who">⏳&nbsp; Current chapter</div>
-      <div class="nm" id="tv-dasha">—</div>
-      <p>Until <b id="tv-till" style="color:#fff">—</b> — this one period is shaping how every one of your 10 life areas reads right now.</p>
+    <!-- 2. Trust strip -->
+    <div class="ps-trust">
+      <div class="ps-trust-stat"><div class="tn">25,000+</div><div class="tl">Reports</div></div>
+      <div class="ps-trust-stat"><div class="tn">4.8 &#9733;</div><div class="tl">Avg Rating</div></div>
+      <div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>
     </div>
 
-    <!-- 3. What your chart is saying -->
-    <div class="ps-sechead"><div class="eb">What your chart is saying</div></div>
-
-    <!-- 4. Life Wheel -->
-    <div class="ps-wheel-wrap">
-      <div id="tv-wheel"></div>
-      <div class="ps-wheel-legend">
-        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgreen)"></span>Thriving</span>
-        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgold)"></span>Building</span>
-        <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pterra)"></span>Watch</span>
+    <!-- 3. Kundli chart card -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">Your North Indian Kundli</div>
+      <div class="ps-kundli-wrap" id="tv-kundli"></div>
+      <table class="ps-planet-tbl" id="tv-planets">
+        <thead><tr><th>Planet</th><th>Sign</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="ps-md-bar">
+        <div class="lb">Current Mahadasha</div>
+        <div class="vl" id="tv-md">—</div>
       </div>
     </div>
 
-    <!-- 5. Unlock grid -->
-    <div class="ps-unlock-head">
-      <div class="eb">This is just the surface</div>
-      <div class="h">Your full report keeps going</div>
-      <div class="s">Every area below, your weak periods, your action plan, and the reasoning behind every reading — all included.</div>
+    <!-- 4. About You -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">About You</div>
+      <div class="ps-snap">
+        <div class="c"><div class="k">Rising sign</div><div class="v" id="tv-lagna">—</div></div>
+        <div class="c"><div class="k">Moon sign</div><div class="v" id="tv-moon">—</div></div>
+        <div class="c"><div class="k">Nakshatra</div><div class="v" id="tv-nak">—</div></div>
+      </div>
+      <div class="ps-persona" id="tv-persona"></div>
     </div>
-    <div class="ps-unlock-box">
-      <svg class="ps-dec" width="70" height="70" viewBox="0 0 70 70" fill="none" aria-hidden="true" style="right:-18px;top:-18px"><g opacity=".45"><clipPath id="psRock2"><circle cx="35" cy="35" r="18"/></clipPath><circle cx="35" cy="35" r="18" fill="#D8C09A"/><g clip-path="url(#psRock2)" fill="#B99B6F"><circle cx="29" cy="30" r="4.5" opacity=".7"/><circle cx="41" cy="38" r="3.4" opacity=".7"/><circle cx="33" cy="44" r="2.7" opacity=".7"/></g></g></svg>
-      <div class="eb">Unlock your full report</div>
-      <div class="h">9 things you'll get</div>
-      <div class="ps-unlock-grid" id="tv-unlock-grid"></div>
-      <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">&uarr; Get my report <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹999</span></button>
+
+    <!-- 5. Life Wheel -->
+    <div class="ps-pcard">
+      <div class="ps-plabel">Your Life Wheel</div>
+      <div class="ps-wheel-wrap">
+        <div id="tv-wheel"></div>
+        <div class="ps-wheel-legend">
+          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgreen)"></span>Thriving</span>
+          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgold)"></span>Building</span>
+          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pterra)"></span>Watch</span>
+        </div>
+      </div>
+      <div class="ps-standout" id="tv-standout"></div>
+      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">Get Details for &#8377;999</button></div>
+    </div>
+
+    <!-- 6. Current phase -->
+    <div class="ps-pcard" style="padding:16px 20px">
+      <div class="ps-phase-row">
+        <div class="ps-phase-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <div class="pl">Your current life chapter</div>
+          <div class="pv" id="tv-phase">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Locked questions -->
+    <div class="ps-locked">
+      <div class="ps-locked-heading">Your 5 answers are ready</div>
+      <div class="ps-locked-sub">Computed from your birth chart. Unlock to read them.</div>
+
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">Are your best years still ahead of you?</div>
+          <div class="qd">Your next three life phases compared, and which one carries the most weight.</div>
+        </div>
+      </div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">When is your next major turning point?</div>
+          <div class="qd">The exact year and period, identified from your Mahadasha timeline.</div>
+        </div>
+      </div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">Are you on the right career path?</div>
+          <div class="qd">Your chart's career indicators decoded, with what fits and what doesn't.</div>
+        </div>
+      </div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">How does the future of your relationships look?</div>
+          <div class="qd">Relationship patterns from your 7th house, Venus and Dasha mapped out.</div>
+        </div>
+      </div>
+      <div class="ps-lq">
+        <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div class="ps-lq-text">
+          <div class="qt">What is blocking your financial growth?</div>
+          <div class="qd">The specific planetary positions holding back your wealth, and what shifts next.</div>
+        </div>
+      </div>
+
+      <div class="ps-also-grid">
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Body &amp; energy</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Family ties</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Property &amp; home</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Wealth &amp; income</div>
+      </div>
+
+      <div style="text-align:center;margin-top:22px">
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint &mdash; <s>&#8377;1999</s> &#8377;999</button>
+        <div class="ps-subnote2">Personalised using your exact birth details</div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Offer ends in <b class="clk" id="otClock">30:00</b> &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;999</span></div>
+      </div>
+
+      <!-- Social proof -->
+      <div class="ps-proof">
+        <div class="ps-proof-h">What others are saying</div>
+        <div class="ps-proof-list">
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">The timing section was eerily accurate. I was already thinking about a big move and this gave me the exact year to watch for.</div>
+            <div class="ps-proof-who">Priya, 31 &middot; Marketing Manager</div>
+          </div>
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">Showed it to my mom and she said the personality part was spot on. 999 for something this detailed is nothing tbh.</div>
+            <div class="ps-proof-who">Rahul, 27</div>
+          </div>
+          <div class="ps-proof-item">
+            <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <div class="ps-proof-text">I got the career and marriage reports before, so tried this one too. It connects everything into one picture. Makes way more sense now.</div>
+            <div class="ps-proof-who">Sneha, 34 &middot; Chartered Accountant</div>
+          </div>
+        </div>
+        <div class="ps-cred-row">
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>
+          <div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -697,43 +891,149 @@ function tvWheelSvg(wheel, name, sub){
   return '<svg class="ps-wheel-svg" viewBox="0 0 480 440" xmlns="http://www.w3.org/2000/svg">'+ringHtml+spokes+dots+center+labels+'</svg>';
 }
 
-// 9 of the 10 Life Blueprint areas (Timing excluded) -- icon path + locked-teaser
-// benefit line for the "9 things you'll get" grid. Copy only; no computed values.
-var TV_UNLOCK_CARDS = [
-  {icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>', t:'Your true career direction'},
-  {icon:'<circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/>', t:'How your wealth grows'},
-  {icon:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', t:'Your ideal partner, decoded'},
-  {icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', t:'Your family-building window'},
-  {icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', t:'Right time to buy or move'},
-  {icon:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>', t:'Should you move abroad'},
-  {icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', t:"Your body's weak points"},
-  {icon:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', t:"What's holding you back"},
-  {icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', t:'Mending old family ties'},
-];
-var TV_LOCK_ICON = '<rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>';
+var TV_PLANET_ORDER = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+var _SIGNS_SHORT=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'];
+var _SIGNS_FULL=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+var _PL_ABBR={Sun:'Su',Moon:'Mo',Mars:'Ma',Mercury:'Me',Jupiter:'Ju',Venus:'Ve',Saturn:'Sa',Rahu:'Ra',Ketu:'Ke'};
+var _H_SIGN=[{x:150,y:28},{x:232,y:16},{x:285,y:55},{x:265,y:153},{x:285,y:252},{x:232,y:290},{x:150,y:278},{x:68,y:290},{x:15,y:252},{x:35,y:153},{x:15,y:55},{x:68,y:16}];
+var _H_PLANET=[{x:150,y:80},{x:225,y:48},{x:265,y:95},{x:218,y:125},{x:265,y:215},{x:225,y:258},{x:150,y:228},{x:75,y:258},{x:35,y:215},{x:82,y:125},{x:35,y:95},{x:75,y:48}];
+function _esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function _signIdx(name){var i=_SIGNS_FULL.indexOf(name);return i>=0?i:0;}
 
-function tvRenderUnlockGrid(){
-  var svgOpen = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
-  document.getElementById('tv-unlock-grid').innerHTML = TV_UNLOCK_CARDS.map(function(c){
-    return '<div class="ps-ucard">'
-      + svgOpen + c.icon + '</svg>'
-      + '<svg class="lk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_LOCK_ICON + '</svg>'
-      + '<div class="t">' + c.t + '</div></div>';
+function tvBuildKundli(lagna, planets, name, dob, place){
+  var ref = _signIdx(lagna);
+  var byHouse = {};
+  for(var pn in planets){
+    var pi = planets[pn];
+    var house = ((_signIdx(pi.sign) - ref) % 12 + 12) % 12;
+    if(!byHouse[house]) byHouse[house] = [];
+    var abbr = _PL_ABBR[pn] || pn.slice(0,2);
+    if(pi.retro) abbr += '(R)';
+    var fill = '#3A2C18', fw = '500';
+    if(pi.dignity === 'exalted' || pi.dignity === 'own'){ fill = '#2D7A3A'; fw = '600'; }
+    else if(pi.retro){ fill = '#7A6B8A'; }
+    byHouse[house].push({abbr:abbr, fill:fill, fw:fw});
+  }
+  var svg = '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="1" y="1" width="298" height="298" fill="#FBF7EF" stroke="#C9A34E" stroke-width="1.5" rx="2"/>'
+    + '<polygon points="150,0 300,150 150,300 0,150" fill="none" stroke="#C9A34E" stroke-width="1"/>'
+    + '<line x1="0" y1="0" x2="300" y2="300" stroke="#C9A34E" stroke-width="0.7" opacity=".5"/>'
+    + '<line x1="300" y1="0" x2="0" y2="300" stroke="#C9A34E" stroke-width="0.7" opacity=".5"/>'
+    + '<polygon points="150,0 225,75 150,150 75,75" fill="rgba(201,163,78,.07)" stroke="none"/>';
+  for(var h=0;h<12;h++){
+    var si = (ref + h) % 12;
+    var sp = _H_SIGN[h];
+    if(h === 0){
+      svg += '<text x="'+sp.x+'" y="'+sp.y+'" text-anchor="middle" font-size="8" fill="#C9A34E" opacity=".7" font-weight="600" letter-spacing=".5">' + _SIGNS_SHORT[si] + '</text>';
+      svg += '<text x="'+sp.x+'" y="'+(sp.y+12)+'" text-anchor="middle" font-size="7" fill="#C9A34E" font-weight="700" letter-spacing=".5">ASC</text>';
+    } else {
+      svg += '<text x="'+sp.x+'" y="'+sp.y+'" text-anchor="middle" font-size="7" fill="#8A7E6E" opacity=".6">' + _SIGNS_SHORT[si] + '</text>';
+    }
+    var pls = byHouse[h];
+    if(pls && pls.length){
+      var pp = _H_PLANET[h];
+      if(pls.length === 1){
+        svg += '<text x="'+pp.x+'" y="'+pp.y+'" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="'+(h===0?'13':'11')+'" font-weight="'+pls[0].fw+'" fill="'+pls[0].fill+'">'+_esc(pls[0].abbr)+'</text>';
+      } else {
+        for(var pi=0;pi<pls.length;pi++){
+          var yoff = pp.y - 7*(pls.length-1)/2 + 14*pi;
+          svg += '<text x="'+pp.x+'" y="'+yoff+'" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="10" font-weight="'+pls[pi].fw+'" fill="'+pls[pi].fill+'">'+_esc(pls[pi].abbr)+'</text>';
+        }
+      }
+    }
+  }
+  var firstName = (name||'').split(' ')[0] || 'You';
+  svg += '<text x="150" y="143" text-anchor="middle" font-family="\'Fraunces\',Georgia,serif" font-size="11" font-weight="600" fill="#3A2C18">'+_esc(firstName)+'</text>';
+  var dobParts = (dob||'').split('-');
+  var dobShort = dobParts.length===3 ? dobParts[2]+'-'+dobParts[1]+'-'+dobParts[0] : dob;
+  svg += '<text x="150" y="158" text-anchor="middle" font-size="8.5" fill="#8A7E6E">'+_esc(dobShort)+'</text>';
+  if(place) svg += '<text x="150" y="170" text-anchor="middle" font-size="8.5" fill="#8A7E6E">'+_esc(place)+'</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+function tvRenderPlanets(planets){
+  var tbody = document.querySelector('#tv-planets tbody');
+  if(!tbody || !planets) return;
+  tbody.innerHTML = TV_PLANET_ORDER.map(function(p){
+    var d = planets[p]; if(!d) return '';
+    var dig = d.dignity || 'neutral';
+    var digCls = (dig === 'exalted' || dig === 'own') ? ' ps-dig ' + dig : '';
+    var label = dig.charAt(0).toUpperCase() + dig.slice(1);
+    if(d.retro) label += ' (R)';
+    return '<tr><td class="pn">' + p + '</td><td>' + (d.sign || '') + '</td><td><span class="' + digCls.trim() + '">' + label + '</span></td></tr>';
   }).join('');
 }
 
+function tvStandout(wheel){
+  var thriving = [], watch = [];
+  var LABEL = {career:'Career', money:'Money', marriage:'Marriage', children:'Children',
+    home:'Property', foreign:'Relocation', health:'Energy', growth:'Growth', family:'Family', timing:'Timing'};
+  for(var k in wheel){
+    if(wheel[k] === 'thriving') thriving.push(LABEL[k] || k);
+    if(wheel[k] === 'watch') watch.push(LABEL[k] || k);
+  }
+  var parts = [];
+  if(thriving.length) parts.push('<b>' + thriving.join(' and ') + '</b> ' + (thriving.length === 1 ? 'is' : 'are') + ' among your strongest areas right now.');
+  if(watch.length) parts.push('<b>' + watch.join(' and ') + '</b> ' + (watch.length === 1 ? 'needs' : 'need') + ' attention.');
+  return parts.join(' ') || 'Your chart shows a balanced spread across all areas.';
+}
+
 function renderTeaser(t){
+  var fullName = (document.getElementById('f-name').value || '').trim();
+  var firstName = fullName.split(/\s+/)[0] || 'You';
+
+  // Cover card
+  document.getElementById('tv-cv-name').textContent = fullName || 'You';
+  var dobParts = (document.getElementById('f-yy').value || '') + '-' + (document.getElementById('f-mm').value || '') + '-' + (document.getElementById('f-dd').value || '');
+  var place = (document.getElementById('f-place').value || '').trim();
+  var months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  var dd = document.getElementById('f-dd').value, mmv = document.getElementById('f-mm').value, yy = document.getElementById('f-yy').value;
+  var dobDisplay = (parseInt(dd,10)||'') + ' ' + (months[parseInt(mmv,10)]||'') + ' ' + (yy||'');
+  document.getElementById('tv-cv-dob').textContent = dobDisplay.trim() + (place ? ' · ' + place : '');
+  var today = new Date();
+  document.getElementById('tv-cv-date').textContent = 'Report prepared ' + today.getDate() + ' ' + months[today.getMonth()+1] + ' ' + today.getFullYear();
+
+  // Kundli SVG (built client-side, same as career-intelligence)
+  var kundliWrap = document.getElementById('tv-kundli');
+  if(kundliWrap && t.planets && t.lagna_en){
+    var _dob = document.getElementById('f-yy').value+'-'+document.getElementById('f-mm').value+'-'+document.getElementById('f-dd').value;
+    var _place = (document.getElementById('f-place').value || '').trim();
+    kundliWrap.innerHTML = tvBuildKundli(t.lagna_en, t.planets, fullName, _dob, _place);
+  }
+
+  // Planet table
+  tvRenderPlanets(t.planets);
+
+  // Mahadasha bar
+  document.getElementById('tv-md').textContent = t.current_dasha || '—';
+
+  // About You — snapshot
   document.getElementById('tv-lagna').textContent = t.lagna_en || '—';
   document.getElementById('tv-moon').textContent = t.moon_sign_en + ' (' + t.moon_sign + ')';
   document.getElementById('tv-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
-  document.getElementById('tv-dasha').textContent = t.current_dasha;
-  document.getElementById('tv-till').textContent = t.dasha_till;
 
-  var firstName = (document.getElementById('f-name').value || '').trim().split(/\s+/)[0] || 'You';
+  // Persona lines
+  var personaEl = document.getElementById('tv-persona');
+  if(personaEl){
+    var html = '';
+    if(t.lagna_line) html += '<div class="ps-persona-line"><b>Rising sign:</b> ' + t.lagna_line + '</div>';
+    if(t.moon_line) html += '<div class="ps-persona-line"><b>Moon sign:</b> ' + t.moon_line + '</div>';
+    personaEl.innerHTML = html;
+  }
+
+  // Life Wheel
   var adLord = t.cur_ad_lord ? ('Antardasha of ' + t.cur_ad_lord) : '';
   document.getElementById('tv-wheel').innerHTML = tvWheelSvg(t.wheel || {}, firstName, adLord);
-  tvRenderUnlockGrid();
 
+  // Standout callout
+  var standoutEl = document.getElementById('tv-standout');
+  if(standoutEl) standoutEl.innerHTML = tvStandout(t.wheel || {});
+
+  // Current phase
+  document.getElementById('tv-phase').textContent = t.current_dasha || '—';
+
+  // Show teaser
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});

@@ -720,11 +720,14 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                    "dasha_till": active_ad["end"].strftime("%b %Y") if active_ad else "—",
                    "lagna_en": SIGNS_EN[ch["lagna_sign"]],
                    "cur_ad_lord": active_ad["lord"] if active_ad else None,
-                   # Free-preview Life Wheel (landing-page teaser only): the same
-                   # real, already-computed 10-area Thriving/Building/Watch verdict
-                   # shown in the full report -- read-only copy of the `wheel` dict
-                   # above, no new calculation.
-                   "wheel": wheel},
+                   "wheel": wheel,
+                   "lagna_line": LAGNA_PERSONA[ch["lagna_sign"]],
+                   "moon_line": LAGNA_PERSONA[moon.sign],
+                   "planets": {p.name: {"sign": SIGNS_EN[p.sign],
+                                        "dignity": p.dignity,
+                                        "retro": p.retro}
+                               for p in g.values()},
+                   },
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
                                        "dignity": p.dignity, "retro": p.retro,
