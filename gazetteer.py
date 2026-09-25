@@ -28,7 +28,7 @@ _NAME_IDX = None        # ascii-folded name/alias -> best (highest-pop) row
 # alone (e.g. "Delhi Cantonment" ~1.1 lakh). Tune MIN_POP to trade clutter vs
 # coverage of smaller birth-towns.
 import re
-MIN_POP = 50000
+MIN_POP = 15000
 _LOCALITY_RE = re.compile(r"\b(cantonment|cantt)\b", re.I)
 
 # Geonameids kept even below MIN_POP because they are the representative/known
