@@ -415,7 +415,7 @@ PRICE_PAISE = 49900                       # ₹499 — server-side only, never t
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
 CAREER_INTEL_PRICE_PAISE = 19900          # ₹199 — Career Intelligence report
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
-LIFE_BLUEPRINT_PRICE_PAISE = 79900        # ₹799 — Life Blueprint only
+LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 

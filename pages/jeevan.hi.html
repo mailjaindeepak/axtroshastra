@@ -9,13 +9,13 @@
 <link rel="canonical" href="https://www.axtroshastra.com/hi/life-blueprint">
 <link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/life-blueprint">
 <link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/life-blueprint">
-<meta property="og:title" content="जीवन ब्लूप्रिंट रिपोर्ट ₹799">
+<meta property="og:title" content="जीवन ब्लूप्रिंट रिपोर्ट ₹499">
 <meta property="og:description" content="आपका स्वभाव, करियर दिशा, ताकत और आगे आने वाले जीवन के चरण — आपकी जन्म-कुंडली से, सिर्फ़ 2 मिनट में।">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/hi/life-blueprint">
 <meta property="og:type" content="website">
 
-<meta name="description" content="आपका स्वभाव, ताकत, करियर दिशा और आगे आने वाले जीवन के चरण — आपकी जन्म-कुंडली से, पुराने वैदिक नियमों से निकाले गए। रिपोर्ट ₹799, सिर्फ़ 2 मिनट में।">
+<meta name="description" content="आपका स्वभाव, ताकत, करियर दिशा और आगे आने वाले जीवन के चरण — आपकी जन्म-कुंडली से, पुराने वैदिक नियमों से निकाले गए। रिपोर्ट ₹499, सिर्फ़ 2 मिनट में।">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -422,7 +422,7 @@ fbq('track', 'PageView');
         <input id="f-place" type="text" placeholder="शहर, राज्य" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
       <button class="btn" type="submit">मेरी कुंडली देखें — मुफ़्त</button>
-      <p class="btn-note">पहले मुफ़्त झलक। पूरी रिपोर्ट ₹799 — जवाब चाहिए तभी पेमेंट करें।</p>
+      <p class="btn-note">पहले मुफ़्त झलक। पूरी रिपोर्ट ₹499 — जवाब चाहिए तभी पेमेंट करें।</p>
     </form>
   </div>
 </header>
@@ -725,7 +725,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">जीवन ब्लूप्रिंट रिपोर्ट</p>
-    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹799</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
+    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
 </div>
@@ -1074,7 +1074,7 @@ function renderTeaser(t){
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.textContent = 'अनलॉक ₹799'; sb.setAttribute('href', '#teaser');
+  sb.textContent = 'अनलॉक ₹499'; sb.setAttribute('href', '#teaser');
 }
 
 // --- Pre-payment contact capture (T1): WhatsApp number (required) + email (optional).
@@ -1218,7 +1218,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹799</span>'; btn.disabled = false; }
+  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹499</span>'; btn.disabled = false; }
   alert('पेमेंट प्रोसेस हो रहा है — एक मिनट में पेज रीफ़्रेश करें। आपकी रिपोर्ट तैयार हो जाएगी।');
 }
 
@@ -1260,7 +1260,7 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
-// On mobile the on-screen keyboard shoves the fixed ₹799 bar over the form.
+// On mobile the on-screen keyboard shoves the fixed ₹499 bar over the form.
 // Hide the bar while any form field is focused (keyboard likely open); restore on blur.
 // This is independent of the scroll-based .hidden toggle above.
 (function(){

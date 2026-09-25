@@ -9,13 +9,13 @@
 <link rel="canonical" href="https://www.axtroshastra.com/en/life-blueprint">
 <link rel="alternate" hreflang="en" href="https://www.axtroshastra.com/en/life-blueprint">
 <link rel="alternate" hreflang="hi" href="https://www.axtroshastra.com/hi/life-blueprint">
-<meta property="og:title" content="Life Blueprint Report ₹799">
+<meta property="og:title" content="Life Blueprint Report ₹499">
 <meta property="og:description" content="Personality, career direction, strengths and upcoming life phases — from your birth chart, in 2 minutes.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/en/life-blueprint">
 <meta property="og:type" content="website">
 
-<meta name="description" content="Personality, strengths, career direction and upcoming life phases from your birth chart — calculated using classical Vedic rules. Report ₹799, in 2 minutes.">
+<meta name="description" content="Personality, strengths, career direction and upcoming life phases from your birth chart — calculated using classical Vedic rules. Report ₹499, in 2 minutes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
@@ -419,7 +419,7 @@ fbq('track', 'PageView');
         <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
       <button class="btn" type="submit">Check my chart — FREE</button>
-      <p class="btn-note">Free chart snapshot first. Full report ₹799 — pay only if you want the answer.</p>
+      <p class="btn-note">Free chart snapshot first. Full report ₹499 — pay only if you want the answer.</p>
     </form>
   </div>
 </header>
@@ -723,7 +723,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Life Blueprint Report</p>
-    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹799</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
 </div>
@@ -1038,7 +1038,7 @@ function renderTeaser(t){
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.textContent = 'Unlock ₹799'; sb.setAttribute('href', '#teaser');
+  sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
 }
 
 // --- Pre-payment contact capture (T1): WhatsApp number (required) + email (optional).
@@ -1182,7 +1182,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  if(btn){ btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹799</span>'; btn.disabled = false; }
+  if(btn){ btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹499</span>'; btn.disabled = false; }
   alert('Payment is processing — refresh the page in a minute. Your report will be ready.');
 }
 
@@ -1224,7 +1224,7 @@ var sticky = document.getElementById('stickyBar');
 window.addEventListener('scroll', function(){
   sticky.hidden = window.scrollY < (hero.offsetHeight - 120);
 }, {passive:true});
-// On mobile the on-screen keyboard shoves the fixed ₹799 bar over the form.
+// On mobile the on-screen keyboard shoves the fixed ₹499 bar over the form.
 // Hide the bar while any form field is focused (keyboard likely open); restore on blur.
 // This is independent of the scroll-based .hidden toggle above.
 (function(){
