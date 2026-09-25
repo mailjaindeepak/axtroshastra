@@ -106,12 +106,12 @@ def test_career_intelligence_best_environment_matches_report_map(client):
     assert teaser["best_environment"] == NEED_BY_DIM[teaser["top_dimension"]]
 
 
-def test_career_intelligence_price_is_199(client):
-    """Server-side price for this product is ₹199 (19900 paise), regardless of
+def test_career_intelligence_price_is_249(client):
+    """Server-side price for this product is ₹249 (24900 paise), regardless of
     the client — distinct from the base ₹499 products' price point."""
     rec = {"payload": {"product": "career_intelligence",
                        "meta": {"variant": "/en/career-intelligence"}}}
-    assert api._order_amount_paise(rec) == 19900
+    assert api._order_amount_paise(rec) == 24900
 
 
 def test_career_intelligence_varies_by_birth_data(client):
