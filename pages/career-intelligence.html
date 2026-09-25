@@ -397,7 +397,7 @@ fbq('track', 'PageView');
       <p class="btn-note">Free · No card needed · Takes about 2 minutes</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹251</span></div>
+    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹199</span></div>
   </div>
 </header>
 
@@ -844,7 +844,7 @@ fbq('track', 'PageView');
     </div>
     <div class="ps-modal-foot">
       <a class="ps-modal-dl" href="/static/career-intel-sample.pdf?v=7" target="_blank" rel="noopener">Download full sample (PDF)</a>
-      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹999</s> ₹251</button>
+      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹999</s> ₹199</button>
     </div>
   </div>
 </div>
@@ -1004,7 +1004,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career Intelligence Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹251</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹199</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Snapshot</a>
 </div>
@@ -1331,7 +1331,7 @@ function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock ₹251'; sb.setAttribute('href', '#sampleReport'); }
+  if(sb){ sb.textContent = 'Unlock ₹199'; sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
@@ -1461,7 +1461,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>₹999</s> ₹251</span>'; btn.disabled = false;
+  btn.innerHTML = 'Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>₹999</s> ₹199</span>'; btn.disabled = false;
   alert('Payment is processing — please refresh the page in a minute. Your report will be ready.');
 }
 

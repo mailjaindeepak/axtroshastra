@@ -249,18 +249,16 @@ def test_blueprint_hi_pdf_generates(client):
         assert r.content.startswith(b"%PDF")
 
 
-def test_blueprint_price_is_999_not_499(client, monkeypatch):
-    """Life Blueprint's price was raised (crossed-out ₹1999 -> ₹999,
-    previously ₹999 -> ₹499). _order_amount_paise() must charge ₹999 for
-    both language variants, while every other product keeps its own price
-    (never accidentally bumped alongside blueprint's)."""
+def test_blueprint_price_is_799(client, monkeypatch):
+    """Life Blueprint charges ₹799 (79900 paise) for both language variants,
+    while every other product keeps its own price."""
     monkeypatch.setattr(api, "rzp_client", lambda: _StubRzp())
     for variant in ("/en/life-blueprint", "/hi/life-blueprint"):
         r = client.post("/api/kundli", json={**BLUEPRINT, "variant": variant})
         rid = r.json()["report_id"]
         order = client.post("/api/order", json={"report_id": rid, "phone": "9876520001"})
         assert order.status_code == 200, order.text
-        assert order.json()["amount"] == 99900, variant
+        assert order.json()["amount"] == 79900, variant
 
     # a different product on the same shared PRICE_PAISE constant must be
     # completely unaffected by blueprint's price change.
