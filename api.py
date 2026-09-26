@@ -151,7 +151,8 @@ TWILIO_CONTENT_SID_TEXT = os.getenv("TWILIO_CONTENT_SID_TEXT", "")  # approved T
 PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing",
                   "vyapar": "Business Growth Report", "career_growth": "Career Report",
-                  "career_intelligence": "Career Intelligence Report"}
+                  "career_intelligence": "Career Intelligence Report",
+                  "career_intelligence_v2": "Career Intelligence Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -189,6 +190,9 @@ PRODUCT_SVG = {
     "career_intelligence": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                            '<path d="M20.5 11.5 L14.5 14.5 L11.5 20.5 L17.5 17.5 Z"/>'
                            '<circle cx="16" cy="16" r="1.3"/></svg>',
+    "career_intelligence_v2": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
+                               '<path d="M20.5 11.5 L14.5 14.5 L11.5 20.5 L17.5 17.5 Z"/>'
+                               '<circle cx="16" cy="16" r="1.3"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -375,6 +379,8 @@ def _render_for(product, payload):
         return render_vidyarthi(payload)
     if product == "career_intelligence":         # English-only premium report
         return career_intelligence_report.render_career_intelligence(payload)
+    if product == "career_intelligence_v2":
+        return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_growth":
         html = career_growth_report.render_career_growth(payload)
         if (payload.get("meta") or {}).get("lang") == "hi":
@@ -414,6 +420,7 @@ STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass 
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
 CAREER_INTEL_PRICE_PAISE = 24900          # ₹249 — Career Intelligence report
+CAREER_INTEL_V2_PRICE_PAISE = 49900       # ₹499 — Career Intelligence v2
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
@@ -426,6 +433,8 @@ def _order_amount_paise(rec: dict) -> int:
     payload = rec.get("payload") or {}
     if payload.get("product") == "career_intelligence":
         return CAREER_INTEL_PRICE_PAISE
+    if payload.get("product") == "career_intelligence_v2":
+        return CAREER_INTEL_V2_PRICE_PAISE
     variant = (payload.get("meta") or {}).get("variant") or ""
     if variant in _MILAN_VARIANTS:
         return MILAN_PRICE_PAISE
@@ -535,7 +544,7 @@ class KundliIn(BaseModel):
                                        # here so the account/lead is created at submit (popup funnels
                                        # omit it and attach the user later at /api/order)
     captcha_token: str | None = None
-    product: str = "marriage"          # marriage | blueprint | vidyarthi | vyapar | career_growth
+    product: str = "marriage"          # marriage | blueprint | vidyarthi | vyapar | career_growth | career_intelligence | career_intelligence_v2
     stage: str | None = None           # vidyarthi only: 10th | 12th | college | postgrad
     field: str | None = None           # vidyarthi only: set when stage is college/postgrad
     employment_situation: str | None = None  # career_growth only: personalization, never affects scoring
@@ -1210,6 +1219,10 @@ def create_kundli(inp: KundliIn, request: Request):
             place=inp.place or "", employment_situation=inp.employment_situation,
             experience=inp.experience, time_quality=inp.time_quality)
     elif inp.product == "career_intelligence":
+        report = career_intelligence_report.compute_career_intelligence(
+            inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
+            place=inp.place or "", time_quality=inp.time_quality)
+    elif inp.product == "career_intelligence_v2":
         report = career_intelligence_report.compute_career_intelligence(
             inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
             place=inp.place or "", time_quality=inp.time_quality)
@@ -2808,6 +2821,19 @@ def career_intelligence_redirect(request: Request):
     """Legacy bare /career-intelligence → /en/career-intelligence (301). Preserves query."""
     q = request.url.query
     return RedirectResponse("/en/career-intelligence" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/career-intelligence-v2", include_in_schema=False)
+def career_intelligence_v2_en():
+    """Career Intelligence v2 landing — same report, different price point."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "career-intelligence-v2.html"))
+
+
+@app.get("/career-intelligence-v2", include_in_schema=False)
+def career_intelligence_v2_redirect(request: Request):
+    """Bare /career-intelligence-v2 → /en/career-intelligence-v2 (301)."""
+    q = request.url.query
+    return RedirectResponse("/en/career-intelligence-v2" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/en/life-blueprint", include_in_schema=False)
