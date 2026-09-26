@@ -464,16 +464,29 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
 
     extras = marriage_extras(chart, sig, tree, out_windows, ref_sign,
                              ref_signs_for_transit, today)
+    nav = navamsa_analysis(chart, ref_sign, female)
 
     return {
-        "extras": extras, "navamsa": navamsa_analysis(chart, ref_sign, female),
+        "extras": extras, "navamsa": nav,
         "meta": {"name": name, "generated": today.strftime("%Y-%m-%d"),
                  "time_quality": time_quality, "system": "chandra_lagna" if use_chandra else "lagna",
                  "window_padding_days": pad_days, "two_timelines_detected": two_timelines,
                  "ayanamsa": "Lahiri", "houses": "whole_sign"},
         "teaser": {                                       # ONLY this goes to browser pre-payment
+            "name": name, "dob": dob, "place": place,
             "moon_sign": SIGNS[moon.sign], "moon_sign_en": SIGNS_EN[moon.sign],
             "nakshatra": NAKSHATRAS[moon.nak], "pada": moon.pada,
+            "nak_profile": {"nakshatra": NAKSHATRAS[moon.nak],
+                            "symbol": NAK_PROFILE[moon.nak][0],
+                            "nature": NAK_PROFILE[moon.nak][1],
+                            "relationship": NAK_PROFILE[moon.nak][2]},
+            "navamsa_strength": nav["strength"],
+            "navamsa_strength_note": nav["strength_note"],
+            "current_md": active_md["lord"] if active_md else None,
+            "chart": {"ref_sign": ref_sign,
+                      "planets": {p.name: {"sign": p.sign, "sign_en": SIGNS_EN[p.sign],
+                                           "dignity": p.dignity, "retro": p.retro}
+                                  for p in g.values()}},
             "current_dasha": f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"
                              if active_ad else "—",
             "dasha_till": active_ad["end"].strftime("%b %Y") if active_ad else "—",
