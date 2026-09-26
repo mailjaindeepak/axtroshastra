@@ -61,7 +61,7 @@ section{padding:52px 0}
 .brand{display:flex;align-items:center;gap:9px;margin-bottom:34px}
 .brand svg{width:26px;height:26px}
 .brand span{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.02em;color:#F3EFE4}
-.hero h1{font-size:clamp(38px,9vw,56px);font-weight:800;color:#fff}
+.hero h1{font-size:clamp(28px,7vw,40px);font-weight:800;color:#fff}
 .hero h1 em{font-style:normal;color:var(--haldi)}
 .hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(18px,4.6vw,22px);color:#D9D4C3;margin-top:12px}
 .hero .sub2{margin-top:12px;font-size:15px;color:#A9ABC0;max-width:44ch}
@@ -152,7 +152,7 @@ section{padding:52px 0}
 .rectify .stat-cap{font-size:13px;color:#8F92AB;margin-bottom:14px}
 
 /* ---------- PROOF ---------- */
-.proof{text-align:center}
+.proof{text-align:center;padding:12px 0}
 .proof .count{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,46px);color:var(--sindoor)}
 .proof .cap{color:var(--muted);font-size:14px;margin-top:4px}
 
@@ -171,7 +171,7 @@ section{padding:52px 0}
 .final .btn{max-width:360px;margin:0 auto}
 
 /* ---------- STICKY BAR ---------- */
-.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
 .sticky .sp{flex:1;min-width:0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
@@ -255,12 +255,8 @@ fbq('track', 'PageView');
 
     <p class="eyebrow">मैरिज टाइमिंग रिपोर्ट</p>
     <h1>शादी <em>कब</em> होगी?</h1>
-    <p class="sub">अपनी जानकारी भरिए — पूरी रिपोर्ट 2 मिनट में, सीधे आपके WhatsApp पर।</p>
+    <p class="sub">अपनी जानकारी भरिए</p>
 
-    <a class="sample-jump" id="heroSampleBtn" href="#sampleReport">
-      सैंपल रिपोर्ट देखें
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation:none"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
 
     <form class="form-card" id="kundliForm" autocomplete="on">
       <div class="field">
@@ -312,7 +308,6 @@ fbq('track', 'PageView');
       <p class="btn-note">UPI · कार्ड्स · नेटबैंकिंग &nbsp;|&nbsp; तुरंत WhatsApp + स्क्रीन पर डिलीवरी</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 लॉन्च ऑफ़र खत्म होने में <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -445,7 +440,7 @@ fbq('track', 'PageView');
   .premium-sample .ps-trow{padding:12px}
 }
 </style>
-<section class="premium-sample" id="sampleReport">
+<section class="premium-sample" id="sampleReport" hidden>
   <svg class="ps-dec" width="300" height="300" viewBox="0 0 300 300" fill="none" aria-hidden="true" style="top:-110px;right:-160px"><defs><radialGradient id="psSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F1CB6E" stop-opacity=".85"/><stop offset="55%" stop-color="#E6B457" stop-opacity=".3"/><stop offset="100%" stop-color="#E6B457" stop-opacity="0"/></radialGradient></defs><circle cx="150" cy="150" r="150" fill="url(#psSun)"/><circle cx="150" cy="150" r="42" fill="#EFC469" opacity=".5"/><g stroke="#E3B053" stroke-width="3" stroke-linecap="round" opacity=".38"><line x1="207" y1="150" x2="232" y2="150"/><line x1="190" y1="190" x2="208" y2="208"/><line x1="150" y1="207" x2="150" y2="232"/><line x1="110" y1="190" x2="92" y2="208"/><line x1="93" y1="150" x2="68" y2="150"/><line x1="110" y1="110" x2="92" y2="92"/><line x1="150" y1="93" x2="150" y2="68"/><line x1="190" y1="110" x2="208" y2="92"/></g></svg>
   <h2 style="text-align:center;font-weight:700;font-size:24px;color:#3a2c18;margin:0 auto 8px;max-width:560px">सैंपल रिपोर्ट</h2>
   <p class="ps-tag">अपनी पूरी मैरिज रिपोर्ट में शामिल जानकारियों की एक झलक पाइए।</p>
@@ -630,13 +625,15 @@ fbq('track', 'PageView');
   var clone = src.cloneNode(true);
   clone.removeAttribute('id');
   clone.id = 'previewSampleClone';
+  clone.removeAttribute('hidden');
   var innerId = clone.querySelector('#sampleOpen2'); if(innerId) innerId.removeAttribute('id');
-  // The clone's own heading/tag are set here rather than inherited from the
-  // static sample's copy, so the two stay independent — this preview is
-  // about real data, the static sample above is the fixed example.
   var h2 = clone.querySelector('h2'); if(h2) h2.textContent = 'आपकी रिपोर्ट की एक झलक';
   var tag = clone.querySelector('.ps-tag');
   if(tag) tag.textContent = 'नीचे आपकी असली जन्म जानकारी से बना कैलकुलेशन है।';
+  var cta = clone.querySelector('.ps-cta');
+  if(cta){ cta.innerHTML = 'अनलॉक करें — <s style="opacity:.7;font-weight:600">₹999</s> ₹499'; cta.href='javascript:void(0)'; cta.onclick=function(ev){ev.preventDefault();startPayment();}; }
+  var sl = clone.querySelector('.ps-sample-link');
+  if(sl) sl.textContent = 'सैंपल रिपोर्ट देखें →';
   slot.appendChild(clone);
 })();
 
@@ -796,7 +793,7 @@ function personalizePreviewClone(t){
 <section class="final">
   <div class="wrap">
     <h2>रिश्ते ढूँढने से पहले,<br><em>अपनी टाइमिंग जान लीजिए।</em></h2>
-    <a class="btn" href="#kundliForm">मेरी रिपोर्ट पाइए — <s style="opacity:.65;font-weight:600">₹999</s> ₹499</a>
+    <a class="btn" href="#kundliForm">अपना चार्ट देखें - मुफ़्त</a>
   </div>
 </section>
 
@@ -809,11 +806,7 @@ function personalizePreviewClone(t){
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
-  <div class="sp">
-    <p class="l1">मैरिज टाइमिंग रिपोर्ट</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बाकी</p>
-  </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn" onclick="var f=document.getElementById('kundliForm');if(f&&f.requestSubmit){event.preventDefault();f.requestSubmit();}">रिपोर्ट पाइए</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn" onclick="var f=document.getElementById('kundliForm');if(f&&f.requestSubmit){event.preventDefault();f.requestSubmit();}">अपना चार्ट देखें - मुफ़्त</a>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script> <script>
@@ -948,7 +941,7 @@ function renderTeaser(t){
   el.scrollIntoView({behavior: 'smooth'});
   var sb = document.getElementById('stickyBtn');
   if(sb){
-    sb.innerHTML = 'पूरी रिपोर्ट अनलॉक करें <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
+    sb.innerHTML = 'रिपोर्ट अनलॉक करें — <s style="opacity:.65;font-weight:600">₹999</s> ₹499';
     sb.setAttribute('href', 'javascript:void(0)');
     sb.onclick = function(ev){ ev.preventDefault(); startPayment(); };
   }
@@ -1283,16 +1276,6 @@ window.addEventListener('scroll', function(){
     var links=cap.querySelectorAll('a');
     for(var i=0;i<links.length;i++){ links[i].addEventListener('click', function(){ try{ sessionStorage.setItem('axtro_switch','1'); }catch(e){} }); }
   })();
-})();
-</script>
-<script>
-/* जन्म-समय के selects को साफ़ करने का बटन (placeholder छिपा है, इसलिए बिना इसके घंटा unpick नहीं होता) */
-(function(){
-  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
-  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='मिटाएँ'; b.setAttribute('aria-label','जन्म-समय साफ़ करें');
-  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
-  hh.parentElement.appendChild(b);
-  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 })();
 </script>
 <script>(function(){
