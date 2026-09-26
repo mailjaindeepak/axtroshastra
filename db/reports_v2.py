@@ -136,6 +136,9 @@ def read_report(conn, rid: str):
             urow = cur.fetchone()
             if urow:
                 user_phone = f"{urow[0] or ''}{urow[1] or ''}"
-    return {"payload": rec.get("report_data") or {},
+    payload = rec.get("report_data") or {}
+    if rec.get("product"):
+        payload["product"] = rec["product"]
+    return {"payload": payload,
             "paid": rec.get("status") == "paid",
             "order_id": order_id, "phone": phone, "user_phone": user_phone}
