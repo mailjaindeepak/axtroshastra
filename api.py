@@ -431,10 +431,11 @@ def _order_amount_paise(rec: dict) -> int:
     """The price actually charged for a report, by product then funnel variant.
     Single source for both order creation and the server-side purchase-tracking value."""
     payload = rec.get("payload") or {}
-    if payload.get("product") == "career_intelligence":
-        return CAREER_INTEL_PRICE_PAISE
-    if payload.get("product") == "career_intelligence_v2":
+    product = rec.get("product") or payload.get("product") or ""
+    if product == "career_intelligence_v2":
         return CAREER_INTEL_V2_PRICE_PAISE
+    if product == "career_intelligence":
+        return CAREER_INTEL_PRICE_PAISE
     variant = (payload.get("meta") or {}).get("variant") or ""
     if variant in _MILAN_VARIANTS:
         return MILAN_PRICE_PAISE
