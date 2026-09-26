@@ -342,7 +342,8 @@ def grade(score: float) -> str:
 def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
                    lat: float, lon_geo: float, female: bool = False,
                    time_quality: str = "T0", horizon_years: int = 10,
-                   min_age: int = 21, as_of: datetime = None) -> dict:
+                   min_age: int = 21, as_of: datetime = None,
+                   place: str = "") -> dict:
     """
     dob 'YYYY-MM-DD', tob 'HH:MM' local (for T2/T3 pass band midpoint / 12:00).
     time_quality: T0 exact | T1 approx ±45m | T2 band ±3h | T3 unknown.

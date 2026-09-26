@@ -1230,7 +1230,8 @@ def create_kundli(inp: KundliIn, request: Request):
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
                                 female=(inp.gender == "female"),
-                                time_quality=inp.time_quality)
+                                time_quality=inp.time_quality,
+                                place=inp.place or "")
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
     report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
