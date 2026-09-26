@@ -507,7 +507,7 @@ fbq('track', 'PageView');
         </div>
       </div>
       <div class="ps-standout" id="tv-standout"></div>
-      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">Get Details for &#8377;999</button></div>
+      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">Get Details for &#8377;499</button></div>
     </div>
 
     <!-- 6. Current phase -->
@@ -572,9 +572,9 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center;margin-top:22px">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint &mdash; <s>&#8377;1999</s> &#8377;999</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint &mdash; <s>&#8377;1999</s> &#8377;499</button>
         <div class="ps-subnote2">Personalised using your exact birth details</div>
-        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Offer ends in <b class="clk" id="otClock">30:00</b> &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;999</span></div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Offer ends in <b class="clk" id="otClock">30:00</b> &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;499</span></div>
       </div>
 
       <!-- Social proof -->
@@ -588,7 +588,7 @@ fbq('track', 'PageView');
           </div>
           <div class="ps-proof-item">
             <div class="ps-proof-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <div class="ps-proof-text">Showed it to my mom and she said the personality part was spot on. 999 for something this detailed is nothing tbh.</div>
+            <div class="ps-proof-text">Showed it to my mom and she said the personality part was spot on. 499 for something this detailed is nothing tbh.</div>
             <div class="ps-proof-who">Rahul, 27</div>
           </div>
           <div class="ps-proof-item">
@@ -1146,7 +1146,7 @@ async function startPayment(){
   if(order.error === 'invalid_pass'){ alert('This free-pass link has already been used or is invalid.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:999});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:499});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
@@ -1174,8 +1174,8 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:999,currency:'INR'},{eventID:REPORT_ID});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:999});
+        if(window.fbq) fbq('track','Purchase',{value:499,currency:'INR'},{eventID:REPORT_ID});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:499});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
       return;
