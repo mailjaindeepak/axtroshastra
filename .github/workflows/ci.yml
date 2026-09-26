@@ -307,7 +307,7 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         run: |
           LABEL="v$(date -u +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)"
-          BODY="$(git log -1 --pretty=%b | head -1 | xargs)"
+          BODY="$(git log -1 --pretty=%b | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           SUBJECT="$(git log -1 --pretty=%s)"
           MSG="${BODY:-$SUBJECT}"
           echo "Deploying as version: $LABEL — $MSG"
