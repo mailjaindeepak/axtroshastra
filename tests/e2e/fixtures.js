@@ -30,6 +30,14 @@ const test = base.test.extend({
       if (host === '127.0.0.1' || host === 'localhost') return route.continue();
       return route.abort();
     });
+    // Auto-accept the Terms/Privacy consent checkbox on form pages so every
+    // test that submits a form doesn't need to check it manually.
+    await page.addInitScript(() => {
+      document.addEventListener('submit', () => {
+        const cb = document.getElementById('axConsent');
+        if (cb && !cb.checked) cb.checked = true;
+      }, true);
+    });
     await use(page);
   },
 });

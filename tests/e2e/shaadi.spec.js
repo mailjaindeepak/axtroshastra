@@ -100,7 +100,6 @@ test('Happy path: a valid submission renders the free teaser snapshot', async ({
   const item = page.locator('#f-place-list .ci', { hasText: 'Jaipur' }).first();
   await item.waitFor();
   await item.click();
-  await page.check('#axConsent');
   await page.locator('#kundliForm button[type="submit"]').click();
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#teaser')).toContainText(/kundli ready|ready/i);

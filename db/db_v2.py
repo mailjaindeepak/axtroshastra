@@ -71,21 +71,18 @@ def create_or_get_user(conn, country_code: str, mobile: str, email: str | None =
 def create_report(conn, user_id: str | None, product: str, report_data: dict | None,
                   *, lang: str = "en", variant: str | None = None,
                   status: str = "preview", extra_inputs: dict | None = None,
-                  report_id: str | None = None,
-                  consent_ts: str | None = None,
-                  consent_v: str | None = None) -> str:
+                  report_id: str | None = None) -> str:
     """Insert a report row and return its id (reuses `report_id` if given, so a
     migration can keep old /report/{id} links)."""
     rid = report_id or _new_id("rep_")
     with conn.cursor() as cur:
         cur.execute(
             "INSERT INTO reports(id, user_id, product, variant, lang, status, "
-            "extra_inputs, report_data, consent_ts, consent_v) "
-            "VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            "extra_inputs, report_data) "
+            "VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",
             (rid, user_id, product, variant, lang, status,
              json.dumps(extra_inputs) if extra_inputs is not None else None,
-             json.dumps(report_data) if report_data is not None else None,
-             consent_ts, consent_v),
+             json.dumps(report_data) if report_data is not None else None),
         )
         return rid
 

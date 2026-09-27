@@ -145,8 +145,6 @@ CREATE TABLE reports (
     status        ENUM('preview','paid') NOT NULL DEFAULT 'preview',
     extra_inputs  JSON NULL,                     -- per-product inputs (employment/experience, stage/field)
     report_data   JSON NULL,                     -- the computed report body (a document, not queried)
-    consent_ts    DATETIME NULL,                  -- when the user accepted Terms/Privacy (from browser)
-    consent_v     VARCHAR(20) NULL,               -- policy version tag at time of consent, e.g. "2026-09"
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

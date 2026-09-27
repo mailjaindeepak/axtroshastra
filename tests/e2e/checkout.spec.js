@@ -67,7 +67,6 @@ async function fillValidForm(page) {
   const item = page.locator('#f-place-list .ci', { hasText: 'Jaipur' }).first();
   await item.waitFor();
   await item.click();
-  await page.check('#axConsent');
   await page.locator('#kundliForm button[type="submit"]').click();
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 20_000 });
 }
