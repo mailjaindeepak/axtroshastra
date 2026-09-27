@@ -466,6 +466,7 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
     extras = marriage_extras(chart, sig, tree, out_windows, ref_sign,
                              ref_signs_for_transit, today)
     nav = navamsa_analysis(chart, ref_sign, female)
+    _seventh_sign = (ref_sign + 6) % 12
 
     return {
         "extras": extras, "navamsa": nav,
@@ -476,11 +477,29 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
         "teaser": {                                       # ONLY this goes to browser pre-payment
             "name": name, "dob": dob, "place": place,
             "moon_sign": SIGNS[moon.sign], "moon_sign_en": SIGNS_EN[moon.sign],
+            "lagna_sign": SIGNS[chart["lagna_sign"]], "lagna_sign_en": SIGNS_EN[chart["lagna_sign"]],
             "nakshatra": NAKSHATRAS[moon.nak], "pada": moon.pada,
             "nak_profile": {"nakshatra": NAKSHATRAS[moon.nak],
                             "symbol": NAK_PROFILE[moon.nak][0],
                             "nature": NAK_PROFILE[moon.nak][1],
                             "relationship": NAK_PROFILE[moon.nak][2]},
+            "personality": {
+                "lagna_line": _LAGNA_PERSONA[chart["lagna_sign"]],
+                "moon_line": _LAGNA_PERSONA[moon.sign],
+                "venus_style": VENUS_STYLE[g["Venus"].sign],
+            },
+            "partner": {
+                "seventh_sign": SIGNS[_seventh_sign],
+                "nature": _SIGN_PARTNER.get(SIGNS[_seventh_sign], ""),
+                "nature_short": _SIGN_PARTNER_SHORT.get(SIGNS[_seventh_sign], ""),
+                "dk": sig["darakaraka"],
+                "dk_desc": _DK_PARTNER.get(sig["darakaraka"], ""),
+                "meeting": _MEETING_SHORT[sig["seventh_lord_house"] - 1]
+                           if 1 <= sig["seventh_lord_house"] <= 12 else "",
+            },
+            "manglik": manglik(chart),
+            "past_summary": _past_teaser(chart, sig, tree, ref_sign,
+                                          ref_signs_for_transit, today),
             "navamsa_strength": nav["strength"],
             "navamsa_strength_note": nav["strength_note"],
             "current_md": active_md["lord"] if active_md else None,
@@ -491,6 +510,10 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
             "current_dasha": f"{active_md['lord']} Mahadasha — {active_ad['lord']} Antardasha"
                              if active_ad else "—",
             "dasha_till": active_ad["end"].strftime("%b %Y") if active_ad else "—",
+            "windows": [{"start_year": w["start"][:4],
+                         "end_year": w["end"][:4],
+                         "grade": w["grade"]}
+                        for w in out_windows],
             "windows_count": len(out_windows),
             "first_window_teaser": out_windows[0]["start"][:4] + "–" +
                                    out_windows[0]["end"][:4] if out_windows else "—",
@@ -526,6 +549,64 @@ if __name__ == "__main__":
 
 # ================================================== REPORT EXTRAS (deterministic)
 from jyotish_maps import (NAK_PROFILE, VENUS_STYLE, REMEDY_7L, REMEDY_NODE, SIGN_ELEMENT)
+from report_view import SIGN_PARTNER as _SIGN_PARTNER, DK_PARTNER as _DK_PARTNER
+
+_SIGN_PARTNER_SHORT = {
+    "Mesha": "Direct & energetic", "Vrishabha": "Steady & loyal",
+    "Mithuna": "Witty & sociable", "Karka": "Caring & family-first",
+    "Simha": "Warm & confident", "Kanya": "Practical & sincere",
+    "Tula": "Charming & balanced", "Vrishchika": "Intense & loyal",
+    "Dhanu": "Optimistic & principled", "Makara": "Mature & ambitious",
+    "Kumbha": "Independent & unconventional", "Meena": "Gentle & artistic",
+}
+_MEETING_SHORT = [
+    "Through your own efforts", "Family networks", "Neighbours or short travels",
+    "The home circle", "Social settings", "Workplace or daily circles",
+    "Direct proposals", "In-law networks", "Different community or place",
+    "Career settings", "A friend's introduction", "Quiet or private settings",
+]
+_LAGNA_PERSONA = [
+    "direct, self-starting, competitive — you move first and think on your feet",
+    "steady, sensory, patient — you build slowly and hold what you build",
+    "curious, verbal, versatile — you live through ideas and exchange",
+    "protective, intuitive, memory-driven — you lead with feeling",
+    "dignified, expressive, generous — you need a stage and a cause",
+    "precise, analytical, service-minded — you improve everything you touch",
+    "balancing, relational, aesthetic — you think in partnerships",
+    "intense, private, strategic — you transform rather than adjust",
+    "expansive, principled, freedom-loving — you follow meaning",
+    "structured, ambitious, enduring — you climb in decades, not days",
+    "independent, systemic, humanitarian — you belong to the future",
+    "fluid, empathetic, imaginative — you absorb and dissolve boundaries",
+]
+
+
+def _past_teaser(chart, sig, tree, ref_sign, ref_signs_tr, today):
+    """Condensed quiet-period summary for the pre-payment teaser."""
+    frm = today - timedelta(days=int(3 * 365.25))
+    periods = []
+    for md in tree:
+        for ad in md["ads"]:
+            s, e = max(ad["start"], frm), min(ad["end"], today)
+            if s >= e:
+                continue
+            score, fired = score_ad(chart, sig, md["lord"], ad["lord"], ref_sign)
+            if score >= 3:
+                tf, _ = transit_gate(chart, sig, ref_signs_tr, s, e)
+                score += sum(RULE_PTS[f] for f in tf)
+                fired += tf
+            label = "active" if score >= 5 else ("mild" if score >= 3 else "quiet")
+            why = [RULE_DESC[f] for f in fired if RULE_PTS[f] > 0][:2] or \
+                  ["No dasha connection to the 7th house in this period"]
+            periods.append({"from": s.strftime("%b %Y"), "to": e.strftime("%b %Y"),
+                            "label": label, "why": why})
+    periods = periods[-5:]
+    quiet = [p for p in periods if p["label"] == "quiet"]
+    active = [p for p in periods if p["label"] == "active"]
+    return {"total": len(periods), "quiet_count": len(quiet),
+            "active_count": len(active),
+            "latest_quiet_reason": quiet[-1]["why"][0] if quiet else None,
+            "periods": periods}
 
 def _sade_sati(moon_sign: int, today: datetime) -> dict:
     """Saturn transit vs natal moon: 12th/1st/2nd house = rising/peak/setting."""
