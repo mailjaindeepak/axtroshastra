@@ -1008,58 +1008,142 @@ def _inject_tracking(html: str) -> str:
     return _inject_beacon(_inject_linkedin(_inject_oaiq(_inject_ga_meta_clarity(html))))
 
 
-_DISCLAIMER_EN = (
+_FOOTER_DISCLAIMER_EN = (
     '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #333B63;'
     'font-size:11px;line-height:1.55;color:#6B6D82;max-width:640px;margin-left:auto;margin-right:auto">'
     '<strong style="color:#8F92AB">Disclaimer:</strong> '
-    'Axtroshastra provides astrology reports based on classical Vedic Jyotish '
-    'principles and planetary calculations. These reports are for informational '
-    'and entertainment purposes only and do not constitute professional advice '
-    'of any kind — including but not limited to financial, legal, or any '
-    'other professional domain. Results are probability-based interpretations '
-    'of astronomical data, not predictions or guarantees of any outcome. Users '
-    'should exercise their own judgment and consult qualified professionals for '
-    'important life decisions. Axtroshastra and its operators bear no liability '
-    'for actions taken or decisions made based on report content.</div>'
+    'Axtroshastra provides computer-generated astrology reports based on classical '
+    'Vedic Jyotish principles and planetary positions. Reports are provided for '
+    'informational, cultural and entertainment purposes only and do not constitute '
+    'professional advice, including medical, legal, financial, investment, employment '
+    'or matrimonial advice. Astrological interpretations, scores and timing windows '
+    'are not guarantees or scientific predictions of future events. Users should '
+    'exercise their own judgment and consult qualified professionals where appropriate. '
+    'To the extent permitted by applicable law, Axtroshastra and its operators are '
+    'not responsible for decisions or outcomes resulting from reliance on report '
+    'content.</div>'
 )
 
-_DISCLAIMER_HI = (
+_FOOTER_DISCLAIMER_HI = (
     '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #333B63;'
     'font-size:11px;line-height:1.55;color:#6B6D82;max-width:640px;margin-left:auto;margin-right:auto">'
     '<strong style="color:#8F92AB">अस्वीकरण:</strong> '
     'एक्स्ट्रोशास्त्र '
     'शास्त्रीय वैदिक '
     'ज्योतिष सिद्धांतों '
-    'और ग्रह गणनाओं पर '
-    'आधारित ज्योतिष '
-    'रिपोर्ट प्रदान '
-    'करता है। ये रिपोर्ट '
-    'केवल सूचनात्मक '
-    'और मनोरंजन उद्देश्यों '
-    'के लिए हैं और किसी भी '
-    'प्रकार की पेशेवर '
-    'सलाह नहीं हैं — '
-    'वित्तीय, कानूनी, '
-    'या किसी अन्य पेशेवर '
-    'क्षेत्र सहित। '
-    'परिणाम संभावना-आधारित '
-    'व्याख्याएँ हैं, '
-    'किसी भी परिणाम की '
-    'भविष्यवाणी या गारंटी '
-    'नहीं। उपयोगकर्ताओं '
-    'को अपने विवेक का '
-    'उपयोग करना चाहिए '
-    'और महत्वपूर्ण '
-    'निर्णयों के लिए '
+    'और ग्रह स्थितियों '
+    'पर आधारित कंप्यूटर-'
+    'जनित ज्योतिष रिपोर्ट '
+    'प्रदान करता है। '
+    'रिपोर्ट केवल सूचनात्मक, '
+    'सांस्कृतिक और मनोरंजन '
+    'उद्देश्यों के लिए हैं '
+    'और पेशेवर सलाह नहीं हैं, '
+    'जिसमें चिकित्सा, '
+    'कानूनी, वित्तीय, '
+    'निवेश, रोज़गार '
+    'या वैवाहिक सलाह '
+    'शामिल है। '
+    'ज्योतिषीय व्याख्याएँ, '
+    'अंक और समय '
+    'अवधियाँ भविष्य '
+    'की घटनाओं की गारंटी '
+    'या वैज्ञानिक भविष्यवाणी '
+    'नहीं हैं। '
+    'उपयोगकर्ताओं को अपने '
+    'विवेक का उपयोग करना चाहिए '
+    'और जहाँ उचित हो '
     'योग्य पेशेवरों से '
     'परामर्श लेना चाहिए। '
+    'लागू कानून द्वारा '
+    'अनुमत सीमा तक, '
     'रिपोर्ट की सामग्री '
-    'के आधार पर किए गए '
-    'कार्यों या निर्णयों '
+    'पर निर्भरता से उत्पन्न '
+    'निर्णयों या परिणामों '
     'के लिए एक्स्ट्रोशास्त्र '
     'और इसके संचालक '
-    'किसी भी दायित्व '
-    'के भागी नहीं हैं।</div>'
+    'जिम्मेदार नहीं हैं।</div>'
+)
+
+_REPORT_DISCLAIMER_EN = (
+    '<div style="max-width:430px;margin:32px auto 0;padding:20px 18px;'
+    'background:#F8F5EC;border:1px solid #E7E0D2;border-radius:12px;'
+    'font-size:12px;line-height:1.6;color:#6B6D82">'
+    '<strong style="color:#23253B;font-size:13px">Disclaimer</strong>'
+    '<p style="margin:10px 0 0">This report is a computer-generated interpretation based on '
+    'classical Vedic Jyotish principles, including dasha and transit analysis. It is provided '
+    'for informational, cultural and entertainment purposes only and is not a guarantee, '
+    'prediction of a specific outcome, or professional advice.</p>'
+    '<p style="margin:10px 0 0">Any timing, scores, indications or interpretations are '
+    'approximate and should not be treated as fixed dates, certainties or assurances of '
+    'future events.</p>'
+    '<p style="margin:10px 0 0">This report does not constitute medical, legal, financial, '
+    'investment, employment, matrimonial, psychological or any other professional advice. '
+    'You should use your own judgment and, where appropriate, consult a qualified '
+    'professional before making important decisions.</p>'
+    '<p style="margin:10px 0 0">Axtroshastra does not guarantee the accuracy of any '
+    'astrological interpretation or any particular outcome resulting from reliance on '
+    'this report. To the extent permitted by applicable law, Axtroshastra and its operators '
+    'shall not be responsible for decisions, actions, losses or consequences arising from '
+    'reliance on the report.</p></div>'
+)
+
+_REPORT_DISCLAIMER_HI = (
+    '<div style="max-width:430px;margin:32px auto 0;padding:20px 18px;'
+    'background:#F8F5EC;border:1px solid #E7E0D2;border-radius:12px;'
+    'font-size:12px;line-height:1.6;color:#6B6D82">'
+    '<strong style="color:#23253B;font-size:13px">'
+    'अस्वीकरण</strong>'
+    '<p style="margin:10px 0 0">'
+    'यह रिपोर्ट शास्त्रीय '
+    'वैदिक ज्योतिष सिद्धांतों '
+    'पर आधारित कंप्यूटर-'
+    'जनित व्याख्या है, '
+    'जिसमें दशा और गोचर '
+    'विश्लेषण शामिल है। '
+    'यह केवल सूचनात्मक, '
+    'सांस्कृतिक और मनोरंजन '
+    'उद्देश्यों के लिए है '
+    'और किसी विशेष परिणाम '
+    'की गारंटी, भविष्यवाणी '
+    'या पेशेवर सलाह नहीं है।</p>'
+    '<p style="margin:10px 0 0">'
+    'कोई भी समय, अंक, संकेत '
+    'या व्याख्याएँ अनुमानित '
+    'हैं और इन्हें निश्चित '
+    'तिथियों, निश्चितताओं '
+    'या भविष्य की घटनाओं '
+    'के आश्वासन के रूप में '
+    'नहीं लिया जाना चाहिए।</p>'
+    '<p style="margin:10px 0 0">'
+    'यह रिपोर्ट चिकित्सा, '
+    'कानूनी, वित्तीय, '
+    'निवेश, रोज़गार, '
+    'वैवाहिक, मनोवैज्ञानिक '
+    'या किसी अन्य पेशेवर '
+    'सलाह नहीं है। '
+    'आपको अपने विवेक का '
+    'उपयोग करना चाहिए और '
+    'जहाँ उचित हो, महत्वपूर्ण '
+    'निर्णय लेने से पहले '
+    'योग्य पेशेवर से '
+    'परामर्श लेना चाहिए।</p>'
+    '<p style="margin:10px 0 0">'
+    'एक्स्ट्रोशास्त्र '
+    'किसी भी ज्योतिषीय '
+    'व्याख्या की सटीकता '
+    'या इस रिपोर्ट पर निर्भरता '
+    'से उत्पन्न किसी विशेष '
+    'परिणाम की गारंटी नहीं '
+    'देता। लागू कानून '
+    'द्वारा अनुमत सीमा तक, '
+    'रिपोर्ट पर निर्भरता '
+    'से उत्पन्न निर्णयों, '
+    'कार्यों, हानि या '
+    'परिणामों के लिए '
+    'एक्स्ट्रोशास्त्र '
+    'और इसके संचालक '
+    'जिम्मेदार नहीं होंगे।</p></div>'
 )
 
 
@@ -1071,7 +1155,7 @@ def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
         import re
         html = re.sub(r'\s*·\s*by Cultnuts', '', html)
         html = re.sub(r'\s*·\s*Cultnuts की तरफ़ से', '', html)
-        disclaimer = _DISCLAIMER_HI if lang == "hi" else _DISCLAIMER_EN
+        disclaimer = _FOOTER_DISCLAIMER_HI if lang == "hi" else _FOOTER_DISCLAIMER_EN
         html = html.replace('</footer>', disclaimer + '\n</footer>')
         return html
     except Exception as e:
@@ -2079,14 +2163,20 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
         except Exception as e:
             logger.error("[users] account lookup failed for %s: %s", rid, e)
         html = _inject_nav(html, lang)
+        rdisclaim = _REPORT_DISCLAIMER_HI if lang == "hi" else _REPORT_DISCLAIMER_EN
+        rdisclaim_wrapped = (
+            '<style>.ax-report-disclaimer{margin-bottom:24px}'
+            '@media print{.ax-report-disclaimer{display:none}}</style>'
+            '<div class="ax-report-disclaimer">' + rdisclaim + '</div>'
+        )
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
                 .replace("__HASACCT__", "1" if has_acct else "0"))
         if lang == "hi":
             snip = snip.replace(_ACCT_TOAST_EN, _ACCT_TOAST_HI)
         if "</body>" in html:
-            html = html.replace("</body>", snip + "</body>", 1)
+            html = html.replace("</body>", rdisclaim_wrapped + snip + "</body>", 1)
         else:
-            html += snip
+            html += rdisclaim_wrapped + snip
         return html
     except Exception as e:
         logger.error("[report] chrome wiring failed for %s: %s", rid, e)
