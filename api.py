@@ -2165,8 +2165,7 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
         html = _inject_nav(html, lang)
         rdisclaim = _REPORT_DISCLAIMER_HI if lang == "hi" else _REPORT_DISCLAIMER_EN
         rdisclaim_wrapped = (
-            '<style>.ax-report-disclaimer{margin-bottom:24px}'
-            '@media print{.ax-report-disclaimer{display:none}}</style>'
+            '<style>.ax-report-disclaimer{margin-bottom:24px}</style>'
             '<div class="ax-report-disclaimer">' + rdisclaim + '</div>'
         )
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
