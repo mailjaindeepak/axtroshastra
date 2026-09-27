@@ -550,6 +550,8 @@ class KundliIn(BaseModel):
     field: str | None = None           # vidyarthi only: set when stage is college/postgrad
     employment_situation: str | None = None  # career_growth only: personalization, never affects scoring
     experience: str | None = None            # career_growth only: personalization, never affects scoring
+    consent_ts: str | None = None            # ISO timestamp when Terms/Privacy/Refund was accepted
+    consent_v: str | None = None             # policy version tag (e.g. "2026-09")
 
     @field_validator("time_quality")
     @classmethod
@@ -1147,6 +1149,90 @@ _REPORT_DISCLAIMER_HI = (
 )
 
 
+_CONSENT_CSS = (
+    '<style>'
+    '.ax-consent{margin:18px 0 14px;font-size:13px;line-height:1.5}'
+    '.ax-consent label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}'
+    '.ax-consent input[type=checkbox]{margin-top:3px;min-width:16px;min-height:16px;accent-color:#C93B2E}'
+    '.ax-consent a{color:#C93B2E;text-decoration:underline}'
+    '.ax-consent-err{color:#C93B2E;font-size:12px;margin:6px 0 0 24px;display:none}'
+    '</style>'
+)
+
+_CONSENT_EN = (
+    '<div class="ax-consent">'
+    '<label><input type="checkbox" id="axConsent">'
+    '<span>I agree to the <a href="/terms" target="_blank">Terms of Service</a>, '
+    '<a href="/privacy" target="_blank">Privacy Policy</a> '
+    'and understand this is an astrology-based report.</span></label>'
+    '<p id="axConsentErr" class="ax-consent-err">'
+    'Please accept the Terms of Service to continue.</p></div>'
+)
+
+_CONSENT_HI = (
+    '<div class="ax-consent">'
+    '<label><input type="checkbox" id="axConsent">'
+    '<span>मैं <a href="/terms" target="_blank">सेवा की शर्तों</a>, '
+    '<a href="/privacy" target="_blank">गोपनीयता नीति</a> '
+    'से सहमत हूँ और समझता/समझती हूँ कि यह ज्योतिष-आधारित रिपोर्ट है।</span></label>'
+    '<p id="axConsentErr" class="ax-consent-err">'
+    'कृपया आगे बढ़ने के लिए सेवा की शर्तें स्वीकार करें।</p></div>'
+)
+
+_CONSENT_JS = (
+    '<script>'
+    '(function(){'
+    'var cb=document.getElementById("axConsent");'
+    'var er=document.getElementById("axConsentErr");'
+    'if(!cb||!er)return;'
+    'cb.addEventListener("change",function(){if(cb.checked)er.style.display="none";});'
+    'document.addEventListener("submit",function(e){'
+    'if(!cb||!er)return;'
+    'var fm=e.target;'
+    'if(!fm||!fm.contains(cb))return;'
+    'if(!cb.checked){'
+    'e.preventDefault();e.stopImmediatePropagation();'
+    'er.style.display="block";'
+    'cb.scrollIntoView({behavior:"smooth",block:"center"});'
+    '}'
+    '},true);'
+    'var _f=window.fetch;'
+    'window.fetch=function(u,o){'
+    'if(cb.checked&&o&&o.method&&o.method.toUpperCase()==="POST"'
+    '&&typeof u==="string"&&(u.indexOf("/api/kundli")!==-1||u.indexOf("/api/milan")!==-1)){'
+    'try{var b=JSON.parse(o.body);'
+    'b.consent_ts=new Date().toISOString();'
+    'b.consent_v="2026-09";'
+    'o=Object.assign({},o,{body:JSON.stringify(b)});'
+    '}catch(x){}'
+    '}'
+    'return _f.call(this,u,o);'
+    '};'
+    '})();'
+    '</script>'
+)
+
+
+def _inject_consent_checkbox(html: str, lang: str = "en") -> str:
+    """Inject Terms/Privacy/Refund consent checkbox before the CTA button on form pages."""
+    try:
+        if not html:
+            return html
+        import re
+        m = re.search(r'(<button\s[^>]*class="btn"[^>]*type="submit"[^>]*>)', html)
+        if not m:
+            return html
+        consent = _CONSENT_HI if lang == "hi" else _CONSENT_EN
+        insert = _CONSENT_CSS + consent
+        html = html[:m.start()] + insert + html[m.start():]
+        if '</body>' in html:
+            html = html.replace('</body>', _CONSENT_JS + '</body>', 1)
+        return html
+    except Exception as e:
+        logger.error("[consent-checkbox] injection failed: %s", e)
+        return html
+
+
 def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
     """Strip 'by Cultnuts' from footer and inject the legal disclaimer."""
     try:
@@ -1167,8 +1253,9 @@ def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
             return HTMLResponse(_inject_tracking(_inject_nav(
-                _inject_footer_disclaimer(
-                    _inject_footer_link(f.read(), lang), lang), lang)))
+                _inject_consent_checkbox(
+                    _inject_footer_disclaimer(
+                        _inject_footer_link(f.read(), lang), lang), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -1390,6 +1477,9 @@ def create_kundli(inp: KundliIn, request: Request):
                                 time_quality=inp.time_quality,
                                 place=inp.place or "")
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-09"
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
     report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
     if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
@@ -2287,6 +2377,8 @@ class MilanIn(BaseModel):
     email: str | None = None
     whatsapp: str | None = None        # collected on the compatibility form itself
     captcha_token: str | None = None
+    consent_ts: str | None = None      # ISO timestamp when Terms/Privacy/Refund was accepted
+    consent_v: str | None = None       # policy version tag (e.g. "2026-09")
 
 @app.post("/api/milan")
 def create_milan(inp: MilanIn, request: Request):
@@ -2300,6 +2392,9 @@ def create_milan(inp: MilanIn, request: Request):
         {"name": inp.p2_name, "dob": inp.p2_dob, "tob": inp.p2_tob,
          "tz": tz2, "lat": lat2, "lon": lon2, "gender": inp.p2_gender})
     report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-09"
     report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "en"
     if inp.email:
         report["meta"]["_email"] = inp.email             # (#7)
