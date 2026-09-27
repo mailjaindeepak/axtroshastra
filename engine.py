@@ -484,6 +484,7 @@ def compute_report(name: str, dob: str, tob: str, tz_offset_hours: float,
                             "nature": NAK_PROFILE[moon.nak][1],
                             "relationship": NAK_PROFILE[moon.nak][2]},
             "personality": {
+                "sun_line": _LAGNA_PERSONA[g["Sun"].sign],
                 "lagna_line": _LAGNA_PERSONA[chart["lagna_sign"]],
                 "moon_line": _LAGNA_PERSONA[moon.sign],
                 "venus_style": VENUS_STYLE[g["Venus"].sign],
