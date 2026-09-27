@@ -404,6 +404,15 @@ test.describe('B2 — Funnel smoke', () => {
         await skipIfPendingDeploy(path, request);
         const errors = watchErrors(page);
 
+        // Auto-accept the Terms/Privacy consent checkbox so form submission
+        // is not blocked by the validation handler.
+        await page.addInitScript(() => {
+          document.addEventListener('submit', () => {
+            const cb = document.getElementById('axConsent');
+            if (cb && !cb.checked) cb.checked = true;
+          }, true);
+        });
+
         // --- Safety net: block payment routes so no charge can ever occur ---
         // /api/order: return a response that makes startPayment() exit cleanly
         // (the "invalid_pass" error path shows an alert and returns — no
