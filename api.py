@@ -1008,11 +1008,83 @@ def _inject_tracking(html: str) -> str:
     return _inject_beacon(_inject_linkedin(_inject_oaiq(_inject_ga_meta_clarity(html))))
 
 
+_DISCLAIMER_EN = (
+    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #333B63;'
+    'font-size:11px;line-height:1.55;color:#6B6D82;max-width:640px;margin-left:auto;margin-right:auto">'
+    '<strong style="color:#8F92AB">Disclaimer:</strong> '
+    'Axtroshastra provides astrology reports based on classical Vedic Jyotish '
+    'principles and planetary calculations. These reports are for informational '
+    'and entertainment purposes only and do not constitute professional advice '
+    'of any kind — including but not limited to financial, legal, or any '
+    'other professional domain. Results are probability-based interpretations '
+    'of astronomical data, not predictions or guarantees of any outcome. Users '
+    'should exercise their own judgment and consult qualified professionals for '
+    'important life decisions. Axtroshastra and its operators bear no liability '
+    'for actions taken or decisions made based on report content.</div>'
+)
+
+_DISCLAIMER_HI = (
+    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #333B63;'
+    'font-size:11px;line-height:1.55;color:#6B6D82;max-width:640px;margin-left:auto;margin-right:auto">'
+    '<strong style="color:#8F92AB">अस्वीकरण:</strong> '
+    'एक्स्ट्रोशास्त्र '
+    'शास्त्रीय वैदिक '
+    'ज्योतिष सिद्धांतों '
+    'और ग्रह गणनाओं पर '
+    'आधारित ज्योतिष '
+    'रिपोर्ट प्रदान '
+    'करता है। ये रिपोर्ट '
+    'केवल सूचनात्मक '
+    'और मनोरंजन उद्देश्यों '
+    'के लिए हैं और किसी भी '
+    'प्रकार की पेशेवर '
+    'सलाह नहीं हैं — '
+    'वित्तीय, कानूनी, '
+    'या किसी अन्य पेशेवर '
+    'क्षेत्र सहित। '
+    'परिणाम संभावना-आधारित '
+    'व्याख्याएँ हैं, '
+    'किसी भी परिणाम की '
+    'भविष्यवाणी या गारंटी '
+    'नहीं। उपयोगकर्ताओं '
+    'को अपने विवेक का '
+    'उपयोग करना चाहिए '
+    'और महत्वपूर्ण '
+    'निर्णयों के लिए '
+    'योग्य पेशेवरों से '
+    'परामर्श लेना चाहिए। '
+    'रिपोर्ट की सामग्री '
+    'के आधार पर किए गए '
+    'कार्यों या निर्णयों '
+    'के लिए एक्स्ट्रोशास्त्र '
+    'और इसके संचालक '
+    'किसी भी दायित्व '
+    'के भागी नहीं हैं।</div>'
+)
+
+
+def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
+    """Strip 'by Cultnuts' from footer and inject the legal disclaimer."""
+    try:
+        if not html:
+            return html
+        import re
+        html = re.sub(r'\s*·\s*by Cultnuts', '', html)
+        html = re.sub(r'\s*·\s*Cultnuts की तरफ़ से', '', html)
+        disclaimer = _DISCLAIMER_HI if lang == "hi" else _DISCLAIMER_EN
+        html = html.replace('</footer>', disclaimer + '\n</footer>')
+        return html
+    except Exception as e:
+        logger.error("[footer-disclaimer] injection failed: %s", e)
+        return html
+
+
 def _serve_page_with_nav(path: str, lang: str = "en"):
     try:
         with open(path, "r", encoding="utf-8") as f:
             return HTMLResponse(_inject_tracking(_inject_nav(
-                _inject_footer_link(f.read(), lang), lang)))
+                _inject_footer_disclaimer(
+                    _inject_footer_link(f.read(), lang), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
