@@ -1518,7 +1518,8 @@ def create_kundli(inp: KundliIn, request: Request):
     conn = db_v2.get_conn()
     try:
         uid = reports_v2.save_report(conn, rid, report, [subject],
-                                     product=(inp.product or "marriage"), phone=inp.phone)
+                                     product=(inp.product or "marriage"), phone=inp.phone,
+                                     consent_ts=inp.consent_ts, consent_v=inp.consent_v)
         _identify_visitor(conn, request, uid)   # main-form funnels attach the user at submit
         conn.commit()
     finally:
@@ -2413,7 +2414,8 @@ def create_milan(inp: MilanIn, request: Request):
     conn = db_v2.get_conn()
     try:
         uid = reports_v2.save_report(conn, rid, report, subjects, product="milan",
-                                     phone=inp.whatsapp)
+                                     phone=inp.whatsapp,
+                                     consent_ts=inp.consent_ts, consent_v=inp.consent_v)
         _identify_visitor(conn, request, uid)   # milan attaches the user at submit
         conn.commit()
     finally:

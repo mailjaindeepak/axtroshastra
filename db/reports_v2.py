@@ -29,7 +29,9 @@ def norm_lang(report: dict) -> str:
 
 
 def save_report(conn, rid: str, report: dict, subjects: list[dict], *,
-                product: str, phone: str | None = None) -> str | None:
+                product: str, phone: str | None = None,
+                consent_ts: str | None = None,
+                consent_v: str | None = None) -> str | None:
     """Write a legacy `report` dict into the v2 tables under id `rid`.
 
     Creates the user (the LEAD) when a phone is supplied, else user_id stays NULL
@@ -48,7 +50,8 @@ def save_report(conn, rid: str, report: dict, subjects: list[dict], *,
     variant = _b2n(((report.get("meta") or {}).get("variant")))
     db_v2.create_report(conn, user_id, product, report,
                         lang=norm_lang(report), variant=variant,
-                        status="preview", report_id=rid)
+                        status="preview", report_id=rid,
+                        consent_ts=consent_ts, consent_v=consent_v)
     for s in subjects:
         db_v2.add_subject(
             conn, rid, s.get("role", "self"),

@@ -43,6 +43,7 @@ test('Happy path: a valid submission renders the free teaser with vidyarthi prod
   const item = page.locator('#f-place-list .ci', { hasText: 'Delhi' }).first();
   await item.waitFor();
   await item.click();
+  await page.check('#axConsent');
   await page.locator('#kundliForm button[type="submit"]').click();
 
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 20_000 });
@@ -88,6 +89,7 @@ test('Field is submitted when stage is college', async ({ page }) => {
   const item = page.locator('#f-place-list .ci', { hasText: 'Delhi' }).first();
   await item.waitFor();
   await item.click();
+  await page.check('#axConsent');
   await page.locator('#kundliForm button[type="submit"]').click();
 
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 20_000 });
