@@ -97,7 +97,6 @@ const ALL_PAGES = [
   { path: '/about',             label: 'About' },
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
-  { path: '/refunds',           label: 'Refunds' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
   { path: '/blog/kundli-milan-36-gun',                 label: 'Blog: 36 Gun' },

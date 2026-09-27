@@ -550,7 +550,7 @@ class KundliIn(BaseModel):
     field: str | None = None           # vidyarthi only: set when stage is college/postgrad
     employment_situation: str | None = None  # career_growth only: personalization, never affects scoring
     experience: str | None = None            # career_growth only: personalization, never affects scoring
-    consent_ts: str | None = None            # ISO timestamp when Terms/Privacy/Refund was accepted
+    consent_ts: str | None = None            # ISO timestamp when Terms/Privacy was accepted
     consent_v: str | None = None             # policy version tag (e.g. "2026-09")
 
     @field_validator("time_quality")
@@ -1229,7 +1229,7 @@ _CONSENT_JS = (
 
 
 def _inject_consent_checkbox(html: str, lang: str = "en") -> str:
-    """Inject Terms/Privacy/Refund consent checkbox before the CTA button on form pages."""
+    """Inject Terms/Privacy consent checkbox before the CTA button on form pages."""
     try:
         if not html:
             return html
@@ -2392,7 +2392,7 @@ class MilanIn(BaseModel):
     email: str | None = None
     whatsapp: str | None = None        # collected on the compatibility form itself
     captcha_token: str | None = None
-    consent_ts: str | None = None      # ISO timestamp when Terms/Privacy/Refund was accepted
+    consent_ts: str | None = None      # ISO timestamp when Terms/Privacy was accepted
     consent_v: str | None = None       # policy version tag (e.g. "2026-09")
 
 @app.post("/api/milan")
@@ -2477,7 +2477,7 @@ def sitemap():
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
             "/en/career-intelligence", "/blog",
-            "/about", "/login", "/privacy", "/terms", "/refunds", "/en/celebrity-horoscope"
+            "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
             ]

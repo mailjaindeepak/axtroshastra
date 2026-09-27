@@ -878,7 +878,7 @@ def render_report_v2(p: dict) -> str:
 </div></section>""")
 
     parts.append("""<footer>Windows are probability estimates from classical dasha–transit principles,
-not guarantees. <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · support@axtroshastra.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="/refunds" style="color:inherit">Refund Policy</a></footer>
+not guarantees. <a href='https://wa.me/919599827297' style='color:inherit'>WhatsApp +91 95998 27297</a> · support@axtroshastra.com<br>Axtroshastra · Computational Vedic Astrology · by Cultnuts · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></footer>
 <div class="ax-wm" aria-hidden="true"><b>AXTROSHASTRA</b><span>axtroshastra.com</span></div>
 <section class="pg"><div class="ax-disc"><b>Disclaimer:</b> This report is computed from classical Vedic Jyotish (dasha–transit) principles — for guidance, not a guarantee. Timing windows are probabilities, not fixed dates. This is not legal, medical or financial advice. Make your own life decisions using your own judgement; Axtroshastra takes no responsibility for any outcome.</div><div class="ax-endcard"><b>Axtroshastra</b><br>Made with Axtroshastra — get your own report: <a href="https://www.axtroshastra.com/shaadi">axtroshastra.com</a></div></section>
 </td></tr></tbody></table>""")

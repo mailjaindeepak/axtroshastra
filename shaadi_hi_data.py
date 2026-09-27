@@ -312,7 +312,7 @@ HI_DATA = {
     "Rectification analysis aapke life events se exact time narrow karta hai — windows 6 months tak refine ho sakte hain.": "रेक्टिफिकेशन विश्लेषण आपके जीवन की घटनाओं से सही समय को और सटीक करता है — विंडो 6 महीने तक तक और साफ़ हो सकती हैं।",
     "Red Coral (Moonga) — only if Mars is well-placed": "लाल मूंगा (Moonga) — सिर्फ़ तभी जब मंगल अच्छी स्थिति में हो",
     "Red Coral (Moonga) — only if Mars is well-placed — kisi qualified jeweller/astrologer se trial ke baad hi.": "मूंगा (Red Coral) — तभी जब मंगल अच्छी स्थिति में हो — किसी योग्य जौहरी/ज्योतिषी से ट्रायल के बाद ही।",
-    "Refund Policy": "रिफ़ंड नीति",
+
     "Regal, ancestral, proud — lineage and legacy matter to you": "शाही, कुलीन, स्वाभिमानी — वंश और विरासत आपके लिए मायने रखते हैं।",
     "Regal, ancestral, proud — lineage and legacy matter to you.": "शाही, पुरखों की विरासत वाले, गर्वीले — वंश और विरासत आपके लिए मायने रखते हैं।",
     "Renewing, optimistic, generous — you always find the way back": "नई शुरुआत करने वाले, आशावादी, उदार — आप हमेशा वापसी का रास्ता ढूँढ लेते हैं",

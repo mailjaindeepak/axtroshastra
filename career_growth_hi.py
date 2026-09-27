@@ -645,7 +645,7 @@ STATIC_HI = {
         "समय की बातें पुराने दशा–गोचर के नियमों पर आधारित अंदाज़े हैं, गारंटी नहीं।",
     "Computational Vedic Astrology": "गणना पर आधारित वैदिक ज्योतिष",
     "by Cultnuts": "Cultnuts की तरफ़ से",
-    "Privacy": "गोपनीयता", "Terms": "नियम और शर्तें", "Refund Policy": "पैसे वापसी की नीति",
+    "Privacy": "गोपनीयता", "Terms": "नियम और शर्तें",
 
     "Download PDF": "PDF डाउनलोड करें", "Share on WhatsApp": "WhatsApp पर शेयर करें",
     "&#11015; Download PDF": "&#11015; PDF डाउनलोड करें",
