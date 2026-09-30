@@ -465,8 +465,48 @@ fbq('track', 'PageView');
 .ps-proof-who{font-size:11.5px;color:var(--pmuted);font-weight:600}
 .ps-cred-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .ps-cred-badge{font-size:10px;font-weight:600;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:100px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+/* ---- personality card ---- */
+.ps-snap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.ps-snap4{grid-template-columns:repeat(4,1fr)}
+.ps-snap .c{background:#F3EAD8;border-radius:10px;padding:10px 6px}
+.ps-snap .k{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--pgold);font-weight:600;margin-bottom:3px}
+.ps-snap .v{font-family:var(--disp);font-size:13px;font-weight:600;color:var(--phead)}
+.ps-persona-row{display:flex;flex-direction:column;gap:10px}
+.ps-persona-item{display:flex;flex-direction:column;gap:3px}
+.ps-persona-tag{font-size:10px;font-weight:700;color:var(--pgold);text-transform:uppercase;letter-spacing:.1em}
+.ps-persona-line{font-size:13px;color:var(--phead);line-height:1.45}
+/* ---- past summary (why hasn't happened) ---- */
+.ps-past-periods{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.ps-past-row{border-bottom:1px solid rgba(201,163,78,.15);padding-bottom:9px}
+.ps-past-row:last-child{border-bottom:0;padding-bottom:0}
+.ps-past-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.ps-past-top .yr{font-family:var(--disp);font-weight:600;font-size:12.5px;color:rgba(239,231,216,.72)}
+.ps-past-top .tag{padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600}
+.ps-past-top .tag.quiet{background:rgba(154,123,142,.25);color:#c4a8ba}
+.ps-past-top .tag.active{background:rgba(46,125,83,.2);color:#5ec68a}
+.ps-past-top .tag.mild{background:rgba(201,163,78,.2);color:var(--pgold-lt)}
+.ps-past-why{font-size:12px;color:rgba(239,231,216,.65);line-height:1.4;padding-left:2px}
+/* ---- marriage windows ---- */
+.ps-windows-list{display:flex;flex-direction:column;gap:8px}
+.ps-window-row{display:flex;align-items:center;gap:10px;background:#F3EAD8;border-radius:10px;padding:10px 14px}
+.ps-window-year{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--phead);min-width:70px}
+.ps-window-grade{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.ps-window-grade.A{background:rgba(46,125,83,.15);color:#2E7D53;border:1px solid rgba(46,125,83,.3)}
+.ps-window-grade.B{background:rgba(201,163,78,.15);color:#B8942E;border:1px solid rgba(201,163,78,.3)}
+.ps-window-grade.C{background:rgba(154,123,142,.12);color:#9A7B8E;border:1px solid rgba(154,123,142,.25)}
+.ps-window-months{font-size:12px;color:var(--pmuted);flex:1;text-align:right}
+/* ---- partner personality ---- */
+.ps-partner-nature{text-align:center;margin-bottom:14px}
+.ps-partner-badge{display:inline-block;font-family:var(--disp);font-weight:700;font-size:14px;color:var(--pgold);background:rgba(201,163,78,.1);border:1px solid rgba(201,163,78,.3);border-radius:100px;padding:5px 18px;margin-bottom:8px}
+.ps-partner-desc{font-size:13px;color:var(--phead);line-height:1.5;max-width:320px;margin:0 auto}
+.ps-partner-grid{display:flex;flex-direction:column;gap:8px}
+.ps-partner-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--pline)}
+.ps-partner-row:last-child{border-bottom:0}
+.ps-partner-row .k{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;color:var(--pgold);flex:0 0 auto}
+.ps-partner-row .v{font-size:13px;color:var(--phead);text-align:right;flex:1;margin-left:12px}
 @media(max-width:480px){
-  .ps-grid3{grid-template-columns:1fr}
+  .ps-snap{grid-template-columns:1fr 1fr 1fr}
+  .ps-snap4{grid-template-columns:repeat(2,1fr)}
   .ps-also-grid{grid-template-columns:1fr 1fr}
 }
 </style>
@@ -486,10 +526,10 @@ fbq('track', 'PageView');
       <div class="ps-cv-dob" id="tv-cv-dob">22 April 1997 · Jaipur, India</div>
       <div class="ps-cv-qlabel">This report answers:</div>
       <ol class="ps-cv-qlist">
-        <li><span class="qn">1</span> When will you finally get married?</li>
-        <li><span class="qn">2</span> What kind of person will you marry?</li>
-        <li><span class="qn">3</span> Will your partner be from your city or somewhere else?</li>
-        <li><span class="qn">4</span> Where are you likely to meet your partner?</li>
+        <li><span class="qn">1</span> Which exact month will you finally get married?</li>
+        <li><span class="qn">2</span> Will it be an arranged or love marriage?</li>
+        <li><span class="qn">3</span> What are the obstacles and how to remove them?</li>
+        <li><span class="qn">4</span> How will your compatibility be with your partner?</li>
       </ol>
       <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
@@ -515,66 +555,71 @@ fbq('track', 'PageView');
       </div>
     </div>
 
-    <!-- NAKSHATRA LOVE PROFILE -->
-    <div class="ps-tbox ps-nak-card" id="tv-nak">
-      <div class="who">Your Nakshatra &amp; Love</div>
-      <div class="nm" id="tv-nak-name">Hasta — The Hand</div>
-      <div class="sn" id="tv-nak-nature">Skilled, witty, resourceful</div>
-      <p id="tv-nak-rel">You show love through practical help and humour; you need appreciation, not grand drama.</p>
-    </div>
-
-    <!-- PARTNER SNAPSHOT -->
-    <div class="ps-section-head">Your Partner at a Glance</div>
-    <div class="ps-block ps-grid3">
-      <div class="ps-p3"><span class="k">Love or arranged</span><span class="v">Love / self-chosen match</span></div>
-      <div class="ps-p3"><span class="k">Personality</span><span class="v">Optimistic &amp; principled</span></div>
-      <div class="ps-p3"><span class="k">Nature</span><span class="v">Emotionally attuned &amp; caring</span></div>
-    </div>
-
-    <!-- NAVAMSA STRENGTH -->
-    <div class="ps-card ps-nav-card" id="tv-nav">
-      <div class="ps-nav-top">
-        <div class="ps-plabel" style="margin-bottom:0">Navamsa (D9) Marriage Promise</div>
-        <div class="ps-nav-badge strong" id="tv-nav-badge">STRONG</div>
+    <!-- YOUR PERSONALITY -->
+    <div class="ps-card" id="tv-personality">
+      <div class="ps-plabel">Who You Are</div>
+      <div class="ps-snap ps-snap4" style="margin-bottom:14px">
+        <div class="c"><div class="k">Sun sign</div><div class="v" id="tv-sun-label">Pisces</div></div>
+        <div class="c"><div class="k">Moon sign</div><div class="v" id="tv-moon-label">Libra</div></div>
+        <div class="c"><div class="k">Rising</div><div class="v" id="tv-lagna">Taurus</div></div>
+        <div class="c"><div class="k">Manglik</div><div class="v" id="tv-manglik-short">Non-Manglik</div></div>
       </div>
-      <div class="ps-nav-track"><div class="ps-nav-fill strong" id="tv-nav-fill"></div></div>
-      <div class="ps-nav-note" id="tv-nav-note">The Navamsa strongly supports the marriage promise — the union is well indicated; it is only a matter of timing.</div>
+      <div class="ps-persona-row">
+        <div class="ps-persona-item"><span class="ps-persona-tag">☀️ Sun sign</span><span class="ps-persona-line" id="tv-sun-line">Imaginative, empathetic, boundary-less — you absorb the room's energy</span></div>
+        <div class="ps-persona-item"><span class="ps-persona-tag">🌙 Moon</span><span class="ps-persona-line" id="tv-moon-line">Balancing, relational, aesthetic — you think in partnerships</span></div>
+        <div class="ps-persona-item"><span class="ps-persona-tag">🌅 Ascendant</span><span class="ps-persona-line" id="tv-lagna-line">Steady, sensory, patient — you build slowly and hold what you build</span></div>
+        <div class="ps-persona-item"><span class="ps-persona-tag">💕 Venus</span><span class="ps-persona-line" id="tv-venus-line">Direct and impulsive in love — you pursue openly</span></div>
+      </div>
     </div>
 
-    <!-- CURRENT PHASE -->
-    <div class="ps-card ps-phase">
-      <div class="ps-phase-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pgold)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <!-- WHY MARRIAGE HASN'T HAPPENED YET -->
+    <div class="ps-tbox" id="tv-past" style="margin-top:12px">
+      <div class="who">⏳ Why It Hasn't Happened Yet</div>
+      <div class="nm" id="tv-past-headline">Your last 3 years have been quiet for marriage</div>
+      <div class="ps-past-periods" id="tv-past-periods"></div>
+    </div>
+
+    <!-- YOUR MARRIAGE WINDOWS -->
+    <div class="ps-card" id="tv-windows-card" style="margin-top:12px">
+      <div class="ps-plabel">Your Marriage Windows</div>
+      <div class="ps-windows-list" id="tv-windows-list"></div>
+      <p style="font-size:12.5px;color:var(--pmuted);margin-top:10px;text-align:center">Exact months and peak timing are in the full report.</p>
+    </div>
+
+    <!-- PARTNER PERSONALITY -->
+    <div class="ps-card" id="tv-partner-card" style="margin-top:12px">
+      <div class="ps-plabel">Your Future Partner</div>
+      <div class="ps-partner-nature" id="tv-partner-nature">
+        <div class="ps-partner-badge" id="tv-partner-badge">Intense &amp; loyal</div>
+        <p class="ps-partner-desc" id="tv-partner-desc">Intense, private, deeply loyal — a bond that runs deep once formed.</p>
       </div>
-      <div>
-        <div class="ps-phase-label">Your current marriage phase</div>
-        <div class="ps-phase-val" id="tv-phase">Active &amp; Building</div>
+      <div class="ps-partner-grid">
+        <div class="ps-partner-row"><span class="k">Partner type</span><span class="v" id="tv-dk-desc">An emotionally attuned, caring partner</span></div>
+        <div class="ps-partner-row"><span class="k">Likely meeting</span><span class="v" id="tv-meeting">The home circle</span></div>
       </div>
     </div>
 
     <!-- LOCKED QUESTIONS -->
     <div class="ps-locked-v2">
-      <div class="ps-lk-heading">Your 4 marriage answers are ready</div>
+      <div class="ps-lk-heading">Your full report answers these</div>
       <div class="ps-lk-sub">Computed from your birth chart. Unlock to read them.</div>
 
       <div class="ps-lq"><div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
-        <div class="ps-lq-text"><div class="qt">When will you finally get married?</div><div class="qd">The exact months identified from your Mahadasha, Antardasha and Jupiter transit windows.</div></div></div>
+        <div class="ps-lq-text"><div class="qt">Which exact month will you finally get married?</div><div class="qd">Your marriage windows narrow to exact months and peak timing — locked in the full report.</div></div></div>
 
       <div class="ps-lq"><div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
-        <div class="ps-lq-text"><div class="qt">What kind of person will you marry?</div><div class="qd">A personality sketch from your 7th house, Darakaraka and Venus placement — temperament, nature, values.</div></div></div>
+        <div class="ps-lq-text"><div class="qt">Will it be an arranged or love marriage?</div><div class="qd">Your 7th lord placement and Venus position reveal the most likely path to marriage.</div></div></div>
 
       <div class="ps-lq"><div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
-        <div class="ps-lq-text"><div class="qt">Will your partner be from your city or somewhere else?</div><div class="qd">Your 7th lord's house placement tells whether the connection comes from nearby or a different place entirely.</div></div></div>
+        <div class="ps-lq-text"><div class="qt">What are the obstacles and how to remove them?</div><div class="qd">Specific blockages from your chart — Saturn, Rahu or combustion — with classical remedies for each.</div></div></div>
 
       <div class="ps-lq"><div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
-        <div class="ps-lq-text"><div class="qt">Where are you likely to meet your partner?</div><div class="qd">Work, a friend's circle, family, or somewhere unexpected — pinpointed from your 7th lord's position.</div></div></div>
+        <div class="ps-lq-text"><div class="qt">How will your compatibility be with your partner?</div><div class="qd">Navamsa (D9) analysis of your marriage promise — emotional fit, loyalty and long-term strength.</div></div></div>
 
       <!-- Also includes -->
       <div class="ps-also-grid">
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Manglik verdict</div>
+        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Year-by-year outlook</div>
         <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Venus love style</div>
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Weak periods</div>
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Action plan</div>
         <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Sade Sati status</div>
         <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Classical remedies</div>
       </div>
@@ -887,43 +932,77 @@ function personalizePreviewClone(t){
   var md = document.getElementById('pc-md');
   if(md) md.textContent = (t.current_dasha || 'Saturn') + (t.dasha_till && t.dasha_till !== '—' ? ' (ends ' + t.dasha_till + ')' : '');
 
-  // Nakshatra love profile
-  var np = t.nak_profile;
-  if(np){
-    var nakName = document.getElementById('pc-nak-name');
-    if(nakName) nakName.textContent = np.nakshatra + (np.symbol ? ' — ' + np.symbol : '');
-    var nakNature = document.getElementById('pc-nak-nature');
-    if(nakNature) nakNature.textContent = np.nature || '';
-    var nakRel = document.getElementById('pc-nak-rel');
-    if(nakRel) nakRel.textContent = np.relationship || '';
+  // Personality card — sun sign from chart planets
+  var pers = t.personality || {};
+  var sunSign = (t.chart && t.chart.planets && t.chart.planets.Sun) ? t.chart.planets.Sun.sign_en : '';
+  var sunEl = document.getElementById('pc-sun-label');
+  if(sunEl && sunSign) sunEl.textContent = sunSign;
+  var lagEl = document.getElementById('pc-lagna');
+  if(lagEl) lagEl.textContent = t.lagna_sign_en || 'Aries';
+  var moonLbl = document.getElementById('pc-moon-label');
+  if(moonLbl) moonLbl.textContent = t.moon_sign_en || 'Aries';
+  var sunLine = document.getElementById('pc-sun-line');
+  if(sunLine && pers.sun_line) sunLine.textContent = pers.sun_line;
+  var lagLine = document.getElementById('pc-lagna-line');
+  if(lagLine && pers.lagna_line) lagLine.textContent = pers.lagna_line;
+  var moonLine = document.getElementById('pc-moon-line');
+  if(moonLine && pers.moon_line) moonLine.textContent = pers.moon_line;
+  var venusLine = document.getElementById('pc-venus-line');
+  if(venusLine && pers.venus_style) venusLine.textContent = pers.venus_style;
+
+  // Manglik short
+  var mk = t.manglik || {};
+  var mkEl = document.getElementById('pc-manglik-short');
+  if(mkEl){
+    var ms = mk.status || '';
+    mkEl.textContent = ms === 'manglik' ? 'Manglik' : (ms === 'manglik_cancelled' ? 'Cancelled' : 'Non-Manglik');
   }
 
-  // Partner snapshot
-  var traits = AX_MOON_TRAITS[t.moon_sign_en] || null;
-  var mdLord = t.current_md || null;
-  var love = mdLord ? (AX_DASHA_LOVE[mdLord] || null) : null;
-  var vals = clone.querySelectorAll('.ps-p3 .v');
-  if(vals[0] && love) vals[0].textContent = love;
-  if(vals[1] && traits) vals[1].textContent = traits.personality;
-  if(vals[2] && traits) vals[2].textContent = traits.nature;
-
-  // Navamsa strength
-  var band = t.navamsa_strength || 'steady';
-  var navBadge = document.getElementById('pc-nav-badge');
-  if(navBadge){ navBadge.textContent = band.toUpperCase(); navBadge.className = 'ps-nav-badge ' + band; }
-  var navFill = document.getElementById('pc-nav-fill');
-  if(navFill) navFill.className = 'ps-nav-fill ' + band;
-  var navNote = document.getElementById('pc-nav-note');
-  if(navNote && t.navamsa_strength_note) navNote.textContent = t.navamsa_strength_note;
-
-  // Current phase
-  var phaseEl = document.getElementById('pc-phase');
-  if(phaseEl && mdLord){
-    var phases = {Sun:'Visible & Decisive',Moon:'Receptive & Emotional',Mars:'Active & Building',
-      Mercury:'Analytical & Social',Jupiter:'Expanding & Favourable',Venus:'Romantic & Open',
-      Saturn:'Patient & Committed',Rahu:'Unconventional & Restless',Ketu:'Reflective & Detached'};
-    phaseEl.textContent = phases[mdLord] || 'Active & Building';
+  // Past summary — per-period with individual reasons
+  var ps = t.past_summary || {};
+  var pastHd = document.getElementById('pc-past-headline');
+  if(pastHd){
+    if(ps.quiet_count > 0) pastHd.textContent = ps.quiet_count + ' of your last ' + (ps.total || 3) + ' periods were quiet for marriage';
+    else pastHd.textContent = 'Your recent periods have been active for marriage';
   }
+
+  var pastPeriods = document.getElementById('pc-past-periods');
+  if(pastPeriods && ps.periods && ps.periods.length){
+    var ph = '';
+    for(var pi=0;pi<ps.periods.length;pi++){
+      var pp = ps.periods[pi];
+      var lbl = pp.label || 'quiet';
+      var span = (pp.from || '') + ' – ' + (pp.to || '');
+      var reason = (pp.why && pp.why.length) ? pp.why[0] : '';
+      ph += '<div class="ps-past-row"><div class="ps-past-top"><span class="yr">' + _esc(span) + '</span><span class="tag ' + _esc(lbl) + '">' + _esc(lbl) + '</span></div>';
+      if(reason) ph += '<div class="ps-past-why">' + _esc(reason) + '</div>';
+      ph += '</div>';
+    }
+    pastPeriods.innerHTML = ph;
+  }
+
+  // Marriage windows — no grade shown
+  var wl = document.getElementById('pc-windows-list');
+  if(wl && t.windows && t.windows.length){
+    var wh = '';
+    for(var wi=0;wi<t.windows.length;wi++){
+      var w = t.windows[wi];
+      var yr = w.start_year === w.end_year ? w.start_year : w.start_year + '–' + w.end_year;
+      wh += '<div class="ps-window-row"><span class="ps-window-year">' + _esc(yr) + '</span><span class="ps-window-months">Exact months locked</span></div>';
+    }
+    wl.innerHTML = wh;
+  }
+
+  // Partner personality
+  var prt = t.partner || {};
+  var pBadge = document.getElementById('pc-partner-badge');
+  if(pBadge && prt.nature_short) pBadge.textContent = prt.nature_short;
+  var pDesc = document.getElementById('pc-partner-desc');
+  if(pDesc && prt.nature) pDesc.textContent = prt.nature;
+  var dkDesc = document.getElementById('pc-dk-desc');
+  if(dkDesc && prt.dk_desc) dkDesc.textContent = prt.dk_desc;
+  var meetEl = document.getElementById('pc-meeting');
+  if(meetEl && prt.meeting) meetEl.textContent = prt.meeting;
 }
 </script>
 
@@ -1169,13 +1248,7 @@ async function runKundliAndPay(dob, waPhone){
   if(kundliOk) renderTeaser(teaserData);
 }
 
-// Renders the free report-teaser section from THIS submission's own
-// report["teaser"] (api.py POST /api/kundli) — moon sign, nakshatra, current
-// dasha and window count/positions are the user's real computed values;
-// nothing here is invented client-side. The report-preview cards below
-// (personalizePreviewClone) present the same real values through the
-// AX_MOON_TRAITS/AX_DASHA_LOVE lookup tables. Adapted from the identical
-// pattern already used by shaadi.html (marriage v1) and milan.html's teaser.
+// Renders the free report-teaser from the user's own computed teaser dict.
 function renderTeaser(t){
   t = t || {};
   personalizePreviewClone(t);
