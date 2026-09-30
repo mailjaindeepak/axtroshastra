@@ -371,7 +371,7 @@ fbq('track', 'PageView');
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">जन्म का समय</label>
-        <div class="dob-row"><select id="f-hh" aria-label="घंटा"></select><select id="f-mm2" aria-label="मिनट"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
+        <div class="dob-row"><select id="f-hh" aria-label="घंटा"></select><input id="f-mm2" type="number" inputmode="numeric" min="0" max="59" placeholder="मिनट" aria-label="मिनट" style="width:52px;text-align:center;-moz-appearance:textfield" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)"><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">अनुमानित समय</label>
@@ -688,14 +688,14 @@ fbq('track', 'PageView');
   var hh=document.getElementById("f-hh"),mn=document.getElementById("f-mm2"),ap=document.getElementById("f-ap"),tob=document.getElementById("f-tob");
   function opt(sel,v,t,ph){var o=document.createElement("option");o.value=v;o.textContent=t;if(ph){o.disabled=true;o.hidden=true;o.selected=true;}sel.appendChild(o);}
   opt(hh,"","घंटा",1); for(var h=1;h<=12;h++) opt(hh,h,h);
-  opt(mn,"","मिनट",1); for(var m=0;m<60;m+=5){var s=(m<10?"0":"")+m; opt(mn,s,s);}
+  mn.addEventListener("input",function(){var v=parseInt(mn.value,10);if(v>59)mn.value=59;if(v<0)mn.value=0;});
   opt(ap,"","AM/PM",1); opt(ap,"AM","AM"); opt(ap,"PM","PM");
-  function sync(){var h=hh.value,m=mn.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
-  hh.addEventListener("change",sync); mn.addEventListener("change",sync); ap.addEventListener("change",sync);
+  function sync(){var h=hh.value,m=mn.value,a=ap.value; if(h&&m!==""&&a){var mi=parseInt(m,10);if(isNaN(mi)||mi<0||mi>59)return;var pad=(mi<10?"0":"")+mi;var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+pad;} else {tob.value="";}}
+  hh.addEventListener("change",sync); mn.addEventListener("input",sync); mn.addEventListener("change",sync); ap.addEventListener("change",sync);
   var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='मिटाएँ';
   b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer;margin-left:8px';
   hh.parentElement.appendChild(b);
-  b.addEventListener('click',function(){ [hh,mn,ap].forEach(function(s){s.selectedIndex=0;}); tob.value=''; });
+  b.addEventListener('click',function(){ hh.selectedIndex=0; mn.value=''; ap.selectedIndex=0; tob.value=''; });
 })();
 document.getElementById('unknownTime').addEventListener('change', function(){
   document.getElementById('tobField').hidden = this.checked;

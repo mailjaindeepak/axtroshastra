@@ -283,7 +283,7 @@ fbq('track', 'PageView');
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">Child's time of birth</label>
-        <div class="dob-row"><select id="f-hh" aria-label="Hour"></select><select id="f-mm2" aria-label="Minute"></select><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
+        <div class="dob-row"><select id="f-hh" aria-label="Hour"></select><input id="f-mm2" type="number" inputmode="numeric" min="0" max="59" placeholder="Min" aria-label="Minute" style="width:52px;text-align:center;-moz-appearance:textfield" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)"><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
@@ -1168,10 +1168,10 @@ window.addEventListener('scroll', function(){
   if(!hh||!tob) return;
   function opt(sel,v,t,ph){var o=document.createElement("option");o.value=v;o.textContent=t;if(ph){o.disabled=true;o.hidden=true;o.selected=true;}sel.appendChild(o);}
   opt(hh,"","Hour",1); for(var h=1;h<=12;h++) opt(hh,h,h);
-  opt(mm,"","Min",1); for(var m=0;m<60;m+=5){var s=(m<10?"0":"")+m; opt(mm,s,s);}
+  mm.addEventListener("input",function(){var v=parseInt(mm.value,10);if(v>59)mm.value=59;if(v<0)mm.value=0;});
   opt(ap,"","AM/PM",1); opt(ap,"AM","AM"); opt(ap,"PM","PM");
-  function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m&&a){var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+m;} else {tob.value="";}}
-  hh.addEventListener("change",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
+  function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m!==""&&a){var mi=parseInt(m,10);if(isNaN(mi)||mi<0||mi>59)return;var pad=(mi<10?"0":"")+mi;var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+pad;} else {tob.value="";}}
+  hh.addEventListener("change",sync); mm.addEventListener("input",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
 })();
 </script>
 <script>
@@ -1200,7 +1200,7 @@ window.addEventListener('scroll', function(){
   var thh=document.getElementById("f-hh"),tmn=document.getElementById("f-mm2"),tap=document.getElementById("f-ap");
   function tobPartial(){ if(document.getElementById("unknownTime").checked) return false; var n=(thh&&thh.value?1:0)+(tmn&&tmn.value?1:0)+(tap&&tap.value?1:0); return n>0&&n<3; }
   function checkTob(){ tobHint.textContent = tobPartial()? L("Please enter the full time (hour, minute, AM/PM), or clear it.","Poora time bhariye (ghanta, minute, AM/PM), ya khaali chhod dijiye.") : ""; }
-  if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
+  if(thh){ thh.addEventListener("change",checkTob); tmn.addEventListener("input",checkTob); tmn.addEventListener("change",checkTob); tap.addEventListener("change",checkTob); }
   // Toggling "don't know exact time" hides the time row; clear any stale
   // partial-time / birth-time errors so they don't linger (the hint node is a
   // sibling of #tobField, so hiding the field alone leaves the message on screen).
@@ -1299,7 +1299,7 @@ window.addEventListener('scroll', function(){
   var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='Clear'; b.setAttribute('aria-label','Clear time of birth');
   b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
   hh.parentElement.appendChild(b);
-  b.addEventListener('click',function(){ ['f-hh','f-mm2','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
+  b.addEventListener('click',function(){ ['f-hh','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var mi=document.getElementById('f-mm2'); if(mi)mi.value=''; var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
 })();
 </script>
 <script>(function(){
