@@ -457,6 +457,14 @@ fbq('track', 'PageView');
       <div class="ps-cv-rule"></div>
       <div class="ps-cv-name" id="tv-cv-name">—</div>
       <div class="ps-cv-dob" id="tv-cv-dob">—</div>
+      <div class="ps-cv-qlabel">This report answers:</div>
+      <ol class="ps-cv-qlist">
+        <li><span class="qn">1</span> Are your best years still ahead of you?</li>
+        <li><span class="qn">2</span> When is your next major turning point?</li>
+        <li><span class="qn">3</span> Are you on the right career path?</li>
+        <li><span class="qn">4</span> How does the future of your relationships look?</li>
+        <li><span class="qn">5</span> What is blocking your financial growth?</li>
+      </ol>
       <div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#lockedQuestions" onclick="document.getElementById('lockedQuestions').scrollIntoView({behavior:'smooth'});return false;">Unlock Answers</a></div>
       <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
@@ -531,42 +539,42 @@ fbq('track', 'PageView');
 
     <!-- 7. Locked questions -->
     <div class="ps-locked" id="lockedQuestions">
-      <div class="ps-locked-heading">Your full report includes</div>
+      <div class="ps-locked-heading">Your 5 answers are ready</div>
       <div class="ps-locked-sub">Computed from your birth chart. Unlock to read them.</div>
 
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Your best-years timeline</div>
-          <div class="qd">Which of your next three life phases carries the most weight, year by year.</div>
+          <div class="qt">Are your best years still ahead of you?</div>
+          <div class="qd">Your next three life phases compared, and which one carries the most weight.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Your next turning point</div>
-          <div class="qd">The exact year and period when things shift, from your Mahadasha timeline.</div>
+          <div class="qt">When is your next major turning point?</div>
+          <div class="qd">The exact year and period, identified from your Mahadasha timeline.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Your career-path read</div>
-          <div class="qd">What fits and what doesn't, decoded from your 10th house.</div>
+          <div class="qt">Are you on the right career path?</div>
+          <div class="qd">Your chart's career indicators decoded, with what fits and what doesn't.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Your relationship map</div>
-          <div class="qd">Patterns from your 7th house, Venus and Dasha, mapped out.</div>
+          <div class="qt">How does the future of your relationships look?</div>
+          <div class="qd">Relationship patterns from your 7th house, Venus and Dasha mapped out.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Your wealth blockers</div>
-          <div class="qd">The positions holding back income, and when they shift.</div>
+          <div class="qt">What is blocking your financial growth?</div>
+          <div class="qd">The specific planetary positions holding back your wealth, and what shifts next.</div>
         </div>
       </div>
 
@@ -917,7 +925,6 @@ function tvBuildKundli(lagna, planets, name, dob, place){
     if(pi.retro) abbr += '(R)';
     var fill = '#3A2C18', fw = '500';
     if(pi.dignity === 'exalted' || pi.dignity === 'own'){ fill = '#2D7A3A'; fw = '600'; }
-    else if(pi.dignity === 'debilitated'){ fill = '#A94442'; fw = '600'; }
     else if(pi.retro){ fill = '#7A6B8A'; }
     byHouse[house].push({abbr:abbr, fill:fill, fw:fw});
   }
