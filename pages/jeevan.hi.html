@@ -175,10 +175,10 @@ section{padding:52px 0}
 .ps-planet-tbl td{padding:5px 0;border-bottom:1px dashed rgba(201,163,78,.18);color:var(--pink)}
 .ps-planet-tbl tr:last-child td{border-bottom:0}
 .ps-planet-tbl .pn{font-family:var(--disp);font-weight:600;color:var(--phead)}
-.ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
-.ps-dig.own{color:var(--pgold);background:rgba(201,163,78,.12)}
-.ps-dig.exalted{color:var(--pgreen);background:rgba(62,125,90,.1)}
-.ps-dig.retro{color:#7A6B8A;background:rgba(122,107,138,.1)}
+.ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;display:inline-flex;align-items:center;gap:4px}
+.ps-dig.good{color:var(--pgreen);background:rgba(62,125,90,.1)}
+.ps-dig.avg{color:#B8860B;background:rgba(184,134,11,.1)}
+.ps-dig.weak{color:#A94442;background:rgba(169,68,66,.1)}
 .ps-md-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline);display:flex;justify-content:space-between;align-items:center}
 .ps-md-bar .lb{font-size:12px;color:var(--pmuted)}
 .ps-md-bar .vl{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead)}
@@ -190,6 +190,11 @@ section{padding:52px 0}
 
 /* Standout callout */
 .ps-standout{margin-top:10px;padding:12px 14px;background:#F3EAD8;border:1px dashed var(--pgold);border-radius:12px;font-size:13.5px;color:var(--pink);line-height:1.5;text-align:right}
+.ps-verdictbox{background:var(--tbox, #1C1A16);border-radius:18px;padding:20px 18px;position:relative;overflow:hidden;color:#EFE7D8;margin:12px 0}
+.ps-verdictbox .vb-label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--pgold-lt, #E7CE8F);display:flex;align-items:center;gap:6px}
+.ps-verdictbox .vb-q{font-family:var(--disp);font-weight:500;font-size:20px;color:#fff;margin:6px 0 4px}
+.ps-verdictbox .vb-blur{font-family:var(--disp);font-weight:600;font-size:26px;color:#fff;filter:blur(7px);-webkit-filter:blur(7px);user-select:none;-webkit-user-select:none;pointer-events:none;margin:4px 0 8px}
+.ps-verdictbox .vb-sub{font-size:13px;color:rgba(239,231,216,.82);line-height:1.55;margin:0}
 
 /* Phase row */
 .ps-phase-row{display:flex;align-items:center;gap:14px}
@@ -454,14 +459,6 @@ fbq('track', 'PageView');
       <div class="ps-cv-rule"></div>
       <div class="ps-cv-name" id="tv-cv-name">—</div>
       <div class="ps-cv-dob" id="tv-cv-dob">—</div>
-      <div class="ps-cv-qlabel">यह रिपोर्ट बताती है:</div>
-      <ol class="ps-cv-qlist">
-        <li><span class="qn">1</span> क्या आपके सबसे अच्छे साल अभी बाकी हैं?</li>
-        <li><span class="qn">2</span> आपका अगला बड़ा मोड़ कब आएगा?</li>
-        <li><span class="qn">3</span> क्या आप सही करियर पथ पर हैं?</li>
-        <li><span class="qn">4</span> आपके रिश्तों का भविष्य कैसा दिखता है?</li>
-        <li><span class="qn">5</span> आपकी आर्थिक तरक्की में रुकावट क्या है?</li>
-      </ol>
       <div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#lockedQuestions" onclick="document.getElementById('lockedQuestions').scrollIntoView({behavior:'smooth'});return false;">जवाब अनलॉक करें</a></div>
       <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
@@ -526,47 +523,54 @@ fbq('track', 'PageView');
       </div>
     </div>
 
+    <!-- 6b. Blurred verdict tease -->
+    <div class="ps-verdictbox">
+      <div class="vb-label">&#128301;&nbsp; आपका अगला मोड़</div>
+      <div class="vb-q">आपकी ज़िंदगी में अगला बदलाव कब आएगा?</div>
+      <div class="vb-blur" aria-hidden="true" id="tv-blur-turning">— महादशा — 2028</div>
+      <p class="vb-sub">आपकी कुंडली में सटीक तारीख़ और उसके आस-पास क्या बदलेगा, यह सब अनलॉक करें।</p>
+    </div>
+
     <!-- 7. Locked questions -->
     <div class="ps-locked" id="lockedQuestions">
-      <div class="ps-locked-heading">आपके 5 जवाब तैयार हैं</div>
-      <div class="ps-locked-sub">आपकी जन्म-कुंडली से निकाले गए। पढ़ने के लिए अनलॉक करें।</div>
+      <div class="ps-locked-heading">आपकी पूरी रिपोर्ट में शामिल है</div>
+      <div class="ps-locked-sub">आपकी जन्म-कुंडली से निकाला गया। पढ़ने के लिए अनलॉक करें।</div>
 
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">क्या आपके सबसे अच्छे साल अभी बाकी हैं?</div>
-          <div class="qd">आपके अगले तीन जीवन-दौरों की तुलना, और किसमें सबसे ज़्यादा दम है।</div>
+          <div class="qt">आपके सबसे अच्छे सालों की टाइमलाइन</div>
+          <div class="qd">आपके अगले तीन जीवन-दौरों में से किसमें सबसे ज़्यादा दम है, साल दर साल।</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">आपका अगला बड़ा मोड़ कब आएगा?</div>
-          <div class="qd">सटीक साल और दौर, आपकी महादशा टाइमलाइन से पहचाना गया।</div>
+          <div class="qt">आपका अगला बड़ा मोड़</div>
+          <div class="qd">सटीक साल और दौर जब चीज़ें बदलती हैं, आपकी महादशा टाइमलाइन से।</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">क्या आप सही करियर पथ पर हैं?</div>
-          <div class="qd">आपकी कुंडली के करियर संकेत, क्या सही है और क्या नहीं।</div>
+          <div class="qt">आपका करियर विश्लेषण</div>
+          <div class="qd">क्या सही है और क्या नहीं, आपके दसवें भाव से।</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">आपके रिश्तों का भविष्य कैसा दिखता है?</div>
+          <div class="qt">आपका रिश्तों का नक्शा</div>
           <div class="qd">आपके 7वें भाव, शुक्र और दशा से रिश्तों के पैटर्न।</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">आपकी आर्थिक तरक्की में रुकावट क्या है?</div>
-          <div class="qd">वो ग्रह-स्थितियाँ जो आपके धन को रोक रही हैं, और आगे क्या बदलेगा।</div>
+          <div class="qt">आपकी आर्थिक रुकावटें</div>
+          <div class="qd">वो ग्रह-स्थितियाँ जो आय रोक रही हैं, और कब बदलेंगी।</div>
         </div>
       </div>
-
 
       <div class="ps-also-grid">
         <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> शरीर और ऊर्जा</div>
@@ -576,12 +580,12 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center;margin-top:22px">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">मेरा पूरा जीवन ब्लूप्रिंट अनलॉक करें &mdash; <s>&#8377;1999</s> &#8377;499</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">मेरा पूरा जीवन ब्लूप्रिंट अनलॉक करें &mdash; <s>&#8377;999</s> &#8377;499</button>
         <div class="ps-subnote2">आपकी सटीक जन्म जानकारी से बनाई गई</div>
-        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; ऑफ़र ख़त्म होगा <b class="clk" id="otClock">30:00</b> में &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;499</span></div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; ऑफ़र ख़त्म होगा <b class="clk" id="otClock">30:00</b> में &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
       </div>
 
-      <!-- Social proof -->
+      <!-- Social proof (after CTA) -->
       <div class="ps-proof">
         <div class="ps-proof-h">लोग क्या कह रहे हैं</div>
         <div class="ps-proof-list">
@@ -725,7 +729,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">जीवन ब्लूप्रिंट रिपोर्ट</p>
-    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
 </div>
@@ -947,6 +951,7 @@ function tvBuildKundli(lagna, planets, name, dob, place){
     if(pi.retro) abbr += '(R)';
     var fill = '#3A2C18', fw = '500';
     if(pi.dignity === 'exalted' || pi.dignity === 'own'){ fill = '#2D7A3A'; fw = '600'; }
+    else if(pi.dignity === 'debilitated'){ fill = '#A94442'; fw = '600'; }
     else if(pi.retro){ fill = '#7A6B8A'; }
     byHouse[house].push({abbr:abbr, fill:fill, fw:fw});
   }
@@ -994,10 +999,14 @@ function tvRenderPlanets(planets){
   tbody.innerHTML = TV_PLANET_ORDER.map(function(p){
     var d = planets[p]; if(!d) return '';
     var dig = d.dignity || 'neutral';
-    var digCls = (dig === 'exalted' || dig === 'own') ? ' ps-dig ' + dig : '';
-    var label = TV_DIG_HI[dig] || dig;
-    if(d.retro) label += ' (व)';
-    return '<tr><td class="pn">' + (TV_PLANET_HI[p] || p) + '</td><td>' + (TV_SIGN_HI[d.sign] || d.sign || '') + '</td><td><span class="' + digCls.trim() + '">' + label + '</span></td></tr>';
+    var cls, label, icon;
+    if(dig === 'exalted'){ cls='good'; label='प्रबल'; icon='&#10003;'; }
+    else if(dig === 'own'){ cls='good'; label='अनुकूल'; icon='&#10003;'; }
+    else if(dig === 'debilitated'){ cls='weak'; label='चुनौतीपूर्ण'; icon='&#10007;'; }
+    else if(d.combust){ cls='weak'; label='कमज़ोर'; icon='&#10007;'; }
+    else { cls='avg'; label='सामान्य'; icon='&#9679;'; }
+    if(d.retro) label += ' (वक्री)';
+    return '<tr><td class="pn">' + (TV_PLANET_HI[p] || p) + '</td><td>' + (TV_SIGN_HI[d.sign] || d.sign || '') + '</td><td><span class="ps-dig ' + cls + '">' + icon + ' ' + label + '</span></td></tr>';
   }).join('');
 }
 
@@ -1068,6 +1077,10 @@ function renderTeaser(t){
 
   // Current phase
   document.getElementById('tv-phase').textContent = tvDashaHi(t.current_dasha) || '—';
+
+  // Blurred verdict tease
+  var blurEl = document.getElementById('tv-blur-turning');
+  if(blurEl && t.dasha_till) blurEl.textContent = tvDashaHi(t.current_dasha) + ' ' + t.dasha_till + ' तक';
 
   // Show teaser
   var el = document.getElementById('teaser');
@@ -1218,7 +1231,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹499</span>'; btn.disabled = false; }
+  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false; }
   alert('पेमेंट प्रोसेस हो रहा है — एक मिनट में पेज रीफ़्रेश करें। आपकी रिपोर्ट तैयार हो जाएगी।');
 }
 

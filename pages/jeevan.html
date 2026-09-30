@@ -172,10 +172,10 @@ section{padding:52px 0}
 .ps-planet-tbl td{padding:5px 0;border-bottom:1px dashed rgba(201,163,78,.18);color:var(--pink)}
 .ps-planet-tbl tr:last-child td{border-bottom:0}
 .ps-planet-tbl .pn{font-family:var(--disp);font-weight:600;color:var(--phead)}
-.ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
-.ps-dig.own{color:var(--pgold);background:rgba(201,163,78,.12)}
-.ps-dig.exalted{color:var(--pgreen);background:rgba(62,125,90,.1)}
-.ps-dig.retro{color:#7A6B8A;background:rgba(122,107,138,.1)}
+.ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;display:inline-flex;align-items:center;gap:4px}
+.ps-dig.good{color:var(--pgreen);background:rgba(62,125,90,.1)}
+.ps-dig.avg{color:#B8860B;background:rgba(184,134,11,.1)}
+.ps-dig.weak{color:#A94442;background:rgba(169,68,66,.1)}
 .ps-md-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline);display:flex;justify-content:space-between;align-items:center}
 .ps-md-bar .lb{font-size:12px;color:var(--pmuted)}
 .ps-md-bar .vl{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead)}
@@ -187,6 +187,12 @@ section{padding:52px 0}
 
 /* Standout callout */
 .ps-standout{margin-top:10px;padding:12px 14px;background:#F3EAD8;border:1px dashed var(--pgold);border-radius:12px;font-size:13.5px;color:var(--pink);line-height:1.5;text-align:left}
+/* Verdict tease box */
+.ps-verdictbox{background:var(--tbox, #1C1A16);border-radius:18px;padding:20px 18px;position:relative;overflow:hidden;color:#EFE7D8;margin:12px 0}
+.ps-verdictbox .vb-label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--pgold-lt, #E7CE8F);display:flex;align-items:center;gap:6px}
+.ps-verdictbox .vb-q{font-family:var(--disp);font-weight:500;font-size:20px;color:#fff;margin:6px 0 4px}
+.ps-verdictbox .vb-blur{font-family:var(--disp);font-weight:600;font-size:26px;color:#fff;filter:blur(7px);-webkit-filter:blur(7px);user-select:none;-webkit-user-select:none;pointer-events:none;margin:4px 0 8px}
+.ps-verdictbox .vb-sub{font-size:13px;color:rgba(239,231,216,.82);line-height:1.55;margin:0}
 
 /* Phase row */
 .ps-phase-row{display:flex;align-items:center;gap:14px}
@@ -451,14 +457,6 @@ fbq('track', 'PageView');
       <div class="ps-cv-rule"></div>
       <div class="ps-cv-name" id="tv-cv-name">—</div>
       <div class="ps-cv-dob" id="tv-cv-dob">—</div>
-      <div class="ps-cv-qlabel">This report answers:</div>
-      <ol class="ps-cv-qlist">
-        <li><span class="qn">1</span> Are your best years still ahead of you?</li>
-        <li><span class="qn">2</span> When is your next major turning point?</li>
-        <li><span class="qn">3</span> Are you on the right career path?</li>
-        <li><span class="qn">4</span> How does the future of your relationships look?</li>
-        <li><span class="qn">5</span> What is blocking your financial growth?</li>
-      </ol>
       <div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#lockedQuestions" onclick="document.getElementById('lockedQuestions').scrollIntoView({behavior:'smooth'});return false;">Unlock Answers</a></div>
       <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
@@ -523,44 +521,52 @@ fbq('track', 'PageView');
       </div>
     </div>
 
+    <!-- 6b. Blurred verdict tease -->
+    <div class="ps-verdictbox">
+      <div class="vb-label">&#128301;&nbsp; Your next turning point</div>
+      <div class="vb-q">When does your life shift next?</div>
+      <div class="vb-blur" aria-hidden="true" id="tv-blur-turning">— Mahadasha — 2028</div>
+      <p class="vb-sub">Your chart has a specific date and what changes around it. Unlock to read it.</p>
+    </div>
+
     <!-- 7. Locked questions -->
     <div class="ps-locked" id="lockedQuestions">
-      <div class="ps-locked-heading">Your 5 answers are ready</div>
+      <div class="ps-locked-heading">Your full report includes</div>
       <div class="ps-locked-sub">Computed from your birth chart. Unlock to read them.</div>
 
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Are your best years still ahead of you?</div>
-          <div class="qd">Your next three life phases compared, and which one carries the most weight.</div>
+          <div class="qt">Your best-years timeline</div>
+          <div class="qd">Which of your next three life phases carries the most weight, year by year.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">When is your next major turning point?</div>
-          <div class="qd">The exact year and period, identified from your Mahadasha timeline.</div>
+          <div class="qt">Your next turning point</div>
+          <div class="qd">The exact year and period when things shift, from your Mahadasha timeline.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">Are you on the right career path?</div>
-          <div class="qd">Your chart's career indicators decoded, with what fits and what doesn't.</div>
+          <div class="qt">Your career-path read</div>
+          <div class="qd">What fits and what doesn't, decoded from your 10th house.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">How does the future of your relationships look?</div>
-          <div class="qd">Relationship patterns from your 7th house, Venus and Dasha mapped out.</div>
+          <div class="qt">Your relationship map</div>
+          <div class="qd">Patterns from your 7th house, Venus and Dasha, mapped out.</div>
         </div>
       </div>
       <div class="ps-lq">
         <div class="ps-lq-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
         <div class="ps-lq-text">
-          <div class="qt">What is blocking your financial growth?</div>
-          <div class="qd">The specific planetary positions holding back your wealth, and what shifts next.</div>
+          <div class="qt">Your wealth blockers</div>
+          <div class="qd">The positions holding back income, and when they shift.</div>
         </div>
       </div>
 
@@ -572,12 +578,12 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center;margin-top:22px">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint &mdash; <s>&#8377;1999</s> &#8377;499</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint &mdash; <s>&#8377;999</s> &#8377;499</button>
         <div class="ps-subnote2">Personalised using your exact birth details</div>
-        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Offer ends in <b class="clk" id="otClock">30:00</b> &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;499</span></div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Offer ends in <b class="clk" id="otClock">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
       </div>
 
-      <!-- Social proof -->
+      <!-- Social proof (after CTA) -->
       <div class="ps-proof">
         <div class="ps-proof-h">What others are saying</div>
         <div class="ps-proof-list">
@@ -723,7 +729,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Life Blueprint Report</p>
-    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
 </div>
@@ -911,6 +917,7 @@ function tvBuildKundli(lagna, planets, name, dob, place){
     if(pi.retro) abbr += '(R)';
     var fill = '#3A2C18', fw = '500';
     if(pi.dignity === 'exalted' || pi.dignity === 'own'){ fill = '#2D7A3A'; fw = '600'; }
+    else if(pi.dignity === 'debilitated'){ fill = '#A94442'; fw = '600'; }
     else if(pi.retro){ fill = '#7A6B8A'; }
     byHouse[house].push({abbr:abbr, fill:fill, fw:fw});
   }
@@ -958,10 +965,14 @@ function tvRenderPlanets(planets){
   tbody.innerHTML = TV_PLANET_ORDER.map(function(p){
     var d = planets[p]; if(!d) return '';
     var dig = d.dignity || 'neutral';
-    var digCls = (dig === 'exalted' || dig === 'own') ? ' ps-dig ' + dig : '';
-    var label = dig.charAt(0).toUpperCase() + dig.slice(1);
-    if(d.retro) label += ' (R)';
-    return '<tr><td class="pn">' + p + '</td><td>' + (d.sign || '') + '</td><td><span class="' + digCls.trim() + '">' + label + '</span></td></tr>';
+    var cls, label, icon;
+    if(dig === 'exalted'){ cls='good'; label='Strong'; icon='&#10003;'; }
+    else if(dig === 'own'){ cls='good'; label='Favourable'; icon='&#10003;'; }
+    else if(dig === 'debilitated'){ cls='weak'; label='Challenging'; icon='&#10007;'; }
+    else if(d.combust){ cls='weak'; label='Weakened'; icon='&#10007;'; }
+    else { cls='avg'; label='Neutral'; icon='&#9679;'; }
+    if(d.retro) label += ' (retro)';
+    return '<tr><td class="pn">' + p + '</td><td>' + (d.sign || '') + '</td><td><span class="ps-dig ' + cls + '">' + icon + ' ' + label + '</span></td></tr>';
   }).join('');
 }
 
@@ -1032,6 +1043,10 @@ function renderTeaser(t){
 
   // Current phase
   document.getElementById('tv-phase').textContent = t.current_dasha || '—';
+
+  // Blurred verdict tease
+  var blurEl = document.getElementById('tv-blur-turning');
+  if(blurEl && t.dasha_till) blurEl.textContent = t.current_dasha + ' until ' + t.dasha_till;
 
   // Show teaser
   var el = document.getElementById('teaser');
@@ -1182,7 +1197,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  if(btn){ btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹499</span>'; btn.disabled = false; }
+  if(btn){ btn.innerHTML = 'Pay to unlock <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false; }
   alert('Payment is processing — refresh the page in a minute. Your report will be ready.');
 }
 
