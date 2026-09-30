@@ -40,9 +40,13 @@ test('Date validation blocks an impossible date (31 Feb)', async ({ page }) => {
   await expect(page.locator('#teaser')).toBeHidden();
 });
 
-test('Time: minute is in 5-minute steps and prompts are not selectable', async ({ page }) => {
-  const mins = await page.locator('#f-mm2 option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
-  expect(mins).toEqual(['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']);
+test('Time: minute is a free-text number input (0-59) and AM/PM prompt is not selectable', async ({ page }) => {
+  const mm2 = page.locator('#f-mm2');
+  await expect(mm2).toHaveAttribute('type', 'number');
+  await expect(mm2).toHaveAttribute('min', '0');
+  await expect(mm2).toHaveAttribute('max', '59');
+  await mm2.fill('13');
+  await expect(mm2).toHaveValue('13');
   const apPromptDisabled = await page.locator('#f-ap option').first().evaluate((o) => o.disabled);
   expect(apPromptDisabled).toBe(true);
 });
@@ -93,7 +97,7 @@ test('Happy path: a valid submission renders the free teaser snapshot', async ({
   await page.selectOption('#f-mm', '06');
   await page.fill('#f-yy', '1992');
   await page.selectOption('#f-hh', '10');
-  await page.selectOption('#f-mm2', '30');
+  await page.fill('#f-mm2', '30');
   await page.selectOption('#f-ap', 'AM');
   const place = page.locator('#f-place');
   await place.fill('Jaipur');

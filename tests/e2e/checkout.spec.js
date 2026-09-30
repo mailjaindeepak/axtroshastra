@@ -60,7 +60,7 @@ async function fillValidForm(page) {
   await page.selectOption('#f-mm', '06');
   await page.fill('#f-yy', '1992');
   await page.selectOption('#f-hh', '10');
-  await page.selectOption('#f-mm2', '30');
+  await page.fill('#f-mm2', '30');
   await page.selectOption('#f-ap', 'AM');
   const place = page.locator('#f-place');
   await place.fill('Jaipur');

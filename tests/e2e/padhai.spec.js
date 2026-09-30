@@ -36,7 +36,7 @@ test('Happy path: a valid submission renders the free teaser with vidyarthi prod
   await page.selectOption('#f-mm', '08');
   await page.fill('#f-yy', '2008');
   await page.selectOption('#f-hh', '10');
-  await page.selectOption('#f-mm2', '30');
+  await page.fill('#f-mm2', '30');
   await page.selectOption('#f-ap', 'AM');
   const place = page.locator('#f-place');
   await place.fill('Delhi');
@@ -81,7 +81,7 @@ test('Field is submitted when stage is college', async ({ page }) => {
   await page.selectOption('#f-mm', '08');
   await page.fill('#f-yy', '2003');
   await page.selectOption('#f-hh', '10');
-  await page.selectOption('#f-mm2', '30');
+  await page.fill('#f-mm2', '30');
   await page.selectOption('#f-ap', 'AM');
   const place = page.locator('#f-place');
   await place.fill('Delhi');
