@@ -193,7 +193,7 @@ async function fillMarriage(page) {
   await page.selectOption('#f-mm', '03');
   await page.fill('#f-yy', '1995');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Jaipur');
   await page.locator('#kundliForm button[type="submit"]').click();
@@ -209,7 +209,7 @@ async function fillMarriageV2(page) {
   await page.selectOption('#f-mm', '07');
   await page.fill('#f-yy', '1996');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Delhi');
   await page.fill('#f-whatsapp', testPhone());
@@ -224,7 +224,7 @@ async function fillCompatibility(page) {
     await page.selectOption(`#${p}-mm`, '04');
     await page.fill(`#${p}-yy`, p === 'p1' ? '1994' : '1993');
     await page.selectOption(`#${p}-hh`, TIME.hh);
-    await page.selectOption(`#${p}-mm2`, TIME.mm);
+    await page.fill(`#${p}-mm2`, TIME.mm);
     await page.selectOption(`#${p}-ap`, TIME.ap);
     await pickCity(page, p, 'Jaipur');
   }
@@ -241,7 +241,7 @@ async function fillCareer(page) {
   await page.selectOption('#f-mm', '11');
   await page.fill('#f-yy', '2008');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Mumbai');
   await page.locator('#kundliForm button[type="submit"]').click();
@@ -256,7 +256,7 @@ async function fillVyapar(page) {
   await page.selectOption('#f-mm', '10');
   await page.fill('#f-yy', '1987');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Jaipur');
   await page.fill('#f-whatsapp', testPhone());
@@ -276,7 +276,7 @@ async function fillCareerGrowth(page) {
   await page.selectOption('#f-mm', '06');
   await page.fill('#f-yy', '1996');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Bengaluru');
   await page.locator('#kundliForm button[type="submit"]').click();
@@ -293,7 +293,7 @@ async function fillBlueprint(page) {
   await page.selectOption('#f-mm', '09');
   await page.fill('#f-yy', '1992');
   await page.selectOption('#f-hh', TIME.hh);
-  await page.selectOption('#f-mm2', TIME.mm);
+  await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Pune');
   await page.locator('#kundliForm button[type="submit"]').click();
