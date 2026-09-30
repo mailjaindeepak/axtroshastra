@@ -419,9 +419,10 @@ DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
-CAREER_INTEL_PRICE_PAISE = 24900          # ₹249 — Career Intelligence report
+CAREER_INTEL_PRICE_PAISE = 25900          # ₹259 — Career Intelligence report
 CAREER_INTEL_V2_PRICE_PAISE = 49900       # ₹499 — Career Intelligence v2
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
+MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
@@ -441,6 +442,8 @@ def _order_amount_paise(rec: dict) -> int:
         return MILAN_PRICE_PAISE
     if variant in _LIFE_BLUEPRINT_VARIANTS:
         return LIFE_BLUEPRINT_PRICE_PAISE
+    if variant in ("/en/marriage-v4", "/hi/marriage-v4"):
+        return MARRIAGE_V4_PRICE_PAISE
     return PRICE_PAISE
 
 
@@ -3059,6 +3062,13 @@ def marriage_v3_en():
 def marriage_v3_hi():
     """Hindi (Devanagari) counterpart of /en/marriage-v3."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v3.hi.html"), lang="hi")
+
+
+@app.get("/en/marriage-v4", include_in_schema=False)
+def marriage_v4_en():
+    """English marriage-timing landing — ₹199 price variant (v4) at
+    /en/marriage-v4. Same funnel as /en/marriage-v2, lower price point."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "marriage-v4.html"))
 
 
 @app.get("/en/career-growth", include_in_schema=False)
