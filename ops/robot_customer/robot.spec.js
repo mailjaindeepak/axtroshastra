@@ -283,7 +283,7 @@ async function fillCareerGrowth(page) {
 }
 
 // Life Blueprint: single person, #kundliForm, split dd/mm/yy DOB fields
-// (same shape as career-growth). WhatsApp collected in-form.
+// (same shape as career-growth). EN has WhatsApp in-form; HI still uses popup.
 async function fillBlueprint(page) {
   await page.fill('#f-name', 'Test Ananya');
   await page.selectOption('#f-gender', 'female');
@@ -294,7 +294,7 @@ async function fillBlueprint(page) {
   await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Pune');
-  await page.fill('#f-whatsapp', testPhone());
+  if (await page.locator('#f-whatsapp').count()) await page.fill('#f-whatsapp', testPhone());
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
