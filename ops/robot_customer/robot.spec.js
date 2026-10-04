@@ -283,9 +283,7 @@ async function fillCareerGrowth(page) {
 }
 
 // Life Blueprint: single person, #kundliForm, split dd/mm/yy DOB fields
-// (same shape as career-growth) and an "approximate time" fallback we don't
-// exercise here since we always provide an exact known time. WhatsApp is
-// collected later via the unlock-time contact modal, same as compatibility.
+// (same shape as career-growth). WhatsApp collected in-form.
 async function fillBlueprint(page) {
   await page.fill('#f-name', 'Test Ananya');
   await page.selectOption('#f-gender', 'female');
@@ -296,6 +294,7 @@ async function fillBlueprint(page) {
   await page.fill('#f-mm2', TIME.mm);
   await page.selectOption('#f-ap', TIME.ap);
   await pickCity(page, 'f', 'Pune');
+  await page.fill('#f-whatsapp', testPhone());
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
