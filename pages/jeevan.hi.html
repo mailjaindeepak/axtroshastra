@@ -80,6 +80,9 @@ section{padding:52px 0}
 .tob-toggle input{width:18px;height:18px;margin-top:2px;accent-color:var(--sindoor);flex:none}
 .tob-toggle b{font-weight:700}
 .tob-toggle .spec{color:var(--sindoor);font-weight:600}
+.wa-wrap{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+.wa-wrap span{padding-left:12px;color:var(--ink);font-weight:600;font-size:15px}
+.wa-wrap input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:13px 12px;font-size:16px;color:var(--ink);font-family:var(--body)}
 
 /* ---------- TRUST STRIP ---------- */
 .trust{background:var(--midnight);padding:0 0 26px}
@@ -421,8 +424,13 @@ fbq('track', 'PageView');
         <label for="f-place">जन्म स्थान</label>
         <input id="f-place" type="text" placeholder="शहर, राज्य" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
+      <div class="field">
+        <label for="f-whatsapp">WhatsApp नंबर</label>
+        <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
+        <div style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">रिपोर्ट PDF इसी नंबर पर भेजी जाएगी — सही WhatsApp नंबर डालें।</div>
+      </div>
       <button class="btn" type="submit">मेरी कुंडली देखें — मुफ़्त</button>
-      <p class="btn-note">पहले मुफ़्त झलक। पूरी रिपोर्ट ₹499 — जवाब चाहिए तभी पेमेंट करें।</p>
+      <p class="btn-note">मुफ़्त · कार्ड नहीं चाहिए · 2 मिनट लगेंगे</p>
     </form>
   </div>
 </header>
@@ -576,9 +584,9 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center;margin-top:22px">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">मेरा पूरा जीवन ब्लूप्रिंट अनलॉक करें &mdash; <s>&#8377;1999</s> &#8377;499</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">मेरा पूरा जीवन ब्लूप्रिंट अनलॉक करें &mdash; <s>&#8377;999</s> &#8377;499</button>
         <div class="ps-subnote2">आपकी सटीक जन्म जानकारी से बनाई गई</div>
-        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; ऑफ़र ख़त्म होगा <b class="clk" id="otClock">30:00</b> में &mdash; <s>&#8377;1999</s> <span class="amt">&#8377;499</span></div>
+        <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; ऑफ़र ख़त्म होगा <b class="clk" id="otClock">30:00</b> में &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
       </div>
 
       <!-- Social proof -->
@@ -725,7 +733,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">जीवन ब्लूप्रिंट रिपोर्ट</p>
-    <p class="l2"><s style="color:#B0B2C0">₹1999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
+    <p class="l2" id="stickyPricing" hidden><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
 </div>
@@ -831,6 +839,8 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   if(!dob){ alert('कृपया अपनी पूरी जन्म तारीख़ चुनें।'); return; }
   if(dob === 'invalid'){ alert('यह तारीख़ मौजूद नहीं है — कृपया दोबारा जाँचें।'); return; }
   if(!document.getElementById('f-gender').value){ alert('कृपया चुनें कि आप पुरुष हैं या महिला।'); return; }
+  var waPhone = axNormPhone(document.getElementById('f-whatsapp').value);
+  if(!waPhone){ alert('कृपया सही 10 अंकों का WhatsApp नंबर डालें।'); document.getElementById('f-whatsapp').focus(); return; }
   var btn = this.querySelector('.btn');
   btn.textContent = 'आपकी कुंडली पढ़ी जा रही है…'; btn.disabled = true;
   showAnalyzing();
@@ -844,12 +854,15 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
+        phone: waPhone,
         product: 'blueprint',
         variant: location.pathname
       })});
     if(!res.ok){ throw new Error((await res.json()).detail || 'कुछ गड़बड़ हो गई'); }
     var data = await res.json();
     REPORT_ID = data.report_id;
+    AX_CONTACT = {phone: waPhone, email: null};
+    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
     renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
@@ -1073,14 +1086,11 @@ function renderTeaser(t){
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
+  var sp = document.getElementById('stickyPricing'); if(sp) sp.hidden = false;
   var sb = document.getElementById('stickyBtn');
   sb.textContent = 'अनलॉक ₹499'; sb.setAttribute('href', '#teaser');
 }
 
-// --- Pre-payment contact capture (T1): WhatsApp number (required) + email (optional).
-// Kept in sessionStorage under 'axtro_contact' (separate from any form-state keys)
-// and sent with /api/order, so the account + WhatsApp delivery use the number the
-// buyer actually types here even if they pay from a different number.
 var AX_CONTACT = null;
 try{ AX_CONTACT = JSON.parse(sessionStorage.getItem('axtro_contact') || 'null'); }catch(e){}
 if(AX_CONTACT && !AX_CONTACT.phone){ AX_CONTACT = null; }
@@ -1090,86 +1100,14 @@ function axNormPhone(v){
   if(d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
   return (d.length === 10 && '6789'.indexOf(d.charAt(0)) >= 0) ? ('+91' + d) : null;
 }
-function axContactModal(onDone){
-  var old = document.getElementById('axContactModal');
-  if(old && old.parentNode) old.parentNode.removeChild(old);
-  var wrap = document.createElement('div');
-  wrap.id = 'axContactModal';
-  wrap.innerHTML = [
-    '<style>',
-    '@media print{#axContactModal{display:none!important}}',
-    '#axContactModal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;font-family:inherit}',
-    '#axContactModal .axc-bg{position:absolute;inset:0;background:rgba(10,12,24,.58)}',
-    '#axContactModal .axc-card{position:relative;width:100%;max-width:392px;background:#FAF6ED;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:22px 20px 20px;color:#151C39}',
-    '#axContactModal .axc-x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:24px;color:#8a7d72;cursor:pointer;line-height:1;padding:4px}',
-    '#axContactModal h3{margin:0 26px 4px 0;font-size:19px;font-weight:800;color:#151C39}',
-    '#axContactModal .axc-sub{font-size:13px;color:#5c554a;margin:0 0 12px}',
-    '#axContactModal label{display:block;font-size:12.5px;font-weight:700;color:#151C39;margin:12px 0 5px}',
-    '#axContactModal .axc-in{display:flex;align-items:center;background:#fff;border:1.5px solid #d9d0bf;border-radius:11px}',
-    '#axContactModal .axc-in:focus-within{border-color:#E4B04A}',
-    '#axContactModal .axc-in span{padding-left:12px;color:#5c554a;font-size:15px;font-weight:600}',
-    '#axContactModal .axc-in input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px;font-size:16px;color:#151C39;font-family:inherit}',
-    '#axContactModal .axc-note{font-size:12px;color:#7a5417;background:rgba(228,176,74,.16);border:1px solid rgba(228,176,74,.5);border-radius:9px;padding:8px 10px;margin-top:7px;line-height:1.45}',
-    '#axContactModal .axc-err{display:none;font-size:12.5px;color:#C93B2E;font-weight:700;margin-top:9px}',
-    '#axContactModal .axc-go{width:100%;margin-top:15px;border:0;border-radius:12px;background:#C93B2E;color:#fff;font-size:16.5px;font-weight:800;padding:14px;cursor:pointer;font-family:inherit}',
-    '</style>',
-    '<div class="axc-bg"></div>',
-    '<div class="axc-card" role="dialog" aria-modal="true" aria-label="आपकी संपर्क जानकारी">',
-    '<button type="button" class="axc-x" aria-label="बंद करें">&times;</button>',
-    '<h3>आपकी रिपोर्ट कहाँ भेजें?</h3>',
-    '<p class="axc-sub">बस 5 सेकंड — फिर सीधे पेमेंट पर जाएँ।</p>',
-    '<label for="axcPhone">मोबाइल नंबर (WhatsApp वाला)</label>',
-    '<div class="axc-in"><span>+91</span><input id="axcPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210"></div>',
-    '<div class="axc-note">आपकी रिपोर्ट, OTP और अकाउंट इसी नंबर पर बनेंगे — यह आपका WhatsApp नंबर ज़रूर हो।</div>',
-    '<label for="axcEmail">ईमेल (वैकल्पिक) — PDF कॉपी के लिए</label>',
-    '<div class="axc-in"><input id="axcEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>',
-    '<div class="axc-err" id="axcErr"></div>',
-    '<button type="button" class="axc-go">पेमेंट की ओर बढ़ें →</button>',
-    '</div>'
-  ].join('');
-  document.body.appendChild(wrap);
-  var phone = wrap.querySelector('#axcPhone'), email = wrap.querySelector('#axcEmail'), err = wrap.querySelector('#axcErr');
-  if(AX_CONTACT){ phone.value = (AX_CONTACT.phone || '').replace('+91', ''); email.value = AX_CONTACT.email || ''; }
-  var prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
-  function close(){
-    document.body.style.overflow = prevOverflow;
-    document.removeEventListener('keydown', onEsc);
-    if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
-  }
-  function onEsc(e){ if(e.key === 'Escape') close(); }
-  document.addEventListener('keydown', onEsc);
-  wrap.querySelector('.axc-bg').addEventListener('click', close);
-  wrap.querySelector('.axc-x').addEventListener('click', close);
-  function fail(msg, el){ err.textContent = msg; err.style.display = 'block'; try{ el.focus(); }catch(e){} }
-  wrap.querySelector('.axc-go').addEventListener('click', function(){
-    var p = axNormPhone(phone.value);
-    if(!p){ fail('कृपया सही 10-अंकों का मोबाइल नंबर डालें।', phone); return; }
-    var em = (email.value || '').trim();
-    if(em && !/^\S+@\S+\.\S+$/.test(em)){ fail('यह ईमेल सही नहीं लग रहा — ठीक करें या खाली छोड़ दें।', email); return; }
-    AX_CONTACT = {phone: p, email: em};
-    try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
-    close();
-    onDone();
-  });
-  setTimeout(function(){ try{ phone.focus(); }catch(e){} }, 60);
-}
 
 function _getCookie(name){
   var m = document.cookie.match('(?:^|; )'+name+'=([^;]*)');
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-// अनलॉक -> POST /api/order -> Razorpay चेकआउट -> पोल -> रिपोर्ट पेज
 async function startPayment(){
-  if(!REPORT_ID){ document.getElementById('kundliForm').scrollIntoView(); return; }
-  // Always confirm the delivery number for THIS unlock — never silently reuse a
-  // previously-saved number. The modal pre-fills any last-entered value only for convenience.
-  if(!window.__axContactConfirmed){
-    axContactModal(function(){ window.__axContactConfirmed = true; startPayment(); });
-    return;
-  }
-  window.__axContactConfirmed = false;   // reset so the next unlock click re-asks
+  if(!REPORT_ID || !AX_CONTACT){ document.getElementById('kundliForm').scrollIntoView(); return; }
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
@@ -1218,7 +1156,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹1999</s> ₹499</span>'; btn.disabled = false; }
+  if(btn){ btn.innerHTML = 'पेमेंट करके अनलॉक करें <span style="opacity:.7;font-weight:600">&mdash; <s>₹999</s> ₹499</span>'; btn.disabled = false; }
   alert('पेमेंट प्रोसेस हो रहा है — एक मिनट में पेज रीफ़्रेश करें। आपकी रिपोर्ट तैयार हो जाएगी।');
 }
 
