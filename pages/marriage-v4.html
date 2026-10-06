@@ -981,16 +981,12 @@ function personalizePreviewClone(t){
     pastPeriods.innerHTML = ph;
   }
 
-  // Marriage windows — no grade shown
+  // Marriage windows — show only the first window in the teaser
   var wl = document.getElementById('pc-windows-list');
   if(wl && t.windows && t.windows.length){
-    var wh = '';
-    for(var wi=0;wi<t.windows.length;wi++){
-      var w = t.windows[wi];
-      var yr = w.start_year === w.end_year ? w.start_year : w.start_year + '–' + w.end_year;
-      wh += '<div class="ps-window-row"><span class="ps-window-year">' + _esc(yr) + '</span><span class="ps-window-months">Exact months locked</span></div>';
-    }
-    wl.innerHTML = wh;
+    var w = t.windows[0];
+    var yr = w.start_year === w.end_year ? w.start_year : w.start_year + '–' + w.end_year;
+    wl.innerHTML = '<div class="ps-window-row"><span class="ps-window-year">' + _esc(yr) + '</span><span class="ps-window-months">Exact months locked</span></div>';
   }
 
   // Partner personality
