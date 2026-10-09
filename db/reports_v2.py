@@ -88,15 +88,16 @@ def user_phone(conn, user_id: str) -> str:
 
 
 def store_attribution(conn, rid: str, *, fbc=None, fbp=None, ua=None, ip=None,
-                      li_fat_id=None) -> None:
+                      li_fat_id=None, twclid=None) -> None:
     """Persist ad-click attribution + request context INTO the report body (report_data
     .meta), so the server-side CAPI purchase can forward them. v2 has no dedicated
     columns for these — they live in the JSON body exactly as v1's meta._fbc/_fbp/
-    _ua/_ip/_li_fat_id did. Read-modify-write; only non-empty values are set. Caller
-    commits."""
+    _ua/_ip/_li_fat_id/_twclid did. Read-modify-write; only non-empty values are set.
+    Caller commits."""
     vals = {"_fbc": (fbc or "").strip(), "_fbp": (fbp or "").strip(),
             "_ua": (ua or "").strip(), "_ip": (ip or "").strip(),
-            "_li_fat_id": (li_fat_id or "").strip()}
+            "_li_fat_id": (li_fat_id or "").strip(),
+            "_twclid": (twclid or "").strip()}
     vals = {k: v for k, v in vals.items() if v}
     if not vals:
         return

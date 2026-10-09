@@ -74,6 +74,9 @@ LINKEDIN_CONV_PURCHASE_CAPI = os.getenv("LINKEDIN_CONV_PURCHASE_CAPI", "")
 LINKEDIN_API_VERSION = os.getenv("LINKEDIN_API_VERSION", "202608")
 OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU")
 OAIQ_CAPI_TOKEN = os.getenv("OAIQ_CAPI_TOKEN", "")
+X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2")
+X_PIXEL_TOKEN = os.getenv("X_PIXEL_TOKEN", "")
+X_EVENT_PURCHASE = os.getenv("X_EVENT_PURCHASE", "tw-rf9y2-rgqob")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://www.axtroshastra.com").rstrip("/")
 
 _TIMEOUT = 5   # seconds; a slow ad-network call must never hold a request
@@ -83,7 +86,7 @@ def enabled() -> bool:
     """True if at least one destination is configured. Cheap gate so callers
     (and tests) can skip work entirely when the feature is dormant."""
     return bool(META_CAPI_TOKEN or GA4_API_SECRET or LINKEDIN_CAPI_TOKEN
-                or OAIQ_CAPI_TOKEN)
+                or OAIQ_CAPI_TOKEN or X_PIXEL_TOKEN)
 
 
 def _sha256(value: str):
@@ -283,11 +286,58 @@ def _oaiq_purchase(rid):
         logger.error("[oaiq-capi] purchase failed for %s: %s", rid, e)
 
 
+def _x_purchase(rid, phone=None, email=None, twclid=None,
+                client_user_agent=None, client_ip_address=None):
+    """Stream a Purchase to X's Conversion API.
+    Server-side backstop for the browser twq('event','tw-rf9y2-rgqob') fire.
+    Dedup: conversion_id = report id, same value the browser pixel sends.
+    Dormant until X_PIXEL_TOKEN is set."""
+    if not (X_PIXEL_TOKEN and X_PIXEL_ID and X_EVENT_PURCHASE):
+        return
+    identifiers = {}
+    if twclid:
+        identifiers["twclid"] = twclid
+    em = _sha256(email)
+    if em:
+        identifiers["hashed_email"] = em
+    ph = _norm_phone(phone)
+    if ph:
+        identifiers["hashed_phone_number"] = hashlib.sha256(
+            ("+%s" % ph).encode()).hexdigest()
+    if client_ip_address:
+        identifiers["ip_address"] = client_ip_address
+    if client_user_agent:
+        identifiers["user_agent"] = client_user_agent
+    if not identifiers:
+        logger.warning("[x-capi] purchase %s skipped — no identifiers", rid)
+        return
+    payload = {
+        "conversions": [{
+            "conversion_time": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()),
+            "event_id": X_EVENT_PURCHASE,
+            "event_source_url": f"{PUBLIC_BASE_URL}/report/{rid}",
+            "conversion_id": rid,
+            "identifiers": [identifiers],
+        }],
+    }
+    url = f"https://ads-api.x.com/12/measurement/conversions/{X_PIXEL_ID}"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Pixel-Token": X_PIXEL_TOKEN,
+    }
+    try:
+        status, body = _post_json(url, payload, headers)
+        if status >= 300:
+            logger.error("[x-capi] purchase %s -> %s %s", rid, status, body[:300])
+    except Exception as e:
+        logger.error("[x-capi] purchase failed for %s: %s", rid, e)
+
+
 def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
                    ga_client_id=None, fbc=None, fbp=None,
                    client_user_agent=None, client_ip_address=None,
-                   li_fat_id=None):
-    """Fire a Purchase to Meta CAPI + GA4 MP + LinkedIn CAPI + OpenAI CAPI.
+                   li_fat_id=None, twclid=None):
+    """Fire a Purchase to Meta CAPI + GA4 MP + LinkedIn CAPI + OpenAI CAPI + X CAPI.
     No-op unless a secret is set. Never raises — safe to hand to a payment
     background task. Do NOT call for free-pass unlocks (no real revenue; the
     browser skips them too).
@@ -306,6 +356,9 @@ def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
                                    li_fat_id=li_fat_id,
                                    client_ip_address=client_ip_address),
         lambda: _oaiq_purchase(rid),
+        lambda: _x_purchase(rid, phone, email, twclid=twclid,
+                            client_user_agent=client_user_agent,
+                            client_ip_address=client_ip_address),
     ):
         try:
             fire()

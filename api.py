@@ -66,6 +66,9 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
 OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
 
+# ---- X (Twitter) pixel -----------------------------------------------------
+X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
+
 # ---- Meta Pixel, split by domain -------------------------------------------
 # axtroshastra.com and axtroshastra.in serve the same app off one CloudFront
 # distribution, but each domain gets its own Meta Pixel so the .in dataset
@@ -421,6 +424,7 @@ PRICE_PAISE = 49900                       # ₹499 — server-side only, never t
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
 CAREER_INTEL_PRICE_PAISE = 25900          # ₹259 — Career Intelligence report
 CAREER_INTEL_V2_PRICE_PAISE = 49900       # ₹499 — Career Intelligence v2
+VYAPAR_PRICE_PAISE = 19900                # ₹199 — Business Growth (vyapar)
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
@@ -437,6 +441,8 @@ def _order_amount_paise(rec: dict) -> int:
         return CAREER_INTEL_V2_PRICE_PAISE
     if product == "career_intelligence":
         return CAREER_INTEL_PRICE_PAISE
+    if product == "vyapar":
+        return VYAPAR_PRICE_PAISE
     variant = (payload.get("meta") or {}).get("variant") or ""
     if variant in _MILAN_VARIANTS:
         return MILAN_PRICE_PAISE
@@ -1003,14 +1009,92 @@ def _inject_oaiq(html: str) -> str:
         return html
 
 
+def _inject_x_pixel(html: str) -> str:
+    """Add the X (Twitter) pixel + funnel bridge + twclid capture. Idempotent:
+    skips any page already loading the X UWT SDK. Set X_PIXEL_ID="" to disable.
+
+    The funnel bridge wraps window.fbq (same pattern as the LinkedIn bridge) so
+    every page that already fires Lead / InitiateCheckout / Purchase through Meta
+    automatically fires the matching X conversion — zero per-page edits needed.
+    Purchase also fires server-side via tracking._x_purchase (the reliable path);
+    conversion_id = report id dedups the browser + server fires."""
+    if not X_PIXEL_ID:
+        return html
+    try:
+        if not html or "ads-twitter.com/uwt.js" in html:
+            return html
+        x_conv = json.dumps({
+            "Lead": "tw-%s-rgqp0" % X_PIXEL_ID,
+            "InitiateCheckout": "tw-%s-rgqow" % X_PIXEL_ID,
+            "Purchase": "tw-%s-rgqob" % X_PIXEL_ID,
+        })
+        snippet = (
+            '<!-- X conversion tracking (injected server-side) -->\n'
+            '<script>\n'
+            '!function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);\n'
+            '},s.version=\'1.1\',s.queue=[],u=t.createElement(n),u.async=!0,u.src=\'https://static.ads-twitter.com/uwt.js\',\n'
+            'a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,\'script\');\n'
+            'twq(\'config\',\'' + X_PIXEL_ID + '\');\n'
+            '(function(){\n'
+            '  var CONV = ' + x_conv + ';\n'
+            '  function xfire(evId, cid){\n'
+            '    if(!evId || !window.twq) return;\n'
+            '    var p = {};\n'
+            '    if(cid) p.conversion_id = String(cid);\n'
+            '    try{ twq(\'event\', evId, p); }catch(e){}\n'
+            '  }\n'
+            '  function bridge(){\n'
+            '    var orig = window.fbq;\n'
+            '    if(typeof orig !== \'function\' || orig.__axTw) return;\n'
+            '    var wrapped = function(){\n'
+            '      try{\n'
+            '        if(arguments[0] === \'track\'){\n'
+            '          var id = CONV[arguments[1]];\n'
+            '          if(id) xfire(id, arguments[3] && arguments[3].eventID);\n'
+            '        }\n'
+            '      }catch(e){}\n'
+            '      return orig.apply(this, arguments);\n'
+            '    };\n'
+            '    for(var k in orig){ try{ wrapped[k] = orig[k]; }catch(e){} }\n'
+            '    wrapped.__axLi = orig.__axLi;\n'
+            '    wrapped.__axTw = 1;\n'
+            '    window.fbq = wrapped;\n'
+            '  }\n'
+            '  bridge();\n'
+            '  document.addEventListener(\'DOMContentLoaded\', bridge);\n'
+            '  window.addEventListener(\'load\', bridge);\n'
+            '  try{\n'
+            '    var m = location.search.match(/[?&]twclid=([^&#]+)/);\n'
+            '    if(m && m[1]) document.cookie = \'ax_twclid=\' + m[1] +\n'
+            '      \';path=/;max-age=7776000;SameSite=Lax\' +\n'
+            '      (location.protocol === \'https:\' ? \';Secure\' : \'\');\n'
+            '  }catch(e){}\n'
+            '})();\n'
+            '</script>\n'
+        )
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: snippet + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + snippet,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[x-pixel] injection failed: %s", e)
+        return html
+
+
 def _inject_tracking(html: str) -> str:
     """All analytics for a served page: GA4 + Meta + Clarity, then OAIQ, then
-    LinkedIn, then our first-party beacon.
+    X pixel, then LinkedIn, then our first-party beacon.
 
-    Order matters - LinkedIn goes in after the Meta block so its funnel bridge is
-    parsed after window.fbq exists; the beacon goes in LAST (outermost) so it wraps
-    the gtag defined by _inject_ga_meta_clarity (or hardcoded in the page)."""
-    return _inject_beacon(_inject_linkedin(_inject_oaiq(_inject_ga_meta_clarity(html))))
+    Order matters — LinkedIn goes in after the Meta block so its funnel bridge is
+    parsed after window.fbq exists; X goes after OAIQ and before LinkedIn so the
+    LinkedIn bridge (which also wraps fbq) sees the X-wrapped fbq and preserves
+    the __axTw flag; the beacon goes in LAST (outermost) so it wraps the gtag
+    defined by _inject_ga_meta_clarity (or hardcoded in the page)."""
+    return _inject_beacon(_inject_linkedin(_inject_x_pixel(_inject_oaiq(_inject_ga_meta_clarity(html)))))
 
 
 _FOOTER_DISCLAIMER_EN = (
@@ -1612,7 +1696,7 @@ def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = ""
          (wa_phone or pay_phone), (pay_email or form_email or ""),
          fbc=meta.get("_fbc"), fbp=meta.get("_fbp"),
          client_user_agent=meta.get("_ua"), client_ip_address=meta.get("_ip"),
-         li_fat_id=meta.get("_li_fat_id"))
+         li_fat_id=meta.get("_li_fat_id"), twclid=meta.get("_twclid"))
 
 
 @app.post("/api/order")
@@ -1633,16 +1717,18 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
                 user_phone = reports_v2.attach_user(conn, rid, body.phone, body.email) or user_phone
             except Exception as e:
                 logger.error("[contact] persist failed for %s: %s", rid, e)
-        # Ad attribution (Meta fbc/fbp + LinkedIn li_fat_id + UA/IP) into the report
-        # body so the server-side CAPI Purchase can attribute the click. li_fat_id
-        # comes from a cookie so it works on every funnel page with no checkout edits.
+        # Ad attribution (Meta fbc/fbp + LinkedIn li_fat_id + X twclid + UA/IP)
+        # into the report body so the server-side CAPI Purchase can attribute the
+        # click. li_fat_id and twclid come from cookies so they work on every
+        # funnel page with no checkout edits.
         try:
             reports_v2.store_attribution(
                 conn, rid, fbc=body.fbc, fbp=body.fbp,
                 ua=request.headers.get("user-agent", ""),
                 ip=(request.headers.get("x-forwarded-for", "").split(",")[0].strip()
                     or (request.client.host if request.client else "")),
-                li_fat_id=request.cookies.get("ax_li_fat", ""))
+                li_fat_id=request.cookies.get("ax_li_fat", ""),
+                twclid=request.cookies.get("ax_twclid", ""))
         except Exception as e:
             logger.error("[attribution] persist failed for %s: %s", rid, e)
         conn.commit()   # contact + attribution persist even on retries/free passes
