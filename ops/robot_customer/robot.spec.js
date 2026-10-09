@@ -508,8 +508,10 @@ test.describe('B3 — SEO checks', () => {
       // attribute entirely is the SEO failure we flag.
       const missingAlt = await page.evaluate(() => {
         const imgs = Array.from(document.querySelectorAll('img'));
+        const isTrackingPixel = (src) =>
+          /t\.co\/|analytics\.twitter\.com\/|facebook\.net\/|facebook\.com\/tr|clarity\.ms\//.test(src || '');
         return imgs
-          .filter((img) => !img.hasAttribute('alt'))
+          .filter((img) => !img.hasAttribute('alt') && !isTrackingPixel(img.src))
           .map((img) => img.src || img.outerHTML.slice(0, 120));
       });
       expect(
