@@ -476,7 +476,7 @@ test.describe('B3 — SEO checks', () => {
   for (const pg of ALL_PAGES) {
     test(`${pg.label} (${pg.path}): SEO tags present`, async ({ page, request }) => {
       await skipIfPendingDeploy(pg.path, request);
-      await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
+      await page.goto(pg.path, { waitUntil: 'load' });
 
       // <title> exists and is non-empty.
       const title = await page.evaluate(() => {
