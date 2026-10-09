@@ -79,7 +79,8 @@ def test_every_funnel_step_is_wired(monkeypatch):
     """The four steps the ads funnel reports on."""
     _configure(monkeypatch)
     out = api._inject_tracking(FUNNEL_PAGE)
-    conv = json.loads(out.split("var CONV = ")[1].split(";")[0])
+    li_section = out.split("<!--AXLI-START-->")[1].split("<!--AXLI-END-->")[0]
+    conv = json.loads(li_section.split("var CONV = ")[1].split(";")[0])
     assert conv == {"Lead": "2222222",              # form filled
                     "InitiateCheckout": "3333333",  # checkout opened
                     "Purchase": "4444444"}          # paid
