@@ -66,6 +66,10 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
 OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
 
+# ---- Google Ads conversion --------------------------------------------------
+GADS_CONVERSION_SEND_TO = os.getenv(
+    "GADS_CONVERSION_SEND_TO", "AW-18380046629/o7NbCJali5cdEKWCpbxE").strip()
+
 # ---- X (Twitter) pixel -----------------------------------------------------
 X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
 
@@ -707,6 +711,7 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-NKRQM1HJ97');
+gtag('config', 'AW-18380046629');
 </script>
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -1085,16 +1090,58 @@ def _inject_x_pixel(html: str) -> str:
         return html
 
 
-def _inject_tracking(html: str) -> str:
-    """All analytics for a served page: GA4 + Meta + Clarity, then OAIQ, then
-    X pixel, then LinkedIn, then our first-party beacon.
+def _inject_gads_conversion(html: str) -> str:
+    """Wrap window.gtag so the existing purchase events also fire a Google Ads
+    conversion. Dormant when GADS_CONVERSION_SEND_TO is empty."""
+    if not GADS_CONVERSION_SEND_TO or "/__axGa" in html:
+        return html
+    snippet = (
+        '<!-- Google Ads conversion bridge (injected server-side) -->\n'
+        '<script>\n'
+        '(function(){\n'
+        '  var ST="' + GADS_CONVERSION_SEND_TO + '";\n'
+        '  function bridge(){\n'
+        '    var orig=window.gtag;\n'
+        '    if(typeof orig!=="function"||orig.__axGa) return;\n'
+        '    var w=function(){\n'
+        '      try{\n'
+        '        if(arguments[0]==="event"&&arguments[1]==="purchase"&&arguments[2]){\n'
+        '          orig("event","conversion",{send_to:ST,\n'
+        '            value:arguments[2].value,currency:arguments[2].currency||"INR",\n'
+        '            transaction_id:arguments[2].transaction_id||""});\n'
+        '        }\n'
+        '      }catch(e){}\n'
+        '      return orig.apply(this,arguments);\n'
+        '    };\n'
+        '    w.__axGa=1;\n'
+        '    window.gtag=w;\n'
+        '  }\n'
+        '  bridge();\n'
+        '  document.addEventListener("DOMContentLoaded",bridge);\n'
+        '})();\n'
+        '</script>\n'
+    )
+    try:
+        new_html, n = re.subn(r"(</head>)", snippet + r"\1",
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[gads] injection failed: %s", e)
+        return html
 
-    Order matters — LinkedIn goes in after the Meta block so its funnel bridge is
-    parsed after window.fbq exists; X goes after OAIQ and before LinkedIn so the
-    LinkedIn bridge (which also wraps fbq) sees the X-wrapped fbq and preserves
-    the __axTw flag; the beacon goes in LAST (outermost) so it wraps the gtag
-    defined by _inject_ga_meta_clarity (or hardcoded in the page)."""
-    return _inject_beacon(_inject_linkedin(_inject_x_pixel(_inject_oaiq(_inject_ga_meta_clarity(html)))))
+
+def _inject_tracking(html: str) -> str:
+    """All analytics for a served page: GA4 + Meta + Clarity, then Google Ads
+    conversion bridge, then OAIQ, then X pixel, then LinkedIn, then our
+    first-party beacon.
+
+    Order matters — the Google Ads bridge wraps gtag (must exist first); LinkedIn
+    goes in after the Meta block so its funnel bridge is parsed after window.fbq
+    exists; X goes after OAIQ and before LinkedIn so the LinkedIn bridge (which
+    also wraps fbq) sees the X-wrapped fbq and preserves the __axTw flag; the
+    beacon goes in LAST (outermost) so it wraps the gtag defined by
+    _inject_ga_meta_clarity (or hardcoded in the page)."""
+    return _inject_beacon(_inject_linkedin(_inject_x_pixel(_inject_oaiq(_inject_gads_conversion(_inject_ga_meta_clarity(html))))))
 
 
 _FOOTER_DISCLAIMER_EN = (
