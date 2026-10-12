@@ -68,7 +68,7 @@ OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
 
 # ---- Google Ads conversion --------------------------------------------------
 GADS_CONVERSION_SEND_TO = os.getenv(
-    "GADS_CONVERSION_SEND_TO", "AW-18380046629/o7NbCJali5cdEKWCpbxE").strip()
+    "GADS_CONVERSION_SEND_TO", "AW-7833047702/o7NbCJali5cdEKWCpbxE").strip()
 
 # ---- X (Twitter) pixel -----------------------------------------------------
 X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
@@ -711,7 +711,7 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-NKRQM1HJ97');
-gtag('config', 'AW-18380046629');
+gtag('config', 'AW-7833047702');
 </script>
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
