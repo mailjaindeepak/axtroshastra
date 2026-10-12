@@ -68,7 +68,11 @@ OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU").strip()
 
 # ---- Google Ads conversion --------------------------------------------------
 GADS_CONVERSION_SEND_TO = os.getenv(
-    "GADS_CONVERSION_SEND_TO", "AW-7833047702/o7NbCJali5cdEKWCpbxE").strip()
+    "GADS_CONVERSION_SEND_TO", "AW-18380046629/o7NbCJali5cdEKWCpbxE").strip()
+GADS_LEAD_SEND_TO = os.getenv(
+    "GADS_LEAD_SEND_TO", "AW-18380046629/eHoDCO7x6JkdEKWCpbxE").strip()
+GADS_CHECKOUT_SEND_TO = os.getenv(
+    "GADS_CHECKOUT_SEND_TO", "AW-18380046629/2LE5CI7K7JkdEKWCpbxE").strip()
 
 # ---- X (Twitter) pixel -----------------------------------------------------
 X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
@@ -711,7 +715,7 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-NKRQM1HJ97');
-gtag('config', 'AW-7833047702');
+gtag('config', 'AW-18380046629');
 </script>
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -1091,8 +1095,8 @@ def _inject_x_pixel(html: str) -> str:
 
 
 def _inject_gads_conversion(html: str) -> str:
-    """Wrap window.gtag so the existing purchase events also fire a Google Ads
-    conversion. Dormant when GADS_CONVERSION_SEND_TO is empty."""
+    """Wrap window.gtag so purchase, generate_lead and begin_checkout events
+    also fire Google Ads conversions. Dormant when GADS_CONVERSION_SEND_TO is empty."""
     if not GADS_CONVERSION_SEND_TO or "/__axGa" in html:
         return html
     snippet = (
@@ -1100,15 +1104,25 @@ def _inject_gads_conversion(html: str) -> str:
         '<script>\n'
         '(function(){\n'
         '  var ST="' + GADS_CONVERSION_SEND_TO + '";\n'
+        '  var LT="' + GADS_LEAD_SEND_TO + '";\n'
+        '  var CT="' + GADS_CHECKOUT_SEND_TO + '";\n'
         '  function bridge(){\n'
         '    var orig=window.gtag;\n'
         '    if(typeof orig!=="function"||orig.__axGa) return;\n'
         '    var w=function(){\n'
         '      try{\n'
-        '        if(arguments[0]==="event"&&arguments[1]==="purchase"&&arguments[2]){\n'
-        '          orig("event","conversion",{send_to:ST,\n'
-        '            value:arguments[2].value,currency:arguments[2].currency||"INR",\n'
-        '            transaction_id:arguments[2].transaction_id||""});\n'
+        '        if(arguments[0]==="event"&&arguments[2]){\n'
+        '          if(arguments[1]==="purchase"){\n'
+        '            orig("event","conversion",{send_to:ST,\n'
+        '              value:arguments[2].value,currency:arguments[2].currency||"INR",\n'
+        '              transaction_id:arguments[2].transaction_id||""});\n'
+        '          }else if(arguments[1]==="generate_lead"){\n'
+        '            orig("event","conversion",{send_to:LT,\n'
+        '              value:1.0,currency:"INR"});\n'
+        '          }else if(arguments[1]==="begin_checkout"){\n'
+        '            orig("event","conversion",{send_to:CT,\n'
+        '              value:arguments[2].value,currency:arguments[2].currency||"INR"});\n'
+        '          }\n'
         '        }\n'
         '      }catch(e){}\n'
         '      return orig.apply(this,arguments);\n'
