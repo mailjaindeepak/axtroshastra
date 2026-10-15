@@ -223,13 +223,6 @@ section{padding:52px 0}
 .cred p{font-size:14.5px;color:#B9BBD0}
 .cred .badge{display:inline-flex;align-items:center;gap:7px;background:var(--midnight-2);border:1px solid #333B63;color:var(--haldi);font-size:12px;font-weight:700;border-radius:20px;padding:6px 12px;margin-bottom:12px;letter-spacing:.05em}
 
-/* ---------- INSIDE ---------- */
-.inside ol{list-style:none;counter-reset:inside;margin-top:20px}
-.inside li{counter-increment:inside;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 16px 16px 58px;position:relative;margin-bottom:10px;font-size:14.5px}
-.inside li::before{content:counter(inside,decimal-leading-zero);position:absolute;left:16px;top:16px;font-family:var(--display);font-weight:800;font-size:17px;color:var(--haldi)}
-.inside li b{display:block;font-family:var(--display);font-weight:700;font-size:15.5px;margin-bottom:3px}
-.inside li span{color:#4A4C63}
-
 /* ---------- RECTIFY ---------- */
 .rectify{background:var(--midnight);color:#E8E4D6}
 .rectify h2{color:#fff;font-size:clamp(22px,5.6vw,28px);margin-bottom:12px}
@@ -354,8 +347,6 @@ fbq('track', 'PageView');
     <p class="eyebrow">Life Blueprint Report</p>
     <h1>Your Birth Chart Tells<br><em>a Story About You</em></h1>
     <p class="sub">Personality. Career. Strengths.<br>Life Patterns.</p>
-    <p class="sub2">Your complete birth chart, decoded — understand who you are, what you're naturally suited for, and the key themes shaping different phases of your life.</p>
-
     <form class="form-card" id="kundliForm" autocomplete="on">
       <p class="fc-title">Enter your birth details 👇</p>
       <div class="field">
@@ -525,24 +516,6 @@ fbq('track', 'PageView');
       <h3>Built by IIT–IIM engineers.</h3>
       <p>Classical Vedic principles — dasha, lagna, house lords — encoded into software. The reading comes from your chart's actual positions, not from templates or someone's opinion that day.</p>
     </div>
-  </div>
-</section>
-
-<!-- ============ WHAT'S INSIDE ============ -->
-<section class="inside">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow dark">Inside the report</p>
-      <h2>What you'll get in the report</h2>
-    </div>
-    <ol>
-      <li><b>Who you are</b><span>Your outer self (lagna) and inner self (moon) — both decoded, in plain words.</span></li>
-      <li><b>Career direction</b><span>What your 10th house and its lord indicate — the kind of work that suits you.</span></li>
-      <li><b>Built-in strengths</b><span>Which planets are strong in your chart — and what that means practically.</span></li>
-      <li><b>Growth lessons</b><span>Where your chart shows friction — so it's preparation, not a surprise.</span></li>
-      <li><b>Life roadmap</b><span>Your next 3 mahadasha phases — with years, and each phase's theme.</span></li>
-      <li><b>What your current period means</b><span>Which phase you're in right now, and what kind of decisions work best in it.</span></li>
-    </ol>
   </div>
 </section>
 
