@@ -109,7 +109,7 @@ def test_bug6_banner_close_and_autohide(fname, form_id, sticky_id, name_ids):
 
 
 # --------------------------------------------------------------- BUG 7
-# The sticky ₹499 bar is hidden while a form field is focused (keyboard open)
+# The sticky price bar is hidden while a form field is focused (keyboard open)
 # and restored on blur, without breaking the scroll-reveal behaviour.
 
 @IDS
