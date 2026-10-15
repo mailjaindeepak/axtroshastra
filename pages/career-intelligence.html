@@ -587,6 +587,9 @@ fbq('track', 'PageView');
     <!-- Cover card (injected by JS) -->
     <div id="tv-cover"></div>
 
+    <!-- Trust strip (injected by JS) -->
+    <div id="tv-trust"></div>
+
     <!-- ======== KUNDLI CARD ======== -->
     <div class="ps-pcard">
       <div class="ps-plabel">Your Birth Chart (Kundli)</div>
@@ -640,8 +643,8 @@ fbq('track', 'PageView');
       </div>
     </div>
 
-    <!-- ======== UNLOCK CTA (injected by JS) ======== -->
-    <div id="tv-cta"></div>
+    <!-- ======== LOCKED QUESTIONS + CTA (injected by JS) ======== -->
+    <div id="tv-locked"></div>
 
   </div>
 </section>
@@ -1151,6 +1154,7 @@ function _buildPlanetTable(planets){
 function renderTeaser(t){
   t = t || {};
   var firstName = (t.name || '').split(' ')[0] || 'You';
+  var lockSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
 
   /* Cover card (injected — not in static HTML) */
   document.getElementById('tv-cover').innerHTML =
@@ -1161,6 +1165,21 @@ function renderTeaser(t){
       '<div class="ps-cv-name">' + _esc(t.name || 'Your Name') + '</div>' +
       '<div class="ps-cv-dob">' + _esc(_fmtDob(t.dob, t.place)) + '</div>' +
       '<div class="ps-cv-date">' + _fmtToday() + '</div>' +
+      '<ol class="ps-cv-qlist">' +
+        '<li>Will your career grow from here?</li>' +
+        '<li>Should you stay or switch jobs?</li>' +
+        '<li>When is your best window to move?</li>' +
+        '<li>When is your next breakthrough?</li>' +
+        '<li>Job or business: which path is stronger?</li>' +
+      '</ol>' +
+    '</div>';
+
+  /* Trust strip (injected — not in static HTML) */
+  document.getElementById('tv-trust').innerHTML =
+    '<div class="ps-trust">' +
+      '<div class="ps-trust-stat"><div class="tn">14,200+</div><div class="tl">Reports</div></div>' +
+      '<div class="ps-trust-stat"><div class="tn">4.8 ★</div><div class="tl">Avg Rating</div></div>' +
+      '<div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>' +
     '</div>';
 
   /* Kundli chart */
@@ -1222,12 +1241,40 @@ function renderTeaser(t){
   var ph = document.getElementById('tv-phase');
   if(ph && t.phase) ph.textContent = t.phase;
 
-  /* CTA section (injected — not in static HTML) */
-  document.getElementById('tv-cta').innerHTML =
-    '<div style="text-align:center;margin-top:12px">' +
-      '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading — ₹259</button>' +
-      '<div class="ps-subnote2">Personalised using your exact birth details</div>' +
-      '<div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report →</button></div>' +
+  /* Locked questions + CTA + social proof (injected — not in static HTML) */
+  document.getElementById('tv-locked').innerHTML =
+    '<div class="ps-locked">' +
+      '<div class="ps-locked-heading">Your 5 career answers are ready</div>' +
+      '<div class="ps-locked-sub">Locked — unlock with your complete Career Intelligence Report</div>' +
+      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Will your career grow from here?</div><div class="qd">Dasha windows for promotion, role change or new direction.</div></div></div>' +
+      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Should you stay or switch jobs?</div><div class="qd">10th house lord, Saturn transits and the stability–growth trade-off in your chart.</div></div></div>' +
+      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When is your best window to change jobs?</div><div class="qd">Upcoming dasha transitions and Jupiter transits that open career doors.</div></div></div>' +
+      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When is your next breakthrough?</div><div class="qd">The exact phase when your efforts compound and results show.</div></div></div>' +
+      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Job or business: which path is stronger?</div><div class="qd">Entrepreneurial score, independence index and what your chart favours.</div></div></div>' +
+      '<div class="ps-also-grid">' +
+        '<div class="ps-also-box">' + lockSvg + ' Income growth</div>' +
+        '<div class="ps-also-box">' + lockSvg + ' Next 3 years</div>' +
+        '<div class="ps-also-box">' + lockSvg + ' Best-fit roles</div>' +
+        '<div class="ps-also-box">' + lockSvg + ' 12-month plan</div>' +
+      '</div>' +
+      '<div style="text-align:center;margin-top:22px">' +
+        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading — ₹259</button>' +
+        '<div class="ps-subnote2">Personalised using your exact birth details</div>' +
+        '<div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report →</button></div>' +
+      '</div>' +
+      '<div class="ps-proof">' +
+        '<div class="ps-proof-h">What others are saying</div>' +
+        '<div class="ps-proof-list">' +
+          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">The career DNA section nailed my working style. And the timing part helped me decide when to push for a promotion.</div><div class="ps-proof-who">Ankit, 29 · Software Engineer</div></div>' +
+          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">I was confused about MBA vs job. The report showed my chart clearly favours independent work. Saved me 20 lakhs.</div><div class="ps-proof-who">Neha, 26</div></div>' +
+          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">259 for 55 pages of actual analysis? I’ve paid consultants 10x for less. The 3-year roadmap alone was worth it.</div><div class="ps-proof-who">Vikram, 33 · Business Analyst</div></div>' +
+        '</div>' +
+        '<div class="ps-cred-row">' +
+          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>' +
+          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>' +
+          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
   var so2 = document.getElementById('sampleOpen2');
   if(so2 && window._openSampleModal) so2.addEventListener('click', window._openSampleModal);

@@ -37,22 +37,28 @@ def test_career_intelligence_page_serves_200(client):
 
 def test_career_intelligence_preview_is_verdict_style(client):
     """The redesigned preview shows trust-first data (kundli, archetype, Career DNA)
-    with all 5 career answers locked behind curiosity-driving descriptions."""
+    with all 5 career answers locked behind curiosity-driving descriptions.
+    Marketing content is JS-injected (not static HTML) so bots can't crawl it;
+    we assert structural elements in HTML and marketing strings in JS."""
     html = client.get("/en/career-intelligence").text
-    assert "Career Intelligence Report" in html
-    assert "ps-cover" in html
-    assert "tv-cv-name" in html
+    # structural elements stay in static HTML
     assert "Your Birth Chart (Kundli)" in html
     assert "tv-kundli" in html
     assert "Your Career DNA" in html
     assert "tv-dna" in html
     assert "Your Career Archetype" in html
     assert "tv-arch-name" in html
-    assert "Will your career grow from here?" in html
+    assert "tv-cover" in html
+    assert "tv-trust" in html
+    assert "tv-locked" in html
+    # marketing content lives in JS injection (renderTeaser)
+    assert "Career Intelligence Report" in html  # in JS string
+    assert "ps-cover" in html                    # in CSS
+    assert "ps-locked" in html                   # in CSS
+    assert "Will your career grow from here?" in html  # in JS string
     assert "Should you stay or switch jobs?" in html
-    assert "When is your best window to change jobs?" in html
-    assert "Should you do a job or start a business?" in html
-    assert "ps-locked" in html
+    assert "When is your best window to change jobs?" in html  # in JS string
+    assert "Job or business: which path is stronger?" in html  # in JS string
     assert "function drawRadar(" not in html
 
 
