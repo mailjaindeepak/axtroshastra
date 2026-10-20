@@ -1099,6 +1099,7 @@ def _inject_gads_conversion(html: str) -> str:
     also fire Google Ads conversions. Dormant when GADS_CONVERSION_SEND_TO is empty."""
     if not GADS_CONVERSION_SEND_TO or "/__axGa" in html:
         return html
+    import re
     snippet = (
         '<!-- Google Ads conversion bridge (injected server-side) -->\n'
         '<script>\n'
