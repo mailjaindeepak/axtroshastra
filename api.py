@@ -1145,18 +1145,60 @@ def _inject_gads_conversion(html: str) -> str:
         return html
 
 
+TABOOLA_PIXEL_ID = os.getenv("TABOOLA_PIXEL_ID", "2122201").strip()
+
+
+def _inject_taboola(html: str) -> str:
+    """Add the Taboola pixel to a page's <head>. Idempotent: skips any page
+    already loading the Taboola TFA script. Set TABOOLA_PIXEL_ID="" to disable."""
+    if not TABOOLA_PIXEL_ID:
+        return html
+    try:
+        if not html or "tb_tfa_script" in html:
+            return html
+        snippet = (
+            '<!-- Taboola Pixel Code -->\n'
+            '<script type="text/javascript">\n'
+            '  window._tfa = window._tfa || [];\n'
+            '  window._tfa.push({notify: \'event\', name: \'page_view\', id: '
+            + TABOOLA_PIXEL_ID + '});\n'
+            '  !function (t, f, a, x) {\n'
+            '    if (!document.getElementById(x)) {\n'
+            '      t.async = 1;t.src = a;t.id=x;f.parentNode.insertBefore(t, f);\n'
+            '    }\n'
+            '  }(document.createElement(\'script\'),\n'
+            '  document.getElementsByTagName(\'script\')[0],\n'
+            '  \'//cdn.taboola.com/libtrc/unip/' + TABOOLA_PIXEL_ID + '/tfa.js\',\n'
+            '  \'tb_tfa_script\');\n'
+            '</script>\n'
+            '<!-- End of Taboola Pixel Code -->\n'
+        )
+        import re
+        new_html, n = re.subn(r"(</head>)", lambda m: snippet + m.group(1),
+                              html, count=1, flags=re.IGNORECASE)
+        if n:
+            return new_html
+        new_html, n = re.subn(r"(<body[^>]*>)", lambda m: m.group(1) + snippet,
+                              html, count=1, flags=re.IGNORECASE)
+        return new_html if n else html
+    except Exception as e:
+        logger.error("[taboola] injection failed: %s", e)
+        return html
+
+
 def _inject_tracking(html: str) -> str:
     """All analytics for a served page: GA4 + Meta + Clarity, then Google Ads
     conversion bridge, then OAIQ, then X pixel, then LinkedIn, then our
-    first-party beacon.
+    first-party beacon, then Taboola.
 
     Order matters — the Google Ads bridge wraps gtag (must exist first); LinkedIn
     goes in after the Meta block so its funnel bridge is parsed after window.fbq
     exists; X goes after OAIQ and before LinkedIn so the LinkedIn bridge (which
     also wraps fbq) sees the X-wrapped fbq and preserves the __axTw flag; the
-    beacon goes in LAST (outermost) so it wraps the gtag defined by
-    _inject_ga_meta_clarity (or hardcoded in the page)."""
-    return _inject_beacon(_inject_linkedin(_inject_x_pixel(_inject_oaiq(_inject_gads_conversion(_inject_ga_meta_clarity(html))))))
+    beacon goes in LAST of the wrapping scripts so it wraps the gtag defined by
+    _inject_ga_meta_clarity (or hardcoded in the page). Taboola is standalone
+    (no wrapping) so it goes after the beacon."""
+    return _inject_taboola(_inject_beacon(_inject_linkedin(_inject_x_pixel(_inject_oaiq(_inject_gads_conversion(_inject_ga_meta_clarity(html)))))))
 
 
 _FOOTER_DISCLAIMER_EN = (
