@@ -299,15 +299,21 @@ async function fillBlueprint(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
-// Fill the IQ test info form (name, age, gender, consent).
-// The quiz itself is JS-driven client-side; we only verify the info form loads and
-// the start button is present — the robot never submits the quiz (no /api/iq-test call).
+// Fill the IQ test info form, click Start, answer all 20 questions, then submit.
+// The quiz is client-side JS; submitting triggers POST /api/iq-test and sets REPORT_ID.
 async function fillIqTest(page) {
   await page.fill('#f-name', 'Robot IQ');
   await page.selectOption('#f-age', '25');
   await page.selectOption('#f-gender', 'male');
   await page.fill('#f-whatsapp', testPhone());
   await page.check('#f-consent');
+  await page.locator('#infoForm button[type="submit"]').click();
+  await expect(page.locator('#quizSection')).toBeVisible({ timeout: 5000 });
+  for (let i = 0; i < 20; i++) {
+    await page.locator('.q-opt').first().click();
+    const btn = page.locator('#nextBtn');
+    await btn.click();
+  }
 }
 
 // ---- Funnel definitions --------------------------------------------------
