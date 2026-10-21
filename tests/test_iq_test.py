@@ -165,7 +165,7 @@ def test_classification_labels():
 def test_profile_has_learning_style():
     r = compute_iq_report("Learner", 25, "male", _all_correct(), 600)
     ls = r["profile"]["learning_style"]
-    assert "title" in ls
+    assert "name" in ls
     assert "description" in ls
 
 

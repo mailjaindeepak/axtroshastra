@@ -4,7 +4,17 @@ Tests the real route through FastAPI's TestClient → scoring → DB save → te
 response, plus the paid report view and the landing page route.
 """
 import pytest
+import api
 from iq_test_questions import QUESTIONS
+
+
+class _StubOrders:
+    def create(self, payload):
+        return {"id": "order_stub_iq", "amount": payload["amount"]}
+
+
+class _StubRzp:
+    order = _StubOrders()
 
 # unique phone numbers per §12 (9876590xxx range, not used elsewhere)
 PHONE_IQ_1 = "9876590001"
@@ -138,7 +148,8 @@ def test_iq_test_redirect(client):
 
 # ── pricing ──────────────────────────────────────────────────────────────
 
-def test_iq_test_order_price(client):
+def test_iq_test_order_price(client, monkeypatch):
+    monkeypatch.setattr(api, "rzp_client", lambda: _StubRzp())
     r = client.post("/api/iq-test", json=_base_body(phone=PHONE_IQ_1))
     rid = r.json()["report_id"]
     order = client.post("/api/order",
