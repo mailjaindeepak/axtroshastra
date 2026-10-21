@@ -19,10 +19,16 @@ MILAN = {"p1_name": "Button Nisha", "p1_dob": "1994-04-18", "p1_tob": "10:30",
          "p2_name": "Button Rahul", "p2_dob": "1993-04-18", "p2_tob": "10:30",
          "p2_place": "Jaipur", "p2_gender": "male", "variant": "/milan"}
 
+IQ_TEST = {"name": "Button IQ", "age": 25, "gender": "male",
+           "answers": [1, 1, 2, 1, 2, 2, 1, 2, 0, 2, 1, 2, 1, 1, 2, 2, 3, 2, 2, 3],
+           "time_taken_seconds": 600}
+
 
 def _paid_report_html(client, product):
     if product == "milan":
         r = client.post("/api/milan", json=MILAN)
+    elif product == "iq_test":
+        r = client.post("/api/iq-test", json=IQ_TEST)
     else:
         body = dict(KUNDLI)
         if product is not None:
@@ -38,9 +44,9 @@ def _paid_report_html(client, product):
 
 @pytest.mark.parametrize("product",
                          [None, "milan", "blueprint", "vidyarthi", "vyapar",
-                          "career_growth"],
+                          "career_growth", "iq_test"],
                          ids=["marriage", "milan", "blueprint", "vidyarthi",
-                              "vyapar", "career_growth"])
+                              "vyapar", "career_growth", "iq_test"])
 def test_report_page_has_pdf_and_whatsapp_buttons(client, product):
     html = _paid_report_html(client, product)
     # one-tap PDF: the renderer's sentinel must exist AND be swapped by

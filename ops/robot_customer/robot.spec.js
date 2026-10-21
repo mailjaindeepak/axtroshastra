@@ -97,6 +97,7 @@ const ALL_PAGES = [
   { path: '/about',             label: 'About' },
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
+  { path: '/en/iq-test',         label: 'IQ Test (EN)' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
   { path: '/blog/kundli-milan-36-gun',                 label: 'Blog: 36 Gun' },
@@ -298,6 +299,16 @@ async function fillBlueprint(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
+// Fill the IQ test info form (name, age, gender, consent).
+// The quiz itself is JS-driven client-side; we only verify the info form loads and
+// the start button is present — the robot never submits the quiz (no /api/iq-test call).
+async function fillIqTest(page) {
+  await page.fill('#f-name', 'Robot IQ');
+  await page.selectOption('#f-age', '25');
+  await page.selectOption('#f-gender', 'male');
+  await page.check('#f-consent');
+}
+
 // ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
   {
@@ -355,6 +366,13 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillBlueprint,
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
+  },
+  {
+    name: 'iq-test',
+    paths: { en: '/en/iq-test' },
+    form: '#infoForm',
+    fill: fillIqTest,
+    hasTeaser: false,   // teaser appears after quiz, not after form submit
   },
 ];
 

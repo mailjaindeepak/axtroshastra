@@ -388,6 +388,9 @@ def _render_for(product, payload):
         return html
     if product == "vidyarthi":
         return render_vidyarthi(payload)
+    if product == "iq_test":
+        import iq_test_report
+        return iq_test_report.render_iq_test(payload)
     if product == "career_intelligence":         # English-only premium report
         return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_intelligence_v2":
@@ -436,6 +439,7 @@ VYAPAR_PRICE_PAISE = 19900                # ₹199 — Business Growth (vyapar)
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
+IQ_TEST_PRICE_PAISE = 49900               # ₹499 — IQ Test report
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
@@ -445,6 +449,8 @@ def _order_amount_paise(rec: dict) -> int:
     Single source for both order creation and the server-side purchase-tracking value."""
     payload = rec.get("payload") or {}
     product = rec.get("product") or payload.get("product") or ""
+    if product == "iq_test":
+        return IQ_TEST_PRICE_PAISE
     if product == "career_intelligence_v2":
         return CAREER_INTEL_V2_PRICE_PAISE
     if product == "career_intelligence":
@@ -479,6 +485,7 @@ def rzp_client():
 DB_PATH = os.getenv("DB_PATH", os.path.join(BASE, "data", "reports.db"))
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 _lock = threading.Lock()
+_demo_reports: dict = {}
 
 def db():
     conn = dbcompat.connect()
@@ -489,15 +496,30 @@ def db():
         token TEXT PRIMARY KEY, used INTEGER DEFAULT 0, created_at TEXT)""")
     return conn
 
+
+def _demo_save(rid, report, phone=None):
+    """DEMO_MODE fallback: stash the report in-memory when MySQL is unavailable."""
+    _demo_reports[rid] = {"payload": report, "paid": 0, "order_id": None,
+                          "phone": phone, "user_phone": phone,
+                          "product": report.get("product", "")}
+
+
 def get_report(rid):
     # v2 (Piece 5): read the report from the v2 tables, reshaped by reports_v2 into
     # the SAME bundle this function always returned {payload,paid,order_id,phone,
     # user_phone}, so its ~12 callers are unchanged.
-    conn = db_v2.get_conn()
+    if DEMO_MODE and rid in _demo_reports:
+        return _demo_reports[rid]
     try:
-        return reports_v2.read_report(conn, rid)
-    finally:
-        conn.close()
+        conn = db_v2.get_conn()
+        try:
+            return reports_v2.read_report(conn, rid)
+        finally:
+            conn.close()
+    except Exception:
+        if DEMO_MODE:
+            return _demo_reports.get(rid)
+        raise
 
 def save_narrative(rid, narr: dict):
     """Merge the LLM-written prose into the stored report_data so the renderer can
@@ -1732,6 +1754,66 @@ def create_kundli(inp: KundliIn, request: Request):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
+# ── IQ Test (non-astrology quiz product) ─────────────────────────────────
+
+class IqTestIn(BaseModel):
+    name: str
+    age: int
+    gender: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
+    answers: list[int]
+    time_taken_seconds: int
+    consent_ts: str | None = None
+    consent_v: str | None = None
+    variant: str | None = None
+
+@app.post("/api/iq-test")
+def create_iq_test(inp: IqTestIn, request: Request):
+    if not captcha_ok(inp.captcha_token or "", ""):
+        raise HTTPException(400, "captcha_failed")
+    if not (16 <= inp.age <= 100):
+        raise HTTPException(422, "age must be between 16 and 100")
+    if len(inp.answers) != 20:
+        raise HTTPException(422, "exactly 20 answers required")
+    for a in inp.answers:
+        if a not in (-1, 0, 1, 2, 3):
+            raise HTTPException(422, "each answer must be 0-3 or -1 for unanswered")
+
+    from iq_test import compute_iq_report
+    report = compute_iq_report(inp.name, inp.age, inp.gender,
+                               inp.answers, inp.time_taken_seconds)
+    report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    report["meta"]["lang"] = "english"
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-09"
+    if inp.email:
+        report["meta"]["_email"] = inp.email
+
+    rid = secrets.token_urlsafe(12)
+    subject = {"role": "self", "name": inp.name, "gender": inp.gender,
+               "dob": None, "tob": None, "time_quality": None,
+               "birth_place": None, "birth_lat": None, "birth_lon": None,
+               "birth_tz": None}
+    try:
+        conn = db_v2.get_conn()
+        try:
+            uid = reports_v2.save_report(conn, rid, report, [subject],
+                                         product="iq_test", phone=inp.phone)
+            _identify_visitor(conn, request, uid)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        if not DEMO_MODE:
+            raise
+        logger.warning("[demo] MySQL unavailable — storing IQ report %s in memory", rid)
+        _demo_save(rid, report, inp.phone)
+    return {"report_id": rid, "teaser": report["teaser"]}
+
+
 class OrderIn(BaseModel):
     """Body of POST /api/order. `phone`/`email` come from the pre-payment
     contact popup: phone is the buyer's WhatsApp/account number (stored in
@@ -2564,11 +2646,15 @@ def report_pdf(rid: str):
 if DEMO_MODE:                                    # never set DEMO_MODE=1 in production
     @app.post("/api/_demo_pay/{rid}")
     def demo_pay(rid: str, background_tasks: BackgroundTasks):
+        if rid in _demo_reports:
+            _demo_reports[rid]["paid"] = 1
+            background_tasks.add_task(_generate_narrative_task, rid)
+            return {"ok": True}
         conn = db_v2.get_conn()
         try:
             if not db_v2.get_report(conn, rid):
                 raise HTTPException(404, "report not found")
-            db_v2.set_report_paid(conn, rid)   # demo shortcut: just flip to paid
+            db_v2.set_report_paid(conn, rid)
             conn.commit()
         finally:
             conn.close()
@@ -2669,7 +2755,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/blog",
+            "/en/career-intelligence", "/en/iq-test", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3344,6 +3430,19 @@ def jeevan_hi_legacy_redirect(request: Request):
     product's route was renamed."""
     q = request.url.query
     return RedirectResponse("/hi/life-blueprint" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/iq-test", include_in_schema=False)
+def iq_test_en():
+    """IQ Test landing at /en/iq-test (English only for now)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "iq-test.html"))
+
+
+@app.get("/iq-test", include_in_schema=False)
+def iq_test_redirect(request: Request):
+    """Bare /iq-test → /en/iq-test (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse("/en/iq-test" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)
