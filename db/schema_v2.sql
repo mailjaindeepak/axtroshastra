@@ -265,8 +265,7 @@ CREATE TABLE events (
     user_id        VARCHAR(32) NULL,            -- filled once identified
     login_session_id VARCHAR(48) NULL,          -- login_sessions.token, if logged in (not the analytics visit)
     event_name     ENUM('page_view','form_start','generate_lead','begin_checkout',
-                        'purchase','payment_failed','identify',
-                        'iq_ques_6','iq_ques_11','iq_ques_16') NOT NULL,
+                        'purchase','payment_failed','identify') NOT NULL,
     report_id      VARCHAR(32) NULL,            -- present from the Lead stage onward
     product        VARCHAR(40) NULL,
     page_url       VARCHAR(512) NULL,           -- THIS event's own page (saved on every event)

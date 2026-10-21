@@ -405,21 +405,6 @@ var timeLeft = 15 * 60;
 var startTime = null;
 var LETTERS = ['A','B','C','D'];
 
-function axSend(name, extra){
-  try{
-    var body = {event:name, page_url: location.pathname + location.search};
-    if(extra){ for(var k in extra){ if(extra[k]!==undefined && extra[k]!==null) body[k]=extra[k]; } }
-    var json = JSON.stringify(body);
-    if(navigator.sendBeacon){
-      navigator.sendBeacon('/api/event', new Blob([json], {type:'application/json'}));
-    }else{
-      fetch('/api/event', {method:'POST', headers:{'Content-Type':'application/json'},
-        body:json, keepalive:true, credentials:'same-origin'});
-    }
-  }catch(e){}
-}
-var _axQMilestones = {};
-
 /* ============ FORM → QUIZ ============ */
 document.getElementById('startBtn').addEventListener('click', function(){
   var name = document.getElementById('f-name').value.trim();
@@ -434,6 +419,7 @@ document.getElementById('startBtn').addEventListener('click', function(){
   err.textContent = '';
   AX_CONTACT = {phone: waPhone, email: null};
   try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
+  if(window.gtag) gtag('event','form_start',{method:'iq_test'});
   document.getElementById('hero').style.display = 'none';
   document.querySelector('.trust').style.display = 'none';
   document.getElementById('quizSection').style.display = 'block';
@@ -460,9 +446,6 @@ function startTimer(){
 /* ============ QUESTION RENDERING ============ */
 function renderQuestion(){
   var q = QUESTIONS[current];
-  if(current===5 && !_axQMilestones[6]){ _axQMilestones[6]=1; axSend('iq_ques_6'); }
-  if(current===10 && !_axQMilestones[11]){ _axQMilestones[11]=1; axSend('iq_ques_11'); }
-  if(current===15 && !_axQMilestones[16]){ _axQMilestones[16]=1; axSend('iq_ques_16'); }
   var html = '<div class="q-card">' +
     '<div class="q-cat">' + q.cat + '</div>' +
     '<div class="q-text">' + q.text + '</div>' +
