@@ -18,7 +18,8 @@ from datetime import datetime, timezone
 import db_v2
 
 VALID_EVENTS = {"page_view", "form_start", "generate_lead", "begin_checkout",
-                "purchase", "payment_failed", "identify"}
+                "purchase", "payment_failed", "identify",
+                "iq_ques_6", "iq_ques_11", "iq_ques_16"}
 
 
 def _now():
