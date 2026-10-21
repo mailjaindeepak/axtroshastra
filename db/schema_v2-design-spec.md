@@ -221,7 +221,7 @@ User data & source are **not copied** here — joined via `visit_id` / `user_id`
 | visitor_id | VARCHAR(40) | no | **FK → visitors.visitor_id**, always present |
 | user_id | VARCHAR(32) | yes | **FK → users.id**, once identified |
 | login_session_id | VARCHAR(48) | yes | `login_sessions.token`, if logged in |
-| event_name | ENUM | no | page_view / form_start / generate_lead / begin_checkout / purchase / payment_failed / identify |
+| event_name | ENUM | no | page_view / form_start / generate_lead / begin_checkout / purchase / payment_failed / identify / iq_ques_6 / iq_ques_11 / iq_ques_16 |
 | report_id | VARCHAR(32) | yes | **FK → reports.id**, from Lead onward |
 | product | VARCHAR(40) | yes | |
 | page_url | VARCHAR(512) | yes | this event's own page (saved on every event) |
