@@ -200,15 +200,6 @@ fbq('track', 'PageView');
         </select>
       </div>
       <div class="field">
-        <label for="f-gender">Gender (optional)</label>
-        <select id="f-gender">
-          <option value="">Prefer not to say</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div class="field">
         <label for="f-whatsapp">WhatsApp number</label>
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
         <div class="field-sub">Your report is sent here as a PDF — make sure it's your WhatsApp number.</div>
@@ -219,7 +210,6 @@ fbq('track', 'PageView');
       </div>
       <div class="field-hint" id="formErr"></div>
       <button class="btn" id="startBtn" type="submit">Start the test — 15 minutes →</button>
-      <div class="btn-note">Free preview after the test. Full report ₹499.</div>
     </div>
   </div>
 </section>
@@ -545,14 +535,13 @@ async function submitQuiz(){
   try{
     var name = document.getElementById('f-name').value.trim();
     var age = parseInt(document.getElementById('f-age').value);
-    var gender = document.getElementById('f-gender').value || null;
     var consentTs = new Date().toISOString();
 
     var res = await fetch('/api/iq-test', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        name: name, age: age, gender: gender,
+        name: name, age: age,
         phone: AX_CONTACT ? AX_CONTACT.phone : null,
         answers: answers, time_taken_seconds: elapsed,
         consent_ts: consentTs, consent_v: '2026-10',
