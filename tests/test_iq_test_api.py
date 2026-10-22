@@ -137,7 +137,7 @@ def test_teaser_has_no_paid_fields(client):
 def test_iq_test_landing_page(client):
     r = client.get("/en/iq-test")
     assert r.status_code == 200
-    assert "Check" in r.text and "IQ" in r.text
+    assert "Free" in r.text and "IQ Test" in r.text
 
 
 def test_iq_test_redirect(client):
