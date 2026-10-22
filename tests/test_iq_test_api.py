@@ -157,4 +157,4 @@ def test_iq_test_order_price(client, monkeypatch):
     assert order.status_code == 200
     d = order.json()
     if "amount" in d:
-        assert d["amount"] == 9900
+        assert d["amount"] == 4900

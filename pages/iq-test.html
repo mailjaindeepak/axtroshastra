@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <script>window.__axlang="en";</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IQ Test ₹99 — How Sharp Is Your Mind? | Axtroshastra</title>
+<title>IQ Test ₹49 — Check Your IQ | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
 <link rel="canonical" href="https://www.axtroshastra.com/en/iq-test">
-<meta property="og:title" content="IQ Test ₹99 — How Sharp Is Your Mind?">
+<meta property="og:title" content="IQ Test ₹49 — Check Your IQ">
 <meta property="og:description" content="20 questions, 15 minutes. Get your IQ score, cognitive strengths, and a personalised growth plan. Full report delivered to your WhatsApp.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:url" content="https://www.axtroshastra.com/en/iq-test">
 <meta property="og:type" content="website">
-<meta name="description" content="20 questions, 15 minutes. Get your IQ score, cognitive profile, strengths and growth areas. Full report ₹99, delivered to your WhatsApp.">
+<meta name="description" content="20 questions, 15 minutes. Get your IQ score, cognitive profile, strengths and growth areas. Full report ₹49, delivered to your WhatsApp.">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4614208499737425" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,8 +183,7 @@ fbq('track', 'PageView');
       <svg viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="6" fill="#E4B04A"/><path d="M13 4 L15 10 L21 13 L15 15 L13 22 L11 15 L5 13 L11 10 Z" fill="#151C39"/></svg>
       <span>AxtroShastra</span>
     </div>
-    <h1>How <em>Sharp</em> Is<br>Your Mind?</h1>
-    <p class="sub">20 questions. 15 minutes. Your IQ score.</p>
+    <h1>Check Your <em>IQ</em></h1>
     <p class="sub2">Get a complete cognitive profile with your strengths, growth areas, and a personalised learning style analysis.</p>
 
     <div class="form-card" id="infoForm">
@@ -203,14 +202,14 @@ fbq('track', 'PageView');
       <div class="field">
         <label for="f-whatsapp">WhatsApp number</label>
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
-        <div class="field-sub">Your report is sent here as a PDF — make sure it's your WhatsApp number.</div>
+        <div class="field-sub">Report would be sent here as PDF on WhatsApp.</div>
       </div>
       <div class="consent" id="consentRow">
         <input type="checkbox" id="f-consent">
         <span>I agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>.</span>
       </div>
       <div class="field-hint" id="formErr"></div>
-      <button class="btn" id="startBtn" type="submit">Start the test — 15 minutes →</button>
+      <button class="btn" id="startBtn" type="submit">Start Test →</button>
     </div>
   </div>
 </section>
@@ -218,8 +217,6 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span> <b>20</b> questions</li>
-      <li><span class="dot"></span> <b>15</b> minute timer</li>
       <li><span class="dot"></span> Instant <b>IQ score</b></li>
       <li><span class="dot"></span> <b>4</b> cognitive areas</li>
       <li><span class="dot"></span> WhatsApp <b>delivery</b></li>
@@ -299,7 +296,7 @@ fbq('track', 'PageView');
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
         <div><b>Personalised recommendations</b> — specific, actionable tips for each area</div>
       </div>
-      <button class="btn" id="unlockBtn" type="button" style="margin-top:18px">Unlock full report — ₹99</button>
+      <button class="btn" id="unlockBtn" type="button" style="margin-top:18px">Unlock full report — ₹49</button>
       <div class="btn-note">Instant WhatsApp + on-screen delivery, right after payment.</div>
     </div>
   </div>
@@ -631,7 +628,7 @@ document.getElementById('unlockBtn').addEventListener('click', function(){ start
 
 async function startPayment(){
   if(!REPORT_ID || !AX_CONTACT) return;
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:99});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:49});
   var res = await fetch('/api/order', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({report_id: REPORT_ID, pass: PASS || null,
@@ -671,15 +668,15 @@ async function awaitReport(){
       var d = await r.json();
       if(d.paid){
         if(!window.FREE_UNLOCK){
-          if(window.fbq) fbq('track','Purchase',{value:99,currency:'INR'},{eventID:REPORT_ID});
-          if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:99});
+          if(window.fbq) fbq('track','Purchase',{value:49,currency:'INR'},{eventID:REPORT_ID});
+          if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:49});
         }
         location.href = '/report/' + REPORT_ID; return;
       }
     }
     await new Promise(function(r){ setTimeout(r, 2000); });
   }
-  btn.textContent = 'Unlock full report — ₹99'; btn.disabled = false;
+  btn.textContent = 'Unlock full report — ₹49'; btn.disabled = false;
   alert('Taking longer than expected. If you paid, your report will arrive on WhatsApp shortly.');
 }
 </script>
