@@ -13,6 +13,7 @@
 <meta property="og:url" content="https://www.axtroshastra.com/en/iq-test">
 <meta property="og:type" content="website">
 <meta name="description" content="20 questions, 15 minutes. Get your IQ score, cognitive profile, strengths and growth areas. Full report ₹499, delivered to your WhatsApp.">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4614208499737425" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
@@ -241,6 +242,7 @@ fbq('track', 'PageView');
       <button id="prevBtn" type="button" disabled>← Back</button>
       <button id="nextBtn" type="button" class="primary">Next →</button>
     </div>
+    <div id="adSlot" style="margin-top:24px;min-height:100px"></div>
   </div>
 </section>
 
@@ -428,6 +430,7 @@ document.getElementById('startBtn').addEventListener('click', function(){
   startTimer();
   renderQuestion();
   buildGrid();
+  refreshAd();
 });
 
 /* ============ TIMER ============ */
@@ -498,11 +501,19 @@ function updateGrid(){
   });
 }
 
+/* ============ AD REFRESH ============ */
+function refreshAd(){
+  var slot = document.getElementById('adSlot');
+  slot.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4614208499737425" data-ad-slot="3727615645" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+  try{ (adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){}
+}
+
 /* ============ NAVIGATION ============ */
 document.getElementById('nextBtn').addEventListener('click', function(){
   if(current < TOTAL-1){
     current++;
     renderQuestion();
+    refreshAd();
     document.getElementById('quizSection').scrollIntoView({behavior:'smooth',block:'start'});
   } else {
     submitQuiz();
@@ -512,6 +523,7 @@ document.getElementById('prevBtn').addEventListener('click', function(){
   if(current > 0){
     current--;
     renderQuestion();
+    refreshAd();
   }
 });
 
