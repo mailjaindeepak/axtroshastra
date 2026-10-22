@@ -2774,6 +2774,11 @@ def robots():
     return PlainTextResponse(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /report/\nDisallow: /account\nSitemap: {base_url}/sitemap.xml")
 
 
+@app.get("/ads.txt", include_in_schema=False)
+def ads_txt():
+    return PlainTextResponse("google.com, pub-4614208499737425, DIRECT, f08c47fec0942fa0")
+
+
 @app.get("/api/count")
 def public_count():
     """Honest aggregate report count for the live counter. Hidden below 50."""
