@@ -304,7 +304,6 @@ async function fillBlueprint(page) {
 async function fillIqTest(page) {
   await page.fill('#f-name', 'Robot IQ');
   await page.selectOption('#f-age', '25');
-  await page.selectOption('#f-gender', 'male');
   await page.fill('#f-whatsapp', testPhone());
   await page.check('#f-consent');
   await page.locator('#infoForm button[type="submit"]').click();
