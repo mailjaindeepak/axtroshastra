@@ -1446,6 +1446,8 @@ def _inject_consent_checkbox(html: str, lang: str = "en") -> str:
     try:
         if not html:
             return html
+        if 'id="f-consent"' in html:
+            return html
         import re
         m = re.search(r'(<button\s[^>]*class="btn"[^>]*type="submit"[^>]*>)', html)
         if not m:
