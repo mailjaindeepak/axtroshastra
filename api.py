@@ -439,7 +439,7 @@ VYAPAR_PRICE_PAISE = 19900                # ₹199 — Business Growth (vyapar)
 _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
-IQ_TEST_PRICE_PAISE = 49900               # ₹499 — IQ Test report
+IQ_TEST_PRICE_PAISE = 9900                # ₹99 — IQ Test report
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
