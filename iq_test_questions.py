@@ -157,24 +157,27 @@ CATEGORY_COUNT = {cat: sum(1 for q in QUESTIONS if q["category"] == cat)
                   for cat in CATEGORY_ORDER}
 
 # ── IQ score calibration table (raw_score → base_iq) ────────────────────
-# Linear interpolation between these anchor points.
+# raw_score = (correct * 4) - wrong.  Range: -20 to 80.
+# Generous in the mid-range: 3-minute timer means fewer attempted questions.
 IQ_TABLE = [
-    (0,  70),
-    (3,  78),
-    (5,  85),
-    (7,  92),
-    (9,  98),
-    (10, 100),
-    (11, 103),
-    (12, 107),
-    (13, 111),
-    (14, 115),
-    (15, 119),
-    (16, 123),
-    (17, 127),
-    (18, 132),
-    (19, 138),
-    (20, 145),
+    (-20, 62),
+    (-10, 68),
+    (0,   74),
+    (5,   80),
+    (10,  86),
+    (15,  92),
+    (20,  97),
+    (25, 101),
+    (30, 105),
+    (35, 109),
+    (40, 113),
+    (45, 117),
+    (50, 121),
+    (55, 126),
+    (60, 131),
+    (65, 136),
+    (70, 140),
+    (80, 145),
 ]
 
 # ── Classification bands ────────────────────────────────────────────────

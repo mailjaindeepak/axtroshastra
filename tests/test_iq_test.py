@@ -112,15 +112,15 @@ def test_older_age_bonus():
 # ── time bonus ───────────────────────────────────────────────────────────
 
 def test_fast_time_bonus():
-    slow = compute_iq_report("Slow", 25, "male", _half_correct(), 900)
-    fast = compute_iq_report("Fast", 25, "male", _half_correct(), 500)
+    slow = compute_iq_report("Slow", 25, "male", _half_correct(), 180)
+    fast = compute_iq_report("Fast", 25, "male", _half_correct(), 100)
     assert fast["scores"]["time_bonus"] == 2
     assert slow["scores"]["time_bonus"] == 0
     assert fast["scores"]["iq"] == slow["scores"]["iq"] + 2
 
 
 def test_medium_time_bonus():
-    r = compute_iq_report("Medium", 25, "male", _half_correct(), 650)
+    r = compute_iq_report("Medium", 25, "male", _half_correct(), 130)
     assert r["scores"]["time_bonus"] == 1
 
 

@@ -79,12 +79,15 @@ def compute_iq_report(
     # ── score per category ───────────────────────────────────────────
     cat_correct: dict[str, int] = {c: 0 for c in CATEGORY_ORDER}
     total_correct = 0
+    total_wrong = 0
 
     for i, q in enumerate(QUESTIONS):
         chosen = answers[i] if i < len(answers) else -1
         if chosen == q["correct"]:
             cat_correct[q["category"]] += 1
             total_correct += 1
+        elif chosen >= 0:
+            total_wrong += 1
 
     cat_scores = {}
     for cat in CATEGORY_ORDER:
@@ -99,15 +102,16 @@ def compute_iq_report(
             "label": label,
         }
 
-    # ── IQ score ─────────────────────────────────────────────────────
-    base_iq = _interpolate_iq(total_correct)
+    # ── IQ score: (correct * 4) - wrong ─────────────────────────────
+    raw_score = total_correct * 4 - total_wrong
+    base_iq = _interpolate_iq(raw_score)
 
     age_adj = 2 if age <= 20 else (1 if age >= 50 else 0)
 
     time_adj = 0
-    if time_taken_seconds < 600:
+    if time_taken_seconds < 120:
         time_adj = 2
-    elif time_taken_seconds < 720:
+    elif time_taken_seconds < 150:
         time_adj = 1
 
     final_iq = round(base_iq + age_adj + time_adj)
