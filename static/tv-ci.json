@@ -1,0 +1,46 @@
+{
+  "cover": {
+    "brand": "Axtroshastra",
+    "title": "Career Intelligence Report",
+    "questions": [
+      "Will your career grow from here?",
+      "Should you stay or switch jobs?",
+      "When is your best window to move?",
+      "When is your next breakthrough?",
+      "Job or business: which path is stronger?"
+    ]
+  },
+  "trust": [
+    {"n": "14,200+", "l": "Reports"},
+    {"n": "4.8 ★", "l": "Avg Rating"},
+    {"n": "2 min", "l": "Delivery"}
+  ],
+  "caption": "Your preview — computed from your birth chart.",
+  "locked": {
+    "heading": "Your 5 career answers are ready",
+    "sub": "Locked — unlock with your complete Career Intelligence Report",
+    "questions": [
+      {"q": "Will your career grow from here?", "d": "Dasha windows for promotion, role change or new direction."},
+      {"q": "Should you stay or switch jobs?", "d": "10th house lord, Saturn transits and the stability–growth trade-off in your chart."},
+      {"q": "When is your best window to change jobs?", "d": "Upcoming dasha transitions and Jupiter transits that open career doors."},
+      {"q": "When is your next breakthrough?", "d": "The exact phase when your efforts compound and results show."},
+      {"q": "Job or business: which path is stronger?", "d": "Entrepreneurial score, independence index and what your chart favours."}
+    ],
+    "also": ["Income growth", "Next 3 years", "Best-fit roles", "12-month plan"]
+  },
+  "cta": {
+    "text": "Unlock My Complete Career Reading — ₹299",
+    "sub": "Personalised using your exact birth details",
+    "sample": "View the full sample report →",
+    "sticky": "Unlock ₹299"
+  },
+  "proof": {
+    "heading": "What others are saying",
+    "reviews": [
+      {"text": "The career DNA section nailed my working style. And the timing part helped me decide when to push for a promotion.", "who": "Ankit, 29 · Software Engineer"},
+      {"text": "I was confused about MBA vs job. The report showed my chart clearly favours independent work. Saved me 20 lakhs.", "who": "Neha, 26"},
+      {"text": "299 for 55 pages of actual analysis? I’ve paid consultants 10x for less. The 3-year roadmap alone was worth it.", "who": "Vikram, 33 · Business Analyst"}
+    ],
+    "creds": ["NASA JPL Data", "IIT-IIM Alumni", "Secure Payment"]
+  }
+}
