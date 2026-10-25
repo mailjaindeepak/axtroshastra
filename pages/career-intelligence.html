@@ -391,7 +391,7 @@ fbq('track', 'PageView');
       <p class="btn-note">Free · No card needed · Takes about 2 minutes</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹259</span></div>
+    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹299</span></div>
   </div>
 </header>
 
@@ -734,7 +734,7 @@ fbq('track', 'PageView');
     </div>
     <div class="ps-modal-foot">
       <a class="ps-modal-dl" href="/static/career-intel-sample.pdf?v=7" target="_blank" rel="noopener">Download full sample (PDF)</a>
-      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹999</s> ₹259</button>
+      <button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report &mdash; <s style="opacity:.7;font-weight:600">₹999</s> ₹299</button>
     </div>
   </div>
 </div>
@@ -875,7 +875,7 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career Intelligence Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹259</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
+    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹299</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Snapshot</a>
 </div>
@@ -1124,36 +1124,28 @@ function _buildPlanetTable(planets){
   return html;
 }
 
-function renderTeaser(t){
+async function renderTeaser(t){
   t = t || {};
   var firstName = (t.name || '').split(' ')[0] || 'You';
   var lockSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  var credSvgs = ['<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'];
+  var mc = await fetch('/static/tv-ci.json').then(function(r){ return r.json(); });
 
-  /* Cover card (injected — not in static HTML) */
+  /* Cover card */
   document.getElementById('tv-cover').innerHTML =
     '<div class="ps-cover">' +
-      '<div class="ps-cv-brand">Axtroshastra</div>' +
-      '<div class="ps-cv-title">Career Intelligence Report</div>' +
+      '<div class="ps-cv-brand">'+mc.cover.brand+'</div>' +
+      '<div class="ps-cv-title">'+mc.cover.title+'</div>' +
       '<div class="ps-cv-rule"></div>' +
       '<div class="ps-cv-name">' + _esc(t.name || 'Your Name') + '</div>' +
       '<div class="ps-cv-dob">' + _esc(_fmtDob(t.dob, t.place)) + '</div>' +
       '<div class="ps-cv-date">' + _fmtToday() + '</div>' +
-      '<ol class="ps-cv-qlist">' +
-        '<li>Will your career grow from here?</li>' +
-        '<li>Should you stay or switch jobs?</li>' +
-        '<li>When is your best window to move?</li>' +
-        '<li>When is your next breakthrough?</li>' +
-        '<li>Job or business: which path is stronger?</li>' +
-      '</ol>' +
+      '<ol class="ps-cv-qlist">'+mc.cover.questions.map(function(q){return '<li>'+q+'</li>';}).join('')+'</ol>' +
     '</div>';
 
-  /* Trust strip (injected — not in static HTML) */
+  /* Trust strip */
   document.getElementById('tv-trust').innerHTML =
-    '<div class="ps-trust">' +
-      '<div class="ps-trust-stat"><div class="tn">14,200+</div><div class="tl">Reports</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">4.8 ★</div><div class="tl">Avg Rating</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>' +
-    '</div>';
+    '<div class="ps-trust">'+mc.trust.map(function(s){return '<div class="ps-trust-stat"><div class="tn">'+s.n+'</div><div class="tl">'+s.l+'</div></div>';}).join('')+'</div>';
 
   /* Kundli chart */
   if(t.chart){
@@ -1214,52 +1206,47 @@ function renderTeaser(t){
   var ph = document.getElementById('tv-phase');
   if(ph && t.phase) ph.textContent = t.phase;
 
-  /* Locked questions + CTA + social proof (injected — not in static HTML) */
-  document.getElementById('tv-locked').innerHTML =
-    '<div class="ps-locked">' +
-      '<div class="ps-locked-heading">Your 5 career answers are ready</div>' +
-      '<div class="ps-locked-sub">Locked — unlock with your complete Career Intelligence Report</div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Will your career grow from here?</div><div class="qd">Dasha windows for promotion, role change or new direction.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Should you stay or switch jobs?</div><div class="qd">10th house lord, Saturn transits and the stability–growth trade-off in your chart.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When is your best window to change jobs?</div><div class="qd">Upcoming dasha transitions and Jupiter transits that open career doors.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When is your next breakthrough?</div><div class="qd">The exact phase when your efforts compound and results show.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Job or business: which path is stronger?</div><div class="qd">Entrepreneurial score, independence index and what your chart favours.</div></div></div>' +
-      '<div class="ps-also-grid">' +
-        '<div class="ps-also-box">' + lockSvg + ' Income growth</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Next 3 years</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Best-fit roles</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' 12-month plan</div>' +
-      '</div>' +
-      '<div style="text-align:center;margin-top:22px">' +
-        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading — ₹259</button>' +
-        '<div class="ps-subnote2">Personalised using your exact birth details</div>' +
-        '<div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report →</button></div>' +
-      '</div>' +
-      '<div class="ps-proof">' +
-        '<div class="ps-proof-h">What others are saying</div>' +
-        '<div class="ps-proof-list">' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">The career DNA section nailed my working style. And the timing part helped me decide when to push for a promotion.</div><div class="ps-proof-who">Ankit, 29 · Software Engineer</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">I was confused about MBA vs job. The report showed my chart clearly favours independent work. Saved me 20 lakhs.</div><div class="ps-proof-who">Neha, 26</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">259 for 55 pages of actual analysis? I’ve paid consultants 10x for less. The 3-year roadmap alone was worth it.</div><div class="ps-proof-who">Vikram, 33 · Business Analyst</div></div>' +
-        '</div>' +
-        '<div class="ps-cred-row">' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  var so2 = document.getElementById('sampleOpen2');
-  if(so2 && window._openSampleModal) so2.addEventListener('click', window._openSampleModal);
+  /* Locked questions + CTA + social proof */
+  var lqHtml = mc.locked.questions.map(function(item){
+    return ‘<div class="ps-lq"><div class="ps-lq-icon">’+lockSvg+’</div><div class="ps-lq-text"><div class="qt">’+item.q+’</div><div class="qd">’+item.d+’</div></div></div>’;
+  }).join(‘’);
+  var alsoHtml = mc.locked.also.map(function(a){
+    return ‘<div class="ps-also-box">’+lockSvg+’ ‘+a+’</div>’;
+  }).join(‘’);
+  var reviewsHtml = mc.proof.reviews.map(function(r){
+    return ‘<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">’+r.text+’</div><div class="ps-proof-who">’+r.who+’</div></div>’;
+  }).join(‘’);
+  var credsHtml = mc.proof.creds.map(function(c,i){
+    return ‘<div class="ps-cred-badge">’+credSvgs[i]+’ ‘+c+’</div>’;
+  }).join(‘’);
+  document.getElementById(‘tv-locked’).innerHTML =
+    ‘<div class="ps-locked">’ +
+      ‘<div class="ps-locked-heading">’+mc.locked.heading+’</div>’ +
+      ‘<div class="ps-locked-sub">’+mc.locked.sub+’</div>’ +
+      lqHtml +
+      ‘<div class="ps-also-grid">’+alsoHtml+’</div>’ +
+      ‘<div style="text-align:center;margin-top:22px">’ +
+        ‘<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">’+mc.cta.text+’</button>’ +
+        ‘<div class="ps-subnote2">’+mc.cta.sub+’</div>’ +
+        ‘<div><button type="button" class="ps-sample-link" id="sampleOpen2">’+mc.cta.sample+’</button></div>’ +
+      ‘</div>’ +
+      ‘<div class="ps-proof">’ +
+        ‘<div class="ps-proof-h">’+mc.proof.heading+’</div>’ +
+        ‘<div class="ps-proof-list">’+reviewsHtml+’</div>’ +
+        ‘<div class="ps-cred-row">’+credsHtml+’</div>’ +
+      ‘</div>’ +
+    ‘</div>’;
+  var so2 = document.getElementById(‘sampleOpen2’);
+  if(so2 && window._openSampleModal) so2.addEventListener(‘click’, window._openSampleModal);
 
   /* Caption + show */
-  var cap = document.getElementById('ps-caption');
-  if(cap) cap.textContent = 'Your preview — computed from your birth chart.';
-  var el = document.getElementById('sampleReport');
-  el.classList.add('show');
-  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
-  var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock ₹259'; sb.setAttribute('href', '#sampleReport'); }
+  var cap = document.getElementById(‘ps-caption’);
+  if(cap) cap.textContent = mc.caption;
+  var el = document.getElementById(‘sampleReport’);
+  el.classList.add(‘show’);
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:’smooth’});
+  var sb = document.getElementById(‘stickyBtn’);
+  if(sb){ sb.textContent = mc.cta.sticky; sb.setAttribute(‘href’, ‘#sampleReport’); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
@@ -1311,7 +1298,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
     box.classList.remove('show'); bar.style.width='0';
-    renderTeaser(data.teaser);
+    await renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'career_intelligence_preview'});
   }catch(err){
@@ -1352,7 +1339,7 @@ async function startPayment(){
   if(order.error === 'invalid_pass'){ alert('This free-pass link has already been used or is invalid.'); return; }
   try{ localStorage.setItem('axtro_rid', REPORT_ID); }catch(e){}
   if(window.fbq) fbq('track','InitiateCheckout');
-  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:259});
+  if(window.gtag) gtag('event','begin_checkout',{currency:'INR',value:299});
   var rzp = new Razorpay({
     key: order.key_id, order_id: order.razorpay_order_id,
     amount: order.amount, currency: order.currency,
@@ -1380,8 +1367,8 @@ async function awaitReport(){
     var d = await r.json();
     if(d.paid){
       if(!window.FREE_UNLOCK){
-        if(window.fbq) fbq('track','Purchase',{value:259,currency:'INR'},{eventID:REPORT_ID});
-        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:259});
+        if(window.fbq) fbq('track','Purchase',{value:299,currency:'INR'},{eventID:REPORT_ID});
+        if(window.gtag) gtag('event','purchase',{transaction_id:REPORT_ID,currency:'INR',value:299});
         if(window.oaiq) oaiq('measure','order_created',{type:'contents'});
       }
       setTimeout(function(){ location.href = '/report/' + REPORT_ID; }, 500);
@@ -1389,7 +1376,7 @@ async function awaitReport(){
     }
     await new Promise(function(res){ setTimeout(res, 2000); });
   }
-  btn.innerHTML = 'Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>₹999</s> ₹259</span>'; btn.disabled = false;
+  btn.innerHTML = 'Unlock My Full Career Report <span style="opacity:.75;font-weight:600">&mdash; <s>₹999</s> ₹299</span>'; btn.disabled = false;
   alert('Payment is processing — please refresh the page in a minute. Your report will be ready.');
 }
 

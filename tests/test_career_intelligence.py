@@ -38,8 +38,8 @@ def test_career_intelligence_page_serves_200(client):
 def test_career_intelligence_preview_is_verdict_style(client):
     """The redesigned preview shows trust-first data (kundli, archetype, Career DNA)
     with all 5 career answers locked behind curiosity-driving descriptions.
-    Marketing content is JS-injected (not static HTML) so bots can't crawl it;
-    we assert structural elements in HTML and marketing strings in JS."""
+    Marketing content lives in an external JSON file (tv-ci.json) loaded
+    dynamically after form submit — zero marketing strings in the page source."""
     html = client.get("/en/career-intelligence").text
     # structural elements stay in static HTML
     assert "Your Birth Chart (Kundli)" in html
@@ -51,14 +51,16 @@ def test_career_intelligence_preview_is_verdict_style(client):
     assert "tv-cover" in html
     assert "tv-trust" in html
     assert "tv-locked" in html
-    # marketing content lives in JS injection (renderTeaser)
-    assert "Career Intelligence Report" in html  # in JS string
-    assert "ps-cover" in html                    # in CSS
-    assert "ps-locked" in html                   # in CSS
-    assert "Will your career grow from here?" in html  # in JS string
-    assert "Should you stay or switch jobs?" in html
-    assert "When is your best window to change jobs?" in html  # in JS string
-    assert "Job or business: which path is stronger?" in html  # in JS string
+    # CSS class names still present in <style> block
+    assert "ps-cover" in html
+    assert "ps-locked" in html
+    # marketing text must NOT appear in the page source (lives in tv-ci.json)
+    assert "Will your career grow from here?" not in html
+    assert "Should you stay or switch jobs?" not in html
+    assert "NASA JPL Data" not in html
+    assert "What others are saying" not in html
+    # fetch reference to external data file IS present
+    assert "tv-ci.json" in html
     assert "function drawRadar(" not in html
 
 
@@ -112,12 +114,12 @@ def test_career_intelligence_best_environment_matches_report_map(client):
     assert teaser["best_environment"] == NEED_BY_DIM[teaser["top_dimension"]]
 
 
-def test_career_intelligence_price_is_259(client):
-    """Server-side price for this product is ₹259 (25900 paise), regardless of
+def test_career_intelligence_price_is_299(client):
+    """Server-side price for this product is ₹299 (29900 paise), regardless of
     the client — distinct from the base ₹499 products' price point."""
     rec = {"payload": {"product": "career_intelligence",
                        "meta": {"variant": "/en/career-intelligence"}}}
-    assert api._order_amount_paise(rec) == 25900
+    assert api._order_amount_paise(rec) == 29900
 
 
 def test_career_intelligence_varies_by_birth_data(client):
@@ -149,6 +151,18 @@ def test_career_intelligence_narrative_varies(client):
     pb = [s for s in re.split(r'(?=<section class="page)', b) if 'class="page' in s]
     differ = sum(1 for x, y in zip(pa, pb) if x != y)
     assert differ >= 40, f"only {differ}/57 pages differ — narrative not personalized"
+
+
+def test_career_intelligence_marketing_json_serves(client):
+    """The marketing content lives in static/tv-ci.json, loaded dynamically
+    by renderTeaser after form submit — must be servable and well-formed."""
+    r = client.get("/static/tv-ci.json")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["cover"]["title"]
+    assert len(data["cover"]["questions"]) == 5
+    assert len(data["locked"]["questions"]) == 5
+    assert len(data["proof"]["reviews"]) >= 2
 
 
 def test_career_intelligence_form_sends_phone_to_kundli(client):
