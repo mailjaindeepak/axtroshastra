@@ -1208,45 +1208,45 @@ async function renderTeaser(t){
 
   /* Locked questions + CTA + social proof */
   var lqHtml = mc.locked.questions.map(function(item){
-    return ‘<div class="ps-lq"><div class="ps-lq-icon">’+lockSvg+’</div><div class="ps-lq-text"><div class="qt">’+item.q+’</div><div class="qd">’+item.d+’</div></div></div>’;
-  }).join(‘’);
+    return '<div class="ps-lq"><div class="ps-lq-icon">'+lockSvg+'</div><div class="ps-lq-text"><div class="qt">'+item.q+'</div><div class="qd">'+item.d+'</div></div></div>';
+  }).join('');
   var alsoHtml = mc.locked.also.map(function(a){
-    return ‘<div class="ps-also-box">’+lockSvg+’ ‘+a+’</div>’;
-  }).join(‘’);
+    return '<div class="ps-also-box">'+lockSvg+' '+a+'</div>';
+  }).join('');
   var reviewsHtml = mc.proof.reviews.map(function(r){
-    return ‘<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">’+r.text+’</div><div class="ps-proof-who">’+r.who+’</div></div>’;
-  }).join(‘’);
+    return '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">'+r.text+'</div><div class="ps-proof-who">'+r.who+'</div></div>';
+  }).join('');
   var credsHtml = mc.proof.creds.map(function(c,i){
-    return ‘<div class="ps-cred-badge">’+credSvgs[i]+’ ‘+c+’</div>’;
-  }).join(‘’);
-  document.getElementById(‘tv-locked’).innerHTML =
-    ‘<div class="ps-locked">’ +
-      ‘<div class="ps-locked-heading">’+mc.locked.heading+’</div>’ +
-      ‘<div class="ps-locked-sub">’+mc.locked.sub+’</div>’ +
+    return '<div class="ps-cred-badge">'+credSvgs[i]+' '+c+'</div>';
+  }).join('');
+  document.getElementById('tv-locked').innerHTML =
+    '<div class="ps-locked">' +
+      '<div class="ps-locked-heading">'+mc.locked.heading+'</div>' +
+      '<div class="ps-locked-sub">'+mc.locked.sub+'</div>' +
       lqHtml +
-      ‘<div class="ps-also-grid">’+alsoHtml+’</div>’ +
-      ‘<div style="text-align:center;margin-top:22px">’ +
-        ‘<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">’+mc.cta.text+’</button>’ +
-        ‘<div class="ps-subnote2">’+mc.cta.sub+’</div>’ +
-        ‘<div><button type="button" class="ps-sample-link" id="sampleOpen2">’+mc.cta.sample+’</button></div>’ +
-      ‘</div>’ +
-      ‘<div class="ps-proof">’ +
-        ‘<div class="ps-proof-h">’+mc.proof.heading+’</div>’ +
-        ‘<div class="ps-proof-list">’+reviewsHtml+’</div>’ +
-        ‘<div class="ps-cred-row">’+credsHtml+’</div>’ +
-      ‘</div>’ +
-    ‘</div>’;
-  var so2 = document.getElementById(‘sampleOpen2’);
-  if(so2 && window._openSampleModal) so2.addEventListener(‘click’, window._openSampleModal);
+      '<div class="ps-also-grid">'+alsoHtml+'</div>' +
+      '<div style="text-align:center;margin-top:22px">' +
+        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">'+mc.cta.text+'</button>' +
+        '<div class="ps-subnote2">'+mc.cta.sub+'</div>' +
+        '<div><button type="button" class="ps-sample-link" id="sampleOpen2">'+mc.cta.sample+'</button></div>' +
+      '</div>' +
+      '<div class="ps-proof">' +
+        '<div class="ps-proof-h">'+mc.proof.heading+'</div>' +
+        '<div class="ps-proof-list">'+reviewsHtml+'</div>' +
+        '<div class="ps-cred-row">'+credsHtml+'</div>' +
+      '</div>' +
+    '</div>';
+  var so2 = document.getElementById('sampleOpen2');
+  if(so2 && window._openSampleModal) so2.addEventListener('click', window._openSampleModal);
 
   /* Caption + show */
-  var cap = document.getElementById(‘ps-caption’);
+  var cap = document.getElementById('ps-caption');
   if(cap) cap.textContent = mc.caption;
-  var el = document.getElementById(‘sampleReport’);
-  el.classList.add(‘show’);
-  if(!window.__axNoScroll) el.scrollIntoView({behavior:’smooth’});
-  var sb = document.getElementById(‘stickyBtn’);
-  if(sb){ sb.textContent = mc.cta.sticky; sb.setAttribute(‘href’, ‘#sampleReport’); }
+  var el = document.getElementById('sampleReport');
+  el.classList.add('show');
+  if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
+  var sb = document.getElementById('stickyBtn');
+  if(sb){ sb.textContent = mc.cta.sticky; sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
