@@ -7,7 +7,7 @@ blueprint) before these tests existed — a missing button here must fail CI
 and block the deploy.
 
 Covers every renderer a customer can actually be served:
-  marriage (render_report_v2), milan (milan_v2), blueprint, vidyarthi, vyapar.
+  marriage (render_report_v2), milan (milan_v2), blueprint, vidyarthi, vyapar, diwali.
 """
 import pytest
 
@@ -33,6 +33,8 @@ def _paid_report_html(client, product):
         body = dict(KUNDLI)
         if product is not None:
             body["product"] = product
+        if product == "diwali":      # English-only; needs its own funnel fields
+            body.update(variant="/en/diwali", work_type="job", steering=None, gift_mode="self")
         r = client.post("/api/kundli", json=body)
     assert r.status_code == 200, r.text
     rid = r.json()["report_id"]
@@ -44,9 +46,9 @@ def _paid_report_html(client, product):
 
 @pytest.mark.parametrize("product",
                          [None, "milan", "blueprint", "vidyarthi", "vyapar",
-                          "career_growth", "iq_test"],
+                          "career_growth", "iq_test", "diwali"],
                          ids=["marriage", "milan", "blueprint", "vidyarthi",
-                              "vyapar", "career_growth", "iq_test"])
+                              "vyapar", "career_growth", "iq_test", "diwali"])
 def test_report_page_has_pdf_and_whatsapp_buttons(client, product):
     html = _paid_report_html(client, product)
     # one-tap PDF: the renderer's sentinel must exist AND be swapped by

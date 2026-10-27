@@ -101,7 +101,8 @@ def _float(name, default):
 # Hindi output. This is only a CEILING — you pay for tokens actually generated, so
 # a high cap costs nothing extra and just prevents cut-off sections.
 # Env NARRATIVE_MAX_TOKENS overrides all products.
-MAX_TOKENS_BY_PRODUCT = {"marriage": 16000}
+DIWALI_RETRIES = 1   # extra attempts per failed Diwali group call (O-10 4)
+MAX_TOKENS_BY_PRODUCT = {"marriage": 16000, "diwali": 12000}   # diwali: per group call (4 run in parallel)
 DEFAULT_MAX_TOKENS = 4096
 
 def _max_tokens(product: str) -> int:
@@ -118,7 +119,7 @@ def _max_tokens(product: str) -> int:
 # a short timeout silently fails the whole call and drops every slot to its bank.
 # This runs as a background task at payment time, so a long timeout is safe.
 # Env NARRATIVE_TIMEOUT overrides all products.
-TIMEOUT_BY_PRODUCT = {"marriage": 180.0}
+TIMEOUT_BY_PRODUCT = {"marriage": 180.0, "diwali": 150.0}
 DEFAULT_TIMEOUT = 30.0
 
 def _timeout(product: str) -> float:
@@ -212,6 +213,16 @@ SECTION_SPECS = {
     ],
 }
 
+# Diwali: the keys, briefs and the 4 groups (A|B|C|D = the 4 parallel calls) live
+# in diwali_bank.NARR_KEYS, next to the deterministic bank that fills any slot the
+# AI misses or a guard drops. See _generate_diwali.
+try:
+    import diwali_bank as _diwali_bank
+    SECTION_SPECS["diwali"] = [(k, b) for k, b, _g in _diwali_bank.NARR_KEYS]
+except Exception as _e:                      # never break the other products
+    _diwali_bank = None
+    logger.error("[narrative] diwali_bank unavailable: %s", _e)
+
 # --------------------------------------------------------------------------- #
 # public entry
 # --------------------------------------------------------------------------- #
@@ -229,6 +240,8 @@ def generate_narrative(payload: dict) -> dict:
     spec = SECTION_SPECS.get(product)
     if not spec:
         return {}
+    if product == "diwali":
+        return _generate_diwali(payload)
     _last_call_meta.update(input_tokens=0, output_tokens=0, model="")
     t0 = time.time()
     try:
@@ -286,6 +299,116 @@ def generate_narrative(payload: dict) -> dict:
                      _provider(), product, e)
         last_generation = {"mode": "error", "latency_s": round(time.time() - t0, 2),
                            "product": product, "sections": 0}
+        return {}
+
+
+# Keys whose text may carry month names / years (the date pages + Wrapped card, O-30).
+_DIWALI_DATE_KEYS = ("timeline.", "months.", "wrapped.")
+
+
+def _diwali_facts(payload: dict) -> dict:
+    """PII-scrubbed facts for the Diwali calls: the computed payload minus the teaser,
+    any old narrative, private meta, exact birth data, and the gift block (the gift
+    giver's name and message are NEVER sent to the AI)."""
+    facts = json.loads(json.dumps({k: v for k, v in (payload or {}).items()
+                                   if k not in ("teaser", "narrative", "current_period")},
+                                  default=str))
+    meta = facts.get("meta") or {}
+    for k in list(meta):
+        if k.startswith("_") or k in ("gift", "dob", "tob", "place", "phone", "email", "report_id"):
+            meta.pop(k, None)
+    meta["name"] = meta.get("first_name") or _first_name(meta.get("name", ""))
+    facts["meta"] = meta
+    return facts
+
+
+def _diwali_value(key: str, val, allowed: set, truth: dict, bank_text: str = ""):
+    """One AI value, or None when a guard rejects it (the bank then fills the slot).
+    Returned UNESCAPED: diwali_report escapes every prose string itself (E()/e()),
+    so escaping here too would print '&amp;#x27;' in the report."""
+    if not isinstance(val, str):
+        return None
+    val = val.strip()
+    if not val or len(val) > MAX_SECTION_CHARS:
+        return None
+    if bank_text and len(val) > max(2.5 * len(bank_text), 200):   # per-key cap: far longer than the bank line
+        return None
+    if not _numbers_ok(val, allowed) or not _claims_ok(val, truth, _DIWALI_PLACEMENT_RE):
+        return None
+    if _diwali_bank.lint_text(val, allow_dates=key.startswith(_DIWALI_DATE_KEYS)):
+        return None
+    return val
+
+
+def _generate_diwali(payload: dict) -> dict:
+    """4 group calls (A front + Wrapped, B money/career/business, C family/marriage/
+    luck, D months + plan) run in parallel threads; every value is validated with
+    diwali_bank.lint_text + the number/claim guards and dropped on any problem, so
+    the deterministic bank fills it. Never raises; {} -> bank only."""
+    global last_generation
+    from concurrent.futures import ThreadPoolExecutor
+    t0 = time.time()
+    try:
+        groups = {}
+        for k, b, g in _diwali_bank.NARR_KEYS:
+            groups.setdefault(g, []).append((k, b))
+        facts = _diwali_facts(payload)
+        lang = _resolve_lang(payload)
+        allowed = _allowed_numbers(facts)
+        truth = _planet_truth({"chart": {"planets": {
+            p.get("name", ""): p for p in ((facts.get("chart") or {}).get("planets") or [])}}})
+
+        def one(spec):
+            system = (_system_prompt("diwali", spec, lang)
+                      + "Diwali report rules (hard, they override anything above: no emojis, no astrology terms, "
+                         "do not explain dasha, transit or yoga): " + _diwali_bank.AI_RULES + "\n")
+            data, usage = {}, {}
+            for _attempt in range(1 + DIWALI_RETRIES):   # a failed piece retries (O-10 4)
+                raw = _call(system, _user_prompt(facts, spec),
+                            _max_tokens("diwali"), _timeout("diwali"))
+                # ponytail: token counts come from the shared _last_call_meta, so with
+                # 4 parallel calls they're approximate; make it thread-local if billing needs exact.
+                usage = dict(_last_call_meta)
+                data = _parse_json(raw) if raw else {}
+                if isinstance(data, dict) and data:
+                    return data, usage
+            return {}, usage
+
+        with ThreadPoolExecutor(max_workers=len(groups)) as ex:
+            results = list(ex.map(one, groups.values()))
+        try:
+            _bank_txt = {k: v for k, v in _diwali_bank.bank(payload).items() if isinstance(v, str)}
+        except Exception:
+            _bank_txt = {}
+        out = {}
+        for (data, _u), spec in zip(results, groups.values()):
+            for key, _b in spec:
+                v = _diwali_value(key, data.get(key), allowed, truth, _bank_txt.get(key))
+                if v is not None:
+                    out[key] = v
+                elif key in data:
+                    logger.warning("[narrative] diwali %r dropped by a guard", key)
+        total = sum(len(s) for s in groups.values())
+        failed = [g for (data, _u), g in zip(results, groups) if not data]
+        if failed:   # never ship bank text silently (O-10 4): flag it loudly + in the log row
+            logger.error("[narrative] diwali groups %s failed after retry -> bank text", failed)
+        logger.info("[narrative] %s/diwali model=%s -> %d/%d sections generated",
+                    _provider(), _model(), len(out), total)
+        last_generation = {
+            "mode": ("fallback" if not out else
+                     "partial fallback" if failed else "live Claude"),
+            "fallback_groups": failed,
+            "latency_s": round(time.time() - t0, 2), "product": "diwali",
+            "sections": len(out), "total_sections": total,
+            "input_tokens": sum(u.get("input_tokens", 0) for _d, u in results),
+            "output_tokens": sum(u.get("output_tokens", 0) for _d, u in results),
+            "model": next((u.get("model") for _d, u in results if u.get("model")), ""),
+        }
+        return out
+    except Exception as e:
+        logger.error("[narrative] diwali generation failed: %s", e)
+        last_generation = {"mode": "error", "latency_s": round(time.time() - t0, 2),
+                           "product": "diwali", "sections": 0}
         return {}
 
 
@@ -528,6 +651,11 @@ _SIGN_ALT = "|".join(_SIGNS_SA + _SIGNS_EN)
 # "<planet> [up to 30 non-sentence chars] in [the] <sign>"
 _PLACEMENT_RE = re.compile(
     r"\b(%s)\b[^.?!]{0,30}?\bin\s+(?:the\s+)?(%s)\b" % (_PLANET_ALT, _SIGN_ALT), re.I)
+# Diwali only: same, but no other planet name in the gap -- the sign belongs to the
+# NEAREST planet before it ("Jupiter ... your Sun in Karka" is a Sun claim).
+_DIWALI_PLACEMENT_RE = re.compile(
+    r"\b(%s)\b(?:(?!\b(?:%s)\b)[^.?!]){0,30}?\bin\s+(?:the\s+)?(%s)\b"
+    % (_PLANET_ALT, _PLANET_ALT, _SIGN_ALT), re.I)
 _PLANET_RE = re.compile(r"\b(%s)\b" % _PLANET_ALT, re.I)
 # a dignity adjective in the window just after a planet name
 _DIGNITY_RE = re.compile(r"\b(exalted|debilitat\w*|debilited|own\s+sign)\b", re.I)
@@ -551,11 +679,11 @@ def _planet_truth(facts: dict) -> dict:
         t["dignities"].add((info.get("dignity") or "neutral").lower())
     return truth
 
-def _claims_ok(text: str, truth: dict) -> bool:
+def _claims_ok(text: str, truth: dict, placement_re=_PLACEMENT_RE) -> bool:
     """False if the prose asserts a planet placement or dignity that the chart contradicts."""
     if not truth:
         return True
-    for m in _PLACEMENT_RE.finditer(text):
+    for m in placement_re.finditer(text):
         t = truth.get(m.group(1).lower())
         si = _sign_index(m.group(2))
         if t and si >= 0 and t["signs"] and si not in t["signs"]:
