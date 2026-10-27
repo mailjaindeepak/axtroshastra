@@ -121,7 +121,8 @@ def _third_party_imports(path):
             found.add(mod)
     local = {p.stem for p in _REPO.glob("*.py")} | {
         p.name for p in _REPO.iterdir() if p.is_dir() and (p / "__init__.py").exists()
-    } | {p.stem for p in (_REPO / "db").glob("*.py")} | {"tests"}
+    } | {p.stem for p in (_REPO / "db").glob("*.py")} | {"tests"} | {
+        p.stem for p in (_REPO / "tests").glob("*.py")}   # sibling test modules (test_diwali_versions imports test_diwali_pipeline)
     # db/ holds first-party v2 modules (db_v2, reports_v2, payments_v2, …) that
     # api.py adds to sys.path at import — first-party, not PyPI dependencies.
     return found - _STDLIB - local - {"__future__"}
@@ -161,6 +162,7 @@ _IMPORT_TO_PACKAGE = {
     "mysql": "pymysql",
     "xhtml2pdf": "xhtml2pdf",
     "_pytest": "pytest",
+    "fitz": "pymupdf",
 }
 
 

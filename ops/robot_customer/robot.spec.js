@@ -47,7 +47,7 @@ test.beforeAll(() => {
 // read /healthz {version} and run a feature's tests only when its commit is an
 // ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
 const PENDING_DEPLOY = new Set(
-  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth')
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth,/en/diwali')
     .split(',').map((s) => s.trim()).filter(Boolean),
 );
 
@@ -98,6 +98,7 @@ const ALL_PAGES = [
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
   { path: '/en/iq-test',         label: 'IQ Test (EN)' },
+  { path: '/en/diwali',          label: 'Diwali Report (EN)' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
   { path: '/blog/kundli-milan-36-gun',                 label: 'Blog: 36 Gun' },
@@ -315,6 +316,24 @@ async function fillIqTest(page) {
   }
 }
 
+// Diwali: single person, #kundliForm, gender + work type + WhatsApp in-form
+// ("For me" mode, area left on "skip"). Submit shows the free preview (#teaser)
+// and sets REPORT_ID; payment is a separate click inside the preview.
+async function fillDiwali(page) {
+  await page.fill('#f-name', 'Test Kavita');
+  await page.selectOption('#f-gender', 'female');
+  await page.fill('#f-dd', '18');
+  await page.selectOption('#f-mm', '07');
+  await page.fill('#f-yy', '1990');
+  await page.selectOption('#f-hh', TIME.hh);
+  await page.fill('#f-mm2', TIME.mm);
+  await page.selectOption('#f-ap', TIME.ap);
+  await pickCity(page, 'f', 'Delhi');
+  await page.selectOption('#f-work', 'job');
+  await page.fill('#f-whatsapp', testPhone());
+  await page.locator('#kundliForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
 const FUNNELS = [
   {
@@ -372,6 +391,13 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillBlueprint,
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
+  },
+  {
+    name: 'diwali',
+    paths: { en: '/en/diwali' },
+    form: '#kundliForm',
+    fill: fillDiwali,
+    hasTeaser: true,    // free preview (#teaser) from the /api/kundli teaser
   },
   {
     name: 'iq-test',

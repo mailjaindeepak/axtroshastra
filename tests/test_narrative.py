@@ -142,3 +142,21 @@ def test_narr_accessor():
 def test_parse_json_strips_code_fences():
     assert narrative._parse_json('```json\n{"a": 1}\n```') == {"a": 1}
     assert narrative._parse_json('prose {"a": 2} trailing') == {"a": 2}
+
+
+def test_diwali_system_prompt_overrides_emoji_and_jargon():
+    import inspect, narrative
+    src = inspect.getsource(narrative)
+    assert "no emojis, no astrology terms" in src
+    import diwali_bank
+    assert "Do: chase two old dues" in diwali_bank.AI_RULES and "No emojis" in diwali_bank.AI_RULES
+
+
+def test_diwali_value_per_key_cap():
+    import narrative
+    bank = "x" * 150
+    ok = ("Plain words here. " * 12)[:225]
+    assert narrative._diwali_value("money.read", "Plain words. " * 123, set(), {}, bank) is None
+    assert narrative._diwali_value("money.read", ok, set(), {}, bank) == ok.strip()
+    # no bank text -> no per-key cap (only the global MAX_SECTION_CHARS applies)
+    assert narrative._diwali_value("money.read", "Plain words. " * 20, set(), {}) is not None

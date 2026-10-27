@@ -19,7 +19,7 @@ Razorpay dashboard prerequisites:
   1. Settings > Payment capture -> AUTO capture (else payment.captured never fires)
   2. Settings > Webhooks -> https://<your-domain>/api/webhook , event: payment.captured
 """
-import hashlib, hmac, json, logging, os, secrets, sqlite3, threading, time
+import hashlib, hmac, json, logging, os, re, secrets, sqlite3, threading, time
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -163,7 +163,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "blueprint": "Life Blueprint", "vidyarthi": "Career & Academic Timing",
                   "vyapar": "Business Growth Report", "career_growth": "Career Report",
                   "career_intelligence": "Career Intelligence Report",
-                  "career_intelligence_v2": "Career Intelligence Report"}
+                  "career_intelligence_v2": "Career Intelligence Report",
+                  "diwali": "Diwali Wealth & Prosperity Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -204,6 +205,10 @@ PRODUCT_SVG = {
     "career_intelligence_v2": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                                '<path d="M20.5 11.5 L14.5 14.5 L11.5 20.5 L17.5 17.5 Z"/>'
                                '<circle cx="16" cy="16" r="1.3"/></svg>',
+    # diwali — a diya with three rays above the flame.
+    "diwali": _SVG_OPEN + '<path d="M6 21 H26 Q16 28 6 21 Z"/>'
+              '<path d="M16 20 C13 16.5 16 14 16 10.5 C16 14 19 16.5 16 20 Z"/>'
+              '<path d="M16 4 V6.5 M10 6.5 L11.5 8.5 M22 6.5 L20.5 8.5"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -395,6 +400,9 @@ def _render_for(product, payload):
         return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_intelligence_v2":
         return career_intelligence_report.render_career_intelligence(payload)
+    if product == "diwali":                      # English-only (Hindi later)
+        import diwali_report
+        return diwali_report.render_diwali(payload)
     if product == "career_growth":
         html = career_growth_report.render_career_growth(payload)
         if (payload.get("meta") or {}).get("lang") == "hi":
@@ -440,6 +448,7 @@ _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 IQ_TEST_PRICE_PAISE = 4900                # ₹49 — IQ Test report
+DIWALI_PRICE_PAISE = 49900                # ₹499 — Diwali Wealth & Prosperity Report (by product, never by variant)
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
@@ -451,6 +460,8 @@ def _order_amount_paise(rec: dict) -> int:
     product = rec.get("product") or payload.get("product") or ""
     if product == "iq_test":
         return IQ_TEST_PRICE_PAISE
+    if product == "diwali":
+        return DIWALI_PRICE_PAISE
     if product == "career_intelligence_v2":
         return CAREER_INTEL_V2_PRICE_PAISE
     if product == "career_intelligence":
@@ -550,7 +561,16 @@ def _generate_narrative_task(rid):
     try:
         rec = get_report(rid)
         if rec:
-            save_narrative(rid, narrative.generate_narrative(rec["payload"]))
+            narr = narrative.generate_narrative(rec["payload"])
+            if (rec["payload"] or {}).get("product") == "diwali":
+                # Diwali's progress screen polls /api/report/{rid} until report.narrative
+                # exists. With AI off/failed the bank text IS the final text, so mark the
+                # text step done either way (the renderer never reads "_ready").
+                narr = {**narr, "_ready": "1"}
+                failed = (narrative.last_generation or {}).get("fallback_groups")
+                if failed:   # bank text shipped for these groups — keep it visible (O-10 4)
+                    narr["_fallback"] = ",".join(failed)
+            save_narrative(rid, narr)
             if narrative.last_generation:
                 try:
                     from dashboard.store import llm_log_add
@@ -567,6 +587,12 @@ def _generate_narrative_task(rid):
 # legacy test suite; it just isn't called on boot any more.)
 
 # ----------------------------------------------------------------- models
+# Whole HTML tags/comments only ("<b>x</b>" -> "x"); a word in brackets like "<Maa>" is not a
+# tag, so only its brackets go ("From Maa with love"). "<3" keeps its "3".
+_GIFT_TAG = re.compile(r"<!--.*?-->|<[!/?]?[A-Za-z][^<>]*>", re.S)   # any tag-shaped run; "a < b", "<3" survive
+_GIFT_JUNK = re.compile(r"[\x00-\x08\x0b-\x1f\x7f<>]")   # keeps \n; controls/stray brackets out
+
+
 class KundliIn(BaseModel):
     name: str
     dob: str
@@ -591,6 +617,25 @@ class KundliIn(BaseModel):
     experience: str | None = None            # career_growth only: personalization, never affects scoring
     consent_ts: str | None = None            # ISO timestamp when Terms/Privacy was accepted
     consent_v: str | None = None             # policy version tag (e.g. "2026-09")
+    work_type: str | None = None             # diwali only: job | business | student | home
+    steering: str | None = None              # diwali only: area picked first, or None = skipped
+    gift_mode: str | None = None             # diwali only: self | gift
+    giver_name: str | None = None            # diwali gift only: printed on the gift page
+    gift_message: str | None = None          # diwali gift only: printed on the gift page;
+                                             # never sent to the AI or to ad tracking
+
+    @field_validator("giver_name", "gift_message")
+    @classmethod
+    def _gift_text(cls, v, info):
+        """Plain text only: drop whole tags, control characters and stray angle
+        brackets, then enforce the same limits the form enforces (40 / 200)."""
+        if v is None:
+            return None
+        v = _GIFT_JUNK.sub("", _GIFT_TAG.sub("", v).replace("\t", " ")).strip()
+        limit = 40 if info.field_name == "giver_name" else 200
+        if len(v) > limit:
+            raise ValueError(f"{info.field_name} must be at most {limit} characters")
+        return v
 
     @field_validator("time_quality")
     @classmethod
@@ -1656,6 +1701,16 @@ def _identify_visitor(conn, request, user_id):
 def create_kundli(inp: KundliIn, request: Request):
     if not captcha_ok(inp.captcha_token or "", ""):   # (#4)
         raise HTTPException(400, "captcha_failed")
+    if inp.product == "diwali":                       # explicit errors, never a guessed default (§1)
+        import diwali
+        if inp.gender not in ("male", "female"):
+            raise HTTPException(422, "gender must be male or female")
+        if inp.work_type not in diwali.WORK_TYPES:
+            raise HTTPException(422, "work_type required")
+        if inp.steering and inp.steering not in diwali.STEERING:
+            raise HTTPException(422, "bad steering")
+        if inp.gift_mode not in (None, "", "self", "gift"):
+            raise HTTPException(422, "bad gift_mode")
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
         tob = inp.tob
@@ -1700,6 +1755,14 @@ def create_kundli(inp: KundliIn, request: Request):
         report = career_intelligence_report.compute_career_intelligence(
             inp.name, inp.dob, tob, tz, lat, lon, gender=(inp.gender or "male"),
             place=inp.place or "", time_quality=inp.time_quality)
+    elif inp.product == "diwali":
+        gift_on = inp.gift_mode == "gift"
+        report = diwali.compute_diwali(
+            inp.name, inp.dob, tob, tz, lat, lon, gender=inp.gender,
+            work_type=inp.work_type, steering=inp.steering or None,
+            time_quality=inp.time_quality, gift_on=gift_on,
+            giver_name=inp.giver_name or "", gift_message=inp.gift_message or "",
+            place=inp.place or "")
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -1711,7 +1774,8 @@ def create_kundli(inp: KundliIn, request: Request):
         report["meta"]["consent_ts"] = inp.consent_ts
         report["meta"]["consent_v"] = inp.consent_v or "2026-09"
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
-    report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
+    if inp.product != "diwali":                  # diwali sets its own meta.lang ("en", English-only)
+        report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
     if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
         import career_growth_hi
         report["teaser"] = career_growth_hi.translate_teaser(report["teaser"])
@@ -1722,7 +1786,7 @@ def create_kundli(inp: KundliIn, request: Request):
     # fields the client already expects in English (moon_sign_en, lagna_en).
     report["meta"]["geo_source"] = geo_source
     try:
-        if report.get("chart"):
+        if report.get("chart") and inp.product != "diwali":   # diwali's teaser draws its own kundli
             report["teaser"]["chart_svg"] = north_chart_svg(report)
     except Exception:
         pass         # (#1) provenance
@@ -1831,6 +1895,52 @@ class OrderIn(BaseModel):
     model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
+DIWALI_STILL_COMING_S = 120.0   # O-10 (4): "still on its way" WhatsApp if not ready by then
+
+
+def send_whatsapp_text(phone: str, rid: str, name: str) -> None:
+    """The approved TEXT template ({{1}} name, {{2}} report link) on its own: Diwali's
+    instant 'being prepared' message and its 2-minute 'still on its way' nudge (O-10).
+    Skipped when Twilio or the text template isn't configured. Never raises; does not
+    mark the report sent (only the final report message does)."""
+    if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_FROM and TWILIO_CONTENT_SID_TEXT
+            and phone and PUBLIC_BASE_URL):
+        return
+    try:
+        from twilio.rest import Client
+        to = phone if phone.startswith("+") else "+91" + phone[-10:]
+        Client(TWILIO_SID, TWILIO_TOKEN).messages.create(
+            from_=TWILIO_FROM, to=f"whatsapp:{to}", content_sid=TWILIO_CONTENT_SID_TEXT,
+            content_variables=json.dumps({"1": name, "2": f"{PUBLIC_BASE_URL}/report/{rid}"}))
+    except Exception as e:
+        logger.error("[twilio] text send failed for %s: %s", rid, e)
+
+
+def _deliver_diwali_task(rid: str, wa_phone: str, name: str) -> None:
+    """Diwali only (bugs.md #1, O-10): an instant WhatsApp text (text template, report
+    link) right after payment; then AI text, then drop any stale PDF and build it from
+    the final text, THEN the report WhatsApp (media template when the PDF is publicly
+    fetchable, else the text template — send_whatsapp_report picks). If that isn't done
+    within DIWALI_STILL_COMING_S, a 'still on its way' text with the link goes out.
+    Sequential on purpose; each step never raises, so a failed step can't block the next."""
+    timer = None
+    if wa_phone:
+        send_whatsapp_text(wa_phone, rid, name)
+        timer = threading.Timer(DIWALI_STILL_COMING_S, send_whatsapp_text,
+                                (wa_phone, rid, name))
+        timer.daemon = True
+        timer.start()
+    try:
+        _generate_narrative_task(rid)
+        pdfgen.invalidate(rid)
+        _pregenerate_pdf_task(rid)
+    finally:
+        if timer:
+            timer.cancel()
+    if wa_phone:
+        send_whatsapp_report(wa_phone, rid, name, "diwali")
+
+
 def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = "",
                          pay_email: str = "", background=None) -> None:
     """Shared 'the report is paid -> deliver it' path (Piece 5, 5b). Used by the
@@ -1868,11 +1978,14 @@ def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = ""
                 logger.error("[deliver] %s failed for %s: %s",
                              getattr(fn, "__name__", fn), rid, e)
 
-    _run(_pregenerate_pdf_task, rid)           # PDF first so WhatsApp can attach it
-    _run(_generate_narrative_task, rid)
-    if wa_phone:
-        _run(send_whatsapp_report, wa_phone, rid, name, product)
+    if product == "diwali":                    # text -> PDF -> WhatsApp, in that order
+        _run(_deliver_diwali_task, rid, wa_phone, name)
     else:
+        _run(_pregenerate_pdf_task, rid)       # PDF first so WhatsApp can attach it
+        _run(_generate_narrative_task, rid)
+        if wa_phone:
+            _run(send_whatsapp_report, wa_phone, rid, name, product)
+    if not wa_phone:
         logger.info("[deliver] %s has no popup number — paid + generated, "
                     "WhatsApp skipped", rid)
     if form_email:
@@ -2250,7 +2363,7 @@ def _refresh_current_period(payload: dict) -> dict:
     from stored birth data so it is accurate as of *now*, not frozen at the time
     the report was created. No-op if birth data is missing (e.g. milan)."""
     birth = (payload.get("meta") or {}).get("_birth")
-    if not birth:
+    if not birth or payload.get("product") == "diwali":   # diwali: fixed as_of, month-free teaser
         return payload
     try:
         from engine import compute_chart, current_period
@@ -2564,6 +2677,31 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
         return html
 
 
+# Diwali's card report carries no action buttons of its own: add the standard pair
+# here (served page only — the PDF renders _render_for's HTML, without this bar).
+# The print sentinel is swapped for axPdfDl() by _wire_pdf_download.
+_DIWALI_ACTIONS = (
+    '<style>.ax-dwbar{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:flex;gap:10px;'
+    'justify-content:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom));'
+    'background:rgba(21,28,57,.96)}.ax-dwbar a,.ax-dwbar button{flex:1;max-width:200px;border:0;'
+    'border-radius:10px;padding:12px 14px;font:600 14px/1 system-ui,sans-serif;cursor:pointer;'
+    'text-decoration:none;text-align:center}.ax-dwbar #ax-pdf{background:#E4B04A;color:#151C39}'
+    '.ax-dwbar .ax-share{background:#25D366;color:#fff}body{padding-bottom:72px}'
+    '@media print{.ax-dwbar{display:none!important}body{padding-bottom:0}}</style>'
+    '<div class="ax-dwbar"><a id="ax-pdf" href="#" onclick="window.print();return false;">'
+    'Download PDF</a><button class="ax-share" type="button" onclick="axShare()">'
+    'Share on WhatsApp</button></div>'
+    "<script>window.axShare=function(){var u=location.href,t='My Diwali report from Axtroshastra';"
+    "if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:u}).catch(function(){});}"
+    "else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+u),'_blank');}};</script>")
+
+
+def _add_diwali_actions(html: str) -> str:
+    if "</body>" in html:
+        return html.replace("</body>", _DIWALI_ACTIONS + "</body>", 1)
+    return html + _DIWALI_ACTIONS
+
+
 @app.get("/report/{rid}.pdf", include_in_schema=False)
 def report_pdf_dotext(rid: str):
     """Same file as /report/{rid}/pdf, reachable at a dot-extension address.
@@ -2597,6 +2735,8 @@ def report_page(rid: str, v2: int = 1):
         except Exception as e:
             logger.error("[v2] render failed for %s: %s", rid, e)   # fall through to v1
     html = _render_for(payload.get("product", "marriage"), payload)
+    if payload.get("product") == "diwali":
+        html = _add_diwali_actions(html)
     return HTMLResponse(_wire_report_chrome(html, rid, lang))
 
 
@@ -2757,7 +2897,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/iq-test", "/blog",
+            "/en/career-intelligence", "/en/iq-test", "/en/diwali", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3316,6 +3456,19 @@ def business_growth_redirect(request: Request):
     query string rather than break those. Defined before /{slug} so it wins."""
     q = request.url.query
     return RedirectResponse("/en/business-growth" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/diwali", include_in_schema=False)
+def diwali_en():
+    """Diwali Wealth & Prosperity Report landing (English; Hindi later)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "diwali.html"))
+
+
+@app.get("/diwali", include_in_schema=False)
+def diwali_redirect(request: Request):
+    """Legacy /diwali → /en/diwali (301), query string kept. Before /{slug}."""
+    q = request.url.query
+    return RedirectResponse("/en/diwali" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/en/marriage-v2", include_in_schema=False)
