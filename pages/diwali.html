@@ -394,8 +394,6 @@ fbq('track', 'PageView');
     <button type="button" class="sample-jump" id="heroSampleBtn">See a sample report</button>
 
     <form class="form-card" id="kundliForm" autocomplete="on" novalidate>
-      <p class="fc-title">Free preview first. Pay only if you like it.</p>
-
       <div class="seg" role="radiogroup" aria-label="Who is this report for?">
         <label><input type="radio" name="mode" value="self" id="m-self" checked>For me</label>
         <label><input type="radio" name="mode" value="gift" id="m-gift">As a gift</label>
@@ -485,10 +483,8 @@ fbq('track', 'PageView');
         <div class="field-hint" id="h-wa"></div>
         <div class="field-sub">Your report PDF is sent here. Make sure it is your WhatsApp number.</div>
       </div>
-      <button class="btn" type="submit" id="submitBtn">See my free Diwali preview</button>
-      <p class="btn-note">Free preview · Full report <s>₹999</s> ₹499 · No card needed now</p>
+      <button class="btn" type="submit" id="submitBtn">Check my Diwali report</button>
     </form>
-    <div class="offer-timer" id="offerTimer">🪔 Diwali offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -699,7 +695,7 @@ fbq('track', 'PageView');
 <section class="final">
   <div class="wrap">
     <h2>Start this Diwali knowing <em>your good months ahead.</em></h2>
-    <a class="btn" href="#kundliForm">See my free Diwali preview</a>
+    <a class="btn" href="#kundliForm">Check my Diwali report</a>
   </div>
 </section>
 
@@ -715,8 +711,8 @@ fbq('track', 'PageView');
 
 <div class="sticky" id="stickyBar" hidden role="region" aria-label="Get your report">
   <div class="in">
-    <div class="t"><b id="stT1">Diwali Wealth &amp; Prosperity Report</b><span id="stT2">Free preview · full report <s>₹999</s> ₹499</span></div>
-    <button type="button" id="stickyBtn">Free preview</button>
+    <div class="t"><b id="stT1">Diwali Wealth &amp; Prosperity Report</b></div>
+    <button type="button" id="stickyBtn">Check my Diwali report</button>
   </div>
 </div>
 
@@ -992,7 +988,7 @@ $('kundliForm').addEventListener('submit',async function(e){
     alert(err.message+'. Please try again.');
   }finally{
     clearInterval(stepTimer); bar.style.width='0';
-    btn.textContent='See my free Diwali preview'; btn.disabled=false;
+    btn.textContent='Check my Diwali report'; btn.disabled=false;
   }
 });
 
