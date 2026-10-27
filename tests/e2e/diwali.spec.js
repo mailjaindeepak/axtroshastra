@@ -106,7 +106,7 @@ test.beforeEach(async ({ page }) => {
 test('Landing: head tags, ₹499 shown, no sideways scroll', async ({ page }, testInfo) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.axtroshastra.com/en/diwali');
   await expect(page.locator('link[hreflang="hi"]')).toHaveCount(0);
-  await expect(page.locator('.btn-note')).toContainText('₹499');
+  await expect(page.locator('#submitBtn')).toContainText('Check my Diwali report');
   await noHorizontalScroll(page);
   await page.evaluate(() => document.fonts && document.fonts.ready);
   await shot(page, testInfo, 'landing');
@@ -223,14 +223,8 @@ test('Parity with the other product pages: trust, why, birth-time section, FAQ, 
   await expect(page.locator('footer')).toContainText('not certainties');
   // things deliberately NOT copied from the CI page (owner / bugs.md)
   await expect(page.locator('#reportCount')).toHaveCount(0);
-  // owner (27 Oct) asked for the CI offer countdown + struck ₹999 back: present and counting down
-  await expect(page.locator('#offerTimer')).toBeVisible();
-  const clk = page.locator('#otClock');
-  await expect(clk).toHaveText(/^\d\d:\d\d$/);
-  const t0 = await clk.textContent();
-  await page.waitForTimeout(2200);
-  expect(await clk.textContent()).not.toBe(t0);
-  await expect(page.locator('#offerTimer s')).toHaveText('₹999');
+  // offer timer removed (owner 27 Oct) — confirm it is gone
+  await expect(page.locator('#offerTimer')).toHaveCount(0);
   const body = await page.locator('body').textContent();
   expect(body).not.toMatch(/14,200|25,000|people viewing|AstroSage/);
   // the unlock box carries reviews + badges; reviews never use em or en dashes (CLAUDE.md §5c)
