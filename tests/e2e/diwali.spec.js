@@ -222,9 +222,17 @@ test('Parity with the other product pages: trust, why, birth-time section, FAQ, 
     .toContainText('Moon sign');
   await expect(page.locator('footer')).toContainText('not certainties');
   // things deliberately NOT copied from the CI page (owner / bugs.md)
-  await expect(page.locator('#offerTimer, #otClock, #reportCount')).toHaveCount(0);
+  await expect(page.locator('#reportCount')).toHaveCount(0);
+  // owner (27 Oct) asked for the CI offer countdown + struck ₹999 back: present and counting down
+  await expect(page.locator('#offerTimer')).toBeVisible();
+  const clk = page.locator('#otClock');
+  await expect(clk).toHaveText(/^\d\d:\d\d$/);
+  const t0 = await clk.textContent();
+  await page.waitForTimeout(2200);
+  expect(await clk.textContent()).not.toBe(t0);
+  await expect(page.locator('#offerTimer s')).toHaveText('₹999');
   const body = await page.locator('body').textContent();
-  expect(body).not.toMatch(/14,200|25,000|people viewing|AstroSage|₹999/);
+  expect(body).not.toMatch(/14,200|25,000|people viewing|AstroSage/);
   // the unlock box carries reviews + badges; reviews never use em or en dashes (CLAUDE.md §5c)
   await expect(page.locator('#unlock .lb-rev')).toHaveCount(3);
   for (const t of await page.locator('#unlock .lb-rev p, .revs .rev p').allTextContents()) expect(t).not.toMatch(/[\u2013\u2014]/);
@@ -274,6 +282,8 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   expect(data.teaser.questions).toEqual(MONEY_QS);
   await expect(page.locator('#lbQs .lq svg use')).toHaveCount(5);
   await expect(page.locator('#unlockBtn')).toContainText('₹499');
+  await expect(page.locator('#unlockBtn s')).toHaveText('₹999');
+  await expect(page.locator('#unlockBtn')).toContainText(/₹999\s*₹499/);
   await expect(page.locator('#chartSum')).toContainText(/\d+ planets? in strong positions/);
   await noHorizontalScroll(page);
 

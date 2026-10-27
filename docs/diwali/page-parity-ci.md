@@ -17,8 +17,8 @@ Status key: **present** = already on the Diwali page · **ADDED** = inserted in 
 | 9 | `.tob-toggle` "Don't know your exact birth time? … It's our specialty." + hidden `#tobApprox` "Approximate time" select | **ADDED** (Job 2) | replaces the "How sure are you of the birth time?" select (owner) |
 | 10 | Time mapping to `/api/kundli` | **ADDED** (Job 2) | exact → `T0` + `tob`; part of the day → `T2` + `time_band` (`subah/din/shaam/raat` = `api.py` `BAND_MID` keys); "No idea at all" → `T3`. Partial time or ticked-with-no-band → inline error (CLAUDE.md §1) |
 | 11 | Consent checkbox (Terms/Privacy) | present | injected server-side by `api.py`, not in the page file |
-| 12 | 30-minute launch-offer countdown (`#offerTimer`, sticky clock) | **NOT COPIED** | owner + bugs.md: fake urgency |
-| 13 | Strikethrough ₹999 anchor price | **NOT COPIED** | no real ₹999 price; the Diwali price is ₹499 everywhere, server-set |
+| 12 | 30-minute launch-offer countdown (`#offerTimer`, sticky clock) | **ADDED** (owner, 27 Oct) | same logic as CI: 30 min from first visit, kept in `sessionStorage` (`axs_diwali_offer_end`), stops at 00:00. Shown under the form and in the sticky bar |
+| 13 | Strikethrough ₹999 anchor price | **ADDED** (owner, 27 Oct) | `<s>₹999</s> ₹499` in form note, offer box, unlock button, fine print, sticky bar, sample modal button. Charged price stays ₹499 (server 49900) |
 | 14 | Trust strip (data quality, IIT–IIM alumni, speed) | present + **ADDED** | kept the 3 product facts; added "Exact planet positions" and "Built by IIT–IIM alumni". The engine uses Swiss Ephemeris, so "NASA JPL data" was not claimed |
 | 15 | Calculating overlay with steps + progress bar | present | `#calcOv` |
 | 16 | Preview cover card (brand, title, name, birth line, 5 questions) | present | |

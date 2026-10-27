@@ -43,6 +43,11 @@ h1,h2,h3{font-family:var(--display);line-height:1.12}
 .btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sindoor-dark)}
 .btn:disabled{opacity:.7;cursor:wait}
 .btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
+.offer-timer{margin:16px auto 0;max-width:360px;background:#fff;border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(228,176,74,.18)}
+.offer-timer b.clk,.sticky b.clk{font-variant-numeric:tabular-nums;font-weight:800;display:inline;white-space:nowrap}
+.offer-timer b.clk{color:var(--midnight);background:#FFF1D0;border:1px solid var(--haldi);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
+.offer-timer s{color:var(--muted)}.offer-timer .amt{color:var(--sindoor);font-weight:800}
+.sticky .t b.amt{display:inline;font-size:inherit;color:var(--haldi)}.sticky .t b.clk{font-size:inherit;color:#fff}.sticky .t s{opacity:.7}
 .btn-note{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
 section{padding:52px 0}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -481,8 +486,9 @@ fbq('track', 'PageView');
         <div class="field-sub">Your report PDF is sent here. Make sure it is your WhatsApp number.</div>
       </div>
       <button class="btn" type="submit" id="submitBtn">See my free Diwali preview</button>
-      <p class="btn-note">Free preview · Full report ₹499 · No card needed now</p>
+      <p class="btn-note">Free preview · Full report <s>₹999</s> ₹499 · No card needed now</p>
     </form>
+    <div class="offer-timer" id="offerTimer">🪔 Diwali offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -590,8 +596,8 @@ fbq('track', 'PageView');
         <h4>Also in your report, all from your chart</h4>
         <div class="also-grid" id="alsoGrid"></div>
       </div>
-      <button class="cta" type="button" id="unlockBtn">Unlock my Diwali report · ₹499</button>
-      <p class="fine">One-time payment of ₹499 · PDF on WhatsApp and on screen</p>
+      <button class="cta" type="button" id="unlockBtn">Unlock my Diwali report · <s style="opacity:.7;font-weight:600">₹999</s> ₹499</button>
+      <p class="fine">One-time payment of <s>₹999</s> ₹499 · PDF on WhatsApp and on screen</p>
       <button type="button" class="sample-link" id="sampleOpen2">See a sample report</button>
       <div class="lb-proof">
         <h4>What others are saying</h4>
@@ -709,7 +715,7 @@ fbq('track', 'PageView');
 
 <div class="sticky" id="stickyBar" hidden role="region" aria-label="Get your report">
   <div class="in">
-    <div class="t"><b id="stT1">Diwali Wealth &amp; Prosperity Report</b><span id="stT2">Free preview · full report ₹499</span></div>
+    <div class="t"><b id="stT1">Diwali Wealth &amp; Prosperity Report</b><span id="stT2">Free preview · full report <s>₹999</s> ₹499</span></div>
     <button type="button" id="stickyBtn">Free preview</button>
   </div>
 </div>
@@ -746,7 +752,7 @@ fbq('track', 'PageView');
       <button type="button" class="ps-modal-x" id="sampleModalClose" aria-label="Close">&#10005;</button>
     </div>
     <div class="ps-modal-body" id="sampleBody"></div>
-    <div class="ps-modal-foot"><button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report · ₹499</button></div>
+    <div class="ps-modal-foot"><button type="button" class="ps-modal-buy" id="sampleModalBuy">Get my report · <s style="opacity:.7;font-weight:600">₹999</s> ₹499</button></div>
   </div>
 </div>
 
@@ -1060,7 +1066,7 @@ function renderTeaser(t){
   $('alsoGrid').innerHTML=also.map(function(a){ return '<div>'+_esc(a)+'</div>'; }).join('');
 
   $('stT1').textContent=first+'’s Diwali report';
-  $('stT2').textContent=aLabel+' first · every area inside';
+  $('stT2').innerHTML='<s>₹999</s> <b class="amt">₹499</b> · <b class="clk" id="otClockSticky">'+(window._otT||'30:00')+'</b> left';
   $('stickyBtn').textContent='Unlock · ₹499';
 
   var el=$('teaser'); el.classList.add('show');
@@ -1204,6 +1210,22 @@ $('stickyBtn').addEventListener('click',function(){
   window.addEventListener('scroll',function(){ sticky.hidden=window.scrollY<(hero.offsetHeight-120); },{passive:true});
   form.addEventListener('focusin',function(){ sticky.classList.add('kbd'); });
   form.addEventListener('focusout',function(){ setTimeout(function(){ if(!form.contains(document.activeElement)) sticky.classList.remove('kbd'); },120); });
+})();
+
+/* launch-offer countdown (same logic as the CI page: 30 min, per-tab sessionStorage, stops at 00:00) */
+(function(){
+  var DUR=30*60*1000, KEY='axs_diwali_offer_end', end=0;
+  try{ end=+sessionStorage.getItem(KEY); }catch(e){}
+  if(!end){ end=Date.now()+DUR; try{ sessionStorage.setItem(KEY,String(end)); }catch(e){} }
+  function two(n){ return (n<10?'0':'')+n; }
+  function tick(){
+    var ms=end-Date.now(); if(ms<0) ms=0;
+    var t=two(Math.floor(ms/60000))+':'+two(Math.floor((ms%60000)/1000));
+    window._otT=t;
+    ['otClock','otClockSticky'].forEach(function(i){ var e=document.getElementById(i); if(e) e.textContent=t; });
+    if(ms>0) setTimeout(tick,1000);
+  }
+  tick();
 })();
 </script>
 </body>
