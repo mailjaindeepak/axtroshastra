@@ -111,7 +111,12 @@ Plain words used below (for the spec reader; the report itself follows R3 in §2
 14. **Every caution has 4 parts:** what, when, what to do, and from when it gets better (README D;
     approved "Months to go slow" job). Under R3 the "when" is a careful-time pointer to the timeline.
 15. **CCPA (dark patterns, 2023):** ₹499 shown before checkout; no add-ons appear later in the
-    flow; no fake countdown; no struck-out "was" price; no hard-coded trust numbers (bugs.md #6, #7).
+    flow; no hard-coded trust numbers (bugs.md #7). **SUPERSEDED (Owner, 27 Oct 2026): the
+    countdown and the struck "was ₹999" price are wanted after all, same as the CI page — this
+    line originally banned them by mistake.** The 30-min offer timer and `<s>₹999</s> ₹499` cut
+    ship on the hero, the unlock box, the sample-modal buy button and the sticky bar, exactly as
+    on `/en/career-intelligence` and `/en/compatibility` (bugs.md #6 still applies to removing
+    the timer elsewhere, not to adding it here).
 16. **No gemstones, yantras, colours to wear, paid pujas, Kaal Sarp, Manglik-as-doom, lucky-rashi
     lists, long puja guides** (Owner; README "Leave out"). **No archetype / identity name** (Owner,
     25 Oct).
@@ -570,7 +575,7 @@ All new code goes through the shared engine (`compute_chart` `engine.py:117`, `c
 | Render queue (PROPOSED: from the superseded "before launch" list; bugs.md #9 is P1) | `pdfgen` runs one Chrome at a time, 5 s lock wait, 45 s timeout (`pdfgen.py:45-50`). Add a retry queue so a Dhanteras rush doesn't send WhatsApp without a PDF. Longer reports (about 55–62 pages) make this more pressing | bugs.md #9 |
 | 5-buyer test | **Owner decision 26-27 Oct: applies to AI-on output (real AI run on the server after deploy); the deterministic bank text is only the AI-failure fallback and may be generic, so unit tests only check different charts give different facts and month tables.** Generate 5 reports for 5 different people; **fail if any paragraph is identical** (dates and numbers aside), including strengths, the Wrapped card, blessing, "The read" lines and the end plan. Also: no sentence repeated across the 5 area sections of one report | README (decided 20 Oct "Before launch"); comparison doc §4 |
 | Leak grep | Must be 0 hits in every generated report: `vyapar`, `business growth`, `rohit`, `Rajesh Menon`, `Vikram Rao` (mock persona), every §5b word, `dosha`, `curse`, `danger`, `guaranteed`, `cure`, `AstroSage`. Watch for false hits from our own "Business" heading | structure check §4 |
-| Don't copy | No 30-min timer (bugs.md #6), no hard-coded "14,200+" (#7), no fixed ₹499 pixel value (#8), no static preview box without an id (#15), price by product on the server (#5), store `amount_paise` (#12). From Life Blueprint / CI (bugs.md #19–#23): no fixed Do/Watch lists shared by everyone, no do-advice that ignores the verdict, no frozen sample text | bugs.md |
+| Don't copy | ~~No 30-min timer (bugs.md #6)~~ **SUPERSEDED (Owner, 27 Oct 2026): the CI-style timer + struck ₹999 IS wanted, see §2 rule 15.** No hard-coded "14,200+" (#7), no fixed ₹499 pixel value (#8), no static preview box without an id (#15), price by product on the server (#5), store `amount_paise` (#12). From Life Blueprint / CI (bugs.md #19–#23): no fixed Do/Watch lists shared by everyone, no do-advice that ignores the verdict, no frozen sample text | bugs.md |
 | Known risk | `/api/order` can re-assign a paid report to another phone (bugs.md #17). Matters more with gifts | bugs.md #17 |
 
 ## 10. Mock plan

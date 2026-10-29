@@ -288,14 +288,12 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   await noHorizontalScroll(page);
 
   if (SHOTS) {
-    await page.locator('#pp').click();              // pause the story so the shots are stable
+    // Wrapped is a stacked scroll list now (no tap-through carousel), so every slide is
+    // already visible and stable to shoot directly.
     const el = (sel, name) => page.locator(sel).first().screenshot({ path: path.join(SHOTS, `${name}-${testInfo.project.name}.png`) });
     await el('#teaser .cover', 'preview-cover');
     await el('#teaser .card:has(.kundli)', 'preview-chart');
-    await page.locator('#story .tap.r').click();
-    await page.locator('#story .tap.r').click();     // slide 3: best time, locked
-    await page.waitForTimeout(1200);                  // let the slide fade finish
-    await el('#story', 'preview-wrapped-locked');
+    await el('#story .slide.s3', 'preview-wrapped-locked');
     await el('#unlock', 'preview-locked');
   }
 });
