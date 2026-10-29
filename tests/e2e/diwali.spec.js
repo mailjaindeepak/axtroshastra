@@ -106,7 +106,7 @@ test.beforeEach(async ({ page }) => {
 test('Landing: head tags, ₹499 shown, no sideways scroll', async ({ page }, testInfo) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.axtroshastra.com/en/diwali');
   await expect(page.locator('link[hreflang="hi"]')).toHaveCount(0);
-  await expect(page.locator('.btn-note')).toContainText('₹499');
+  await expect(page.locator('#offerTimer')).toContainText('₹499');
   await noHorizontalScroll(page);
   await page.evaluate(() => document.fonts && document.fonts.ready);
   await shot(page, testInfo, 'landing');

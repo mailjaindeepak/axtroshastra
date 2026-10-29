@@ -385,7 +385,6 @@ fbq('track', 'PageView');
     <button type="button" class="sample-jump" id="heroSampleBtn">See a sample report</button>
 
     <form class="form-card" id="kundliForm" autocomplete="on" novalidate>
-      <p class="fc-title">Free preview first. Pay only if you like it.</p>
 
       <div class="seg" role="radiogroup" aria-label="Who is this report for?">
         <label><input type="radio" name="mode" value="self" id="m-self" checked>For me</label>
@@ -476,7 +475,7 @@ fbq('track', 'PageView');
         <div class="field-hint" id="h-wa"></div>
         <div class="field-sub">Your report PDF is sent here. Make sure it is your WhatsApp number.</div>
       </div>
-      <button class="btn" type="submit" id="submitBtn">See my free Diwali preview</button>
+      <button class="btn" type="submit" id="submitBtn">Check my Diwali report</button>
     </form>
     <div class="offer-timer" id="offerTimer">🪔 Diwali offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
@@ -684,7 +683,7 @@ fbq('track', 'PageView');
 <section class="final">
   <div class="wrap">
     <h2>Start this Diwali knowing <em>your good months ahead.</em></h2>
-    <a class="btn" href="#kundliForm">See my free Diwali preview</a>
+    <a class="btn" href="#kundliForm">Check my Diwali report</a>
   </div>
 </section>
 
@@ -977,7 +976,7 @@ $('kundliForm').addEventListener('submit',async function(e){
     alert(err.message+'. Please try again.');
   }finally{
     clearInterval(stepTimer); bar.style.width='0';
-    btn.textContent='See my free Diwali preview'; btn.disabled=false;
+    btn.textContent='Check my Diwali report'; btn.disabled=false;
   }
 });
 
