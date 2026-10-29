@@ -276,11 +276,12 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   // Wrapped: best + careful time are locked, the 3 words' month parts are masked
   await expect(page.locator('#story .slide.s3 .locked')).toContainText('●●●');
   await expect(page.locator('#story .slide.s4 .locked')).toContainText('●●●');
-  // locked answers: the 5 §6a Money questions, as the server sent them
-  await expect(page.locator('#lbHead')).toHaveText('Your 5 Money answers');
-  await expect(page.locator('#lbQs .lq .qt')).toHaveText(MONEY_QS);
+  // locked answers: the 5 §6a Money questions, as the server sent them (cover card list)
+  await expect(page.locator('#cvQlabel')).toHaveText('Your 5 Diwali answers · Money');
+  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
+  expect(cvQTexts).toEqual(MONEY_QS);
   expect(data.teaser.questions).toEqual(MONEY_QS);
-  await expect(page.locator('#lbQs .lq svg use')).toHaveCount(5);
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
   await expect(page.locator('#unlockBtn')).toContainText('₹499');
   await expect(page.locator('#unlockBtn s')).toHaveText('₹999');
   await expect(page.locator('#unlockBtn')).toContainText(/₹999\s*₹499/);
@@ -317,8 +318,9 @@ test('Gift: real preview with giver name + message; skipped area leads with the 
 
   await expect(page.locator('#tagWho')).toHaveText('Sunita’s');
   await expect(page.locator('#emLabel')).not.toContainText('You picked');
-  await expect(page.locator('#lbQs .lq .qt')).toHaveText(data.teaser.questions);
-  await expect(page.locator('#lbQs .lq')).toHaveCount(5);
+  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
+  expect(cvQTexts).toEqual(data.teaser.questions);
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
   expect(await page.locator('#teaser').evaluate((el) => el.textContent)).not.toMatch(MONTH_RE);
 });
 
