@@ -106,6 +106,7 @@ test.beforeEach(async ({ page }) => {
 test('Landing: head tags, ₹499 shown, no sideways scroll', async ({ page }, testInfo) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.axtroshastra.com/en/diwali');
   await expect(page.locator('link[hreflang="hi"]')).toHaveCount(0);
+  await expect(page.locator('#offerTimer')).toContainText('₹499');
   await expect(page.locator('#submitBtn')).toContainText('Check my Diwali report');
   await noHorizontalScroll(page);
   await page.evaluate(() => document.fonts && document.fonts.ready);
@@ -223,8 +224,14 @@ test('Parity with the other product pages: trust, why, birth-time section, FAQ, 
   await expect(page.locator('footer')).toContainText('not certainties');
   // things deliberately NOT copied from the CI page (owner / bugs.md)
   await expect(page.locator('#reportCount')).toHaveCount(0);
-  // offer timer removed (owner 27 Oct) — confirm it is gone
-  await expect(page.locator('#offerTimer')).toHaveCount(0);
+  // owner (27 Oct) asked for the CI offer countdown + struck ₹999 back: present and counting down
+  await expect(page.locator('#offerTimer')).toBeVisible();
+  const clk = page.locator('#otClock');
+  await expect(clk).toHaveText(/^\d\d:\d\d$/);
+  const t0 = await clk.textContent();
+  await page.waitForTimeout(2200);
+  expect(await clk.textContent()).not.toBe(t0);
+  await expect(page.locator('#offerTimer s')).toHaveText('₹999');
   const body = await page.locator('body').textContent();
   expect(body).not.toMatch(/14,200|25,000|people viewing|AstroSage/);
   // the unlock box carries reviews + badges; reviews never use em or en dashes (CLAUDE.md §5c)
@@ -270,11 +277,12 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   // Wrapped: best + careful time are locked, the 3 words' month parts are masked
   await expect(page.locator('#story .slide.s3 .locked')).toContainText('●●●');
   await expect(page.locator('#story .slide.s4 .locked')).toContainText('●●●');
-  // locked answers: the 5 §6a Money questions, as the server sent them
-  await expect(page.locator('#lbHead')).toHaveText('Your 5 Money answers');
-  await expect(page.locator('#lbQs .lq .qt')).toHaveText(MONEY_QS);
+  // locked answers: the 5 §6a Money questions, as the server sent them (cover card list)
+  await expect(page.locator('#cvQlabel')).toHaveText('Your 5 Diwali answers · Money');
+  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
+  expect(cvQTexts).toEqual(MONEY_QS);
   expect(data.teaser.questions).toEqual(MONEY_QS);
-  await expect(page.locator('#lbQs .lq svg use')).toHaveCount(5);
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
   await expect(page.locator('#unlockBtn')).toContainText('₹499');
   await expect(page.locator('#unlockBtn s')).toHaveText('₹999');
   await expect(page.locator('#unlockBtn')).toContainText(/₹999\s*₹499/);
@@ -282,14 +290,12 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   await noHorizontalScroll(page);
 
   if (SHOTS) {
-    await page.locator('#pp').click();              // pause the story so the shots are stable
+    // Wrapped is a stacked scroll list now (no tap-through carousel), so every slide is
+    // already visible and stable to shoot directly.
     const el = (sel, name) => page.locator(sel).first().screenshot({ path: path.join(SHOTS, `${name}-${testInfo.project.name}.png`) });
     await el('#teaser .cover', 'preview-cover');
     await el('#teaser .card:has(.kundli)', 'preview-chart');
-    await page.locator('#story .tap.r').click();
-    await page.locator('#story .tap.r').click();     // slide 3: best time, locked
-    await page.waitForTimeout(1200);                  // let the slide fade finish
-    await el('#story', 'preview-wrapped-locked');
+    await el('#story .slide.s3', 'preview-wrapped-locked');
     await el('#unlock', 'preview-locked');
   }
 });
@@ -313,8 +319,9 @@ test('Gift: real preview with giver name + message; skipped area leads with the 
 
   await expect(page.locator('#tagWho')).toHaveText('Sunita’s');
   await expect(page.locator('#emLabel')).not.toContainText('You picked');
-  await expect(page.locator('#lbQs .lq .qt')).toHaveText(data.teaser.questions);
-  await expect(page.locator('#lbQs .lq')).toHaveCount(5);
+  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
+  expect(cvQTexts).toEqual(data.teaser.questions);
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
   expect(await page.locator('#teaser').evaluate((el) => el.textContent)).not.toMatch(MONTH_RE);
 });
 

@@ -37,3 +37,38 @@ test('compat keeps the ₹999 -> ₹249 cut on the sticky bar', async ({ page })
   await expect(l2).toContainText('₹999');
   await expect(l2).toContainText('₹249');
 });
+
+// Diwali's sticky bar must behave the same as the CI/compat pattern above: the
+// clock lives in the bar's static markup from page load (not only after the
+// form is submitted), so it ticks and survives a refresh even before anyone
+// scrolls the bar into view.
+test('diwali offer timer does not reset to 30:00 on refresh', async ({ page }) => {
+  await page.goto('/en/diwali');
+  const clk = page.locator('#otClockSticky');
+  await page.waitForTimeout(1500);
+  const before = (await clk.textContent()).trim();
+  expect(before).toMatch(/^\d{2}:\d{2}$/);
+  expect(before).not.toBe('30:00');
+
+  const end1 = await page.evaluate(() => sessionStorage.getItem('axs_diwali_offer_end'));
+  expect(end1).toBeTruthy();
+
+  await page.reload();
+  await page.waitForTimeout(300);
+  const after = (await page.locator('#otClockSticky').textContent()).trim();
+  const end2 = await page.evaluate(() => sessionStorage.getItem('axs_diwali_offer_end'));
+
+  expect(end2).toBe(end1);
+  expect(after).not.toBe('30:00');
+  expect(secs(after)).toBeLessThanOrEqual(secs(before) + 1);
+});
+
+test('diwali keeps the ₹999 -> ₹499 cut and a live clock on the sticky bar', async ({ page }) => {
+  await page.goto('/en/diwali');
+  // the sticky bar only unhides on scroll; force it open to check its content directly
+  await page.evaluate(() => { document.getElementById('stickyBar').hidden = false; });
+  const t2 = page.locator('#stT2');
+  await expect(t2).toContainText('₹999');
+  await expect(t2).toContainText('₹499');
+  await expect(t2.locator('.clk')).toBeVisible(); // display:inline, not stacked on its own line
+});
