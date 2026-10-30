@@ -581,6 +581,7 @@ test.describe('B4 — Cleanup', () => {
   test('robot_cleanup deletes smoke-test reports', async ({ request }) => {
     const resp = await request.post(
       `/api/admin/robot_cleanup?key=${encodeURIComponent(ADMIN_KEY)}`,
+      { timeout: 90_000 },
     );
     expect(resp.ok(), `robot_cleanup HTTP ${resp.status()}`).toBeTruthy();
     const body = await resp.json();

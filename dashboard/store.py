@@ -474,14 +474,21 @@ def robot_cleanup(db, dry_run=True):
     conn = db_v2.get_conn()
     try:
         with conn.cursor() as c:
-            c.execute("SELECT COUNT(*) FROM reports WHERE " + clauses, params)
-            count = c.fetchone()[0]
+            c.execute("SELECT id FROM reports WHERE " + clauses, params)
+            ids = [row[0] for row in c.fetchall()]
+            count = len(ids)
             if dry_run:
                 return {"deleted": 0, "would_delete": count, "dry_run": True}
-            if count:
-                # report_subjects cascade; a robot report with a payment (FK
-                # RESTRICT) would block, but robot rows are unpaid test data.
-                c.execute("DELETE FROM reports WHERE " + clauses, params)
+            if ids:
+                # Delete in batches by PK to avoid gateway timeouts on
+                # large tables.  report_subjects cascade; robot rows are
+                # unpaid test data so FK RESTRICT won't block.
+                BATCH = 200
+                for i in range(0, len(ids), BATCH):
+                    batch = ids[i:i + BATCH]
+                    placeholders = ",".join(["%s"] * len(batch))
+                    c.execute(f"DELETE FROM reports WHERE id IN ({placeholders})",
+                              tuple(batch))
                 conn.commit()
     finally:
         conn.close()
