@@ -449,8 +449,18 @@ def ops_log_last(db, kind):
 # Robot cleanup — remove all reports created by the robot customer.
 # Robot reports are identified by payload containing 'Robot Customer',
 # 'Robot Student', 'Robot Aisha', or 'Robot Arjun'.
+#
+# The LIKE scan below is against the JSON `report_data` column, which has no
+# index, so it must not run over the whole table's history — that's what was
+# timing out (504) on live, since the smoke test runs this on every deploy and
+# the table only grows. Bounding to a recent window lets it use idx_reports_created
+# to skip everything older, keeping the cost flat regardless of total table size.
+# The robot always cleans up right after it runs, so a 30-day window comfortably
+# covers any normal gap between cleanups; a backlog older than that needs a
+# one-off manual cleanup (widen/drop this filter for that single run).
 # --------------------------------------------------------------------------- #
 _ROBOT_PATTERNS = ["%Robot Customer%", "%Robot Student%", "%Robot Aisha%", "%Robot Arjun%"]
+_ROBOT_WINDOW_SQL = "created_at > (NOW() - INTERVAL 30 DAY)"
 
 
 def robot_report_count(db):
@@ -459,7 +469,7 @@ def robot_report_count(db):
     conn = db_v2.get_conn()
     try:
         with conn.cursor() as c:
-            c.execute("SELECT COUNT(*) FROM reports WHERE " + clauses,
+            c.execute(f"SELECT COUNT(*) FROM reports WHERE {_ROBOT_WINDOW_SQL} AND ({clauses})",
                       tuple(_ROBOT_PATTERNS))
             row = c.fetchone()
     finally:
@@ -470,18 +480,19 @@ def robot_report_count(db):
 def robot_cleanup(db, dry_run=True):
     import db_v2
     clauses = " OR ".join(["report_data LIKE %s" for _ in _ROBOT_PATTERNS])
+    where = f"{_ROBOT_WINDOW_SQL} AND ({clauses})"
     params = tuple(_ROBOT_PATTERNS)
     conn = db_v2.get_conn()
     try:
         with conn.cursor() as c:
-            c.execute("SELECT COUNT(*) FROM reports WHERE " + clauses, params)
+            c.execute("SELECT COUNT(*) FROM reports WHERE " + where, params)
             count = c.fetchone()[0]
             if dry_run:
                 return {"deleted": 0, "would_delete": count, "dry_run": True}
             if count:
                 # report_subjects cascade; a robot report with a payment (FK
                 # RESTRICT) would block, but robot rows are unpaid test data.
-                c.execute("DELETE FROM reports WHERE " + clauses, params)
+                c.execute("DELETE FROM reports WHERE " + where, params)
                 conn.commit()
     finally:
         conn.close()
