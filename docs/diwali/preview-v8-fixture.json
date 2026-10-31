@@ -1,0 +1,230 @@
+{
+ "name": "Neha Kulkarni",
+ "moon_sign": "Virgo",
+ "nakshatra": "Uttara Phalguni",
+ "lagna_sign": "Aries",
+ "basis": "lagna",
+ "period": "Rahu – Mars",
+ "sade_sati": {
+  "active": false,
+  "phase": null
+ },
+ "planets": [
+  {
+   "name": "Sun",
+   "sign": "Aquarius",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Moon",
+   "sign": "Virgo",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Mars",
+   "sign": "Capricorn",
+   "dignity": "exalted"
+  },
+  {
+   "name": "Mercury",
+   "sign": "Aquarius",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Jupiter",
+   "sign": "Gemini",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Venus",
+   "sign": "Capricorn",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Saturn",
+   "sign": "Sagittarius",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Rahu",
+   "sign": "Capricorn",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Ketu",
+   "sign": "Karka",
+   "dignity": "neutral"
+  }
+ ],
+ "kundli": {
+  "Aquarius": [
+   "Su",
+   "Me"
+  ],
+  "Virgo": [
+   "Mo"
+  ],
+  "Capricorn": [
+   "Ma",
+   "Ve",
+   "Ra"
+  ],
+  "Gemini": [
+   "Ju"
+  ],
+  "Sagittarius": [
+   "Sa"
+  ],
+  "Karka": [
+   "Ke"
+  ],
+  "Aries": [
+   "La"
+  ]
+ },
+ "strongest_area": "business",
+ "move": "Save in winter. Act in spring.",
+ "words": [
+  {
+   "word": "BUILDER",
+   "line_masked": "Your business has room to grow."
+  },
+  {
+   "word": "PREPARED",
+   "line_masked": "●●●–●●● is for planning, not spending."
+  },
+  {
+   "word": "RISING",
+   "line_masked": "Your business grows best in ●●●–●●●."
+  }
+ ],
+ "emphasis_area": "career",
+ "questions": [
+  "Could a career breakthrough come from this Diwali to the next?",
+  "Which periods may be more favourable for professional growth?",
+  "When could a good time for a job change begin?",
+  "Which months may favour asking for a raise or promotion?",
+  "Which months may call for steady effort, not sudden moves?"
+ ],
+ "teasers": [
+  "Your chart gives a one-word answer, what it means for you, and what to do.",
+  "Your good times for growth are marked month by month.",
+  "There is a named month when a move suits you best.",
+  "The months to ask are marked, with how to ask.",
+  "Your steady-effort months are marked, with what to avoid."
+ ],
+ "preview": {
+  "version": 8,
+  "work_type": "job",
+  "moon_basis": false,
+  "start_area": "career",
+  "sign_names": {
+   "Aries": "Mesha",
+   "Taurus": "Vrishabha",
+   "Gemini": "Mithuna",
+   "Karka": "Karka",
+   "Leo": "Simha",
+   "Virgo": "Kanya",
+   "Libra": "Tula",
+   "Scorpio": "Vrishchika",
+   "Sagittarius": "Dhanu",
+   "Capricorn": "Makara",
+   "Aquarius": "Kumbha",
+   "Pisces": "Meena"
+  },
+  "chart": {
+   "rising": "Mesha",
+   "moon": "Kanya",
+   "star": "Uttara Phalguni",
+   "period": "Rahu – Mars",
+   "sade_sati": {
+    "active": false,
+    "stage": null
+   }
+  },
+  "past": [
+   {
+    "range": "Jul – Aug 2026",
+    "tone": "good",
+    "heading": "A good time",
+    "text": "This was a bright time, with something good happening often. A task you finished well earned you thanks. You spent on comfort and did not regret it. A small family function brought everyone together. Friends stayed close, and you enjoyed their company. A vehicle or home item was fixed or bought with ease. On the whole, you ended these months in a better place."
+   },
+   {
+    "range": "Sep – Oct 2026",
+    "tone": "good",
+    "heading": "A good time",
+    "text": "These months felt easy and kind to you. Your seniors praised a task you handed in on time. Your salary came in full, and some extra came with it. A cousin's function at home was warm and cheerful. You and a colleague shared lunch and a good laugh most days. One busy week was tiring, but it ended well. Looking back, these months were smooth and pleasant."
+   }
+  ],
+  "future_free": {
+   "range": "Nov – Dec 2026",
+   "tone": "steady",
+   "heading": "A mixed time",
+   "text": "This is likely to be a mixed time, with ups and downs in about equal share. Your work may go on at an even pace, and a kind word from a senior is likely. Money in hand may stay about the same as before. A small family function may bring everyone together. A purchase for the home may be better kept for a little later. Friends may stay close, and an evening together may be a joy. Some weeks may be quiet and some full, so overall it may be an even mix."
+  },
+  "strip": [
+   {
+    "m": "N",
+    "label": "Nov 2026",
+    "open": true,
+    "tone": "steady"
+   },
+   {
+    "m": "D",
+    "label": "Dec 2026",
+    "open": true,
+    "tone": "steady"
+   },
+   {
+    "m": "J",
+    "label": "Jan 2027",
+    "open": false
+   },
+   {
+    "m": "F",
+    "label": "Feb 2027",
+    "open": false
+   },
+   {
+    "m": "M",
+    "label": "Mar 2027",
+    "open": false
+   },
+   {
+    "m": "A",
+    "label": "Apr 2027",
+    "open": false
+   },
+   {
+    "m": "M",
+    "label": "May 2027",
+    "open": false
+   },
+   {
+    "m": "J",
+    "label": "Jun 2027",
+    "open": false
+   },
+   {
+    "m": "J",
+    "label": "Jul 2027",
+    "open": false
+   },
+   {
+    "m": "A",
+    "label": "Aug 2027",
+    "open": false
+   },
+   {
+    "m": "S",
+    "label": "Sep 2027",
+    "open": false
+   },
+   {
+    "m": "O",
+    "label": "Oct 2027",
+    "open": false
+   }
+  ]
+ }
+}

@@ -42,6 +42,8 @@ const MONEY_QS = [
   'Which months may call for more care with spending?',
   'Which months may be favourable for buying gold or property?',
 ];
+// the backend wording of Q5 is being changed (favourable -> good): pin only the first four
+const MONEY_Q4 = MONEY_QS.slice(0, 4);
 
 // shared test DB: mobile number is the account key, so one per test
 const uniquePhone = () => '9' + String(Date.now() + Math.floor(Math.random() * 100000)).slice(-9);
@@ -61,9 +63,9 @@ async function pickCity(page, city) {
 async function fillValid(page, o = {}) {
   await page.fill('#f-name', o.name || 'Meera Kulkarni');
   await page.selectOption('#f-gender', o.gender || 'female');
-  await page.fill('#f-dd', '14');
-  await page.selectOption('#f-mm', '08');
-  await page.fill('#f-yy', '1984');
+  await page.fill('#f-dd', (o.dob || [14, '08', 1984])[0] + '');
+  await page.selectOption('#f-mm', (o.dob || [14, '08', 1984])[1]);
+  await page.fill('#f-yy', (o.dob || [14, '08', 1984])[2] + '');
   await page.selectOption('#f-hh', '7');
   await page.fill('#f-mm2', '40');
   await page.selectOption('#f-ap', 'AM');
@@ -205,7 +207,15 @@ for (const [band, tq, label] of [['shaam', 'T2', 'a part of the day'], ['unknown
     expect(req.time_band).toBe(tq === 'T2' ? band : null);   // band values = api.py BAND_MID keys
     expect(data.teaser.basis).toBe('moon');
     await expect(page.locator('#kd .k-asc')).toHaveText('Moon');
-    expect(await page.locator('#teaser').evaluate((el) => el.textContent)).not.toMatch(MONTH_RE);
+    expect(JSON.stringify(stripAllowed(data.teaser))).not.toMatch(MONTH_RE);
+    // Moon-sign read: note shown, no rising sign anywhere
+    await expect(page.locator('#moonNote')).toBeVisible();
+    await expect(page.locator('#moonNote')).toContainText('Moon sign');
+    expect(data.teaser.preview.moon_basis).toBe(true);
+    expect(data.teaser.preview.chart.rising).toBeNull();
+    await expect(page.locator('#kundliCap')).toContainText('Moon in');
+    await expect(page.locator('#kundliCap')).not.toContainText('Rising');
+    expect(await page.locator('#chart').evaluate((el) => el.textContent)).not.toMatch(/Rising/);
   });
 }
 
@@ -234,10 +244,9 @@ test('Parity with the other product pages: trust, why, birth-time section, FAQ, 
   await expect(page.locator('#offerTimer s')).toHaveText('₹999');
   const body = await page.locator('body').textContent();
   expect(body).not.toMatch(/14,200|25,000|people viewing|AstroSage/);
-  // the unlock box carries reviews + badges; reviews never use em or en dashes (CLAUDE.md §5c)
-  await expect(page.locator('#unlock .lb-rev')).toHaveCount(3);
-  for (const t of await page.locator('#unlock .lb-rev p, .revs .rev p').allTextContents()) expect(t).not.toMatch(/[\u2013\u2014]/);
-  await expect(page.locator('#unlock .cred-row span')).toHaveCount(3);
+  // reviews never use em or en dashes (CLAUDE.md §5c); the preview itself carries no reviews/badges
+  for (const t of await page.locator('.revs .rev p').allTextContents()) expect(t).not.toMatch(/[\u2013\u2014]/);
+  await expect(page.locator('#unlock .lb-rev, #unlock .cred-row')).toHaveCount(0);
 });
 
 test('Sticky bar submits a filled form (same as the CI page)', async ({ page }) => {
@@ -253,11 +262,130 @@ test('Sticky bar submits a filled form (same as the CI page)', async ({ page }) 
   await expect(page.locator('#teaser')).toBeVisible({ timeout: 15_000 });
 });
 
-test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Money questions, ₹499', async ({ page }, testInfo) => {
-  test.setTimeout(90_000);
-  await fillValid(page, { area: 'money' });
-  const { req, data } = await submitReal(page);
+// ---------- v8 preview helpers ----------
+const SIGNS_EN = /\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/;
+// banned in all visible preview copy (diwali PREVIEW-V8-CONTRACT + CLAUDE.md §5b); "year" only as a whole word
+const BANNED_RE = new RegExp('\\b(' + ['stretch', 'window', 'phase', 'tendency', 'tended', 'tends', 'steadier', 'favourable',
+  'pivotal', 'culminate', 'auspicious', 'pressure', 'karma', 'dasha', 'bhav', 'transit', 'dues', 'patient', 'year',
+  'house', 'anxiety', 'stress', 'depress\\w*', 'health\\w*', 'disease', 'illness', 'medical', 'therapy', 'burnout',
+  'astrosage', 'refund'].join('|') + ')s?\\b', 'i');
+const NOT_IN_PREVIEW = /Wrapped|Also in your report|IIT|alumni|Exact planet|PDF on WhatsApp|refund/i;
 
+// the teaser may name a month only in past[*].range, future_free.range and strip[*].label
+function stripAllowed(teaser) {
+  const t = JSON.parse(JSON.stringify(teaser));
+  const pv = t.preview || {};
+  (pv.past || []).forEach((b) => { delete b.range; });
+  if (pv.future_free) delete pv.future_free.range;
+  (pv.strip || []).forEach((b) => { delete b.label; });
+  return t;
+}
+
+const box = (loc) => loc.evaluate((el) => { const r = el.getBoundingClientRect(); return { w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, x: Math.round(r.left), y: Math.round(r.top + scrollY) }; });
+const inView = (loc) => loc.evaluate((el) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0; });
+
+// scroll top-to-bottom of the preview in steps; at every stop at most ONE Unlock button is on screen
+async function expectOneUnlockEverywhere(page) {
+  const h = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  const step = await page.evaluate(() => Math.floor(innerHeight / 3));
+  const bad = [];
+  for (let y = 0; y <= h; y += step) {
+    await page.evaluate((v) => window.scrollTo(0, v), y);
+    await page.waitForTimeout(120);
+    const both = (await inView(page.locator('#stickyBar'))) && !(await page.locator('#stickyBar').evaluate((e) => e.hidden || getComputedStyle(e).display === 'none' || getComputedStyle(e).visibility === 'hidden'))
+      && (await inView(page.locator('#unlockBtn')));
+    if (both) bad.push(y);
+  }
+  expect(bad, 'sticky Unlock and #unlockBtn both on screen at scrollY=' + bad.join(',')).toEqual([]);
+}
+
+// everything the v8 preview must show, given the real /api/kundli answer
+async function expectV8Preview(page, data, o = {}) {
+  const t = data.teaser, pv = t.preview;
+  expect(pv.version).toBe(8);
+  // security: no month outside the three allowed fields; locked strip entries carry no tone/text
+  expect(JSON.stringify(stripAllowed(t))).not.toMatch(MONTH_RE);
+  expect(pv.strip).toHaveLength(12);
+  pv.strip.slice(2).forEach((b) => { expect(b.open).toBe(false); expect(b).not.toHaveProperty('tone'); expect(b).not.toHaveProperty('text'); });
+  expect(pv.past).toHaveLength(2);
+
+  const teaser = page.locator('#teaser');
+  // cover: name, 5 questions with no tags/chips, the one plain line
+  await expect(page.locator('#cvName')).toHaveText(o.name || 'Meera Kulkarni');
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
+  expect(await page.locator('#cvQs li').evaluateAll((els) => els.map((e) => [e.children.length, e.querySelectorAll('span.qn, span.qt, span.qlock').length]))).toEqual(Array(5).fill([3, 3]));
+  await expect(page.locator('#cover .tag, #cover .chip, #cover .badge, #cover .pill, #cover .tg')).toHaveCount(0);
+  await expect(page.locator('#glance')).toContainText('Your report starts with');
+  const cvQTexts = await page.locator('#cvQs li .qt').allTextContents();
+  expect(cvQTexts).toEqual(t.questions);
+
+  // kundli: planet table visible with no click, 2x2 grid of 4 equal boxes, Sanskrit sign names
+  await expect(page.locator('#plRows tr')).toHaveCount(t.planets.length);
+  await expect(page.locator('#plRows tr').first()).toBeVisible();
+  const rows = await page.locator('#plRows tr').evaluateAll((trs) => trs.map((tr) => [tr.cells[0].textContent, tr.cells[1].textContent]));
+  t.planets.forEach((p, i) => { expect(rows[i]).toEqual([p.name, pv.sign_names[p.sign] || p.sign]); });
+  const facts = page.locator('#chart .facts .fact');
+  await expect(facts).toHaveCount(4);
+  await expect(facts.locator('span').allTextContents()).resolves.toEqual(['Moon sign', 'Birth star', 'Planet period now', 'Sade Sati']);
+  const fb = [];
+  for (let i = 0; i < 4; i++) fb.push(await box(facts.nth(i)));
+  expect(new Set(fb.map((b) => b.w)).size, 'box widths ' + JSON.stringify(fb)).toBe(1);
+  expect(new Set(fb.map((b) => b.h)).size, 'box heights ' + JSON.stringify(fb)).toBe(1);
+  expect(new Set(fb.map((b) => b.x)).size).toBe(2);
+  expect(new Set(fb.map((b) => b.y)).size).toBe(2);
+  await expect(page.locator('#fMoon')).toHaveText(pv.chart.moon);
+  await expect(page.locator('#fStar')).toHaveText(pv.chart.star);
+  const chartText = await page.locator('#chart').evaluate((el) => el.textContent);
+  expect(chartText).not.toMatch(SIGNS_EN);
+  if (!pv.moon_basis) await expect(page.locator('#kundliCap')).toContainText('Rising sign ' + pv.chart.rising);
+
+  // past months: exactly 2 identical-size cards, then the plain match line with no buttons
+  await expect(page.locator('#past h2')).toHaveText('Your months before this Diwali');
+  const past = page.locator('#pastBlocks .pcard');
+  await expect(past).toHaveCount(2);
+  const [p0, p1] = [await box(past.nth(0)), await box(past.nth(1))];
+  expect([p0.w, p0.h], 'past cards differ').toEqual([p1.w, p1.h]);
+  await expect(page.locator('#past .match')).toHaveText('Does this match what you lived through?');
+  await expect(page.locator('#past .match button, #past .match a, #past .match input')).toHaveCount(0);
+  await expect(page.locator('#past button:not(.rm)')).toHaveCount(0);
+  // future free card: same size as the past cards
+  await expect(page.locator('#future h2')).toHaveText('Your first months after Diwali');
+  const fut = page.locator('#futBlock .pcard');
+  await expect(fut).toHaveCount(1);
+  const f0 = await box(fut);
+  expect([f0.w, f0.h], 'free future card differs from past cards').toEqual([p0.w, p0.h]);
+
+  // the 12-block strip: 2 open (tone class), 10 locked (lock, no tone class)
+  await expect(page.locator('#unlock h3')).toHaveText('Your full report');
+  await expect(page.locator('#strip .mb')).toHaveCount(12);
+  await expect(page.locator('#strip .mb.open')).toHaveCount(2);
+  await expect(page.locator('#strip .mb.locked')).toHaveCount(10);
+  await expect(page.locator('#strip .mb.locked svg')).toHaveCount(10);
+  await expect(page.locator('#strip .mb.locked.good, #strip .mb.locked.steady, #strip .mb.locked.careful')).toHaveCount(0);
+  expect(await page.locator('#strip .mb.locked').evaluateAll((els) => els.map((e) => e.className))).toEqual(Array(10).fill('mb locked'));
+  await expect(page.locator('#ini span')).toHaveText('NDJFMAMJJASO'.split(''));
+
+  // buy elements: one Unlock, struck price only in the sticky bar, sample button right under it
+  await expect(page.locator('#unlockBtn')).toContainText('₹499');
+  await expect(page.locator('#unlockBtn')).toContainText('Unlock');
+  expect(await page.locator('#unlockBtn').evaluate((b) => b.nextElementSibling && [b.nextElementSibling.tagName, b.nextElementSibling.id])).toEqual(['BUTTON', 'sampleOpen2']);
+  await expect(page.locator('#sampleOpen2')).toHaveText(/See a sample report/);
+  await expect(page.locator('.sent')).toHaveText('Your report is made for you and sent right after payment. If it does not reach you, we will resend it.');
+
+  // removed things + wording
+  const text = await teaser.evaluate((el) => el.textContent);
+  expect(text).not.toMatch(NOT_IN_PREVIEW);
+  expect(text, 'banned word in preview').not.toMatch(BANNED_RE);
+  expect(text).not.toMatch(/offer ends|Diwali offer|₹999/i);           // the offer lives only in the hero pill + sticky bar
+  await expect(page.locator('#teaser #story, #teaser #emLabel, #teaser .badge, #teaser .lb-rev, #teaser .rev')).toHaveCount(0);
+  expect(text).not.toMatch(SIGNS_EN);
+  await noHorizontalScroll(page);
+}
+
+test('Self: v8 preview (job): cover, kundli, 2 past cards, free future card, 12-block strip, one Unlock', async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await fillValid(page, { area: 'money', work: 'job' });
+  const { req, data } = await submitReal(page);
   expect(req.product).toBe('diwali');
   expect(req.gift_mode).toBe('self');
   expect(req.steering).toBe('money');
@@ -265,39 +393,142 @@ test('Self: real preview, no months anywhere, Wrapped months locked, 5 locked Mo
   expect(req.time_quality).toBe('T0');
   expect(req.time_band).toBeNull();
   expect(data.report_id).toBeTruthy();
-  expect(JSON.stringify(data.teaser)).not.toMatch(MONTH_RE);     // server never sends a month pre-payment
+  expect(data.teaser.preview.work_type).toBe('job');
+  await expect(page.locator('#cvQlabel')).toHaveText('Your 5 Diwali questions · Money');
+  expect(data.teaser.questions).toHaveLength(5);
+  expect(data.teaser.questions.slice(0, 4)).toEqual(MONEY_Q4);
+  await expectV8Preview(page, data);
+  // the cover text carries the same banned-word-free check as the rest (questions are server text)
+  expect((await page.locator('#cover').evaluate((el) => el.textContent))).not.toMatch(/Cancer|Vikram|Priya/);
 
-  const teaser = page.locator('#teaser');
-  await expect(page.locator('#cvName')).toHaveText('Meera Kulkarni');
-  await expect(page.locator('#emLabel')).toHaveText('You picked Money');
-  const text = await teaser.evaluate((el) => el.textContent);
-  expect(text).not.toMatch(MONTH_RE);
-  expect(text).not.toMatch(/Cancer|Vikram|Priya/);
-
-  // Wrapped: best + careful time are locked, the 3 words' month parts are masked
-  await expect(page.locator('#story .slide.s3 .locked')).toContainText('●●●');
-  await expect(page.locator('#story .slide.s4 .locked')).toContainText('●●●');
-  // locked answers: the 5 §6a Money questions, as the server sent them (cover card list)
-  await expect(page.locator('#cvQlabel')).toHaveText('Your 5 Diwali answers · Money');
-  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
-  expect(cvQTexts).toEqual(MONEY_QS);
-  expect(data.teaser.questions).toEqual(MONEY_QS);
-  await expect(page.locator('#cvQs li')).toHaveCount(5);
-  await expect(page.locator('#unlockBtn')).toContainText('₹499');
-  await expect(page.locator('#unlockBtn s')).toHaveText('₹999');
-  await expect(page.locator('#unlockBtn')).toContainText(/₹999\s*₹499/);
-  await expect(page.locator('#chartSum')).toContainText(/\d+ planets? in strong positions/);
-  await noHorizontalScroll(page);
+  // "Read more" opens a bottom sheet with the full text, closes with Escape and with the close button
+  const sheet = page.locator('#sheet');
+  await page.locator('#pastBlocks .rm').first().click();
+  await expect(sheet).toHaveClass(/open/);
+  await expect(page.locator('#shP')).toHaveText(data.teaser.preview.past[0].text);
+  await expect(page.locator('#shT')).toHaveText(/A good time|A mixed time|A slower, costlier time/);
+  expect(await sheet.evaluate((el) => el.textContent)).not.toMatch(BANNED_RE);
+  await page.keyboard.press('Escape');
+  await expect(sheet).not.toHaveClass(/open/);
+  await expect(page.locator('#shP')).toBeHidden();
+  await page.locator('#futBlock .rm').click();
+  await expect(page.locator('#shP')).toHaveText(data.teaser.preview.future_free.text);
+  await page.locator('#shX').click();
+  await expect(sheet).not.toHaveClass(/open/);
 
   if (SHOTS) {
-    // Wrapped is a stacked scroll list now (no tap-through carousel), so every slide is
-    // already visible and stable to shoot directly.
     const el = (sel, name) => page.locator(sel).first().screenshot({ path: path.join(SHOTS, `${name}-${testInfo.project.name}.png`) });
     await el('#teaser .cover', 'preview-cover');
-    await el('#teaser .card:has(.kundli)', 'preview-chart');
-    await el('#story .slide.s3', 'preview-wrapped-locked');
+    await el('#chart', 'preview-chart');
     await el('#unlock', 'preview-locked');
   }
+});
+
+test('Sticky bar: hidden at the top, shown after the cover with timer + struck price, never next to #unlockBtn', async ({ page }) => {
+  test.setTimeout(120_000);
+  await fillValid(page, { area: 'career', work: 'job' });
+  await submitReal(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(200);
+  const bar = page.locator('#stickyBar');
+  await expect(bar).toBeHidden();
+  // just past the cover
+  await page.evaluate(() => { const c = document.getElementById('cover'); window.scrollTo(0, c.getBoundingClientRect().top + scrollY + c.offsetHeight * 0.8); });
+  await expect(bar).toBeVisible();
+  await expect(bar.locator('#otClockSticky')).toHaveText(/^(29|30):\d\d$/);
+  await expect(bar.locator('s')).toHaveText('₹999');
+  await expect(bar.locator('.amt')).toHaveText('₹499');
+  await expect(page.locator('#stickyBtn')).toHaveText('Unlock');
+  // nothing else outside the hero pill and the bar names the offer or the struck price
+  const hits = await page.evaluate(() => [...document.querySelectorAll('s, strike, del, .clk')]
+    .filter((e) => e.offsetParent !== null || getComputedStyle(e).position === 'fixed')
+    .map((e) => (e.closest('#offerTimer, #stickyBar') || {}).id || ('OTHER:' + (e.closest('[id]') || {}).id)));
+  expect(hits.filter((h) => !/^(offerTimer|stickyBar)$/.test(h)), 'offer/struck price outside hero pill + sticky bar').toEqual([]);
+  expect(await page.locator('#teaser').evaluate((el) => el.textContent)).not.toMatch(/offer ends|Diwali offer|₹999/i);
+  await expectOneUnlockEverywhere(page);
+  // bar's own button scrolls to the main Unlock
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.evaluate(() => { const c = document.getElementById('cover'); window.scrollTo(0, c.offsetHeight); });
+  await expect(bar).toBeVisible();
+  await page.locator('#stickyBtn').click();
+  await expect(page.locator('#unlockBtn')).toBeInViewport();
+  await expect(bar).toBeHidden();
+});
+
+test('Sample button sits right under Unlock and opens the sample modal (58 images)', async ({ page }) => {
+  test.setTimeout(90_000);
+  await fillValid(page, { work: 'job' });
+  await submitReal(page);
+  await page.locator('#sampleOpen2').click();
+  await expect(page.locator('#sampleModal')).toBeVisible();
+  await expect(page.locator('#sampleBody img')).toHaveCount(58);
+  await page.locator('#sampleModalClose').click();
+  await expect(page.locator('#sampleModal')).toBeHidden();
+});
+
+test('Fallback: a response without teaser.preview still shows cover, kundli and Unlock, no console error', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errs = [];
+  page.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
+  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|net::ERR/.test(m.text())) errs.push(m.text()); });
+  await page.route('**/api/kundli', async (route) => {
+    const resp = await route.fetch();
+    const j = await resp.json();
+    delete j.teaser.preview;
+    await route.fulfill({ response: resp, json: j });
+  });
+  await fillValid(page, { work: 'job' });
+  await submitReal(page);
+  await expect(page.locator('#cvName')).toHaveText('Meera Kulkarni');
+  await expect(page.locator('#cvQs li')).toHaveCount(5);
+  await expect(page.locator('#kd')).toBeVisible();
+  await expect(page.locator('#plRows tr').first()).toBeVisible();
+  await expect(page.locator('#past')).toBeHidden();
+  await expect(page.locator('#future')).toBeHidden();
+  await expect(page.locator('#strip')).toBeHidden();
+  await page.locator('#unlockBtn').scrollIntoViewIfNeeded();
+  await expect(page.locator('#unlockBtn')).toBeVisible();
+  await expect(page.locator('#unlockBtn')).toContainText('₹499');
+  expect(errs).toEqual([]);
+});
+
+test('Slower tone: a chart with a careful past block shows "A slower, costlier time"', async ({ page }) => {
+  test.setTimeout(90_000);
+  // births found with diwali.compute_diwali over Pune charts (job): 14 Jul 1964 07:40 has a 'careful' past block
+  await fillValid(page, { work: 'job', area: 'career', dob: [14, '07', 1964] });
+  const { data } = await submitReal(page);
+  const pv = data.teaser.preview;
+  expect(pv.past.map((b) => b.tone)).toContain('careful');
+  await expect(page.locator('#pastBlocks h3', { hasText: 'A slower, costlier time' })).toHaveCount(pv.past.filter((b) => b.tone === 'careful').length);
+  await expect(page.locator('#pastBlocks .pcard.careful').first()).toBeVisible();
+  const text = await page.locator('#teaser').evaluate((el) => el.textContent);
+  expect(text).not.toMatch(BANNED_RE);
+  await page.locator('#pastBlocks .pcard.careful .rm').first().click();
+  await expect(page.locator('#shT')).toHaveText('A slower, costlier time');
+  expect(await page.locator('#sheet').evaluate((el) => el.textContent)).not.toMatch(BANNED_RE);
+  await page.keyboard.press('Escape');
+});
+
+test('Sade Sati Yes: a chart with Saturn over the Moon sign shows "Yes, <stage> stage"', async ({ page }) => {
+  test.setTimeout(90_000);
+  // 14 Jul 1960 07:40 Pune: Sade Sati active, middle stage
+  await fillValid(page, { work: 'job', area: 'career', dob: [14, '07', 1960] });
+  const { data } = await submitReal(page);
+  const ss = data.teaser.preview.chart.sade_sati;
+  expect(ss.active).toBe(true);
+  await expect(page.locator('#fSade')).toHaveText(`Yes, ${ss.stage} stage`);
+  await expect(page.locator('#fSadeNote')).toContainText('Saturn is walking over your Moon sign');
+  const text = await page.locator('#chart').evaluate((el) => el.textContent);
+  expect(text).not.toMatch(BANNED_RE);
+  expect(text).not.toMatch(SIGNS_EN);
+});
+
+test('Sade Sati No: a normal chart shows "No"', async ({ page }) => {
+  test.setTimeout(90_000);
+  await fillValid(page, { work: 'job', dob: [12, '03', 1990] });   // Saturn not over this Moon sign now
+  const { data } = await submitReal(page);
+  expect(data.teaser.preview.chart.sade_sati.active).toBe(false);
+  await expect(page.locator('#fSade')).toHaveText('No');
 });
 
 test('Gift: real preview with giver name + message; skipped area leads with the chart’s first area', async ({ page }) => {
@@ -314,15 +545,14 @@ test('Gift: real preview with giver name + message; skipped area leads with the 
   expect(req.giver_name).toBe('Rohan');
   expect(req.gift_message).toBe('Happy Diwali, Maa');
   expect(req.steering).toBeNull();
-  expect(JSON.stringify(data.teaser)).not.toMatch(MONTH_RE);
+  expect(JSON.stringify(stripAllowed(data.teaser))).not.toMatch(MONTH_RE);
   expect(JSON.stringify(data.teaser)).not.toContain('Happy Diwali, Maa');   // gift note stays server-side
+  expect(data.teaser.preview.work_type).toBe('home');
 
-  await expect(page.locator('#tagWho')).toHaveText('Sunita’s');
-  await expect(page.locator('#emLabel')).not.toContainText('You picked');
-  const cvQTexts = await page.locator('#cvQs li').evaluateAll((els) => els.map((el) => el.textContent.replace(/^\d+/, '')));
-  expect(cvQTexts).toEqual(data.teaser.questions);
+  await expectV8Preview(page, data, { name: 'Sunita Joshi' });
+  await expect(page.locator('#kundliCap')).toContainText('Sunita');
+  await expect(page.locator('#cvQlabel')).not.toContainText('You picked');
   await expect(page.locator('#cvQs li')).toHaveCount(5);
-  expect(await page.locator('#teaser').evaluate((el) => el.textContent)).not.toMatch(MONTH_RE);
 });
 
 test('Purchase: unlock -> /api/order -> demo pay -> progress screen -> report with PDF + WhatsApp; PDF route works', async ({ page, request }, testInfo) => {

@@ -410,7 +410,7 @@ def chk_time(p, html):
         if diwali_bank.has_best(p):
             bad.append("has_best true for T2/T3")
         # the free-preview teaser is seen before payment, so it must follow the same rule
-        t = json.dumps(p["teaser"], ensure_ascii=False).lower()
+        t = json.dumps({k: v for k, v in p["teaser"].items() if k != "preview"}, ensure_ascii=False).lower()
         for s in ("best time", "brightest", "burn bright"):
             if s in t:
                 bad.append(f"T2/T3 teaser says {s!r}")
@@ -507,7 +507,7 @@ _TEASER_BAD = re.compile(r"\b(January|February|March|April|June|July|August|Sept
 
 
 def chk_teaser(p, html):
-    t = json.dumps(p["teaser"], ensure_ascii=False)
+    t = json.dumps({k: v for k, v in p["teaser"].items() if k != "preview"}, ensure_ascii=False)
     bad = [f"teaser has date text {m.group(0)!r}" for m in _TEASER_BAD.finditer(t)]
     if len(p["teaser"].get("questions") or []) != 5:
         bad.append("teaser questions != 5")
