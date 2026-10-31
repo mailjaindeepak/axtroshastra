@@ -120,130 +120,148 @@ section{padding:52px 0}
 .trust li b{color:#FBEFD9;font-weight:700}
 .trust .dot{width:5px;height:5px;border-radius:50%;background:#F2A516;flex:none}
 
-/* ---------- FREE PREVIEW: Diwali skin, scoped (from the approved mock) ---------- */
+/* ---------- FREE PREVIEW: Diwali skin, scoped (approved mock v8) ---------- */
 .dw{--dpaper:#FBF5E9;--panel:#FFFDF8;--pline:#EADBC0;--phead:#3A2414;--pink:#5A4532;--pmuted:#8C7558;
-  --gold:#C9962E;--marigold:#F2A516;--night:#1A1030;--night-2:#2A1846;--flame:#FFC94D;--leaf:#3F7A3A;--shadow:rgba(120,70,20,.12);
+  --gold:#C9962E;--marigold:#F2A516;--night:#1A1030;--night-2:#2A1846;--flame:#FFC94D;--leaf:#3F7A3A;--terra:#C93B2E;--shadow:rgba(120,70,20,.12);
+  --fact:#FFF8EA;--warm:#FFF3D6;
   --disp:'Bricolage Grotesque',system-ui,sans-serif;--serif:'Fraunces',Georgia,serif;
-  background:var(--dpaper);color:var(--pink);font-size:15px;line-height:1.5;padding:28px 0 40px;
-  background-image:radial-gradient(circle at 1px 1px,rgba(201,150,46,.22) 1px,transparent 0);background-size:22px 22px}
+  --s1:8px;--s2:16px;--s2h:20px;--s3:24px;--s4:32px;--r-card:16px;--r-sm:12px;--r-pill:100px;
+  --diya-ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 4c4 6 5 10 0 15-5-5-4-9 0-15z' fill='%23FFC94D'/%3E%3Cpath d='M4 22h32c-2 9-9 13-16 13S6 31 4 22z' fill='%23C93B2E'/%3E%3Cpath d='M8 24h24' stroke='%23F2A516' stroke-width='2'/%3E%3C/svg%3E");
+  color:var(--pink);font-size:15px;line-height:1.6;padding:var(--s3) 0 104px;
+  background-color:var(--dpaper);background-image:radial-gradient(circle at 1px 1px,rgba(201,150,46,.24) 1px,transparent 0),linear-gradient(180deg,#FDF8EC 0,#FBF1DC 55%,#F8E6C4 100%);background-size:22px 22px,100% 100%}
 #teaser{display:none}
 #teaser.show{display:block}
-.dw .col{max-width:460px;margin:0 auto;padding:0 16px;display:flex;flex-direction:column;gap:14px}
-.dw .tag{font-size:12.5px;color:var(--pmuted);text-align:center}
-.dw .tag b{color:var(--phead)}
-.cover{position:relative;overflow:hidden;border-radius:18px;background:radial-gradient(120% 80% at 50% 0%,var(--night-2),var(--night) 70%);color:#F7EBD3;text-align:center;padding:0 22px 26px}
-.cover .toran{width:calc(100% + 44px);max-width:none;margin:0 -22px 4px}
-.cover canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.cover > *:not(canvas){position:relative}
-.cover .brand{margin:6px 0 14px}
-.cv-title{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
-.cv-sub{font-size:13px;color:#E9C77B;font-style:italic;margin:0 0 18px}
-.cover .diyas{margin:0 0 16px}
-.cv-name{font-family:var(--disp);font-weight:700;font-size:20px}
-.cv-dob{font-size:12.5px;color:#C9B391;margin:2px 0 18px}
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:2px 2px 0;text-align:center}
-.strip div{text-align:center}
-.strip b{display:block;font-family:var(--disp);font-size:16px;color:var(--phead)}
-.strip span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pmuted);font-weight:700}
-.card{background:var(--panel);border:1px solid var(--pline);border-radius:16px;padding:20px;box-shadow:0 6px 18px var(--shadow);position:relative}
-.label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 10px;display:flex;align-items:center;gap:8px}
-.label::before{content:"";width:14px;height:14px;flex:none;background:var(--marigold);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
-.kundli{max-width:300px;margin:4px auto 2px}
+.dw .col{max-width:460px;margin:0 auto;padding:0 var(--s2);display:flex;flex-direction:column;gap:var(--s3)}
+.dw section.blk{padding:0;display:flex;flex-direction:column;gap:var(--s2)}
+.dw .sh{font-family:var(--disp);font-weight:800;font-size:22px;color:var(--phead);line-height:1.2;margin:0 2px;display:flex;align-items:center;gap:10px}
+.dw .sh::before{content:"";width:26px;height:26px;flex:none;background:var(--diya-ic) center/contain no-repeat}
+.orn{display:flex;align-items:center;gap:var(--s1);height:16px;margin:-16px 0}
+.orn i{flex:1;height:1px;background:linear-gradient(90deg,rgba(201,150,46,0),rgba(201,150,46,.75))}
+.orn i:last-child{background:linear-gradient(90deg,rgba(201,150,46,.75),rgba(201,150,46,0))}
+.orn svg{width:20px;height:20px;flex:none}
+/* cover: night sky, toran, lanterns, soft fireworks */
+.cover{position:relative;overflow:hidden;border-radius:18px;background:radial-gradient(70% 40% at 50% 100%,rgba(242,165,22,.22),rgba(242,165,22,0)),radial-gradient(120% 80% at 50% 0%,var(--night-2),var(--night) 70%);color:#F7EBD3;text-align:center;padding:0 var(--s2h) var(--s2h);box-shadow:0 14px 30px rgba(42,24,70,.28);border:1px solid rgba(255,201,77,.35)}
+.cover>*{position:relative;z-index:1}
+.cover::before,.cover::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0}
+.cover::before{background-image:radial-gradient(circle at 4% 12%,rgba(255,233,184,.9) 0 1.1px,transparent 1.6px),radial-gradient(circle at 9% 33%,rgba(255,233,184,.7) 0 1px,transparent 1.5px),radial-gradient(circle at 5% 55%,rgba(255,233,184,.6) 0 .9px,transparent 1.4px),radial-gradient(circle at 8% 78%,rgba(255,233,184,.7) 0 1px,transparent 1.5px),radial-gradient(circle at 96% 19%,rgba(255,233,184,.8) 0 1.1px,transparent 1.6px),radial-gradient(circle at 92% 41%,rgba(255,233,184,.6) 0 .9px,transparent 1.4px),radial-gradient(circle at 95% 63%,rgba(255,233,184,.7) 0 1px,transparent 1.5px),radial-gradient(circle at 91% 86%,rgba(255,233,184,.7) 0 1px,transparent 1.5px)}
+.cover::after{background-image:radial-gradient(circle at 7% 22%,rgba(255,233,184,1) 0 1.4px,transparent 2px),radial-gradient(circle at 3% 44%,rgba(255,233,184,1) 0 1.2px,transparent 1.8px),radial-gradient(circle at 6% 90%,rgba(255,233,184,1) 0 1.2px,transparent 1.8px),radial-gradient(circle at 93% 9%,rgba(255,233,184,1) 0 1.4px,transparent 2px),radial-gradient(circle at 97% 33%,rgba(255,233,184,1) 0 1.3px,transparent 1.9px),radial-gradient(circle at 94% 73%,rgba(255,233,184,1) 0 1.2px,transparent 1.8px);animation:twinkle 4.5s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.15}to{opacity:1}}
+.cover>canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.cover>.mandala{position:absolute;right:-64px;bottom:-70px;width:190px;height:190px;opacity:.14;z-index:0;pointer-events:none}
+.lants{position:absolute;left:0;right:0;top:0;height:120px;z-index:2;pointer-events:none}
+.lant{position:absolute;top:0;width:30px;transform-origin:50% 0;animation:sway 5s ease-in-out infinite alternate}
+.lant svg{width:30px;height:auto;overflow:visible}
+.lant:nth-child(2){animation-duration:6.2s;animation-delay:-1.5s}.lant:nth-child(3){animation-duration:5.6s;animation-delay:-3s}.lant:nth-child(4){animation-duration:6.8s;animation-delay:-.7s}
+@keyframes sway{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+.cover .toran{width:calc(100% + 40px);max-width:none;margin:0 calc(-1*var(--s2h)) var(--s1);height:44px}
+.cover .brand{margin:0 0 6px;font-size:10.5px}
+.cover .wish{display:flex;align-items:center;justify-content:center;gap:12px;font-family:var(--serif);font-style:italic;font-weight:500;font-size:17px;color:#F3D488;margin:0 0 10px}
+.cover .wish svg{width:26px;height:26px;flex:none}
+.cover .wish svg:last-child .flame{animation-delay:.6s}
+.cv-title{font-family:var(--serif);font-weight:600;font-size:24px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
+.cv-title em{font-style:italic;color:var(--flame)}
+.cv-sub{font-size:13px;color:#E9C77B;font-style:italic;margin:0}
+.cv-name{overflow-wrap:anywhere;margin-top:var(--s2);font-family:var(--disp);font-weight:800;font-size:28px;line-height:1.15;color:#FFF1CF;background:linear-gradient(180deg,#FFF6DC,#F7D586);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.cv-dob{font-size:13px;color:#C9B391;margin:4px 0 0}
+.qcard{margin-top:var(--s2);padding:var(--s2);border:1px solid rgba(255,201,77,.3);border-radius:14px;background:rgba(255,255,255,.045);box-shadow:inset 0 1px 0 rgba(255,201,77,.25)}
+.qlabel{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--flame);font-weight:700;margin:0 0 var(--s2)}
+.qlist{list-style:none;text-align:left;display:flex;flex-direction:column;gap:12px;margin:0;padding:0}
+.qlist li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.5;color:#EADCC3}
+.qn{flex:0 0 26px;height:26px;border-radius:50%;background:radial-gradient(circle at 50% 35%,rgba(255,201,77,.3),rgba(255,201,77,.08));border:1px solid rgba(255,201,77,.55);font-family:var(--serif);font-weight:600;font-size:13px;color:var(--flame);display:grid;place-items:center}
+.qt{min-width:0;flex:1}
+.qlock{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--flame);opacity:.85;margin-top:1px}
+.qlock svg{width:13px;height:13px}
+.glance{margin:var(--s2) 0 0;padding:var(--s2);border-radius:var(--r-sm);background:linear-gradient(135deg,rgba(255,201,77,.2),rgba(255,201,77,.08));border:1px solid rgba(255,201,77,.4);text-align:left;font-size:14.5px;line-height:1.6;color:#F7EBD3}
+.glance b{color:var(--flame)}
+/* cards */
+.card{background:var(--panel);border:1px solid var(--pline);border-radius:var(--r-card);padding:var(--s2h);box-shadow:0 6px 18px var(--shadow);position:relative}
+.corner{position:absolute;top:10px;right:10px;width:64px;height:64px;opacity:.55;pointer-events:none}
+.label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 var(--s2);display:flex;align-items:center;gap:var(--s1)}
+.label::before{content:"";width:20px;height:20px;flex:none;background:var(--diya-ic) center/contain no-repeat;clip-path:none}
+.kundli{width:100%;max-width:300px;margin:var(--s1) auto 0}
 .kundli svg{width:100%;height:auto}
 .k-cell{fill:var(--panel);stroke:var(--gold);stroke-width:1.2}
 .k-line{fill:none;stroke:var(--gold);stroke-width:1.2}
-.k-sign{fill:var(--pmuted);font:700 10px var(--body)}
-.k-pl{fill:var(--phead);font:700 11.5px var(--disp)}
-.k-asc{fill:var(--sindoor);font:700 9px var(--body)}
-.kundli-cap{text-align:center;font-size:12.5px;color:var(--pmuted);margin:0 0 14px}
+.k-sign{fill:var(--pmuted);font:700 11px var(--body)}
+.k-pl{fill:var(--phead);font:700 13px var(--disp)}
+.k-asc{fill:var(--sindoor);font:700 10px var(--body)}
+.kundli-cap{text-align:center;font-size:13px;color:var(--pmuted);margin:var(--s1) 0 4px}
 .kundli-cap b{font-family:var(--serif);font-weight:600;color:var(--phead)}
-.dw table{width:100%;border-collapse:collapse;font-size:13px}
-.dw th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmuted);font-weight:700;padding:0 0 6px;border-bottom:1px solid var(--pline)}
-.dw td{padding:6px 0;border-bottom:1px dashed var(--pline);color:var(--pink)}
+.legend{text-align:center;font-size:11px;color:var(--pmuted);line-height:1.6;margin:0 0 var(--s2)}
+.dw table{width:100%;border-collapse:collapse;font-size:14px;margin-top:var(--s1)}
+.dw th{text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmuted);font-weight:700;padding:0 0 var(--s1);border-bottom:1px solid var(--pline)}
+.dw td{padding:3px 0;border-bottom:1px dashed var(--pline);color:var(--pink)}
 .dw tr:last-child td{border-bottom:0}
 .dw td:first-child{font-family:var(--disp);font-weight:700;color:var(--phead)}
-.qlabel{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--flame);font-weight:700;margin:0 0 8px}
-.qlist{list-style:none;margin:0 auto;padding:0;text-align:left;max-width:360px}
-.qlist li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:13.5px;color:#EADCC3;border-bottom:1px solid rgba(255,201,77,.14)}
-.qlist li:last-child{border-bottom:0}
-.qn{flex:0 0 22px;height:22px;border-radius:50%;background:rgba(255,201,77,.14);border:1px solid rgba(255,201,77,.4);font-family:var(--disp);font-weight:700;font-size:11px;color:var(--flame);display:grid;place-items:center;margin-top:1px}
-.card .cap{font-size:12.5px;color:var(--pmuted);line-height:1.4;margin:2px 0 14px}
-.dig{font-size:11px;font-weight:700;border-radius:5px;padding:1px 7px;white-space:nowrap}
+.dig{font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap}
 .dig.own{color:var(--gold);background:rgba(201,150,46,.14)}
 .dig.ex{color:var(--leaf);background:rgba(63,122,58,.14)}
 .dig.weak{color:var(--pmuted);background:rgba(90,69,50,.1)}
-.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.fact{border:1px solid var(--pline);border-radius:12px;padding:10px 12px;background:#FFF8EA}
-.fact span{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--pmuted)}
-.fact b{font-family:var(--disp);font-size:15px;color:var(--phead);font-weight:700}
-.fact small{display:block;font-size:12px;color:var(--pmuted);line-height:1.35;margin-top:2px}
-/* Wrapped: one card after another, read by scrolling (not a tap-through story) */
-.wr-head{margin:6px 2px -4px}
-.wr-head h2{font-family:var(--disp);font-weight:800;font-size:20px;color:var(--phead)}
-.story{display:flex;flex-direction:column;gap:14px}
-.story .who{display:flex;gap:7px;align-items:center;font-size:11.5px;font-weight:700;color:var(--phead);margin:2px 2px 0}
-.story .who i{width:20px;height:20px;border-radius:50%;background:#FFC94D;display:grid;place-items:center;color:#3A1700;font-style:normal;font-size:10px;font-family:var(--disp)}
-.slide{position:relative;overflow:hidden;border-radius:22px;padding:28px 24px;color:#fff;box-shadow:0 12px 30px rgba(60,20,60,.3)}
-.slide .k{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.85;margin:0 0 10px}
-.slide .big{font-family:var(--disp);font-weight:800;line-height:1.05;letter-spacing:-.02em;text-wrap:balance;overflow-wrap:anywhere}
-.slide .line{font-size:15.5px;line-height:1.4;margin:16px 0 0;max-width:34ch}
-.slide .foot{margin:18px 0 0;font-size:11px;opacity:.75}
-.s1{background:radial-gradient(90% 60% at 50% 100%,#6A1E55,#120A22 70%)}
-.s2{background:#F2A516;color:#2B0D00}.s3{background:#0E5C4A}.s4{background:#2B1B5A}.s5{background:#C93B2E}.s6{background:#FFE7B8;color:#3A1406}
-.s1 .big{font-size:clamp(30px,10vw,44px);color:#FFC94D}
-.s2 .big{font-size:clamp(36px,12vw,60px)}
-.s5 .big{font-size:clamp(26px,8vw,38px)}
-.blob{position:absolute;border-radius:50%;pointer-events:none}
-.s2 .blob{width:260px;height:260px;right:-90px;bottom:-60px;background:#C93B2E}
-.s2 .blob.b2{width:120px;height:120px;right:110px;bottom:120px;background:#FFE7B8}
-.s3 .blob{width:300px;height:300px;left:-120px;top:-80px;background:#13836A}
-.s4 .blob{width:280px;height:280px;right:-110px;top:40px;background:#3E2A7E}
-.s5 .blob{width:220px;height:220px;left:-60px;bottom:-70px;background:#F2A516}
-.slide > *:not(.blob):not(.rangoli){position:relative}
-.rangoli{position:absolute;right:-30px;top:60px;width:170px;height:170px;opacity:.9;pointer-events:none}
-.locked{display:inline-flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:800;font-size:clamp(22px,7vw,34px);white-space:nowrap;background:rgba(255,255,255,.14);border:2px dashed rgba(255,255,255,.55);border-radius:16px;padding:8px 16px;color:rgba(255,255,255,.92)}
-.locked svg{width:26px;height:26px;flex:none}
-.unlock-hint{display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;background:#fff;color:#1A1030;border-radius:100px;padding:6px 12px}
-.words{display:flex;flex-direction:column;gap:14px}
-.word b{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(28px,9vw,38px);line-height:1;overflow-wrap:anywhere}
-.word:nth-child(1) b{color:#0E5C4A}.word:nth-child(2) b{color:#2B1B5A}.word:nth-child(3) b{color:#C93B2E}
-.word span{font-size:14px;line-height:1.35}
-.mask{display:inline-block;background:#3A1406;color:transparent;border-radius:4px;padding:0 4px;letter-spacing:-1px}
-.emph{display:flex;gap:14px;align-items:center}
-.emph svg{flex:none;width:48px;height:48px}
-.emph .pl{font-size:11.5px;color:var(--pmuted)}
-.emph .pv{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--phead);margin-top:2px;line-height:1.3}
-.lockbox{background:var(--panel);border:1.5px dashed rgba(201,150,46,.55);border-radius:16px;padding:20px}
-.lockbox h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--phead);margin:0 0 2px}
-.lockbox .sub{font-size:12.5px;color:var(--pmuted);margin:0 0 8px}
-.lq{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--pline)}
-.lq:last-child{border-bottom:0}
-.lq .ic{flex:none;width:32px;height:32px;border-radius:9px;background:#FCEFD3;display:grid;place-items:center;color:var(--gold)}
-.lq .qt{font-family:var(--disp);font-weight:700;font-size:14.5px;color:var(--phead);line-height:1.3;margin:0 0 3px}
-.lq .qd{font-size:12.8px;color:var(--pmuted);line-height:1.4}
-.also{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline)}
-.also h4{font-family:var(--disp);font-size:14px;color:var(--phead);margin:0 0 8px}
-.also-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.also-grid div{border:1px dashed rgba(201,150,46,.45);border-radius:9px;padding:9px 10px;font-size:12.5px;font-weight:700;color:var(--phead);text-align:center;background:#FFF8EA}
-.cta{display:block;width:100%;margin-top:16px;border:0;border-radius:100px;background:var(--sindoor);color:#fff;font:700 16px var(--body);padding:15px 18px;cursor:pointer;box-shadow:0 8px 20px rgba(201,59,46,.3)}
+.facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:1fr;gap:var(--s1);margin:var(--s2) 0 0}
+.fact{border-radius:var(--r-sm);padding:12px var(--s2);background:var(--fact);border:1px solid rgba(201,150,46,.3);min-width:0;min-height:92px;display:flex;flex-direction:column;gap:4px}
+.fact span{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--pmuted)}
+.fact b{font-family:var(--disp);font-size:15px;color:var(--phead);font-weight:700;overflow-wrap:anywhere;line-height:1.35}
+.fact small{font-size:11.5px;line-height:1.45;color:var(--pink)}
+/* month cards: the two past ones and the free future one are the same box */
+.cards{display:flex;flex-direction:column;gap:var(--s3)}
+.pcard{display:flex;flex-direction:column;width:100%;height:17rem;border:1px solid var(--pline);border-top:3px solid var(--marigold);border-left:4px solid var(--gold);border-radius:var(--r-card);padding:var(--s2h);background:linear-gradient(180deg,#FFFDF8 60%,#FFF6E2);box-shadow:0 6px 18px var(--shadow)}
+.pcard.good{border-left-color:var(--leaf)}
+.pcard.steady{border-left-color:var(--gold)}
+.pcard.careful{border-left-color:var(--terra)}
+.pcard .rg{display:flex;align-items:center;justify-content:space-between;gap:var(--s1);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--pmuted);line-height:1.6}
+.pcard .rg .d{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg{flex:none;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 9px 0 6px;border-radius:var(--r-pill);font-size:10.3px;letter-spacing:.08em}
+.tg svg{width:13px;height:13px}
+.good .tg{background:rgba(63,122,58,.13);color:var(--leaf)}
+.steady .tg{background:rgba(201,150,46,.17);color:#8A5F10}
+.careful .tg{background:rgba(201,59,46,.12);color:var(--terra)}
+.pcard h3{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--phead);margin:var(--s1) 0 12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard p{flex:none;max-height:8em;font-size:15px;line-height:1.6;color:var(--pink);display:-webkit-box;-webkit-line-clamp:5;line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .rm{align-self:flex-start;margin-top:auto!important;min-height:44px;background:none;border:0;padding:0;font:700 14px var(--body);color:var(--phead);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--gold);text-underline-offset:5px;text-decoration-thickness:1.5px}
+.note-moon{font-size:13px;color:var(--pmuted);margin:0 2px;line-height:1.5}
+.match{display:flex;align-items:center;justify-content:center;gap:12px;font-family:var(--serif);font-style:italic;font-weight:500;font-size:18px;color:var(--phead);text-align:center}
+.match::before,.match::after{content:"";flex:none;width:7px;height:7px;transform:rotate(45deg);background:var(--marigold)}
+/* bottom sheet */
+.sheet{position:fixed;inset:0;z-index:80;visibility:hidden;transition:visibility 0s .3s}
+.sheet.open{visibility:visible;transition-delay:0s}
+.sheet .bd{position:absolute;inset:0;background:rgba(20,10,30,.55);opacity:0;transition:opacity .3s ease}
+.sheet.open .bd{opacity:1}
+.sheet .pn{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;max-height:85vh;overflow:auto;background:#FFFDF8;color:#5A4532;border-radius:24px 24px 0 0;border-top:3px solid #F2A516;padding:24px 24px calc(32px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s ease;box-shadow:0 -12px 40px rgba(0,0,0,.3)}
+.sheet.open .pn{transform:none}
+.sheet .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.sheet .cap{font-size:12.5px;color:#8C7558;line-height:1.5}
+.sheet h3{font-family:var(--disp);font-weight:700;font-size:20px;color:#3A2414;line-height:1.3}
+.sheet .x{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #EADBC0;background:#FFFDF8;color:#3A2414;font-size:18px;cursor:pointer;line-height:1}
+.sheet p.full{font-size:16px;line-height:1.7}
+/* full-report card */
+.buy{background:linear-gradient(180deg,#FFFDF8,var(--warm));border:1px solid rgba(201,150,46,.45);box-shadow:0 10px 30px rgba(242,165,22,.16)}
+.buy h3{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--phead);margin:0 0 var(--s2);line-height:1.25}
+.strip{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;margin:0 0 6px}
+.mb{height:34px;border-radius:7px;display:grid;place-items:center;border:1px solid rgba(201,150,46,.3);background:#FFF8EA;color:var(--gold)}
+.mb svg{width:12px;height:12px}
+.mb.open{border-color:transparent}
+.mb.open.good{background:rgba(63,122,58,.2)}
+.mb.open.steady{background:rgba(201,150,46,.28)}
+.mb.open.careful{background:rgba(201,59,46,.1);border:1.5px dashed var(--terra)}
+.ini{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;font-size:10px;font-weight:700;color:var(--pmuted);text-align:center;margin:0 0 4px}
+.ends{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--pmuted);margin:0 0 var(--s2)}
+.incl{list-style:none;display:flex;flex-direction:column;gap:12px;margin:0 0 var(--s2h);padding:0}
+.incl li{display:flex;gap:12px;font-size:15px;line-height:1.55}
+.incl li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;margin-top:2px;background:var(--leaf) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat}
+.cta-grp{display:flex;flex-direction:column;gap:var(--s2)}
+.cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border:0;border-radius:var(--r-pill);background:linear-gradient(180deg,#D9483A,var(--sindoor) 55%,#B5311F);color:#fff;font:700 16px var(--body);padding:0 var(--s3);cursor:pointer;box-shadow:inset 0 0 0 1.5px rgba(255,201,77,.6),0 8px 20px rgba(201,59,46,.32),0 0 22px rgba(255,201,77,.35);animation:glow 3.2s ease-in-out infinite;transition:background .2s}
 .cta:hover{background:var(--sindoor-dark)}
 .cta:disabled{opacity:.75;cursor:wait}
-.fine{font-size:12px;color:var(--pmuted);text-align:center;margin:8px 0 0}
-.sample-link{display:block;width:max-content;max-width:100%;margin:12px auto 0;background:#fff;border:1.5px solid var(--gold);border-radius:100px;color:var(--phead);font:700 14px var(--body);padding:11px 20px;cursor:pointer}
-.sample-link:hover{background:#FFF8EA}
-
-/* preview: chart summary + social proof inside the unlock box (pattern from career-intelligence.html) */
-.chart-sum{font-size:12.5px;color:var(--pmuted);text-align:center;margin:12px 0 0}
-.chart-sum b{color:var(--phead);font-family:var(--disp)}
-.lb-proof{margin-top:18px;padding-top:14px;border-top:1px dashed var(--pline)}
-.lb-proof h4{font-family:var(--disp);font-size:14px;color:var(--phead);margin:0 0 8px;text-align:center}
-.lb-rev{background:#FFF8EA;border:1px solid var(--pline);border-radius:12px;padding:11px 13px;margin-bottom:8px}
-.lb-rev .st{color:var(--marigold);font-size:12px;letter-spacing:2px}
-.lb-rev p{font-size:13px;color:var(--pink);line-height:1.45;margin:3px 0 4px}
-.lb-rev .w{font-size:11.5px;color:var(--pmuted);font-weight:700}
-.cred-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
-.cred-row span{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--phead);border:1px solid rgba(201,150,46,.45);border-radius:100px;padding:5px 10px;background:var(--panel)}
-.cred-row span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--marigold)}
+.cta svg{width:22px;height:22px;flex:none}
+.cta.pulse{animation:pulse 1.6s ease-in-out 2}
+@keyframes glow{0%,100%{box-shadow:inset 0 0 0 1.5px rgba(255,201,77,.6),0 8px 20px rgba(201,59,46,.32),0 0 16px rgba(255,201,77,.25)}50%{box-shadow:inset 0 0 0 1.5px rgba(255,201,77,.85),0 8px 22px rgba(201,59,46,.4),0 0 32px rgba(255,201,77,.6)}}
+@keyframes pulse{0%,100%{box-shadow:inset 0 0 0 1.5px rgba(255,201,77,.6),0 0 0 0 rgba(242,165,22,0),0 8px 20px rgba(201,59,46,.3)}50%{box-shadow:inset 0 0 0 1.5px rgba(255,201,77,.6),0 0 0 12px rgba(242,165,22,.28),0 8px 20px rgba(201,59,46,.3)}}
+.sample-link{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;background:var(--fact);border:1.5px solid rgba(201,150,46,.7);border-radius:var(--r-pill);color:var(--phead);font:700 14.5px var(--disp);letter-spacing:.01em;padding:0 var(--s3);cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .1s ease}
+.sample-link:hover{background:#FFEFCC;border-color:var(--gold)}
+.sample-link:active{transform:translateY(1px)}
+.sample-link svg{width:18px;height:18px;flex:none;color:var(--gold)}
+.sample-link svg.ar{width:14px;height:14px;color:var(--phead)}
+.sent{font-size:13px;line-height:1.55;color:var(--pmuted);margin-top:var(--s2);text-align:center}
 
 /* ---------- inside / reviews / FAQ / final ---------- */
 .inside ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
@@ -297,9 +315,9 @@ footer .note{display:block;max-width:520px;margin:10px auto 0;color:#9C8BB0;font
 /* ---------- sticky bar ---------- */
 .sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#1A1030;color:#F7EBD3;padding:10px 16px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.25)}
 .sticky .in{max-width:460px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.sticky .t{flex:1;min-width:0;font-size:12.5px;line-height:1.3}
-.sticky .t b{display:block;font-family:var(--display);font-size:14.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sticky button{flex:none;border:0;border-radius:100px;background:#F2A516;color:#2B0D00;font:800 14px var(--body);padding:11px 18px;cursor:pointer}
+.sticky .t{flex:1;min-width:0;font-size:12.5px;line-height:1.4}
+.sticky .t span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sticky button{flex:none;min-height:44px;border:0;border-radius:100px;background:#F2A516;color:#2B0D00;font:800 14px var(--body);padding:0 20px;cursor:pointer}
 .sticky.kbd{display:none!important}
 
 /* ---------- overlays: calculating (before preview) + progress (after payment) ---------- */
@@ -369,6 +387,12 @@ fbq('track', 'PageView');
   <defs>
     <symbol id="diya" viewBox="0 0 40 40"><path class="flame" d="M20 4c4 6 5 10 0 15-5-5-4-9 0-15z" fill="#FFC94D"/><path d="M4 22h32c-2 9-9 13-16 13S6 31 4 22z" fill="#C93B2E"/><path d="M8 24h24" stroke="#F2A516" stroke-width="2"/></symbol>
     <symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>
+    <symbol id="diya-s" viewBox="0 0 40 40"><path d="M20 4c4 6 5 10 0 15-5-5-4-9 0-15z" fill="#FFC94D"/><path d="M4 22h32c-2 9-9 13-16 13S6 31 4 22z" fill="#C93B2E"/><path d="M8 24h24" stroke="#F2A516" stroke-width="2"/></symbol>
+    <symbol id="rangoli" viewBox="0 0 120 120"><g fill="none" stroke="#B9862E" stroke-width="1"><circle cx="60" cy="60" r="16"/><circle cx="60" cy="60" r="30" stroke-dasharray="2 4"/><circle cx="60" cy="60" r="46"/></g><g fill="#E39B2B"><path d="M60 14l5 12h-10z"/><path d="M60 106l-5-12h10z"/><path d="M14 60l12-5v10z"/><path d="M106 60l-12 5v-10z"/></g><g fill="#7A2E36" opacity=".7"><circle cx="60" cy="60" r="4"/><circle cx="60" cy="30" r="3"/><circle cx="60" cy="90" r="3"/><circle cx="30" cy="60" r="3"/><circle cx="90" cy="60" r="3"/></g></symbol>
+    <symbol id="doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v4h4M10 12h5M10 16h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="v8k-kandil" viewBox="-27 0 54 113"><line x1="0" y1="0" x2="0" y2="16" stroke="#B9862E" stroke-width="1.2"/><path d="M-10 82 q3 10 0 20 q-3 5 0 10" fill="none" stroke="#7A2E36" stroke-width="2" stroke-linecap="round"/><path d="M-5 82 q3 8 0 16 q-3 4 0 8" fill="none" stroke="#E39B2B" stroke-width="2" stroke-linecap="round"/><path d="M0 82 q3 10 0 20 q-3 5 0 10" fill="none" stroke="#7A2E36" stroke-width="2" stroke-linecap="round"/><path d="M5 82 q3 8 0 16 q-3 4 0 8" fill="none" stroke="#E39B2B" stroke-width="2" stroke-linecap="round"/><path d="M10 82 q3 10 0 20 q-3 5 0 10" fill="none" stroke="#7A2E36" stroke-width="2" stroke-linecap="round"/><rect x="-8" y="16" width="16" height="6" rx="1.5" fill="#C9A34E" stroke="#B9862E" stroke-width="1"/><path d="M-12 22 L12 22 L26 46 L26 58 L12 82 L-12 82 L-26 58 L-26 46Z" fill="#F7E2A6" stroke="#B9862E" stroke-width="1.4" stroke-linejoin="round"/><rect x="-26" y="46" width="52" height="12" fill="#7A2E36" stroke="#B9862E" stroke-width="1.2"/><g fill="#F2C14E"><circle cx="-17" cy="52" r="1.6"/><circle cx="-6" cy="52" r="1.6"/><circle cx="6" cy="52" r="1.6"/><circle cx="17" cy="52" r="1.6"/></g><path d="M-6 22 L-10 46 M6 22 L10 46 M-10 58 L-6 82 M10 58 L6 82" stroke="#B9862E" stroke-width=".9" fill="none" opacity=".8"/></symbol>
+    <symbol id="mandala" viewBox="0 0 100 100"><g id="rg"></g></symbol>
   </defs>
 </svg>
 
@@ -492,107 +516,89 @@ fbq('track', 'PageView');
 <!-- ============ FREE PREVIEW (filled only from the /api/kundli teaser) ============ -->
 <section class="dw" id="teaser" aria-live="polite">
   <div class="col">
-    <p class="tag">Your free preview, made from <b id="tagWho">your</b> birth details</p>
 
-    <div class="cover">
+    <div class="cover" id="cover">
       <canvas id="fwCover" aria-hidden="true"></canvas>
+      <div class="lants" aria-hidden="true">
+        <div class="lant" style="left:4%"><svg viewBox="-27 0 54 113"><use href="#v8k-kandil"/></svg></div>
+        <div class="lant" style="left:13%;top:-14px"><svg viewBox="-27 0 54 113"><use href="#v8k-kandil"/></svg></div>
+        <div class="lant" style="right:13%;top:-14px"><svg viewBox="-27 0 54 113"><use href="#v8k-kandil"/></svg></div>
+        <div class="lant" style="right:4%"><svg viewBox="-27 0 54 113"><use href="#v8k-kandil"/></svg></div>
+      </div>
+      <svg class="mandala" aria-hidden="true"><use href="#mandala"/></svg>
       <svg class="toran" viewBox="0 0 460 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 Q115 40 230 6 Q345 40 460 6" fill="none" stroke="#8C5A1C" stroke-width="2"/><g class="tor"></g></svg>
       <p class="brand">AxtroShastra · Diwali 2026</p>
-      <h2 class="cv-title">Diwali Wealth &amp; Prosperity Report</h2>
+      <p class="wish"><svg aria-hidden="true"><use href="#diya"/></svg>Shubh Deepavali<svg aria-hidden="true"><use href="#diya"/></svg></p>
+      <h2 class="cv-title">Diwali <em>Wealth &amp; Prosperity</em> Report</h2>
       <p class="cv-sub">From this Diwali to the next</p>
-      <div class="diyas" aria-hidden="true"><svg><use href="#diya"/></svg><svg><use href="#diya"/></svg><svg><use href="#diya"/></svg></div>
       <p class="cv-name" id="cvName"></p>
       <p class="cv-dob" id="cvDob"></p>
-      <p class="qlabel" id="cvQlabel"></p>
-      <ol class="qlist" id="cvQs"></ol>
+      <div class="qcard">
+        <p class="qlabel" id="cvQlabel"></p>
+        <ol class="qlist" id="cvQs"></ol>
+      </div>
+      <div class="glance" id="glance"></div>
     </div>
 
-    <div class="strip">
-      <div><b>5 + 1</b><span>Life areas + luck</span></div>
-      <div><b>12</b><span>Months mapped</span></div>
-      <div><b>PDF</b><span>On WhatsApp</span></div>
-    </div>
-
-    <div class="card">
+    <div class="card" id="chart">
+      <svg class="corner" aria-hidden="true"><use href="#rangoli"/></svg>
       <p class="label">Your birth chart (Kundli)</p>
-      <p class="cap">Where each planet sat in the sky when you were born, and how well that placement works for you.</p>
       <div class="kundli"><svg viewBox="0 0 320 320" role="img" id="kd" aria-label="North Indian birth chart"></svg></div>
       <p class="kundli-cap" id="kundliCap"></p>
+      <p class="legend">Su Sun · Mo Moon · Ma Mars · Me Mercury · Ju Jupiter · Ve Venus · Sa Saturn · Ra Rahu · Ke Ketu</p>
       <table><thead><tr><th>Planet</th><th>Sign</th><th>How it's placed</th></tr></thead><tbody id="plRows"></tbody></table>
-      <p class="chart-sum" id="chartSum"></p>
       <div class="facts">
         <div class="fact"><span>Moon sign</span><b id="fMoon"></b></div>
         <div class="fact"><span>Birth star</span><b id="fStar"></b></div>
-        <div class="fact"><span>Planet period now</span><b id="fPeriod"></b><small>The planets steering this time for you</small></div>
+        <div class="fact"><span>Planet period now</span><b id="fPeriod"></b><small>The planets steering this time of your life</small></div>
         <div class="fact"><span>Sade Sati</span><b id="fSade"></b><small id="fSadeNote"></small></div>
       </div>
     </div>
 
-    <div class="wr-head"><h2>Your Diwali Wrapped</h2></div>
-    <div class="story" id="story">
-      <div class="who"><i id="wrInit"></i><span id="wrWho"></span></div>
-      <div class="slide s1">
-        <svg class="rangoli" viewBox="0 0 100 100" aria-hidden="true"><g id="rg"></g></svg>
-        <p class="k">Diwali Wrapped</p>
-        <p class="big" id="wrHello"></p>
-        <p class="line">Read from your own birth chart. Four facts and three words, from this Diwali to the next.</p>
+    <div class="orn pv-only" aria-hidden="true"><i></i><svg><use href="#diya-s"/></svg><i></i></div>
+
+    <section class="blk pv-only" id="past" aria-label="Your months before this Diwali">
+      <h2 class="sh">Your months before this Diwali</h2>
+      <p class="note-moon" id="moonNote" hidden>Read from your Moon sign, because the exact birth time is not known.</p>
+      <div class="cards" id="pastBlocks"></div>
+      <p class="match">Does this match what you lived through?</p>
+    </section>
+
+    <div class="orn pv-only" aria-hidden="true"><i></i><svg><use href="#diya-s"/></svg><i></i></div>
+
+    <section class="blk pv-only" id="future" aria-label="Your first months after Diwali">
+      <h2 class="sh">Your first months after Diwali</h2>
+      <div class="cards" id="futBlock"></div>
+    </section>
+
+    <div class="card buy" id="unlock">
+      <svg class="corner" aria-hidden="true"><use href="#rangoli"/></svg>
+      <h3>Your full report</h3>
+      <div class="pv-only">
+        <div class="strip" id="strip" role="img"></div>
+        <div class="ini" id="ini" aria-hidden="true"></div>
+        <p class="ends"><span id="endA"></span><span id="endB"></span></p>
       </div>
-      <div class="slide s2">
-        <i class="blob"></i><i class="blob b2"></i>
-        <p class="k">Your strongest area</p>
-        <p class="big" id="wrArea"></p>
-        <p class="line" id="wrAreaLine"></p>
+      <ul class="incl">
+        <li><span>58 pages with 12 months and 5 life areas, plus better luck</span></li>
+        <li><span>Lakshmi Puja times and gold-buying months</span></li>
+        <li><span>Sent on screen and to your WhatsApp</span></li>
+      </ul>
+      <div class="cta-grp">
+        <button class="cta" type="button" id="unlockBtn"><svg aria-hidden="true"><use href="#diya"/></svg>Unlock my Diwali report · ₹499</button>
+        <button type="button" class="sample-link" id="sampleOpen2"><svg aria-hidden="true"><use href="#doc"/></svg>See a sample report<svg class="ar" aria-hidden="true"><use href="#arrow"/></svg></button>
       </div>
-      <div class="slide s3">
-        <i class="blob"></i>
-        <p class="k">Your best time</p>
-        <p><span class="locked"><svg><use href="#lock"/></svg>●●● – ●●●</span></p>
-        <p class="line">The months your chart is strongest. Your report names them and what to do in them.</p>
-        <p><span class="unlock-hint">The months open in your report</span></p>
-      </div>
-      <div class="slide s4">
-        <i class="blob"></i>
-        <p class="k">Your careful time</p>
-        <p><span class="locked"><svg><use href="#lock"/></svg>●●● – ●●●</span></p>
-        <p class="line">A few months ask you to plan, not spend. Your report names them and says what to hold back on.</p>
-        <p><span class="unlock-hint">The months open in your report</span></p>
-      </div>
-      <div class="slide s5">
-        <i class="blob"></i>
-        <p class="k">Your one big move</p>
-        <p class="big" id="wrMove"></p>
-        <p class="line">One simple rule to carry from this Diwali to the next.</p>
-      </div>
-      <div class="slide s6">
-        <p class="k">Your 3 words</p>
-        <div class="words" id="wrWords"></div>
-        <p class="foot">The hidden months open when you get your full report.</p>
-      </div>
+      <p class="sent">Your report is made for you and sent right after payment. If it does not reach you, we will resend it.</p>
     </div>
 
-    <div class="card emph">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="rgba(242,165,22,.16)" stroke="#C9962E" stroke-width="1.5"/><path d="M24 9c4 6 5 10 0 15-5-5-4-9 0-15z" fill="#F2A516"/><path d="M10 27h28c-2 8-8 11-14 11s-12-3-14-11z" fill="#C93B2E"/></svg>
-      <div><p class="pl" id="emLabel"></p><p class="pv" id="emLine"></p></div>
-    </div>
-
-    <div class="lockbox" id="unlock">
-      <div class="also">
-        <h4>Also in your report, all from your chart</h4>
-        <div class="also-grid" id="alsoGrid"></div>
-      </div>
-      <button class="cta" type="button" id="unlockBtn">Unlock my Diwali report · <s style="opacity:.7;font-weight:600">₹999</s> ₹499</button>
-      <p class="fine">One-time payment of <s>₹999</s> ₹499 · PDF on WhatsApp and on screen</p>
-      <button type="button" class="sample-link" id="sampleOpen2">See a sample report</button>
-      <div class="lb-proof">
-        <h4>What others are saying</h4>
-        <div class="lb-rev"><div class="st">★★★★★</div><p>"Did the free preview first and the Sade Sati part was right for me. Paid after that, no regrets."</p><div class="w">Anjali, 41</div></div>
-        <div class="lb-rev"><div class="st">★★★★★</div><p>"Got one for me and one for my brother as a gift. Same Diwali, totally different answers 😅"</p><div class="w">Rahul, 27</div></div>
-        <div class="lb-rev"><div class="st">★★★★★</div><p>"Business part was practical. When to keep stock light and when to push. That's all I wanted."</p><div class="w">Manoj, kirana store owner</div></div>
-        <div class="cred-row"><span>Exact planet positions</span><span>IIT–IIM alumni</span><span>Secure payment</span></div>
-      </div>
-    </div>
   </div>
 </section>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT" aria-hidden="true">
+  <div class="bd" id="shBd"></div>
+  <div class="pn"><div class="hd"><div><div class="cap" id="shRg"></div><h3 id="shT"></h3></div><button type="button" class="x" id="shX" aria-label="Close">&times;</button></div>
+  <p class="full" id="shP"></p></div>
+</div>
 
 <!-- ============ WHAT'S INSIDE ============ -->
 <section class="inside">
@@ -699,7 +705,7 @@ fbq('track', 'PageView');
 
 <div class="sticky" id="stickyBar" hidden role="region" aria-label="Get your report">
   <div class="in">
-    <div class="t"><b id="stT1">Diwali Wealth &amp; Prosperity Report</b><span id="stT2"><s>₹999</s> <b class="amt">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</span></div>
+    <div class="t" id="stT2"><span>Diwali offer ends in <b class="clk" id="otClockSticky">30:00</b></span><span><s>₹999</s> <b class="amt">₹499</b></span></div>
     <button type="button" id="stickyBtn">Check my Diwali report</button>
   </div>
 </div>
@@ -743,14 +749,6 @@ fbq('track', 'PageView');
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 var AREA_LABEL={money:'Money',career:'Career',business:'Business',family:'Family & children',marriage:'Marriage',luck:'Better luck'};
-var AREA_LINE={
-  money:'Your report starts with Money: when it grows, when to hold back, and when to buy gold.',
-  career:'Your report starts with Career: when your work gets noticed, when to ask for more, and when to stay steady.',
-  business:'Your report starts with Business: when to push for growth, when to sign, and when to keep cash ready.',
-  family:'Your report starts with Family & children: the happy times at home and the months to give family more time.',
-  marriage:'Your report starts with Marriage: the good times for marriage plans and talks, whatever stage you are at.',
-  luck:'Your report starts with Better luck: where your chart opens doors, and how to make a fresh start this Diwali.'
-};
 var SIGN_LABEL={Cancer:'Karka'};
 function signName(s){ return SIGN_LABEL[s]||s||''; }
 function _esc(s){ var d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML; }
@@ -773,11 +771,11 @@ document.querySelectorAll('.tor').forEach(function(g){
       s+='<ellipse cx="'+x+'" cy="'+y+'" rx="'+(5-r)+'" ry="'+(2.4-r*.4)+'" transform="rotate('+(a*57.3)+' '+x+' '+y+')" fill="'+cols[(i+r)%4]+'"/>'; } }
   $('rg').innerHTML=s+'<circle cx="50" cy="50" r="7" fill="#FFC94D"/>';
 })();
-function fireworks(cv,big){
+function fireworks(cv,big,stopMs){
   /* big = the after-payment progress screen: frequent overlapping bursts, larger
      sparks with fading trails. Small = the gentle hero/cover sky from the mock. */
   if(REDUCE||!cv||cv._fw) return; cv._fw=1;
-  var ctx=cv.getContext('2d'), W=0, H=0, parts=[], last=-1e4, dpr=Math.min(window.devicePixelRatio||1,2);
+  var ctx=cv.getContext('2d'), W=0, H=0, parts=[], last=-1e4, t0=0, dpr=Math.min(window.devicePixelRatio||1,2);
   var cols=['#FFC94D','#F2A516','#FF7AB6','#FFE7B8','#C93B2E','#FFB627'];
   var GAP=big?450:1400, N=big?56:46, R=(big?2.6:1.6)*dpr, SPD=big?3.2:2.4, MAX=big?500:300;
   function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=r.width*dpr; H=cv.height=r.height*dpr; }
@@ -785,14 +783,16 @@ function fireworks(cv,big){
   var box=null, txt=big&&cv.parentNode.querySelector('.inner');
   function hole(){ if(!txt) return null; var c=cv.getBoundingClientRect(), r=txt.getBoundingClientRect();   /* [cx,cy,rx,ry] in canvas px */
     return [(r.left+r.width/2-c.left)*dpr,(r.top+r.height/2-c.top)*dpr,r.width*.74*dpr,(r.height*.7+16)*dpr]; }
-  function burst(){ var x=W*(.1+Math.random()*.8)  /* big: top or bottom band, clear of the centred text */, y=H*(big?(Math.random()<.65?.06+Math.random()*.2:.8+Math.random()*.12):.12+Math.random()*.3), c=cols[Math.random()*cols.length|0], c2=cols[Math.random()*cols.length|0];
+  function burst(){ var x=W*(stopMs?(Math.random()<.5?.07+Math.random()*.17:.76+Math.random()*.17):(.1+Math.random()*.8))  /* big: top or bottom band, clear of the centred text */, y=H*(big?(Math.random()<.65?.06+Math.random()*.2:.8+Math.random()*.12):.12+Math.random()*.3), c=cols[Math.random()*cols.length|0], c2=cols[Math.random()*cols.length|0];
     for(var i=0;i<N&&parts.length<MAX;i++){ var a=i/N*6.283+Math.random()*.2, v=(.8+Math.random()*SPD)*dpr;
       parts.push({x:x,y:y,h:[],vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:i%3?c:c2}); } }
   (function loop(t){
+    var now=performance.now(); t0=t0||now;
+    if(stopMs&&now-t0>stopMs+2500&&!parts.length) return;   // cover: the show ends by itself
     requestAnimationFrame(loop);
     if(!cv.getClientRects().length) return;          // hidden: skip drawing
     if(!W) fit();
-    if(t-last>GAP){ burst(); if(big&&Math.random()<.35) burst(); last=t; if(big) box=hole(); }
+    if(t-last>GAP&&(!stopMs||now-t0<stopMs)){ burst(); if(big&&Math.random()<.35) burst(); last=t; if(big) box=hole(); }
     ctx.clearRect(0,0,W,H); if(big) ctx.globalCompositeOperation='lighter';
     parts=parts.filter(function(p){ return p.l>0; });
     parts.forEach(function(p){ if(big){ p.h.unshift(p.x,p.y); p.h.length=Math.min(p.h.length,24); }   /* last 12 positions = the trail, drawn as 6 tapering segments */
@@ -980,7 +980,7 @@ $('kundliForm').addEventListener('submit',async function(e){
   }
 });
 
-/* ---- preview renderer: reads ONLY the teaser (which never carries a month or date) ---- */
+/* ---- preview renderer: reads ONLY the teaser (month names appear only in preview.past/future_free/strip labels) ---- */
 /* North Indian chart: houses are fixed diamond/triangle positions (1 = top, going
    counter-clockwise); signs rotate around them starting from the ascendant (or Moon
    sign, when the birth time is unsure). Each polygon's own vertex average is used as
@@ -1004,76 +1004,102 @@ var NORTH_HOUSES=[
   var n=h.poly.length, cx=h.poly.reduce(function(a,p){return a+p[0];},0)/n, cy=h.poly.reduce(function(a,p){return a+p[1];},0)/n;
   return {c:[cx,cy]};
 });
-function buildKundli(t,first){
-  var kd={}, ref=signName(t.basis==='moon'?t.moon_sign:t.lagna_sign), refIdx=ZODIAC.indexOf(ref), s='';
-  /* engine sends "Karka"; normalise any "Cancer" too, and drop "La" (the Lagna label is added separately) */
+var SKT={};   /* preview.sign_names: English sign -> Sanskrit, used for every DISPLAYED sign name */
+function dispSign(s){ s=signName(s); return SKT[s==='Karka'?'Cancer':s]||s; }
+function buildKundli(t,first,moonBasis){
+  var kd={}, ref=signName(moonBasis?t.moon_sign:t.lagna_sign), refIdx=ZODIAC.indexOf(ref), s='';
+  /* engine sends "Karka"; normalise any "Cancer" too, and drop "La" (the rising label is added separately) */
   Object.keys(t.kundli||{}).forEach(function(k){ kd[signName(k)]=(t.kundli[k]||[]).filter(function(p){ return p!=='La'; }); });
   s+='<rect class="k-cell" x="0" y="0" width="320" height="320"/>';
   s+='<path class="k-line" d="M160,0 L320,160 L160,320 L0,160 Z M0,0 L320,320 M320,0 L0,320"/>';
   NORTH_HOUSES.forEach(function(h,i){
     var signIdx=refIdx<0?i:(refIdx+i)%12, sg=ZODIAC[signIdx], pl=(kd[sg]||[]).slice(0,3), cx=h.c[0], cy=h.c[1];
     s+='<text class="k-sign" x="'+cx+'" y="'+(cy-9)+'" text-anchor="middle">'+(signIdx+1)+'</text>';
-    pl.forEach(function(p,j){ s+='<text class="k-pl" x="'+cx+'" y="'+(cy+11+j*13)+'" text-anchor="middle">'+_esc(p)+'</text>'; });
-    if(i===0) s+='<text class="k-asc" x="'+cx+'" y="'+(cy+11+pl.length*13+2)+'" text-anchor="middle">'+(t.basis==='moon'?'Moon':'Lagna')+'</text>';
+    pl.forEach(function(p,j){ s+='<text class="k-pl" x="'+cx+'" y="'+(cy+11+j*14)+'" text-anchor="middle">'+_esc(p)+'</text>'; });
+    if(i===0) s+='<text class="k-asc" x="'+cx+'" y="'+(cy+11+pl.length*14+2)+'" text-anchor="middle">'+(moonBasis?'Moon':'Rising')+'</text>';
   });
-  $('kundliCap').innerHTML='<b>'+_esc(first)+'</b> &middot; Birth chart &middot; '+(t.basis==='moon'?'Moon in ':'Lagna ')+_esc(ref);
+  $('kundliCap').innerHTML='<b>'+_esc(first)+'</b> &middot; Birth chart &middot; '+(moonBasis?'Moon in ':'Rising sign ')+_esc(dispSign(ref));
   return s;
 }
-var SADE={rising:['Yes, first phase','Saturn\'s 7½-year phase has begun'],peak:['Yes, middle phase','The main part of Saturn\'s 7½-year phase'],setting:['Yes, last phase','Saturn\'s 7½-year phase is winding down']};
-function maskLine(s){ return _esc(s).replace(/●+\s*[–-]\s*●+/g,'<span class="mask">●●●–●●●</span>'); }
+var SADE_STAGE={first:'Yes, first stage',middle:'Yes, middle stage',last:'Yes, last stage'};
+var SADE_YES='Saturn is walking over your Moon sign. It does not decide your life.';
+var SADE_NO='Saturn is not over your Moon sign now.';
+var LOCK_SVG='<svg aria-hidden="true"><use href="#lock"/></svg>';
+var HEAD={good:'A good time',steady:'A mixed time',careful:'A slower, costlier time'};
+var TAG={good:'Good',steady:'Mixed',careful:'Slower'};
+var BLOCKS=[];
+function tone3(x){ return (x==='good'||x==='steady'||x==='careful')?x:'steady'; }
+function monthCard(b,i,open){
+  var tn=tone3(b.tone);
+  return '<article class="pcard '+tn+'"><div class="rg"><span class="d">'+_esc(b.range)+(open?' · open to read':'')+'</span><span class="tg"><svg aria-hidden="true"><use href="#diya-s"/></svg>'+TAG[tn]+'</span></div><h3>'+_esc(b.heading||HEAD[tn])+'</h3><p>'+_esc(b.text)+'</p><button type="button" class="rm" data-i="'+i+'">Read more</button></article>';
+}
 
 function renderTeaser(t){
   TEASER=t;
+  var pv=t.preview||null, ch=(pv&&pv.chart)||{}, moonBasis=pv?!!pv.moon_basis:t.basis==='moon';
+  SKT=(pv&&pv.sign_names)||{};
   var name=t.name||'', first=name.split(' ')[0]||'You', area=t.emphasis_area||'money', aLabel=AREA_LABEL[area]||'';
-  $('tagWho').textContent = $('m-gift').checked ? (first+'’s') : 'your';
+  var startArea=(pv&&pv.start_area)||aLabel; startArea=AREA_LABEL[String(startArea).toLowerCase()]||startArea;
   $('cvName').textContent=name;
   var dd=$('f-dd').value.trim(), dob=('0'+dd).slice(-2)+'-'+$('f-mm').value+'-'+$('f-yy').value.trim();
   $('cvDob').textContent=[dob,timeCheck().tob,CITY&&CITY.name].filter(Boolean).join(' · ');
-  $('cvQlabel').textContent='Your 5 Diwali answers · '+aLabel;
+  $('cvQlabel').textContent='Your 5 Diwali questions · '+aLabel;
   var qs=(t.questions||[]).slice(0,5);
-  $('cvQs').innerHTML=qs.map(function(q,i){ return '<li><span class="qn">'+(i+1)+'</span>'+_esc(q)+'</li>'; }).join('');
+  $('cvQs').innerHTML=qs.map(function(q,i){ return '<li><span class="qn">'+(i+1)+'</span><span class="qt">'+_esc(q)+'</span><span class="qlock" title="Answer inside the report">'+LOCK_SVG+'</span></li>'; }).join('');
+  $('glance').innerHTML='Your report starts with <b>'+_esc(startArea)+'</b>';
 
-  $('kd').innerHTML=buildKundli(t,first);
+  $('kd').innerHTML=buildKundli(t,first,moonBasis);
   $('kd').setAttribute('aria-label','North Indian birth chart for '+first);
   $('plRows').innerHTML=(t.planets||[]).map(function(p){
     var dg=String(p.dignity||'').toLowerCase(), b='<span class="dig">Average</span>';
     if(dg.indexOf('exalt')===0) b='<span class="dig ex">Very strong</span>';
-    else if(dg==='own'||dg.indexOf('own')===0) b='<span class="dig own">Strong</span>';
+    else if(dg.indexOf('own')===0) b='<span class="dig own">Strong</span>';
     else if(dg.indexOf('debil')===0) b='<span class="dig weak">Needs support</span>';
-    return '<tr><td>'+_esc(p.name)+'</td><td>'+_esc(signName(p.sign))+'</td><td>'+b+'</td></tr>';
+    return '<tr><td>'+_esc(p.name)+'</td><td>'+_esc(dispSign(p.sign))+'</td><td>'+b+'</td></tr>';
   }).join('');
-  var strongN=(t.planets||[]).filter(function(p){ var dg=String(p.dignity||'').toLowerCase(); return dg.indexOf('exalt')===0||dg.indexOf('own')===0; }).length;
-  $('chartSum').innerHTML='<b>'+strongN+'</b> planet'+(strongN===1?'':'s')+' in strong positions in your chart';
-  $('fMoon').textContent=signName(t.moon_sign);
-  $('fStar').textContent=t.nakshatra||'';
-  $('fPeriod').textContent=t.period||'';
-  var ss=t.sade_sati||{}, sd=ss.active?(SADE[ss.phase]||['Yes','Saturn\'s 7½-year phase is on']):['No','Not running for you now'];
-  $('fSade').textContent=sd[0]; $('fSadeNote').textContent=sd[1];
+  $('fMoon').textContent=ch.moon||dispSign(t.moon_sign);
+  $('fStar').textContent=ch.star||t.nakshatra||'';
+  $('fPeriod').textContent=ch.period||t.period||'';
+  var ss=ch.sade_sati||(t.sade_sati?{active:!!t.sade_sati.active,stage:({rising:'first',peak:'middle',setting:'last'})[t.sade_sati.phase]}:{}), on=!!ss.active;
+  $('fSade').textContent=on?(SADE_STAGE[ss.stage]||'Yes'):'No';
+  $('fSadeNote').textContent=on?SADE_YES:SADE_NO;
 
-  $('wrInit').textContent=name.split(' ').filter(Boolean).slice(0,2).map(function(w){ return w.charAt(0).toUpperCase(); }).join('');
-  $('wrWho').textContent=first+' · Diwali 2026 → 2027';
-  $('wrHello').textContent=first+', here’s your next 12 months.';
-  var strong=AREA_LABEL[t.strongest_area]||'';
-  $('wrArea').textContent=strong.toUpperCase();
-  $('wrAreaLine').textContent='Of all five areas, '+strong.toLowerCase()+' is where your chart is strongest for you right now.';
-  $('wrMove').textContent=t.move||'';
-  $('wrWords').innerHTML=(t.words||[]).slice(0,3).map(function(w){ return '<div class="word"><b>'+_esc(String(w.word||'').toUpperCase())+'</b><span>'+maskLine(w.line_masked)+'</span></div>'; }).join('');
+  /* months: only when the server sent preview; an old cached response just shows cover, chart and Unlock */
+  var has=!!(pv&&pv.past&&pv.past.length&&pv.future_free);
+  [].forEach.call(document.querySelectorAll('#teaser .pv-only'),function(el){ el.hidden=!has; });
+  if(has){
+    $('moonNote').hidden=!moonBasis;
+    BLOCKS=pv.past.concat([pv.future_free]);
+    $('pastBlocks').innerHTML=pv.past.map(function(b,i){ return monthCard(b,i,false); }).join('');
+    $('futBlock').innerHTML=monthCard(pv.future_free,pv.past.length,true);
+    var st=pv.strip||[];
+    $('strip').innerHTML=st.map(function(m){ return m.open?'<span class="mb open '+tone3(m.tone)+'"></span>':'<span class="mb locked">'+LOCK_SVG+'</span>'; }).join('');
+    $('ini').innerHTML=st.map(function(m){ return '<span>'+_esc(m.m)+'</span>'; }).join('');
+    $('endA').textContent=st.length?st[0].label:''; $('endB').textContent=st.length?st[st.length-1].label:'';
+    var open=st.filter(function(m){ return m.open; }).length;
+    $('strip').setAttribute('aria-label',st.length+' months, '+(st.length?st[0].label+' to '+st[st.length-1].label:'')+'. The first '+open+' are open, the other '+(st.length-open)+' are inside your report.');
+  }
 
-  var picked=STEERING&&STEERING===area;
-  $('emLabel').textContent=picked?('You picked '+aLabel):('Your chart and situation put '+aLabel+' first');
-  $('emLine').textContent=AREA_LINE[area]||'';
-
-  var also=['money','career','business','family','marriage','luck'].filter(function(a){ return a!==area; }).map(function(a){ return AREA_LABEL[a]; })
-    .concat(['Your 12 months','Your Diwali puja times','Your plan for the months ahead']);
-  $('alsoGrid').innerHTML=also.map(function(a){ return '<div>'+_esc(a)+'</div>'; }).join('');
-
-  $('stT1').textContent=first+'’s Diwali report';
-  $('stickyBtn').textContent='Unlock · ₹499';
+  $('stickyBtn').textContent='Unlock';
 
   var el=$('teaser'); el.classList.add('show');
-  fireworks($('fwCover'));
+  stickyUpdate();
+  fireworks($('fwCover'),false,6000);
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
 }
+
+/* month text: bottom sheet */
+var lastRm=null;
+function openSheet(i,btn){
+  var b=BLOCKS[i]; if(!b) return; lastRm=btn;
+  $('shRg').textContent=b.range; $('shT').textContent=b.heading||HEAD[tone3(b.tone)]; $('shP').textContent=b.text;
+  $('sheet').classList.add('open'); $('sheet').setAttribute('aria-hidden','false'); setTimeout(function(){ $('shX').focus(); },50);
+}
+function closeSheet(){ $('sheet').classList.remove('open'); $('sheet').setAttribute('aria-hidden','true'); if(lastRm) lastRm.focus(); }
+function onRm(e){ var b=e.target.closest('.rm'); if(b) openSheet(+b.getAttribute('data-i'),b); }
+$('pastBlocks').addEventListener('click',onRm); $('futBlock').addEventListener('click',onRm);
+$('shX').addEventListener('click',closeSheet); $('shBd').addEventListener('click',closeSheet);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('sheet').classList.contains('open')) closeSheet(); });
 
 /* ---- unlock: /api/order -> Razorpay (same flow as career-intelligence.html) ---- */
 async function startPayment(){
@@ -1172,17 +1198,31 @@ $('unlockBtn').addEventListener('click',startPayment);
   });
 })();
 
-/* ---- sticky bar: before the preview it scrolls to the form; after, it opens payment ---- */
+/* ---- sticky bar. Before the preview: shows from the form down, button submits/scrolls to the form.
+   After the preview: hidden at the top, shown once the cover is passed, hidden again while the main
+   Unlock button is on screen (never two Unlock buttons at once); its button scrolls to the main one. ---- */
+var btnOn=false;
+function stickyUpdate(){
+  var s=$('stickyBar'), form=$('kundliForm');
+  if(!TEASER){ s.hidden=window.scrollY<(form.offsetTop-120); return; }
+  var c=$('cover'), top=c.getBoundingClientRect().top+window.scrollY;
+  s.hidden=!(window.scrollY>top+c.offsetHeight*0.6 && !btnOn);
+}
 $('stickyBtn').addEventListener('click',function(){
-  if(REPORT_ID){ startPayment(); return; }
+  if(REPORT_ID&&TEASER){
+    var u=$('unlockBtn'); u.scrollIntoView({behavior:REDUCE?'auto':'smooth',block:'center'});
+    u.classList.remove('pulse'); void u.offsetWidth; u.classList.add('pulse'); return;
+  }
   /* form filled but no preview yet: submit it (the submit handler still validates); else scroll to it */
   var form=$('kundliForm'), filled=$('f-name').value.trim()&&$('f-gender').value&&!dobCheck().err&&CITY&&$('f-place').value.trim()===CITY.label;
   if(filled){ if(typeof form.requestSubmit==='function') form.requestSubmit(); else form.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})); return; }
   form.scrollIntoView({behavior:'smooth'});
 });
+$('unlockBtn').addEventListener('animationend',function(e){ if(e.animationName==='pulse') this.classList.remove('pulse'); });
 (function(){
   var sticky=$('stickyBar'), form=$('kundliForm');
-  window.addEventListener('scroll',function(){ sticky.hidden=window.scrollY<(form.offsetTop-120); },{passive:true});
+  if('IntersectionObserver' in window) new IntersectionObserver(function(es){ btnOn=es[0].isIntersecting; stickyUpdate(); },{threshold:0,rootMargin:'0px 0px -64px 0px'}).observe($('unlockBtn'));
+  window.addEventListener('scroll',stickyUpdate,{passive:true});
   form.addEventListener('focusin',function(){ sticky.classList.add('kbd'); });
   form.addEventListener('focusout',function(){ setTimeout(function(){ if(!form.contains(document.activeElement)) sticky.classList.remove('kbd'); },120); });
 })();

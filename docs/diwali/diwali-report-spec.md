@@ -493,11 +493,11 @@ No brackets, no chart reason, no written date range (the dates live in the timel
 2. When could your next period of financial growth begin?
 3. Does your birth chart suggest stronger wealth-building opportunities from this Diwali to the next?
 4. Which months may call for more care with spending?
-5. Which months may be favourable for buying gold or property?
+5. Which months may be good for buying gold or property?
 
 **Career**
 1. Could a career breakthrough come from this Diwali to the next?
-2. Which periods may be more favourable for professional growth?
+2. Which periods may be better for professional growth?
 3. When could a good time for a job change begin?
 4. Which months may favour asking for a raise or promotion?
 5. Which months may call for steady effort, not sudden moves?
@@ -505,7 +505,7 @@ No brackets, no chart reason, no written date range (the dates live in the timel
 **Business**
 1. Could new growth come for your business from this Diwali to the next?
 2. When could your next period of business profit begin?
-3. Which months may be favourable for launching or expanding?
+3. Which months may be good for launching or expanding?
 4. What does your birth chart suggest about partnerships?
 5. Which months may call for more care with loans and credit?
 
@@ -518,16 +518,16 @@ No brackets, no chart reason, no written date range (the dates live in the timel
 
 **Marriage** (one version for everyone; **APPROVED, Owner 26 Oct**, incl. the Manglik facts box)
 1. Could more warmth come to your relationships from this Diwali to the next?
-2. Which months may be favourable for important relationship decisions?
+2. Which months may be good for important relationship decisions?
 3. Which months may call for more care in talks with the people closest to you?
 4. What does your birth chart suggest about partnership in your life?
 5. Does your birth chart show Manglik, and does it matter?
 
 **Better luck and a fresh beginning** (positives only)
 1. Is the period after Diwali a potential turning point in your life?
-2. Which months appear relatively favourable in your outlook?
+2. Which months appear relatively good in your outlook?
 3. When could a fresh chapter begin for you after this Diwali?
-4. Which personal strengths could shape your next life phase?
+4. Which personal strengths could shape your next chapter of life?
 5. Which small habits may support your fresh start after this Diwali?
 
 ## 7. Engine work list

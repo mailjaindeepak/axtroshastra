@@ -1,0 +1,227 @@
+{
+ "name": "Kamla Devi",
+ "moon_sign": "Aries",
+ "nakshatra": "Bharani",
+ "lagna_sign": "Sagittarius",
+ "basis": "moon",
+ "period": "Jupiter – Sun",
+ "sade_sati": {
+  "active": true,
+  "phase": "rising"
+ },
+ "planets": [
+  {
+   "name": "Sun",
+   "sign": "Capricorn",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Moon",
+   "sign": "Aries",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Mars",
+   "sign": "Capricorn",
+   "dignity": "exalted"
+  },
+  {
+   "name": "Mercury",
+   "sign": "Sagittarius",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Jupiter",
+   "sign": "Pisces",
+   "dignity": "own"
+  },
+  {
+   "name": "Venus",
+   "sign": "Aquarius",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Saturn",
+   "sign": "Capricorn",
+   "dignity": "own"
+  },
+  {
+   "name": "Rahu",
+   "sign": "Gemini",
+   "dignity": "neutral"
+  },
+  {
+   "name": "Ketu",
+   "sign": "Sagittarius",
+   "dignity": "neutral"
+  }
+ ],
+ "kundli": {
+  "Capricorn": [
+   "Su",
+   "Ma",
+   "Sa"
+  ],
+  "Aries": [
+   "Mo"
+  ],
+  "Sagittarius": [
+   "Me",
+   "Ke"
+  ],
+  "Pisces": [
+   "Ju"
+  ],
+  "Aquarius": [
+   "Ve"
+  ],
+  "Gemini": [
+   "Ra"
+  ]
+ },
+ "strongest_area": "business",
+ "move": "Save in winter. Act in summer.",
+ "words": [
+  {
+   "word": "BUILDER",
+   "line_masked": "Your business has room to grow."
+  },
+  {
+   "word": "PREPARED",
+   "line_masked": "●●●–●●● is for planning, not spending."
+  },
+  {
+   "word": "RISING",
+   "line_masked": "Your business grows well in ●●●–●●●."
+  }
+ ],
+ "emphasis_area": "family",
+ "questions": [
+  "Could more harmony come to your home from this Diwali to the next?",
+  "Which months may suit family functions and celebrations?",
+  "When could a good period for buying or moving home begin?",
+  "Which months may bring happy news in your family?",
+  "Which months may call for more care in family conversations?"
+ ],
+ "teasers": [
+  "Your chart gives a one-word answer, what it means for you, and what to do.",
+  "Your good months for family functions are marked.",
+  "There is a named month when a home move suits you.",
+  "The months that may bring happy family news are marked.",
+  "Your careful months for family talks are marked, with what helps."
+ ],
+ "preview": {
+  "version": 8,
+  "work_type": "home",
+  "moon_basis": true,
+  "start_area": "family",
+  "sign_names": {
+   "Aries": "Mesha",
+   "Taurus": "Vrishabha",
+   "Gemini": "Mithuna",
+   "Karka": "Karka",
+   "Leo": "Simha",
+   "Virgo": "Kanya",
+   "Libra": "Tula",
+   "Scorpio": "Vrishchika",
+   "Sagittarius": "Dhanu",
+   "Capricorn": "Makara",
+   "Aquarius": "Kumbha",
+   "Pisces": "Meena"
+  },
+  "chart": {
+   "rising": null,
+   "moon": "Mesha",
+   "star": "Bharani",
+   "period": "Jupiter – Sun",
+   "sade_sati": {
+    "active": true,
+    "stage": "first"
+   }
+  },
+  "past": [
+   {
+    "range": "Jul – Aug 2026",
+    "tone": "steady",
+    "heading": "A mixed time",
+    "text": "This time had ups and downs in about equal share. A neighbour or relative dropped in, and it was a warm visit. You bought something small for the home, and it was useful. Spending on the family went up a little for a festival. An elder gave advice, and you followed some of it. Some weeks were quiet and some were full. Overall, it was an even mix."
+   },
+   {
+    "range": "Sep – Oct 2026",
+    "tone": "good",
+    "heading": "A good time",
+    "text": "These months were happy, with warm moments on many days. Relatives visited, and your home felt full of joy. Your neighbours joined you for a small function, and it went well. You spent on festival items and were happy with them. An elder gave you a good idea, and it worked. A small repair at home was done quickly. In all, these months left your family in good cheer."
+   }
+  ],
+  "future_free": {
+   "range": "Nov – Dec 2026",
+   "tone": "steady",
+   "heading": "A mixed time",
+   "text": "This is likely to be a balanced time, with easy days and busy days taking turns. A relative may visit and stay a few days. Neighbours may ask for your help with a function. Home expenses may be a little higher after the festival. An elder may share a thought that makes you think. A small repair may be started and take a while. Overall, it may be an even mix of rest and work."
+  },
+  "strip": [
+   {
+    "m": "N",
+    "label": "Nov 2026",
+    "open": true,
+    "tone": "steady"
+   },
+   {
+    "m": "D",
+    "label": "Dec 2026",
+    "open": true,
+    "tone": "steady"
+   },
+   {
+    "m": "J",
+    "label": "Jan 2027",
+    "open": false
+   },
+   {
+    "m": "F",
+    "label": "Feb 2027",
+    "open": false
+   },
+   {
+    "m": "M",
+    "label": "Mar 2027",
+    "open": false
+   },
+   {
+    "m": "A",
+    "label": "Apr 2027",
+    "open": false
+   },
+   {
+    "m": "M",
+    "label": "May 2027",
+    "open": false
+   },
+   {
+    "m": "J",
+    "label": "Jun 2027",
+    "open": false
+   },
+   {
+    "m": "J",
+    "label": "Jul 2027",
+    "open": false
+   },
+   {
+    "m": "A",
+    "label": "Aug 2027",
+    "open": false
+   },
+   {
+    "m": "S",
+    "label": "Sep 2027",
+    "open": false
+   },
+   {
+    "m": "O",
+    "label": "Oct 2027",
+    "open": false
+   }
+  ]
+ }
+}

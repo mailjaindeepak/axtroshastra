@@ -77,15 +77,15 @@ QUESTIONS = {
               "When could your next period of financial growth begin?",
               "Does your birth chart suggest stronger wealth-building opportunities from this Diwali to the next?",
               "Which months may call for more care with spending?",
-              "Which months may be favourable for buying gold or property?"],
+              "Which months may be good for buying gold or property?"],
     "career": ["Could a career breakthrough come from this Diwali to the next?",
-               "Which periods may be more favourable for professional growth?",
+               "Which periods may be better for professional growth?",
                "When could a good time for a job change begin?",
                "Which months may favour asking for a raise or promotion?",
                "Which months may call for steady effort, not sudden moves?"],
     "business": ["Could new growth come for your business from this Diwali to the next?",
                  "When could your next period of business profit begin?",
-                 "Which months may be favourable for launching or expanding?",
+                 "Which months may be good for launching or expanding?",
                  "What does your birth chart suggest about partnerships?",
                  "Which months may call for more care with loans and credit?"],
     "family": ["Could more harmony come to your home from this Diwali to the next?",
@@ -94,14 +94,14 @@ QUESTIONS = {
                "Which months may bring happy news in your family?",
                "Which months may call for more care in family conversations?"],
     "marriage": ["Could more warmth come to your relationships from this Diwali to the next?",
-                 "Which months may be favourable for important relationship decisions?",
+                 "Which months may be good for important relationship decisions?",
                  "Which months may call for more care in talks with the people closest to you?",
                  "What does your birth chart suggest about partnership in your life?",
                  "Does your birth chart show Manglik, and does it matter?"],
     "luck": ["Is the period after Diwali a potential turning point in your life?",
-             "Which months appear relatively favourable in your outlook?",
+             "Which months appear relatively good in your outlook?",
              "When could a fresh chapter begin for you after this Diwali?",
-             "Which personal strengths could shape your next life phase?",
+             "Which personal strengths could shape your next chapter of life?",
              "Which small habits may support your fresh start after this Diwali?"],
 }
 # Locked-answer teaser lines on the free preview (no month, no date, no year).
@@ -492,7 +492,7 @@ def _sade_sati(moon_sign, as_of, span_end_ym):
 # ----------------------------------------------------------------- main
 def compute_diwali(name, dob, tob, tz, lat, lon, *, gender, work_type, steering,
                    time_quality="T0", gift_on=False, giver_name="", gift_message="",
-                   place="", as_of="2026-11-08"):
+                   place="", as_of="2026-11-08", _preview=True):
     if gender not in ("male", "female"):
         raise ValueError("gender must be 'male' or 'female'")
     if work_type not in WORK_TYPES:
@@ -948,10 +948,15 @@ def compute_diwali(name, dob, tob, tz, lat, lon, *, gender, work_type, steering,
               "period": f"{md['lord']} – {ad['lord']}",
               "sade_sati": {"active": sade["active"], "phase": sade["phase"]},
               "planets": [{"name": p["name"], "sign": p["sign"], "dignity": p["dignity"]} for p in planets],
-              "kundli": kundli, "strongest_area": strongest, "move": wrapped["move"],
-              "words": [{"word": w["word"], "line_masked": w["line_masked"]} for w in wrapped["words"]],
+              "kundli": kundli, "strongest_area": strongest,
+              "words": [{"word": w["word"]} for w in wrapped["words"]],
               "emphasis_area": emphasis, "questions": list(QUESTIONS[emphasis]),
               "teasers": _teasers(emphasis, capped)}
+    if _preview:
+        teaser["preview"] = _preview_block(
+            dict(name=name, dob=dob, tob=tob, tz=tz, lat=lat, lon=lon, gender=gender,
+                 work_type=work_type, steering=steering, time_quality=time_quality, place=place),
+            as_of_dt, months, work_type, emphasis, use_moon, moon, ch, md, ad, sade)
     wrapped_out = {k: v for k, v in wrapped.items() if k != "words"}
     wrapped_out["words"] = [{"word": w["word"], "line": w["line"]} for w in wrapped["words"]]
 
@@ -969,6 +974,52 @@ def compute_diwali(name, dob, tob, tz, lat, lon, *, gender, work_type, steering,
         "answers": answers, "practices": practices,
         "wrapped": wrapped_out, "teaser": teaser,
     }
+
+
+# ----------------------------------------------------------------- free preview
+SANSKRIT = {"Aries": "Mesha", "Taurus": "Vrishabha", "Gemini": "Mithuna", "Karka": "Karka",
+            "Leo": "Simha", "Virgo": "Kanya", "Libra": "Tula",
+            "Scorpio": "Vrishchika", "Sagittarius": "Dhanu", "Capricorn": "Makara",
+            "Aquarius": "Kumbha", "Pisces": "Meena"}
+_PV_TONE = {"best": "good", "good": "good", "steady": "steady", "careful": "careful"}
+_PV_RANK = {"good": 0, "steady": 1, "careful": 2}
+_PV_HEAD = {"good": "A good time", "steady": "A mixed time", "careful": "A slower, costlier time"}
+
+
+def _pv_block(kind, ms, wt, seed_base, idx):
+    tone = max((_PV_TONE[m["tone"]] for m in ms), key=_PV_RANK.get)
+    a, b = ms
+    rng = (f"{a['label']} – {b['label']} {b['year']}" if a["year"] == b["year"]
+           else f"{a['label']} {a['year']} – {b['label']} {b['year']}")
+    import diwali_readings
+    return {"range": rng, "tone": tone, "heading": _PV_HEAD[tone],
+            "text": diwali_readings.pick(kind, wt, tone, (seed_base + idx) % 3)}
+
+
+def _preview_block(args, as_of_dt, months, wt, emphasis, use_moon, moon, ch, md, ad, sade):
+    """Free-preview payload. Month names only in range/label; tones+text only for open blocks."""
+    try:
+        prev_as_of = as_of_dt.replace(year=as_of_dt.year - 1)
+    except ValueError:
+        prev_as_of = as_of_dt.replace(year=as_of_dt.year - 1, day=28)
+    old = compute_diwali(**args, as_of=prev_as_of, _preview=False)["months"]
+    ms_, rs_ = SANSKRIT[SIGN_NAMES[moon.sign]], SANSKRIT[SIGN_NAMES[ch["lagna_sign"]]]
+    seed = sum(ord(c) for c in ms_ + rs_)
+    past = [_pv_block("past", old[-4:-2], wt, seed, 0), _pv_block("past", old[-2:], wt, seed, 1)]
+    free = _pv_block("future", months[:2], wt, seed, 2)
+    strip = []
+    for i, m in enumerate(months):
+        e = {"m": m["label"][0], "label": f"{m['label']} {m['year']}", "open": i < 2}
+        if i < 2:
+            e["tone"] = _PV_TONE[m["tone"]]
+        strip.append(e)
+    stage = {"rising": "first", "peak": "middle", "setting": "last"}.get(sade["phase"])
+    return {"version": 8, "work_type": wt, "moon_basis": bool(use_moon), "start_area": emphasis,
+            "sign_names": dict(SANSKRIT),   # no "Cancer" key: R3, the engine emits "Karka"
+            "chart": {"rising": None if use_moon else rs_, "moon": ms_,
+                      "star": NAKSHATRAS[moon.nak], "period": f"{md['lord']} – {ad['lord']}",
+                      "sade_sati": {"active": sade["active"], "stage": stage}},
+            "past": past, "future_free": free, "strip": strip}
 
 
 # ----------------------------------------------------------------- pieces

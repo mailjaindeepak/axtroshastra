@@ -38,8 +38,8 @@ TOP = {"product", "meta", "chart", "period", "sade_sati", "months", "area_order"
        "timeline", "best_time", "summary", "diwali", "answers", "wrapped", "teaser"}
 META = {"name", "first_name", "dob", "tob", "place", "gender", "work_type", "steering",
         "time_quality", "basis", "lang", "variant", "age", "age_band", "as_of", "span", "gift"}
-TEASER = {"name", "moon_sign", "nakshatra", "lagna_sign", "basis", "period", "sade_sati", "planets",
-          "kundli", "strongest_area", "move", "words", "emphasis_area", "questions", "teasers"}
+TEASER = {"preview", "name", "moon_sign", "nakshatra", "lagna_sign", "basis", "period", "sade_sati", "planets",
+          "kundli", "strongest_area", "words", "emphasis_area", "questions", "teasers"}
 
 
 def test_payload_has_every_contract_key(vik):
@@ -102,14 +102,17 @@ YM_RE = re.compile(r"\d{4}-\d{2}")
                                 {"dob": "1991-05-30", "tob": "13:30", "time_quality": "T2", "work_type": "job"}])
 def test_teaser_has_no_month_year_or_ym(kw):
     p = run(**kw)
-    blob = json.dumps(p["teaser"], ensure_ascii=False)
+    # preview (range/label/text) legitimately carries months; it has its own strict leak test
+    blob = json.dumps({k: v for k, v in p["teaser"].items() if k != "preview"}, ensure_ascii=False)
     assert not MONTH_RE.search(blob), MONTH_RE.search(blob)
     assert not YEAR_RE.search(blob), YEAR_RE.search(blob)
     assert not YM_RE.search(blob)
     # the full Wrapped card does carry months (allowed inside the card, O-30)
     assert any(MONTH_RE.search(w["line"]) for w in p["wrapped"]["words"])
-    assert all("●●●–●●●" in w["line_masked"] or not MONTH_RE.search(w0["line"])
-               for w, w0 in zip(p["teaser"]["words"], p["wrapped"]["words"]))
+    # teaser carries no wrapped lines at all: no "move", no "line_masked" anywhere
+    assert "move" not in p["teaser"]
+    assert "line_masked" not in json.dumps(p["teaser"])
+    assert all(set(w) == {"word"} for w in p["teaser"]["words"])
 
 
 # ---------------------------------------------------------------- inputs: every branch

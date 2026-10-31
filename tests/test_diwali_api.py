@@ -79,7 +79,8 @@ _YM = re.compile(r"\b20\d\d-\d\d\b")
 
 
 def _assert_month_free(teaser):
-    blob = json.dumps(teaser, ensure_ascii=False)
+    # preview fields carry months by design; tests/test_diwali_preview.py guards them strictly
+    blob = json.dumps({k: v for k, v in teaser.items() if k != "preview"}, ensure_ascii=False)
     assert not diwali_bank._MONTH_RE.search(blob), diwali_bank._MONTH_RE.search(blob)
     assert not diwali_bank._YEAR_RE.search(blob), diwali_bank._YEAR_RE.search(blob)
     assert not _YM.search(blob)
