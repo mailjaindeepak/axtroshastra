@@ -1221,7 +1221,7 @@ $('stickyBtn').addEventListener('click',function(){
 $('unlockBtn').addEventListener('animationend',function(e){ if(e.animationName==='pulse') this.classList.remove('pulse'); });
 (function(){
   var sticky=$('stickyBar'), form=$('kundliForm');
-  if('IntersectionObserver' in window) new IntersectionObserver(function(es){ btnOn=es[0].isIntersecting; stickyUpdate(); },{threshold:0,rootMargin:'0px 0px -64px 0px'}).observe($('unlockBtn'));
+  if('IntersectionObserver' in window) new IntersectionObserver(function(es){ btnOn=es[0].isIntersecting; stickyUpdate(); },{threshold:0,rootMargin:'0px'}).observe($('unlockBtn'));
   window.addEventListener('scroll',stickyUpdate,{passive:true});
   form.addEventListener('focusin',function(){ sticky.classList.add('kbd'); });
   form.addEventListener('focusout',function(){ setTimeout(function(){ if(!form.contains(document.activeElement)) sticky.classList.remove('kbd'); },120); });
