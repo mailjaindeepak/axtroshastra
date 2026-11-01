@@ -160,4 +160,5 @@ personal-year coverage (current + next), structure, belief-not-science framing, 
 1. Structure approved (this doc).
 2. Visual mocks (paid report + preview) built against this card list, printed to PDF, reviewed and approved.
 3. Engine: Mulank, Bhagyank, personal year (dynamic from today), lookup tables, with tests including edge dates (e.g. day 29 / 11 / 22 reductions, year rollover on 31 Dec / 1 Jan).
+   Status: compute engine done (`numerology.py`, `tests/test_numerology.py`); renderer waiting on mock approval.
 4. Only then wire the pipeline, route, pricing and landing page; then reviews, sitemap and gates.
