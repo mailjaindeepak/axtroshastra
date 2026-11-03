@@ -1,4 +1,4 @@
-﻿"""Mulank-only payment flow: server-side order, signature + amount + currency + order +
+"""Mulank-only payment flow: server-side order, signature + amount + currency + order +
 captured-status verification, single fulfilment, and no bypass via DEMO_MODE or sample
 content. Razorpay is stubbed; the DB is the real throwaway MySQL from conftest."""
 import hashlib
@@ -147,9 +147,9 @@ def test_order_created_server_side_with_fixed_price_ignoring_client(client, rz, 
     rid = _report()
     r = _order(client, rid, amount=100, currency="USD", price=1)
     assert r.status_code == 200, r.text
-    assert r.json() == {"razorpay_order_id": "order_" + rid, "amount": 29900, "currency": "INR"}
+    assert r.json() == {"razorpay_order_id": "order_" + rid, "amount": 29900, "currency": "INR", "key_id": api.RZP_KEY}
     assert rz.orders[0]["amount"] == 29900 and rz.orders[0]["currency"] == "INR"
-    assert "key" not in json.dumps(r.json()).lower()
+    assert "secret" not in json.dumps(r.json()).lower()
 
 
 def test_order_refused_for_other_product_unknown_and_missing(client, rz, eligible):

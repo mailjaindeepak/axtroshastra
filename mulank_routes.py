@@ -4,15 +4,30 @@
 router; it also keeps api.RZP_SECRET / api.rzp_client() monkeypatchable in tests.
 DEMO_MODE is deliberately never read here.
 """
+import html as _html
 import json
 import logging
+import os
+import re
+import secrets
+import threading
+import time
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel
 
 import db_v2
+import mulank_content
+import mulank_form
 import mulank_payment as mp
+import numerology
+import numerology_preview
+import numerology_viewer
 import payments
+import ratelimit
+import reports_v2
 
 logger = logging.getLogger("axtroshastra")
 router = APIRouter()
@@ -41,7 +56,10 @@ def mulank_order(body: MulankOrderIn):
     conn = db_v2.get_conn()
     try:
         try:
-            return mp.create_order(conn, api.rzp_client(), body.report_id or "")
+            out = mp.create_order(conn, lambda: api.rzp_client(), body.report_id or "")
+            if "razorpay_order_id" in out:
+                out["key_id"] = api.RZP_KEY          # public key id, by design; the secret never leaves the server
+            return out
         except mp.MulankPaymentError as e:
             conn.rollback()
             raise _http(e)
@@ -117,3 +135,201 @@ async def mulank_webhook(request: Request, background_tasks: BackgroundTasks):
     if out["deliver"]:
         FULFIL(out["report_id"], background_tasks)
     return {"ok": True}
+
+
+# =============================================================== customer journey (Piece 4)
+CONSENT_V = "2026-11-mulank"                  # policy/consent text version stored with each lead
+WAITLIST_CONSENT_TEXT = ""                    # owner-supplied wording; the waitlist box stays hidden while empty
+RID_RE = re.compile(r"[A-Za-z0-9_-]{8,40}")
+_PAGES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pages")
+
+_hits: dict = {}
+_hits_lock = threading.Lock()
+
+
+def _limit(request: Request, bucket: str, cap: int, per_min: int) -> None:
+    """Small per-IP token bucket for these routes only (the shared limiter's path table is untouched).
+    Honours RATE_LIMIT_ENABLED like the shared one."""
+    if os.getenv("RATE_LIMIT_ENABLED", "1") != "1":
+        return
+    ip, now = ratelimit._client_ip(request), time.monotonic()
+    with _hits_lock:
+        if len(_hits) > 20000:
+            _hits.clear()
+        tokens, last = _hits.get((bucket, ip), (cap, now))
+        tokens = min(cap, tokens + (now - last) * per_min / 60)
+        if tokens < 1:
+            _hits[(bucket, ip)] = (tokens, now)
+            raise HTTPException(429, "rate_limited", headers={"Retry-After": "30"})
+        _hits[(bucket, ip)] = (tokens - 1, now)
+
+
+def _private(resp: Response) -> Response:
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers["X-Robots-Tag"] = "noindex, nofollow"
+    resp.headers["Referrer-Policy"] = "no-referrer"
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    return resp
+
+
+def _not_found():
+    return _private(HTMLResponse("<!doctype html><meta charset=utf-8><meta name=robots content=noindex>"
+                                 "<title>Not found</title><p style='font:16px system-ui;padding:40px'>This page was not found.</p>",
+                                 status_code=404))
+
+
+def _load(rid: str):
+    """The Mulank report for rid (or None). Same answer for 'no such report' and 'someone else's product'."""
+    if not RID_RE.fullmatch(rid or ""):
+        return None
+    conn = db_v2.get_conn()
+    try:
+        rec = reports_v2.read_report(conn, rid)
+    finally:
+        conn.close()
+    if not rec or rec.get("product") != mp.PRODUCT:
+        return None
+    return rec
+
+
+class MulankIn(BaseModel):
+    name: str | None = None
+    dob: str | None = None
+    gender: str | None = None
+    country_code: str | None = "+91"
+    phone: str | None = None
+    consent_terms: bool = False
+    marketing_optin: bool = False
+    website: str | None = None                # honeypot: real people never fill this
+    captcha_token: str | None = None
+
+
+@router.post("/api/mulank")
+def mulank_create(inp: MulankIn, request: Request):
+    """Validate, calculate, save the lead and report, and return an opaque preview link.
+    Nothing personal is logged or returned beyond the new report id."""
+    import api
+    _limit(request, "create", 6, 6)
+    if inp.website:
+        raise HTTPException(400, "invalid")
+    if not ratelimit.captcha_ok(inp.captcha_token or "", ""):
+        raise HTTPException(400, "captcha_failed")
+    try:
+        f = mulank_form.validate(inp.model_dump())
+    except mulank_form.FormError as e:
+        raise HTTPException(422, e.detail())
+    E = numerology.compute_mulank(f["day"], f["month"], f["year"])
+    ready = mulank_content.pair_readiness(f["day"], f["month"], f["year"])
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    report = {
+        "product": mp.PRODUCT, "name": f["name"], "dob": f["dob_iso"],
+        "numbers": {"mulank": E["mulank"]["number"], "bhagyank": E["bhagyank"]["number"], "pair_key": E["pair_key"]},
+        "meta": {"variant": "/en/numerology", "lang": "english", "consent_ts": now, "consent_v": CONSENT_V,
+                 "marketing_optin": f["marketing_optin"], "marketing_optin_ts": now if f["marketing_optin"] else None,
+                 "gender_choice": f["gender"], "content_version": ready["content_version"],
+                 "eligible_at_creation": ready["eligible"]},
+    }
+    subject = {"role": "self", "name": f["name"],
+               "gender": f["gender"] if f["gender"] in mulank_form.DB_GENDERS else None,
+               "dob": f["dob_iso"], "tob": None, "time_quality": None,
+               "birth_place": None, "birth_lat": None, "birth_lon": None, "birth_tz": None}
+    rid = secrets.token_urlsafe(12)
+    try:
+        conn = db_v2.get_conn()
+        try:
+            uid = reports_v2.save_report(conn, rid, report, [subject], product=mp.PRODUCT, phone=f["phone"])
+            try:
+                api._identify_visitor(conn, request, uid)
+            except Exception:
+                logger.warning("[mulank] visitor link skipped")
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error("[mulank] save failed: %s", e.__class__.__name__)
+        raise HTTPException(503, "unavailable")
+    logger.info("[mulank] created pair=%s eligible=%s", E["pair_key"], ready["eligible"])
+    if not ready["eligible"]:
+        logger.info(mulank_content.gap_log_line(ready))
+    return _private(Response(json.dumps({"report_id": rid, "preview_url": f"/en/numerology/preview/{rid}"}),
+                             media_type="application/json"))
+
+
+def _preview_for(rec: dict, rid: str, absolute_cta: bool = False):
+    p = rec["payload"]
+    y, m, d = (int(x) for x in p["dob"].split("-"))
+    cta = None
+    base = (os.getenv("PUBLIC_BASE_URL", "") or "").rstrip("/")
+    if absolute_cta and base.startswith("https://"):
+        cta = f"{base}/en/numerology/preview/{rid}"
+    return numerology_preview.build_preview(d, m, y, p.get("name") or "", cta_url=cta,
+                                            waitlist_consent_text=WAITLIST_CONSENT_TEXT)
+
+
+@router.get("/en/numerology/preview/{rid}.pdf", include_in_schema=False)
+def mulank_preview_pdf(rid: str, request: Request):
+    _limit(request, "pdf", 8, 8)
+    rec = _load(rid)
+    if not rec:
+        return _not_found()
+    try:
+        r = _preview_for(rec, rid, absolute_cta=True)
+        import pdfgen
+        key = f"pv{1 if r['eligible'] else 0}_{rid}"      # never the bare report id: that key is the PAID report's
+        data = pdfgen.get_or_generate(key, r["html"])
+    except Exception as e:
+        logger.error("[mulank] preview pdf failed: %s", e.__class__.__name__)
+        data = None
+    if not data:
+        return _private(Response(json.dumps({"detail": "pdf_unavailable"}), status_code=503, media_type="application/json"))
+    resp = Response(data, media_type="application/pdf")
+    resp.headers["Content-Disposition"] = 'attachment; filename="Axtroshastra-Numerology-Preview.pdf"'
+    return _private(resp)
+
+
+@router.get("/en/numerology/preview/{rid}", include_in_schema=False)
+def mulank_preview(rid: str, request: Request):
+    _limit(request, "view", 60, 60)
+    rec = _load(rid)
+    if not rec:
+        return _not_found()
+    if rec["paid"]:
+        return _private(RedirectResponse(f"/en/numerology/report/{rid}", status_code=302))
+    try:
+        r = _preview_for(rec, rid)
+        page = numerology_viewer.render_viewer(r["html"], rid, r["eligible"])
+    except Exception as e:
+        logger.error("[mulank] preview render failed: %s", e.__class__.__name__)
+        return _private(HTMLResponse(
+            "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            "<meta name=robots content=noindex><title>Preview</title><p style='font:16px/1.5 system-ui;padding:40px;max-width:480px;margin:auto'>"
+            "We could not prepare your preview just now. Please refresh this page in a minute, or "
+            "<a href='/en/numerology'>start again</a>.</p>", status_code=503))
+    return _private(HTMLResponse(page))
+
+
+@router.get("/en/numerology/report/{rid}", include_in_schema=False)
+def mulank_report_status(rid: str, request: Request):
+    """After payment. The complete report renderer is a later piece, so this page only confirms the
+    payment and says the report is being prepared; the entitlement itself is already recorded."""
+    _limit(request, "view", 60, 60)
+    rec = _load(rid)
+    if not rec:
+        return _not_found()
+    if not rec["paid"]:
+        return _private(RedirectResponse(f"/en/numerology/preview/{rid}", status_code=302))
+    body = ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            "<meta name=robots content='noindex,nofollow'><meta name=referrer content=no-referrer><title>Payment received</title></head>"
+            "<body style='font:16px/1.55 system-ui;background:#FAF6ED;color:#23253B;margin:0'><main style='max-width:520px;margin:0 auto;padding:48px 22px'>"
+            "<h1 style='font-size:26px'>Payment received</h1>"
+            "<p>Thank you. Your payment is confirmed and your complete numerology report is being prepared. "
+            "Keep this page address safe: it is your private link to the report.</p>"
+            "<p style='color:#6B6D82;font-size:14px'>Please do not pay again.</p>"
+            f"<p><a href='/en/numerology/preview/{_html.escape(rid)}'>Back to your preview</a></p></main></body></html>")
+    return _private(HTMLResponse(body))
+
+
+@router.get("/en/numerology", include_in_schema=False)
+def mulank_landing():
+    import api
+    return api._serve_page_with_nav(os.path.join(_PAGES, "numerology.html"))

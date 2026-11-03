@@ -104,7 +104,7 @@ def _mulank_report(conn, rid: str):
     return rec
 
 
-def create_order(conn, rzp, rid: str) -> dict:
+def create_order(conn, rzp_factory, rid: str) -> dict:
     """Server-side order for a Mulank report. Price is the constant above; the client
     supplies nothing but the report id. Refuses ineligible pairs BEFORE any Razorpay call."""
     rec = _mulank_report(conn, rid or "")
@@ -120,7 +120,7 @@ def create_order(conn, rzp, rid: str) -> dict:
     uid = urec.get("user_id") if urec else None
     if not uid:
         raise MulankPaymentError("contact_required", 400)
-    order = rzp.order.create({
+    order = rzp_factory().order.create({
         "amount": MULANK_PRICE_PAISE, "currency": MULANK_CURRENCY, "receipt": rid,
         "notes": {"report_id": rid, "product": PRODUCT,
                   "content_version": ready["content_version"]}})
