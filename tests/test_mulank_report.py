@@ -110,7 +110,7 @@ def test_sample_mode_for_other_pairs_never_contains_the_2_1_authored_text():
 def test_sample_mode_is_labelled_on_every_page_and_refused_with_live_keys(monkeypatch):
     r = R.build_report(29, 7, 1990, "Kiran Mehta", today=PIN, mode="sample")
     assert r["html"].count("Sample report") == r["n_cards"] and "SAMPLE (test document" in r["html"]
-    monkeypatch.setenv("RAZORPAY_KEY_ID", "rzp_live_abc123")
+    monkeypatch.setenv("RAZORPAY_KEY_ID", "rzp_live_NOT_A_REAL_KEY")
     with pytest.raises(RuntimeError):
         R.build_report(29, 7, 1990, "Kiran Mehta", today=PIN, mode="sample")
     with pytest.raises(ValueError):

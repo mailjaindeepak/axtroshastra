@@ -100,6 +100,13 @@ def pair_readiness(day, month, year, today=None, registry=None) -> dict:
     }
 
 
+def any_verified(registry=None) -> bool:
+    """True once at least one content entry has been verified by a named reviewer. While False, no pair can be
+    sold, and public pages say so instead of implying the complete report is available."""
+    reg = REGISTRY if registry is None else registry
+    return any(is_verified(e) for e in reg.values())
+
+
 def gap_log_line(readiness: dict) -> str:
     """One PII-free line for the content-gap log."""
     return "[mulank] ineligible pair=%s missing=%s" % (

@@ -386,7 +386,16 @@ def _start_mulank_recovery():
         mulank_recovery.start_loop(lambda: api.rzp_client(), mulank_fulfilment.schedule)
 
 
+NOT_YET_NOTICE = '<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete numerology report is not available yet, so there is nothing to buy on this page.</div>'
+
+
 @router.get("/en/numerology", include_in_schema=False)
 def mulank_landing():
+    """Landing page. While no content is verified (nothing can be sold) it says so up front."""
     import api
-    return api._serve_page_with_nav(os.path.join(_PAGES, "numerology.html"))
+    resp = api._serve_page_with_nav(os.path.join(_PAGES, "numerology.html"))
+    body = resp.body.decode("utf-8") if hasattr(resp, "body") else None
+    if body is None:
+        return resp
+    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.any_verified() else NOT_YET_NOTICE, 1)
+    return HTMLResponse(body)

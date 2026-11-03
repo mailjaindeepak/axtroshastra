@@ -348,6 +348,15 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert "₹" not in _visible(h)
 
 
+def test_landing_says_the_complete_report_is_not_available_until_content_is_verified(client, monkeypatch):
+    h = client.get("/en/numerology").text
+    assert "The complete numerology report is not available yet" in h and "<!--MK_NOTICE-->" not in h
+    assert not mc.any_verified()
+    monkeypatch.setattr(mc, "REGISTRY", {"M2": mc.Entry(mc.VERIFIED, "Test Reviewer", "2026-11-03")})
+    h2 = client.get("/en/numerology").text
+    assert "not available yet" not in h2 and "<!--MK_NOTICE-->" not in h2 and "mk-notice{" in h2
+
+
 def test_landing_page_avoids_meta_flagged_vocabulary():
     t = _visible(open("pages/numerology.html", encoding="utf-8").read())
     hits = [w for w in FLAGGED if re.search(w, t)]
