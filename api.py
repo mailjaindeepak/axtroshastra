@@ -61,6 +61,8 @@ logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
+import mulank_routes                       # Mulank-only payment routes (own verification; shared payment code untouched)
+app.include_router(mulank_routes.router)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
