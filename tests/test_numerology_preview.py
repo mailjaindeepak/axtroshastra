@@ -1,4 +1,4 @@
-﻿"""Mulank free preview: five cards, personal pages 1-2, static pages 3-5, eligibility variants,
+"""Mulank free preview: five cards, personal pages 1-2, static pages 3-5, eligibility variants,
 no leaks, safe CTA. HTML-level tests run anywhere; the PDF test needs headless Chrome."""
 import html
 import inspect
