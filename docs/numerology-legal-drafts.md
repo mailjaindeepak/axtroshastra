@@ -24,5 +24,11 @@ Options to decide: [no refunds once the report is delivered, because it is a dig
 ## 6. Waitlist consent (only if a waitlist is added)
 "Tell me on WhatsApp when the complete report is available for my numbers." (unticked; separate from marketing).
 
-## 7. What the owner needs to send back
+## 7. Pre-order terms (only if pre-orders are opened)
+- On the preview page (already built; wording is the owner's to change): "Your complete numerology report is not ready for your numbers yet. Pre-order it now and we will deliver it [delivery promise]. This is a pre-order, not an instant download. Your report will appear at your private link when it is ready."
+- Terms of service addition: "A pre-order is a payment for a report that will be delivered later. We will deliver it [delivery promise]. If we do not, you may cancel and receive a full refund."
+- Cancellation before delivery: [owner decides: allowed at any time with full refund / allowed within N days]. Refund method and timing: [Razorpay refund to the original payment method within N days].
+- How customers will be told the report is ready: [owner decides: WhatsApp message from an approved provider and template / customers return to their saved link].
+
+## 8. What the owner needs to send back
 Approved or edited versions of sections 1-5, the values in [brackets], and a yes or no on the waitlist. I will put them into `privacy.html`, `terms.html` and a new `refund.html`, and update the tests.

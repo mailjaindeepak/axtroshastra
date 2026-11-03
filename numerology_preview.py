@@ -35,6 +35,8 @@ CTA_COPY = ("You've discovered your core numbers. Your complete report takes a d
             "career themes, relationships and personal-year interpretations associated with them.")
 CTA1 = "Unlock My Complete Numerology Report"
 CTA2 = "Get My Full Numerology Report"
+CTA_PREORDER_SHORT = "Pre-order My Report"
+CTA_PREORDER = "Pre-order My Report for \u20b9299"
 
 FONT_LINKS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
@@ -83,13 +85,13 @@ def _cta_attrs(cta_url):
     return esc(cta_url)
 
 
-def cta_button(label: str, cta_url, extra_style="") -> str:
+def cta_button(label: str, cta_url, extra_style="", action="checkout") -> str:
     """A real link when the site supplies the checkout URL; otherwise a button the page script wires up."""
     href = _cta_attrs(cta_url)
     st = f' style="{extra_style}"' if extra_style else ""
     if href:
-        return f'<a class="pv-cta wide" data-action="checkout" href="{href}"{st}>{label}</a>'
-    return f'<button type="button" class="pv-cta wide" data-action="checkout"{st}>{label}</button>'
+        return f'<a class="pv-cta wide" data-action="{action}" href="{href}"{st}>{label}</a>'
+    return f'<button type="button" class="pv-cta wide" data-action="{action}"{st}>{label}</button>'
 
 
 # ------------------------------------------------------------------ working strings
@@ -241,6 +243,22 @@ def render_page4(cta_url=None):
 </div>{FOOT}'''
 
 
+def render_page4_preorder(promise, refund_href, cta_url=None):
+    """Pre-order variant of page 4 (pair not yet sellable). The wording never says "unlock" or "download now":
+    the report is delivered later, as the owner promised. `promise` and `refund_href` come from owner-set config only."""
+    price = mulank_pricing.MULANK_PRICE_PAISE
+    return f'''<section class="page"><div class="col">
+  <div class="eyebrow">Pre-order</div>
+  <h2 class="head">Pre-order Your Complete Report</h2><div class="rule"></div>
+  <p class="lede-c" style="margin-top:12px;font-size:15px;line-height:1.5">Your complete numerology report is not ready for your numbers yet. Pre-order it now and we will deliver it {esc(promise)}.</p>
+  {render_cta_visual()}
+  <div class="pricebox"><div class="pl">Pre-order price</div><div class="pp2"><span class="now">{inr(price)}</span></div></div>
+  <p style="width:100%;text-align:left;font-size:12.5px;line-height:1.5;color:var(--body);margin-top:10px"><b>This is a pre-order, not an instant download.</b> Your report will appear at your private link when it is ready. Refunds and cancellation: see our <a href="{esc(refund_href)}" style="color:var(--terra)">refund policy</a>.</p>
+  {cta_button(CTA_PREORDER, cta_url, "margin-top:12px", "preorder")}
+  {fine()}
+</div>{FOOT}'''
+
+
 def render_page4_unavailable(waitlist_consent_text=""):
     wl = ""
     if waitlist_consent_text:
@@ -276,8 +294,10 @@ def render_unlock_minis():
     return out
 
 
-def render_page5(buyable=True, cta_url=None):
-    if buyable:
+def render_page5(buyable=True, cta_url=None, preorder=False):
+    if preorder:
+        head, button, disc = "What Your Report Will Include", cta_button(CTA_PREORDER_SHORT, cta_url, "margin-top:14px", "preorder"), DISC_LONG
+    elif buyable:
         head, button, disc = "What You&#8217;ll Unlock", cta_button(CTA2, cta_url, "margin-top:14px"), DISC_LONG
     else:
         head, button, disc = "What the Report Covers", "", DISC_LONG
@@ -357,7 +377,7 @@ def _document(pages: list) -> str:
 
 
 def build_preview(day, month, year, name, *, today=None, cta_url=None,
-                  waitlist_consent_text="", registry=None) -> dict:
+                  waitlist_consent_text="", registry=None, preorder=None, refund_href=None) -> dict:
     """Validate, compute, decide eligibility server side and render the five cards.
 
     Raises numerology.NumerologyInputError for a bad DOB and ValueError for a bad name
@@ -370,10 +390,14 @@ def build_preview(day, month, year, name, *, today=None, cta_url=None,
     ready = mulank_content.pair_readiness(day, month, year, today=today, registry=registry)
     if ready["eligible"]:
         p4, p5 = render_page4(cta_url), render_page5(True, cta_url)
+    elif preorder and preorder.get("enabled"):
+        p4 = render_page4_preorder(preorder["promise"], refund_href or preorder["refund_url"], cta_url)
+        p5 = render_page5(True, cta_url, preorder=True)
     else:
         p4, p5 = render_page4_unavailable((waitlist_consent_text or "").strip()), render_page5(False)
     pages = [page1(E, nm), page2(E), render_page3(), p4, p5]
     return {"html": _document(pages), "eligible": ready["eligible"], "pair_key": E["pair_key"],
+            "preorder": bool(not ready["eligible"] and preorder and preorder.get("enabled")),
             "content_version": ready["content_version"], "pages": len(pages)}
 
 

@@ -23,6 +23,7 @@ import mulank_content
 import mulank_form
 import mulank_fulfilment
 import mulank_payment as mp
+import mulank_preorder
 import mulank_recovery
 import numerology
 import numerology_preview
@@ -259,8 +260,13 @@ def _preview_for(rec: dict, rid: str, absolute_cta: bool = False):
     base = (os.getenv("PUBLIC_BASE_URL", "") or "https://www.axtroshastra.com").rstrip("/")   # same default as tracking.py
     if absolute_cta and base.startswith("https://"):
         cta = f"{base}/en/numerology/preview/{rid}"
+    pre = mulank_preorder.config()
+    refund = pre["refund_url"]
+    if absolute_cta and refund.startswith("/"):               # a link inside a PDF must be absolute
+        refund = base + refund
     return numerology_preview.build_preview(d, m, y, p.get("name") or "", cta_url=cta,
-                                            waitlist_consent_text=WAITLIST_CONSENT_TEXT)
+                                            waitlist_consent_text=WAITLIST_CONSENT_TEXT,
+                                            preorder=pre if pre["enabled"] else None, refund_href=refund or None)
 
 
 @router.get("/en/numerology/preview/{rid}.pdf", include_in_schema=False)
@@ -272,7 +278,8 @@ def mulank_preview_pdf(rid: str, request: Request):
     try:
         r = _preview_for(rec, rid, absolute_cta=True)
         import pdfgen
-        key = f"pv{1 if r['eligible'] else 0}_{rid}"      # never the bare report id: that key is the PAID report's
+        tag = "1" if r["eligible"] else ("p" + mulank_preorder.config()["version"] if r["preorder"] else "0")
+        key = f"pv{tag}_{rid}"                                # never the bare report id (the PAID report's key); includes the promise version
         data = pdfgen.get_or_generate(key, r["html"])
     except Exception as e:
         logger.error("[mulank] preview pdf failed: %s", e.__class__.__name__)
@@ -296,7 +303,7 @@ def mulank_preview(rid: str, request: Request):
         return _private(RedirectResponse(f"/en/numerology/report/{rid}", status_code=302))
     try:
         r = _preview_for(rec, rid)
-        page = numerology_viewer.render_viewer(r["html"], rid, r["eligible"])
+        page = numerology_viewer.render_viewer(r["html"], rid, r["eligible"], r["preorder"])
     except Exception as e:
         logger.error("[mulank] preview render failed: %s", e.__class__.__name__)
         return _private(HTMLResponse(
@@ -358,7 +365,7 @@ def mulank_report(rid: str, request: Request):
         doc = mulank_fulfilment.render(rec)["html"]
     except (numerology_report.ReportNotAvailable, numerology_report.ContentMissing):
         state = mulank_fulfilment.run_fulfilment(rid)            # records content_unavailable; nothing unverified is shown
-        return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, state)))
+        return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, state, mulank_preorder.get(rec["payload"]))))
     except Exception as e:
         logger.error("[mulank] report render failed: %s", e.__class__.__name__)
         return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, {"status": "failed"}), status_code=503))
@@ -386,6 +393,7 @@ def _start_mulank_recovery():
         mulank_recovery.start_loop(lambda: api.rzp_client(), mulank_fulfilment.schedule)
 
 
+PREORDER_NOTICE = '<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete report is not ready yet for every combination of numbers, so after your preview you may be offered a pre-order for {price}, delivered {promise}.</div>'
 NOT_YET_NOTICE = '<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete numerology report is not available yet, so there is nothing to buy on this page.</div>'
 
 
@@ -397,5 +405,89 @@ def mulank_landing():
     body = resp.body.decode("utf-8") if hasattr(resp, "body") else None
     if body is None:
         return resp
-    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.sale_open() else NOT_YET_NOTICE, 1)
+    pre = mulank_preorder.config()
+    notice = NOT_YET_NOTICE
+    if pre["enabled"]:
+        notice = PREORDER_NOTICE.format(price=numerology_preview.inr(mp.MULANK_PRICE_PAISE), promise=_html.escape(pre["promise"]))
+    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.sale_open() else notice, 1)
     return HTMLResponse(body)
+
+# ------------------------------------------------------------------ pre-order (OFF unless the owner configures it)
+@router.post("/api/mulank/preorder")
+def mulank_preorder_order(body: MulankOrderIn, request: Request):
+    """Pre-order for a report whose content is not ready. Same verified payment as a normal order (amount, currency,
+    order, captured status). Closed (409) unless MULANK_PREORDER, the delivery promise and the refund page are set,
+    and closed for any pair that can be sold normally (use /api/mulank/order)."""
+    import api
+    _limit(request, "preorder", 12, 12)
+    conn = db_v2.get_conn()
+    try:
+        try:
+            out = mp.create_order(conn, lambda: api.rzp_client(), body.report_id or "", preorder=mulank_preorder.config())
+            if "razorpay_order_id" in out:
+                out["key_id"] = api.RZP_KEY
+            return out
+        except mp.MulankPaymentError as e:
+            conn.rollback()
+            raise _http(e)
+    finally:
+        conn.close()
+
+
+# ------------------------------------------------------------------ ops: see and fulfil paid orders (no personal data)
+def _admin(request: Request):
+    import api
+    key = (api.STATS_KEY or "")
+    if not key:
+        raise HTTPException(503, "admin disabled")
+    import hmac as _hmac
+    if not _hmac.compare_digest(request.headers.get("X-Stats-Key", ""), key):
+        raise HTTPException(403, "forbidden")
+    _limit(request, "admin", 20, 20)
+
+
+def _paid_orders(conn):
+    with conn.cursor() as cur:
+        cur.execute("SELECT r.id, MAX(p.paid_at) FROM reports r JOIN payments p ON p.report_id=r.id "
+                    "WHERE r.product=%s AND r.status='paid' GROUP BY r.id ORDER BY MAX(p.paid_at)", (mp.PRODUCT,))
+        return cur.fetchall()
+
+
+@router.get("/api/mulank/admin/orders")
+def mulank_admin_orders(request: Request):
+    """Paid Mulank orders by fulfilment state, with whether each could be fulfilled right now. Never returns names,
+    phone numbers, dates of birth or the private report ids."""
+    _admin(request)
+    conn = db_v2.get_conn()
+    try:
+        rows, counts = [], {}
+        for i, (rid, paid_at) in enumerate(_paid_orders(conn), 1):
+            rec = reports_v2.read_report(conn, rid)
+            st = mulank_fulfilment.get_state(rec["payload"]).get("status", "pending")
+            ready_now = mp.readiness_for(rec)["eligible"]
+            counts[st] = counts.get(st, 0) + 1
+            rows.append({"n": i, "paid_at": str(paid_at) if paid_at else None, "pair": mp.readiness_for(rec)["pair_key"],
+                         "preorder": bool(mulank_preorder.get(rec["payload"])), "state": st, "can_fulfil_now": bool(ready_now and st != "ready")})
+        return {"total": len(rows), "counts": counts, "orders": rows}
+    finally:
+        conn.close()
+
+
+@router.post("/api/mulank/admin/fulfil")
+def mulank_admin_fulfil(request: Request):
+    """Fulfil every paid order whose report can now be produced (content approved and complete). Idempotent."""
+    _admin(request)
+    conn = db_v2.get_conn()
+    try:
+        todo = []
+        for rid, _ in _paid_orders(conn):
+            rec = reports_v2.read_report(conn, rid)
+            if mulank_fulfilment.get_state(rec["payload"]).get("status") != mulank_fulfilment.READY and mp.readiness_for(rec)["eligible"]:
+                todo.append(rid)
+    finally:
+        conn.close()
+    results = {}
+    for rid in todo:
+        st = mulank_fulfilment.run_fulfilment(rid).get("status")
+        results[st] = results.get(st, 0) + 1
+    return {"attempted": len(todo), "results": results}

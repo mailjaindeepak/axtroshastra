@@ -99,7 +99,7 @@ VIEWER_JS = r"""
 """
 
 
-def render_viewer(doc_html: str, rid: str, eligible: bool) -> str:
+def render_viewer(doc_html: str, rid: str, eligible: bool, preorder: bool = False) -> str:
     """Wrap the preview document (from numerology_preview.build_preview) for the browser."""
     top = ('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
            '<button type="button" class="vw-dl" id="vwDl">Download PDF</button></div>'
@@ -110,9 +110,21 @@ def render_viewer(doc_html: str, rid: str, eligible: bool) -> str:
                f'<s>{P.inr(mulank_pricing.MULANK_LIST_PRICE_PAISE)}</s><b>{P.inr(mulank_pricing.MULANK_PRICE_PAISE)}</b>'
                '<span>Complete report</span></div>'
                f'<button type="button" class="pv-cta" data-action="checkout">{P.CTA2}</button></div></div>')
+    elif preorder:
+        bar = ('<div class="vw-bar" id="vwBar"><div class="vw-bar-in"><div class="vw-price">'
+               f'<b>{P.inr(mulank_pricing.MULANK_PRICE_PAISE)}</b><span>Pre-order</span></div>'
+               f'<button type="button" class="pv-cta" data-action="preorder">{P.CTA_PREORDER_SHORT}</button></div></div>')
     overlay = '<div class="vw-ov" id="vwOv" role="alert"><div class="vw-ov-box"><div class="vw-spin"></div><div id="vwOvT"></div></div></div>'
-    js = VIEWER_JS.replace("__RID__", json.dumps(rid).replace("</", "<\\/"))
-    if eligible:
+    js = (VIEWER_JS.replace("var RID=__RID__;", "var RID=__RID__, ORDER_URL=__ORDER_URL__, PRE=__PRE__;")
+          .replace("__ORDER_URL__", json.dumps("/api/mulank/preorder" if preorder else "/api/mulank/order"))
+          .replace("__PRE__", "true" if preorder else "false")
+          .replace("post('/api/mulank/order',", "post(ORDER_URL,")
+          .replace("closest('[data-action=\"checkout\"]')", "closest('[data-action=\"checkout\"],[data-action=\"preorder\"]')")
+          .replace("description:'Complete numerology report'", "description:(PRE?'Pre-order: complete numerology report':'Complete numerology report')")
+          .replace("if(r.status===409){ busy(false); hideBuy(); say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }",
+                   "if(r.status===409&&code==='use_order'){ busy(false); say('Your report can now be bought directly. Please refresh this page.'); return; }\n      if(r.status===409){ busy(false); hideBuy(); say(PRE?'Pre-orders are not open for your numbers right now. Your free preview stays on this page.':'The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }"))
+    js = js.replace("__RID__", json.dumps(rid).replace("</", "<\\/"))
+    if eligible or preorder:
         js = js.replace("/*CHECKOUT_START*/", "").replace("/*CHECKOUT_END*/", "")
     else:                                   # unavailable pairs get no checkout code at all
         js = re.sub(r"/\*CHECKOUT_START\*/.*?/\*CHECKOUT_END\*/", "", js, flags=re.S)
@@ -163,9 +175,27 @@ def render_paid_viewer(doc_html: str, rid: str, state: dict) -> str:
     return out.replace("</body>", overlay + "<script>" + js + "</script>\n</body>", 1)
 
 
-def render_pending_page(rid: str, state: dict) -> str:
-    """Paid, but the report could not be produced yet. Honest, safe, and retryable (never a second charge)."""
+def render_pending_page(rid: str, state: dict, preorder=None) -> str:
+    """Paid, but the report could not be produced yet. Honest, safe, and retryable (never a second charge).
+    For a pre-order it says plainly that this is not an instant download and repeats the delivery promise made at purchase."""
     failed = (state or {}).get("status") == "failed"
+    if preorder:
+        page = ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+                "<meta name=robots content='noindex,nofollow'><meta name=referrer content=no-referrer><title>Pre-order received</title>"
+                "<style>body{font:16px/1.55 system-ui;background:#FAF6ED;color:#23253B;margin:0}main{max-width:520px;margin:0 auto;padding:48px 22px}"
+                "h1{font-size:26px}button{font:700 15px system-ui;background:#B4572B;color:#fff;border:0;border-radius:100px;padding:13px 22px;cursor:pointer}"
+                ".vw-msg{margin:14px 0;padding:11px 14px;border-radius:12px;background:#FFF3E8;border:1px solid #E9C9AE;color:#6B2F12}.vw-msg[hidden]{display:none}"
+                ".vw-ov{position:fixed;inset:0;background:rgba(27,29,42,.55);display:none;align-items:center;justify-content:center}.vw-ov.on{display:flex}"
+                ".vw-ov-box{background:#FAF5ED;border-radius:16px;padding:22px 26px;font-weight:600}.vw-spin{display:none}</style></head><body><main>"
+                "<h1>Pre-order received</h1>"
+                "<p>Thank you. Your pre-order for the complete numerology report is confirmed and your payment is safe.</p>"
+                f"<p><b>This is not an instant download.</b> Your report is not ready yet and will be delivered {_esc(preorder.get('promise', ''))}.</p>"
+                "<p>Your report will appear on this page when it is ready, so please keep this page address. You will not be charged again.</p>"
+                f"<p style='font-size:14px;color:#6B6D82'>Refunds and cancellation: see our <a href='{_esc(preorder.get('refund_url', '/'))}'>refund policy</a>.</p>"
+                "<div class=vw-msg id=vwMsg role=status hidden></div><button type=button id=vwRetry>Check if my report is ready</button></main>"
+                "<div class=vw-ov id=vwOv role=alert><div class=vw-ov-box><div class=vw-spin></div><div id=vwOvT></div></div></div>"
+                "<script>" + PAID_JS.replace("__RID__", json.dumps(rid).replace("</", "<\\/")) + "</script></body></html>")
+        return page
     msg = ("We hit a problem preparing your report. Your payment is safe and you will not be charged again. "
            "You can try again below, and we will keep trying." if failed else
            "Your payment is confirmed and your complete numerology report is being prepared.")

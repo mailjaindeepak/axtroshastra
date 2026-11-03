@@ -14,6 +14,7 @@ from datetime import date
 
 import db_v2
 import mulank_content
+import mulank_preorder
 import numerology
 import payments_v2
 import reports_v2
@@ -104,30 +105,42 @@ def _mulank_report(conn, rid: str):
     return rec
 
 
-def create_order(conn, rzp_factory, rid: str) -> dict:
+def create_order(conn, rzp_factory, rid: str, preorder=None) -> dict:
     """Server-side order for a Mulank report. Price is the constant above; the client
-    supplies nothing but the report id. Refuses ineligible pairs BEFORE any Razorpay call."""
+    supplies nothing but the report id. Refuses ineligible pairs BEFORE any Razorpay call.
+    With `preorder` (an enabled mulank_preorder.config()) the rule flips: only a pair that is NOT yet sellable may
+    pre-order; a sellable pair must use the normal order. A pre-order never unlocks anything by itself."""
     rec = _mulank_report(conn, rid or "")
     if not rec:
         raise MulankPaymentError("report_not_found", 404)
     if rec["paid"]:
         return {"already_paid": True}
     ready = readiness_for(rec)
-    if not ready["eligible"]:
-        logger.info(mulank_content.gap_log_line(ready))
-        raise MulankPaymentError("not_available", 409)
+    if preorder is None:
+        if not ready["eligible"]:
+            logger.info(mulank_content.gap_log_line(ready))
+            raise MulankPaymentError("not_available", 409)
+    else:
+        if not preorder.get("enabled"):
+            raise MulankPaymentError("preorder_closed", 409)
+        if ready["eligible"]:
+            raise MulankPaymentError("use_order", 409)
+        if ready["reason_code"] in ("no_dob", "bad_dob"):
+            raise MulankPaymentError("not_available", 409)
     urec = db_v2.get_report(conn, rid)
     uid = urec.get("user_id") if urec else None
     if not uid:
         raise MulankPaymentError("contact_required", 400)
     order = rzp_factory().order.create({
         "amount": MULANK_PRICE_PAISE, "currency": MULANK_CURRENCY, "receipt": rid,
-        "notes": {"report_id": rid, "product": PRODUCT,
+        "notes": {"report_id": rid, "product": PRODUCT, "preorder": "1" if preorder else "0",
                   "content_version": ready["content_version"]}})
     if int(order.get("amount") or 0) != MULANK_PRICE_PAISE or order.get("currency") != MULANK_CURRENCY:
         logger.error("[mulank] razorpay order amount/currency differs from request rid=%s", rid)
         raise MulankPaymentError("order_mismatch", 502)
     payments_v2.record_order(conn, rid, uid, MULANK_PRICE_PAISE, order["id"])
+    if preorder:
+        mulank_preorder.record(conn, rid, preorder)
     conn.commit()
     return {"razorpay_order_id": order["id"], "amount": MULANK_PRICE_PAISE,
             "currency": MULANK_CURRENCY}
@@ -173,7 +186,11 @@ def settle(conn, ent: dict, *, order_id: str, payment_id: str, event_id=None,
         logger.warning("[mulank] extra captured payment on paid report rid=%s "
                        "(duplicate charge, review for refund)", rid)
     conn.commit()
-    if deliver and not readiness_for(_mulank_report(conn, rid))["eligible"]:
-        # capture is never blocked after money moved; flag it for a person
-        logger.error("[mulank] paid while content not verified rid=%s (manual review)", rid)
+    rec_now = _mulank_report(conn, rid)
+    if deliver and not readiness_for(rec_now)["eligible"]:
+        # capture is never blocked after money moved; a pre-order is expected here, anything else needs a person
+        if mulank_preorder.get(rec_now["payload"]):
+            logger.info("[mulank] pre-order paid; report will be fulfilled when its content is approved")
+        else:
+            logger.error("[mulank] paid while content not approved rid=%s (manual review)", rid)
     return {"status": "paid", "report_id": rid, "deliver": bool(deliver)}

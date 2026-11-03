@@ -385,7 +385,7 @@ def test_pdf_failure_is_recorded_then_retried_without_recharging_or_duplicate_fu
     assert client.get(f"/en/numerology/report/{rid}.pdf").status_code == 200
     assert client.post(f"/api/mulank/report/{rid}/retry").json() == {"status": "ready"}   # idempotent
     assert fulfilled == [rid] and _payment_rows(rid) == (1, 1) and len(rz.orders) == 1
-    assert set(_state(rid)) <= {"status", "attempts", "last_error", "updated"}            # no personal data in state
+    assert set(_state(rid)) <= {"status", "attempts", "last_error", "updated", "prepared_on"}            # no personal data in state
 
 
 def test_retry_needs_a_paid_report_and_is_rate_limited(client, rz, eligible, pdfs, monkeypatch):
@@ -527,3 +527,25 @@ def test_shared_reconcile_is_unchanged_for_other_products_and_still_skips_mulank
     rz.by_order[oid] = [_ent(oid)]
     api._reconcile_and_deliver()
     assert not _paid(rid)                                                               # the shared sweep never grants Mulank access
+
+def test_a_delivered_report_does_not_change_after_new_year(client, rz, eligible, pdfs, fulfilled, monkeypatch):
+    """The report date is frozen at first fulfilment: the web page and the PDF keep the personal years and the
+    prepared date that were delivered, even if the customer opens them after 1 January."""
+    rid, oid = _make(client)
+    assert _verify(client, rz, oid).status_code == 200
+    assert mf.prepared_on(_state_payload(rid)).isoformat() == "2026-11-03"
+    first = client.get(f"/en/numerology/report/{rid}").text
+    assert "Report prepared 3 November 2026" in first and "2026 &middot; this year" in first
+    pdf1 = client.get(f"/en/numerology/report/{rid}.pdf").content
+    monkeypatch.setattr(mc, "_today", lambda: date(2027, 2, 10))                      # the customer comes back after New Year
+    later = client.get(f"/en/numerology/report/{rid}").text
+    assert "Report prepared 3 November 2026" in later and "2026 &middot; this year" in later and "2027 &middot; this year" not in later
+    assert client.get(f"/en/numerology/report/{rid}.pdf").content == pdf1
+
+
+def _state_payload(rid):
+    conn = db_v2.get_conn()
+    try:
+        return reports_v2.read_report(conn, rid)["payload"]
+    finally:
+        conn.close()

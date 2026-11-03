@@ -4,6 +4,13 @@ Change of plan: external numerologist verification is no longer required. Conten
 
 Status key: DONE = built and tested locally. OWNER = needs the owner. ME = engineering/drafting work I can do now.
 
+## Launch-now sequence (management priority, 4 Nov 2026)
+Three gates, in this order. Each is independent; later ones never block earlier ones.
+- **Gate A: public free preview** (Track 1 below). Needs: approved legal text, PR merged, deploy. No payment of any kind.
+- **Gate B: Rs 299 pre-order** (`docs/numerology-preorder.md`). Built and tested, closed by default. Needs everything in Gate A plus: the owner's exact delivery promise, the approved refund page, Razorpay test and then live keys, the dedicated webhook, a decision on how customers are told, and the owner's go-ahead on the payment flow.
+- **Gate C: instant purchase** for combinations whose content is approved and complete (Track 2 below). Switches on automatically per combination as the owner approves content; nothing else to deploy.
+Optional nav entry "Numerology Report": set `NAV_NUMEROLOGY=1` once the owner approves it (default off).
+
 ## Track 1: free preview live (no purchase button). Shortest path.
 | # | Task | Who | Status | Est. |
 |---|---|---|---|---|

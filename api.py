@@ -684,6 +684,8 @@ NAV_LINKS_HI = [
 
 def _nav_html(lang: str = "en") -> str:
     links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
+    if lang != "hi" and os.getenv("NAV_NUMEROLOGY", "") == "1":      # owner-approved nav entry; off unless the owner sets it
+        links = links[:2] + [("Numerology Report", "/en/numerology")] + links[2:]
     menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
         f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links

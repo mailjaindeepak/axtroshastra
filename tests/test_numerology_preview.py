@@ -82,7 +82,8 @@ def test_static_builders_take_no_result_arguments():
     for fn in (P.render_page3, P.render_locked_quickref, P.render_cta_visual, P.render_unlock_minis):
         assert not inspect.signature(fn).parameters
     assert set(inspect.signature(P.render_page4).parameters) == {"cta_url"}
-    assert set(inspect.signature(P.render_page5).parameters) == {"buyable", "cta_url"}
+    assert set(inspect.signature(P.render_page5).parameters) == {"buyable", "cta_url", "preorder"}
+    assert set(inspect.signature(P.render_page4_preorder).parameters) == {"promise", "refund_href", "cta_url"}   # owner config only, never the result
     params = set(inspect.signature(P.build_preview).parameters)
     assert not {"gender", "sex"} & params
 
