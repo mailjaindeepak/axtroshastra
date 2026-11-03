@@ -202,6 +202,7 @@ def test_preorder_pages_are_identical_for_every_pair_and_escape_the_promise(clie
 
 def test_a_sellable_pair_gets_the_normal_purchase_page_even_when_preorder_is_on(client, on, monkeypatch):
     _approve_2_1(monkeypatch)
+    monkeypatch.setenv("MULANK_LIST_PRICE_CONFIRMED", "1")
     t = client.get(f"/en/numerology/preview/{_make(client)}").text
     assert _btn(t, "checkout") and not _btn(t, "preorder") and "₹499" in _text(_cards(t)[3])
     assert "Pre-order Your" not in t

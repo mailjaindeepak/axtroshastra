@@ -71,6 +71,34 @@ section{padding:46px 0}
 .form-err.on{display:block}
 .btn-note{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
 
+/* ---- free vs complete report (rendered only when something can be bought) ---- */
+.offer{padding:46px 0 10px}
+.offer h2{font-size:clamp(24px,6vw,32px);margin:8px 0 18px}
+.cmp{display:grid;gap:16px}
+.cmp-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 20px;box-shadow:0 2px 10px rgba(70,50,30,.05)}
+.cmp-card h3{font-size:20px;margin:8px 0 12px}
+.cmp-card ul{list-style:none;display:grid;gap:9px;margin:14px 0}
+.cmp-card li{position:relative;padding-left:26px;font-size:15px;line-height:1.45}
+.cmp-card li:before{content:"";position:absolute;left:0;top:5px;width:14px;height:8px;border-left:2.5px solid var(--haldi);border-bottom:2.5px solid var(--haldi);transform:rotate(-45deg)}
+.cmp-tag{display:inline-block;font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;border-radius:100px;padding:5px 12px}
+.cmp-tag.free{background:var(--haldi-soft);color:#5C4510}
+.cmp-tag.paid{background:var(--haldi);color:var(--midnight)}
+.cmp-card.paid{background:linear-gradient(165deg,var(--midnight-2),var(--midnight));color:#F3EFE4;border:1.5px solid var(--haldi);box-shadow:0 16px 40px rgba(8,10,30,.28)}
+.cmp-card.paid h3{color:#fff}
+.mk-price{margin:6px 0 4px}
+.mk-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px}
+.mk-was{font-family:var(--display);font-weight:600;font-size:22px;color:#B8BACB;text-decoration:line-through;text-decoration-thickness:2px}
+.mk-now{font-family:var(--display);font-weight:800;font-size:clamp(44px,12vw,56px);line-height:1;color:var(--haldi)}
+.mk-save{display:inline-block;align-self:center;font-weight:700;font-size:13px;color:#9BE7BC;background:rgba(46,125,83,.28);border:1px solid rgba(155,231,188,.45);border-radius:100px;padding:4px 11px}
+.mk-sub{font-size:13.5px;color:#C9CBDB;margin-top:6px}
+.mk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cmp-foot{font-size:13.5px;line-height:1.5;color:var(--muted);margin:6px 0 14px}
+.cmp-card.paid .cmp-foot{color:#C9CBDB}
+.cmp-card.paid .cmp-foot a{color:var(--haldi)}
+.cmp-btn{display:block;text-align:center;text-decoration:none;font-family:var(--display);font-weight:800;font-size:16px;border-radius:12px;padding:14px 16px;background:var(--sindoor);color:#fff;box-shadow:0 5px 0 var(--sindoor-dark)}
+.cmp-btn.ghost{background:transparent;color:var(--ink);border:1.5px solid #CFC6B3;box-shadow:none}
+.cmp-note{font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+@media(min-width:720px){.cmp{grid-template-columns:1fr 1fr;align-items:stretch}.offer .wrap{max-width:860px}}
 .how{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .how h2,.free h2,.faq h2{font-size:clamp(24px,6vw,32px);margin-bottom:14px}
 .how p{color:#3D3F55;margin-bottom:12px}
@@ -164,12 +192,13 @@ footer a{color:#E4B04A;text-decoration:none}
         <span>Optional: yes, send me occasional WhatsApp messages about new Axtroshastra reports and offers.</span></label>
       <div class="chk-note">Not needed for your preview. You can say stop at any time.</div>
 
-      <button type="submit" class="btn" id="mkGo">See My Free Preview</button>
-      <div class="btn-note">Free to view. Nothing is charged on this page.</div>
+      <button type="submit" class="btn" id="mkGo">Generate My Free Preview</button>
+      <div class="btn-note"><!--MK_BTNNOTE--></div>
     </form>
   </div>
 </section>
 
+<!--MK_COMPARE-->
 <section class="how">
   <div class="wrap">
     <h2>How your two numbers are worked out</h2>

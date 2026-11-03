@@ -26,6 +26,7 @@ import mulank_payment as mp
 import mulank_preorder
 import mulank_recovery
 import numerology
+import numerology_landing
 import numerology_preview
 import numerology_report
 import numerology_viewer
@@ -393,23 +394,20 @@ def _start_mulank_recovery():
         mulank_recovery.start_loop(lambda: api.rzp_client(), mulank_fulfilment.schedule)
 
 
-PREORDER_NOTICE = '<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete report is not ready yet for every combination of numbers, so after your preview you may be offered a pre-order for {price}, delivered {promise}.</div>'
-NOT_YET_NOTICE = '<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete numerology report is not available yet, so there is nothing to buy on this page.</div>'
-
-
 @router.get("/en/numerology", include_in_schema=False)
 def mulank_landing():
-    """Landing page. While no content is verified (nothing can be sold) it says so up front."""
+    """Landing page. The offer blocks follow what can actually be bought: nothing (honest notice, no price), instant
+    sale for combinations that are ready, or an owner-approved pre-order. The free preview is always first."""
     import api
     resp = api._serve_page_with_nav(os.path.join(_PAGES, "numerology.html"))
     body = resp.body.decode("utf-8") if hasattr(resp, "body") else None
     if body is None:
         return resp
     pre = mulank_preorder.config()
-    notice = NOT_YET_NOTICE
-    if pre["enabled"]:
-        notice = PREORDER_NOTICE.format(price=numerology_preview.inr(mp.MULANK_PRICE_PAISE), promise=_html.escape(pre["promise"]))
-    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.sale_open() else notice, 1)
+    state = "sale" if mulank_content.sale_open() else ("preorder" if pre["enabled"] else "off")
+    body = body.replace("<!--MK_NOTICE-->", numerology_landing.hero_offer(state, pre), 1)
+    body = body.replace("<!--MK_BTNNOTE-->", numerology_landing.btn_note(state), 1)
+    body = body.replace("<!--MK_COMPARE-->", numerology_landing.compare_section(state, pre), 1)
     return HTMLResponse(body)
 
 # ------------------------------------------------------------------ pre-order (OFF unless the owner configures it)
