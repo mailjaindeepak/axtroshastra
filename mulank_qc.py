@@ -22,7 +22,7 @@ INCOMPLETE_MARKERS = ("does not include", "is not included in this edition", "no
                       "not production-verified", "PENDING EXPERT REVIEW", "design review copy")
 PLACEHOLDER = re.compile(r"\{|\}|\bTODO\b|\bTBD\b|\bXXX\b|lorem|\[\[|\]\]|PLACEHOLDER", re.I)
 DISCLAIMER = "belief system, not a science"
-_BANKS = ("M", "B", "PS", "PB", "CMP", "LK", "Y")
+_BANKS = ("M", "B", "PS", "PM", "PG", "CB", "LP", "Y")
 
 
 def _leaves(obj, path=""):
@@ -56,7 +56,7 @@ def lint_bank(bank=None) -> list:
             hits = flagged_words(text)
             if hits:
                 issues.append((where, "flagged vocabulary: " + ", ".join(hits)))
-            if name in ("PS", "PB", "CMP") and len(text.split()) >= 8:
+            if name in ("PS", "PM", "PG", "CB") and len(text.split()) >= 8:
                 owner = where.split("/")[1]
                 prev = seen.setdefault(text.strip().lower(), owner)
                 if prev != owner:

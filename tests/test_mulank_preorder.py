@@ -293,7 +293,7 @@ def test_a_preorder_is_fulfilled_when_its_content_becomes_approved_and_complete(
     done = client.post("/api/mulank/admin/fulfil", headers=h).json()
     assert done["attempted"] >= 1 and done["results"].get("ready", 0) >= 1
     page = client.get(f"/en/numerology/report/{rid}")
-    assert len(_cards(page.text)) == 15 and "Priya Sharma" in page.text and "Download PDF" in page.text
+    assert len(_cards(page.text)) == 15 and "Priya Sharma" in page.text and "Download My Full Report" in page.text
     assert client.get(f"/en/numerology/report/{rid}.pdf").status_code == 200
     again = client.post("/api/mulank/admin/fulfil", headers=h).json()                      # idempotent: a ready order is not re-fulfilled
     assert again["results"].get("ready", 0) == 0
