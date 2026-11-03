@@ -199,7 +199,8 @@ def test_ineligible_visitor_sees_unavailable_message_and_no_checkout(client):
     assert client.post("/api/mulank/order", json={"report_id": rid}).status_code == 409
 
 
-def test_eligible_visitor_sees_price_and_cta_after_page_three(client, eligible):
+def test_eligible_visitor_sees_price_and_cta_after_page_three(client, eligible, monkeypatch):
+    monkeypatch.setenv("MULANK_LIST_PRICE_CONFIRMED", "1")                  # the owner has confirmed Rs 499 as the regular price
     rid = _rid(client)
     t = client.get(f"/en/numerology/preview/{rid}").text
     secs = re.findall(r'<section class="page[^"]*">.*?</section>', t, re.S)
@@ -339,7 +340,7 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert r.status_code == 200
     h = r.text
     for needle in ('id="f-name"', 'id="f-dob"', 'id="f-gender"', 'id="f-phone"', "DD/MM/YYYY", "Prefer not to say", "+91",
-                   'id="f-consent"', 'id="f-marketing"', 'href="/privacy"', 'href="/terms"', "See My Free Preview"):
+                   'id="f-consent"', 'id="f-marketing"', 'href="/privacy"', 'href="/terms"', "Generate My Free Preview"):
         assert needle in h, needle
     assert re.search(r'id="f-marketing"[^>]*checked', h) is None and re.search(r'id="f-consent"[^>]*checked', h) is None
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box

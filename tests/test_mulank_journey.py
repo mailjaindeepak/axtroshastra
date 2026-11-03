@@ -55,6 +55,7 @@ def _words(h):
 def test_the_whole_customer_journey_from_landing_page_to_paid_pdf(client, monkeypatch, tmp_path):
     import pdfgen
     monkeypatch.setattr(mc, "_today", lambda: PIN)
+    monkeypatch.setenv("MULANK_LIST_PRICE_CONFIRMED", "1")                  # the owner has confirmed Rs 499 as the regular price
     monkeypatch.setattr(pdfgen, "PDF_DIR", str(tmp_path))
     pdf_calls = []
 
@@ -103,7 +104,8 @@ def test_the_whole_customer_journey_from_landing_page_to_paid_pdf(client, monkey
     assert "Priya Sharma" in t[0] and "Mulank 2" in t[1] and "Locked" in t[2]
     assert "Your Numbers Are Just the Beginning." in t[3] and "₹499" in t[3] and "₹299" in t[3]
     assert cards[3] == page.text[page.text.index(cards[2]) + len(cards[2]):].lstrip("\n").split("</section>")[0] + "</section>"   # page 4 follows page 3 directly
-    assert "Get My Full Numerology Report" in t[4]
+    import numerology_preview as P
+    assert P.CTA2.replace("\u00a0", " ") in t[4] and "\u20b9299" in t[4]                           # the 299 button is repeated on page 5
     for locked in cards[2:]:                                                # nothing personal or paid-only on pages 3-5
         txt = _words(locked)
         for secret in ("Priya", "Sharma", "1990", "Moon steadies", "Pearl", "Attentive listening", "Tend to pair easily"):

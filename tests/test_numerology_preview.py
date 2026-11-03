@@ -91,7 +91,7 @@ def test_static_builders_take_no_result_arguments():
 def test_locked_pages_have_no_values_names_planets_or_dates():
     r = _build(29, 7, 1990, name="Kiran Mehta")
     p3, p4, p5 = (_text(x) for x in _pages(r)[2:])
-    assert not re.search(r"\d", p3) and not re.search(r"\d", p5)
+    assert not re.search(r"\d", p3) and not re.search(r"\d", re.sub(r"\u20b9\d+", "", p5))      # page 5 may carry only the price in its button
     assert re.sub(r"\u20b9\d+", "", p4).strip() and not re.search(r"\d", re.sub(r"\u20b9\d+", "", p4))
     forbidden = (r"Kiran", r"Mehta", r"1990", r"Sun", r"Moon", r"Jupiter", r"Rahu", r"Mercury", r"Venus", r"Ketu",
                  r"Saturn", r"Mars", r"Ruby", r"Pearl", r"Emerald", r"Sapphire", r"Monday", r"Tuesday", r"Wednesday",
@@ -118,7 +118,8 @@ def test_unreviewed_interpretations_are_not_rendered():
         assert bad not in t
 
 
-def test_eligible_shows_prices_and_checkout_but_unavailable_does_not():
+def test_eligible_shows_prices_and_checkout_but_unavailable_does_not(monkeypatch):
+    monkeypatch.setenv("MULANK_LIST_PRICE_CONFIRMED", "1")
     e = _build(cta_url="/en/numerology-checkout")
     p4 = _pages(e)[3]
     assert "₹499" in p4 and "₹299" in p4 and "You save ₹200" in p4
@@ -206,8 +207,37 @@ def test_pdf_is_exactly_five_pages_323x623_with_no_locked_text():
         assert round(pg.rect.width) == 323 and round(pg.rect.height) == 623
     for i in (2, 4):
         body = re.sub(r"\n0\d\n", "\n", doc[i].get_text())      # the printed page number is not locked content
+        body = re.sub(r"\u20b9\d+", "", body)                    # nor is the price on the purchase button
         assert not re.search(r"\d", body)
     assert "₹299" in doc[3].get_text() and "Kiran" not in doc[2].get_text() + doc[3].get_text() + doc[4].get_text()
     meta = " ".join(str(v) for v in (doc.metadata or {}).values())
     assert "Kiran" not in meta and "1990" not in meta
 
+# ------------------------------------------------------------------ pricing presentation (owner-confirmed regular price)
+def test_regular_price_is_hidden_until_the_owner_confirms_it_and_only_299_is_shown():
+    p4 = _pages(_build(cta_url="/en/numerology-checkout"))[3]
+    t = _text(p4)
+    assert "\u20b9299" in t and "\u20b9499" not in t and "You save" not in t and "<s " not in p4
+    assert P.CTA1.replace("\u00a0", " ") in t and P.CTA1.replace("\u00a0", " ") == "Unlock My Full Numerology Report \u2014 \u20b9299"
+
+
+def test_confirmed_regular_price_shows_499_struck_through_299_and_the_saving(monkeypatch):
+    monkeypatch.setenv("MULANK_LIST_PRICE_CONFIRMED", "1")
+    p4 = _pages(_build(cta_url="/en/numerology-checkout"))[3]
+    assert '<s class="was">' in p4 and "\u20b9499" in _text(p4) and "\u20b9299" in _text(p4) and "You save \u20b9200" in _text(p4)
+    assert P.CTA1.replace("\u00a0", " ") in _text(p4)
+
+
+def test_the_299_button_is_repeated_on_page_five_and_labels_are_exact(monkeypatch):
+    pages = _pages(_build(cta_url="/en/numerology-checkout"))
+    assert P.CTA2.replace("\u00a0", " ") == "Unlock My Full Numerology Report \u2014 \u20b9299" and P.CTA2.replace("\u00a0", " ") in _text(pages[4])
+    assert "Your Numbers Are Just the Beginning." in _text(pages[3])
+    for p in (pages[3], pages[4]):
+        low = _text(p).lower()
+        assert not [w for w in ("countdown", "hurry", "only today", "limited time", "last chance", "expires", "left in stock") if w in low]
+
+
+def test_price_comes_from_the_single_constant_and_is_exactly_29900_paise():
+    import mulank_pricing as pr
+    assert pr.MULANK_PRICE_PAISE == 29900 and pr.MULANK_LIST_PRICE_PAISE - pr.MULANK_PRICE_PAISE == 20000
+    assert P._PRICE_TXT == "\u20b9299"

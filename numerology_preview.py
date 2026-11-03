@@ -33,8 +33,10 @@ Q_REFLECT = "Think of a goal you are working toward at the moment. How are you g
 CTA_HEAD = "Your Numbers Are Just the Beginning."
 CTA_COPY = ("You've discovered your core numbers. Your complete report takes a deeper look at the personality patterns, "
             "career themes, relationships and personal-year interpretations associated with them.")
-CTA1 = "Unlock My Complete Numerology Report"
-CTA2 = "Get My Full Numerology Report"
+_PRICE_TXT = "\u20b9%d" % (mulank_pricing.MULANK_PRICE_PAISE // 100)
+CTA1 = "Unlock My Full Numerology Report\u00a0\u2014\u00a0" + _PRICE_TXT   # purchase card after page 3 (non-breaking so the price never wraps alone)
+CTA2 = CTA1                                                              # repeated on page 5
+CTA_BAR = "Unlock My Full Report"                                        # the compact purchase bar
 CTA_PREORDER_SHORT = "Pre-order My Report"
 CTA_PREORDER = "Pre-order My Report for \u20b9299"
 
@@ -228,16 +230,17 @@ def render_cta_visual():
 
 def render_page4(cta_url=None):
     list_p, price = mulank_pricing.MULANK_LIST_PRICE_PAISE, mulank_pricing.MULANK_PRICE_PAISE
-    save = ""
-    if list_p > price:
+    save, was = "", ""
+    if mulank_pricing.show_list_price():            # only after the owner confirms Rs 499 is a genuine regular price
         save = f'<div class="psave">You save {inr(list_p - price)}</div>'
+        was = f'<s class="was"><span class="sr">Regular price </span>{inr(list_p)}</s>'
     return f'''<section class="page"><div class="col">
   <div class="eyebrow">Your complete report</div>
   <h2 class="head">{CTA_HEAD}</h2><div class="rule"></div>
   <p class="lede-c" style="margin-top:12px;font-size:15.5px;line-height:1.5">{CTA_COPY}</p>
   {render_cta_visual()}
   <div class="pricebox"><div class="pl">Complete numerology report</div>
-    <div class="pp2"><s class="was"><span class="sr">Original price </span>{inr(list_p)}</s><span class="now"><span class="sr">Now </span>{inr(price)}</span></div>{save}</div>
+    <div class="pp2">{was}<span class="now"><span class="sr">Now </span>{inr(price)}</span></div>{save}</div>
   {cta_button(CTA1, cta_url, "margin-top:12px")}
   {fine()}
 </div>{FOOT}'''
@@ -246,13 +249,17 @@ def render_page4(cta_url=None):
 def render_page4_preorder(promise, refund_href, cta_url=None):
     """Pre-order variant of page 4 (pair not yet sellable). The wording never says "unlock" or "download now":
     the report is delivered later, as the owner promised. `promise` and `refund_href` come from owner-set config only."""
-    price = mulank_pricing.MULANK_PRICE_PAISE
+    price, list_p = mulank_pricing.MULANK_PRICE_PAISE, mulank_pricing.MULANK_LIST_PRICE_PAISE
+    save, was = "", ""
+    if mulank_pricing.show_list_price():
+        save = f'<div class="psave">You save {inr(list_p - price)}</div>'
+        was = f'<s class="was"><span class="sr">Regular price </span>{inr(list_p)}</s>'
     return f'''<section class="page"><div class="col">
   <div class="eyebrow">Pre-order</div>
   <h2 class="head">Pre-order Your Complete Report</h2><div class="rule"></div>
   <p class="lede-c" style="margin-top:12px;font-size:15px;line-height:1.5">Your complete numerology report is not ready for your numbers yet. Pre-order it now and we will deliver it {esc(promise)}.</p>
   {render_cta_visual()}
-  <div class="pricebox"><div class="pl">Pre-order price</div><div class="pp2"><span class="now">{inr(price)}</span></div></div>
+  <div class="pricebox"><div class="pl">Pre-order price</div><div class="pp2">{was}<span class="now">{inr(price)}</span></div>{save}</div>
   <p style="width:100%;text-align:left;font-size:12.5px;line-height:1.5;color:var(--body);margin-top:10px"><b>This is a pre-order, not an instant download.</b> Your report will appear at your private link when it is ready. Refunds and cancellation: see our <a href="{esc(refund_href)}" style="color:var(--terra)">refund policy</a>.</p>
   {cta_button(CTA_PREORDER, cta_url, "margin-top:12px", "preorder")}
   {fine()}

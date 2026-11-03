@@ -107,9 +107,10 @@ def render_viewer(doc_html: str, rid: str, eligible: bool, preorder: bool = Fals
     bar = ""
     if eligible:
         bar = ('<div class="vw-bar" id="vwBar"><div class="vw-bar-in"><div class="vw-price">'
-               f'<s>{P.inr(mulank_pricing.MULANK_LIST_PRICE_PAISE)}</s><b>{P.inr(mulank_pricing.MULANK_PRICE_PAISE)}</b>'
+               + (f'<s>{P.inr(mulank_pricing.MULANK_LIST_PRICE_PAISE)}</s>' if mulank_pricing.show_list_price() else "")
+               + f'<b>{P.inr(mulank_pricing.MULANK_PRICE_PAISE)}</b>'
                '<span>Complete report</span></div>'
-               f'<button type="button" class="pv-cta" data-action="checkout">{P.CTA2}</button></div></div>')
+               f'<button type="button" class="pv-cta" data-action="checkout">{P.CTA_BAR}</button></div></div>')
     elif preorder:
         bar = ('<div class="vw-bar" id="vwBar"><div class="vw-bar-in"><div class="vw-price">'
                f'<b>{P.inr(mulank_pricing.MULANK_PRICE_PAISE)}</b><span>Pre-order</span></div>'
