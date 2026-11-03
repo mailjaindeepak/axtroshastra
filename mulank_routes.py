@@ -256,7 +256,7 @@ def _preview_for(rec: dict, rid: str, absolute_cta: bool = False):
     p = rec["payload"]
     y, m, d = (int(x) for x in p["dob"].split("-"))
     cta = None
-    base = (os.getenv("PUBLIC_BASE_URL", "") or "").rstrip("/")
+    base = (os.getenv("PUBLIC_BASE_URL", "") or "https://www.axtroshastra.com").rstrip("/")   # same default as tracking.py
     if absolute_cta and base.startswith("https://"):
         cta = f"{base}/en/numerology/preview/{rid}"
     return numerology_preview.build_preview(d, m, y, p.get("name") or "", cta_url=cta,
