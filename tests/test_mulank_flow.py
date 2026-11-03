@@ -387,3 +387,19 @@ def _pin_today(monkeypatch):
     """Personal years depend on the calendar; pin it so these tests do not age."""
     from datetime import date
     monkeypatch.setattr(mc, "_today", lambda: date(2026, 11, 3))
+
+def test_privacy_and_terms_cover_the_numerology_form():
+    """The form collects name, DOB, optional gender, a WhatsApp number before any purchase and an optional marketing opt-in;
+    the policy must say so, using the same wording the form uses."""
+    priv = open("pages/privacy.html", encoding="utf-8").read()
+    terms = open("pages/terms.html", encoding="utf-8").read()
+    land = open("pages/numerology.html", encoding="utf-8").read()
+    assert "Gender, where a form asks for it" in priv and "When you request a preview or report" in priv
+    assert "Messages you choose to receive" in priv and "optional box on a report form" in priv and "support@axtroshastra.com" in priv
+    assert "Mulank and Bhagyank numbers" in priv and "belief-based" in priv
+    assert "Numerology is a belief system, not a science" in terms and "Mulank and Bhagyank" in terms
+    assert "WhatsApp messages about new Axtroshastra reports and offers" in land          # the opt-in the policy describes
+    assert "November 2026" in priv and "November 2026" in terms
+    for page in (priv, terms):
+        t = re.sub(r"<[^>]+>", " ", page).lower()
+        assert not [w for w in ("anxiety", "stress", "healing", "therapy", "wellness") if w in t]
