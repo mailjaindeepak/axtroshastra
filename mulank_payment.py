@@ -21,8 +21,7 @@ import reports_v2
 logger = logging.getLogger("axtroshastra")
 
 PRODUCT = "numerology_mulank"
-MULANK_PRICE_PAISE = 29900          # Rs 299, the only amount this product ever charges
-MULANK_CURRENCY = "INR"
+from mulank_pricing import MULANK_PRICE_PAISE, MULANK_LIST_PRICE_PAISE, MULANK_CURRENCY  # noqa: E402,F401
 
 
 class MulankPaymentError(Exception):
