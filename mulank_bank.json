@@ -64,72 +64,98 @@
    "want": "a cause to act on"
   }
  },
- "CMP": {
-  "2-1": {
-   "bonds": [
-    [
-     "i-people",
-     "Closeness",
-     "Affectionate, loyal and attentive. You may show care through small, steady gestures more than grand ones.",
-     ""
-    ],
-    [
-     "i-target",
-     "Independence",
-     "Your 1 asks for room to decide. Partners may sense you are both nurturing and self-contained.",
-     ""
-    ],
-    [
-     "i-clock",
-     "Communication",
-     "You may hint before you state. A plain sentence now and then helps people meet you halfway.",
-     ""
-    ],
-    [
-     "i-alert",
-     "A pattern to watch",
-     "Keeping feelings unspoken until they surface all at once.",
-     " warn"
-    ]
-   ],
-   "compat": {
-    "mulank": 2,
-    "rows": [
-     [
-      "Tend to pair easily",
-      "1, 3, 6"
-     ],
-     [
-      "Neutral",
-      "5, 7, 9"
-     ],
-     [
-      "Need more attention",
-      "4, 8"
-     ]
-    ]
-   }
-  }
+ "CB": {
+  "1": [
+   "Loyal and protective. You may show care by solving problems and standing up for the people close to you.",
+   "You may say what you think plainly. Adding a question now and then helps others feel heard.",
+   "Deciding for a partner before asking what they want."
+  ],
+  "2": [
+   "Affectionate, loyal and attentive. You may show care through small, steady gestures more than grand ones.",
+   "You may hint before you state. A plain sentence now and then helps people meet you halfway.",
+   "Keeping feelings unspoken until they surface all at once."
+  ],
+  "3": [
+   "Warm, generous and talkative. You may show care by encouraging the people close to you and keeping the mood light.",
+   "You may say a lot, quickly. Pausing to ask a question gives others room to answer.",
+   "Moving on to the next idea before a worry has been heard."
+  ],
+  "4": [
+   "Steady and dependable. You may show care through practical help and by keeping your word.",
+   "You may keep your thinking to yourself until it is complete. Sharing it earlier lets others follow your reasoning.",
+   "Treating a different way of doing things as criticism."
+  ],
+  "5": [
+   "Playful and attentive. You may show care through conversation, small surprises and shared plans.",
+   "You may say things quickly and in passing. A slower, more complete conversation now and then helps.",
+   "Losing interest when things become routine."
+  ],
+  "6": [
+   "Devoted and generous. You may show care by creating comfort and remembering what matters to people.",
+   "You may smooth things over rather than say what bothers you. Naming it earlier keeps small matters small.",
+   "Holding on tightly when you fear a change."
+  ],
+  "7": [
+   "Loyal and private. You may show care through attention, time and thoughtful gestures rather than words.",
+   "You may keep your thoughts to yourself until they are complete. Sharing a little earlier helps people feel included.",
+   "Pulling back when you most need to be understood."
+  ],
+  "8": [
+   "Steady and committed. You may show care through reliability and by building a secure life with the people close to you.",
+   "You may speak seriously and to the point. A lighter word now and then helps people relax around you.",
+   "Letting duties crowd out warmth."
+  ],
+  "9": [
+   "Passionate and protective. You may show care by defending the people close to you and acting on their behalf.",
+   "You may speak strongly and fast. Pausing before you reply gives the other person room to finish.",
+   "A short temper when plans are blocked."
+  ]
  },
- "LK": {
-  "2-1": {
-   "colours": [
-    "Cream",
-    "Gold"
-   ],
-   "days": [
-    "Monday",
-    "Sunday"
-   ],
-   "gems": [
-    "Pearl",
-    "Ruby"
-   ],
-   "numbers": [
-    1,
-    2,
-    7
-   ]
+ "LP": {
+  "Jupiter": {
+   "colour": "Yellow",
+   "day": "Thursday",
+   "gem": "Yellow sapphire"
+  },
+  "Ketu": {
+   "colour": "Brown",
+   "day": "Tuesday",
+   "gem": "Cat's eye"
+  },
+  "Mars": {
+   "colour": "Red",
+   "day": "Tuesday",
+   "gem": "Red coral"
+  },
+  "Mercury": {
+   "colour": "Green",
+   "day": "Wednesday",
+   "gem": "Emerald"
+  },
+  "Moon": {
+   "colour": "Cream",
+   "day": "Monday",
+   "gem": "Pearl"
+  },
+  "Rahu": {
+   "colour": "Smoky grey",
+   "day": "Saturday",
+   "gem": "Hessonite"
+  },
+  "Saturn": {
+   "colour": "Blue",
+   "day": "Saturday",
+   "gem": "Blue sapphire"
+  },
+  "Sun": {
+   "colour": "Gold",
+   "day": "Sunday",
+   "gem": "Ruby"
+  },
+  "Venus": {
+   "colour": "Pink",
+   "day": "Friday",
+   "gem": "Diamond"
   }
  },
  "M": {
@@ -251,55 +277,472 @@
    "want": "active settings where decisive action is valued"
   }
  },
- "PB": {
-  "2-1": {
+ "PG": {
+  "1": {
    "advice": [
     "ask earlier",
-    "say no sooner",
     "finish before the next start"
    ],
-   "cycle_head": "A beginning, then a year to build with others.",
-   "cycle_read": "Move first in the year now running, then bring others in during the year after.",
-   "dial_head": "Receptive in manner, self-directed in purpose.",
-   "dial_note": "The dial to watch is pace. A deliberate pace may be how you work; others may mistake it for hesitation.",
-   "dial_read": "A gentle presence with a quiet lead. People may follow you before you have asked them to.",
-   "dials": [
+   "bond_ask": "asks for room to decide",
+   "direction": 70,
+   "effect": "follow you before you have asked them to",
+   "inner": "self-directed underneath",
+   "lead": "a quiet lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Beneath the surface sits a clear wish to choose your own direction rather than wait to be told."
+   ],
+   "purpose": "self-directed in purpose",
+   "rows": [
     [
-     "Approach",
-     "Receptive",
-     "Assertive",
-     42
+     "Independent direction",
+     "Reluctance to ask for help",
+     [
+      82,
+      60
+     ]
     ],
     [
-     "Pace",
-     "Deliberate",
-     "Quick",
-     38
-    ],
-    [
-     "Circle",
-     "A few close ties",
-     "A wide circle",
-     44
-    ],
-    [
-     "Direction",
-     "Follows",
-     "Leads",
-     70
+     "Energy for fresh starts",
+     "Leaving the follow-through for later",
+     [
+      78,
+      52
+     ]
     ]
    ],
-   "heading": "Moon steadies, Sun leads",
+   "strongs": [
+    "direction",
+    "fresh starts"
+   ],
+   "tips": [
+    "going it alone",
+    "starting more than finishing"
+   ],
+   "trait": "self-contained"
+  },
+  "2": {
+   "advice": [
+    "speak sooner",
+    "set a decision date"
+   ],
+   "bond_ask": "asks for closeness and balance",
+   "direction": 38,
+   "effect": "come to you when they want things to go smoothly",
+   "inner": "cooperative underneath",
+   "lead": "a considerate lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a steady wish to work alongside people and build something together."
+   ],
+   "purpose": "cooperative in purpose",
+   "rows": [
+    [
+     "Partnership",
+     "Putting off a difficult conversation",
+     [
+      84,
+      56
+     ]
+    ],
+    [
+     "Patience over time",
+     "Waiting too long to decide",
+     [
+      80,
+      58
+     ]
+    ]
+   ],
+   "strongs": [
+    "partnership",
+    "patience"
+   ],
+   "tips": [
+    "avoiding confrontation",
+    "waiting for others to decide"
+   ],
+   "trait": "cooperative"
+  },
+  "3": {
+   "advice": [
+    "choose one thing to finish",
+    "set smaller goals"
+   ],
+   "bond_ask": "asks for talk and shared ideas",
+   "direction": 62,
+   "effect": "join in when you share what you are learning",
+   "inner": "curious underneath",
+   "lead": "an open lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish to keep learning and to share what you learn, with a hope that your circle keeps growing."
+   ],
+   "purpose": "growth-minded in purpose",
+   "rows": [
+    [
+     "Learning and sharing",
+     "Taking on more than you can follow up",
+     [
+      83,
+      57
+     ]
+    ],
+    [
+     "Widening your circle",
+     "Expecting results sooner than they come",
+     [
+      79,
+      55
+     ]
+    ]
+   ],
+   "strongs": [
+    "learning",
+    "communication"
+   ],
+   "tips": [
+    "scattering your focus",
+    "expecting too much too soon"
+   ],
+   "trait": "curious"
+  },
+  "4": {
+   "advice": [
+    "decide, then review",
+    "ask for another view"
+   ],
+   "bond_ask": "asks for freedom to choose its own path",
+   "direction": 50,
+   "effect": "find your route surprising at first, then useful",
+   "inner": "unconventional underneath",
+   "lead": "an unconventional lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish to find your own route, which may include changes of direction before things settle."
+   ],
+   "purpose": "independent in direction",
+   "rows": [
+    [
+     "Adapting to change",
+     "Second-guessing decisions",
+     [
+      82,
+      59
+     ]
+    ],
+    [
+     "Trying an unusual route",
+     "Taking the long way round",
+     [
+      78,
+      56
+     ]
+    ]
+   ],
+   "strongs": [
+    "adaptability",
+    "originality"
+   ],
+   "tips": [
+    "second-guessing",
+    "taking detours"
+   ],
+   "trait": "independent"
+  },
+  "5": {
+   "advice": [
+    "finish one thing first",
+    "keep one steady routine"
+   ],
+   "bond_ask": "asks for variety and conversation",
+   "direction": 58,
+   "effect": "follow where your interest moves",
+   "inner": "quick to adapt underneath",
+   "lead": "a flexible lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish for variety, movement and a steady flow of new people and ideas."
+   ],
+   "purpose": "adaptable in direction",
+   "rows": [
+    [
+     "Adapting quickly",
+     "Restlessness",
+     [
+      84,
+      57
+     ]
+    ],
+    [
+     "Making connections",
+     "Thin follow-through",
+     [
+      80,
+      54
+     ]
+    ]
+   ],
+   "strongs": [
+    "adaptability",
+    "connections"
+   ],
+   "tips": [
+    "restlessness",
+    "thin follow-through"
+   ],
+   "trait": "adaptable"
+  },
+  "6": {
+   "advice": [
+    "share the load",
+    "ask for help"
+   ],
+   "bond_ask": "asks for loyalty and shared duty",
+   "direction": 44,
+   "effect": "rely on you to look after things",
+   "inner": "caring underneath",
+   "lead": "a dutiful lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a sense of duty and a wish to look after people, with growth that may come through responsibility."
+   ],
+   "purpose": "caring in purpose",
+   "rows": [
+    [
+     "Responsibility",
+     "Taking on too much for others",
+     [
+      85,
+      58
+     ]
+    ],
+    [
+     "Building relationships",
+     "Putting yourself last",
+     [
+      79,
+      55
+     ]
+    ]
+   ],
+   "strongs": [
+    "responsibility",
+    "care"
+   ],
+   "tips": [
+    "taking on too much",
+    "putting yourself last"
+   ],
+   "trait": "devoted"
+  },
+  "7": {
+   "advice": [
+    "act on a first draft",
+    "explain your reasoning"
+   ],
+   "bond_ask": "asks for quiet time",
+   "direction": 46,
+   "effect": "listen closely when you do decide to speak",
+   "inner": "reflective underneath",
+   "lead": "a thoughtful lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish for depth and time to think, with a preference for working things out independently."
+   ],
+   "purpose": "reflective in purpose",
+   "rows": [
+    [
+     "Analysis",
+     "Overthinking",
+     [
+      86,
+      55
+     ]
+    ],
+    [
+     "Specialisation",
+     "Feeling misunderstood",
+     [
+      80,
+      53
+     ]
+    ]
+   ],
+   "strongs": [
+    "analysis",
+    "focus"
+   ],
+   "tips": [
+    "overthinking",
+    "feeling misunderstood"
+   ],
+   "trait": "reflective"
+  },
+  "8": {
+   "advice": [
+    "delegate sooner",
+    "stay open to other views"
+   ],
+   "bond_ask": "asks for respect and time to build",
+   "direction": 66,
+   "effect": "look to you to hold things together",
+   "inner": "determined underneath",
+   "lead": "a steady lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish for responsibility and authority, and the patience to build toward it over time."
+   ],
+   "purpose": "steady in purpose",
+   "rows": [
+    [
+     "Responsibility",
+     "Carrying it alone",
+     [
+      85,
+      59
+     ]
+    ],
+    [
+     "Persistence",
+     "Rigid thinking",
+     [
+      79,
+      54
+     ]
+    ]
+   ],
+   "strongs": [
+    "responsibility",
+    "persistence"
+   ],
+   "tips": [
+    "carrying things alone",
+    "rigid thinking"
+   ],
+   "trait": "steady"
+  },
+  "9": {
+   "advice": [
+    "pause before acting",
+    "plan the next step"
+   ],
+   "bond_ask": "asks for shared purpose",
+   "direction": 78,
+   "effect": "rally around you when you have a cause",
+   "inner": "driven underneath",
+   "lead": "a bold lead",
+   "pers": [
+    "i-target",
+    "Inner drive",
+    "Underneath sits a wish for a cause to act on, with energy to spare once you have found it."
+   ],
+   "purpose": "driven in purpose",
+   "rows": [
+    [
+     "Energy",
+     "Impatience",
+     [
+      86,
+      56
+     ]
+    ],
+    [
+     "Decisive action",
+     "Moving before the plan is ready",
+     [
+      81,
+      55
+     ]
+    ]
+   ],
+   "strongs": [
+    "energy",
+    "decisive action"
+   ],
+   "tips": [
+    "impatience",
+    "moving before the plan is ready"
+   ],
+   "trait": "driven"
+  }
+ },
+ "PM": {
+  "1": {
+   "advice": "listen first",
+   "dials": {
+    "approach": 80,
+    "circle": 40,
+    "pace": 70
+   },
+   "manner": "Assertive in manner",
+   "outer": "Direct and self-assured",
+   "pace_note": "A quick pace may be how you work; others may find it hard to keep up with.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may see you as confident and capable. You may find yourself stepping forward when a group is unsure who will decide."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may prefer to make the call yourself and move on. To others it can look quick, even before they have finished explaining."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more direct and clear. People tend to read this as certainty, even when you are still weighing things."
+    ]
+   ],
+   "presence": "a confident presence",
+   "rows": [
+    [
+     "Taking initiative",
+     "Taking over when others are slower",
+     [
+      86,
+      58
+     ]
+    ],
+    [
+     "Clear, steady decisions",
+     "Brushing past other views",
+     null
+    ],
+    [
+     "Standing behind your choices",
+     "Finding it hard to accept correction",
+     null
+    ]
+   ],
+   "strong": "Initiative",
+   "tip": "taking over",
+   "trait": "decisive"
+  },
+  "2": {
+   "advice": "say no sooner",
+   "dials": {
+    "approach": 42,
+    "circle": 44,
+    "pace": 38
+   },
+   "manner": "Receptive in manner",
+   "outer": "Warm on the surface",
+   "pace_note": "A deliberate pace may be how you work; others may mistake it for hesitation.",
    "pers": [
     [
      "i-people",
      "First impressions",
      "People may find you approachable and attentive. You may often sense the mood of a room before anyone names it."
-    ],
-    [
-     "i-target",
-     "Inner drive",
-     "Beneath the softness sits a clear wish to choose your own direction rather than wait to be told."
     ],
     [
      "i-compass",
@@ -312,12 +755,8 @@
      "You may go quiet first and decisive second, a pattern that tends to read as composed."
     ]
    ],
-   "strongs": [
-    "Listening",
-    "direction",
-    "fresh starts"
-   ],
-   "table": [
+   "presence": "a gentle presence",
+   "rows": [
     [
      "Attentive listening",
      "Taking on other people's moods as your own",
@@ -327,25 +766,9 @@
      ]
     ],
     [
-     "Independent direction",
-     "Reluctance to ask for help",
-     [
-      82,
-      60
-     ]
-    ],
-    [
      "Warm persuasion",
      "Avoiding a plain, direct \"no\"",
      null
-    ],
-    [
-     "Energy for fresh starts",
-     "Leaving the follow-through for later",
-     [
-      78,
-      52
-     ]
     ],
     [
      "Loyalty to chosen people",
@@ -353,12 +776,373 @@
      null
     ]
    ],
-   "tips": [
-    "absorbing others' moods",
-    "going it alone",
-    "starting more than finishing"
+   "strong": "Listening",
+   "tip": "absorbing others' moods",
+   "trait": "nurturing"
+  },
+  "3": {
+   "advice": "pick one thread",
+   "dials": {
+    "approach": 62,
+    "circle": 80,
+    "pace": 66
+   },
+   "manner": "Expressive in manner",
+   "outer": "Bright and talkative",
+   "pace_note": "A lively pace may be how you think aloud; others may not always tell which idea you have chosen.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may find you friendly and easy to talk to. You may lighten a room with a story or an idea before anyone asks."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may talk a decision through out loud and settle it as you hear yourself explain it. To others it can seem you changed your mind along the way."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more animated and share more. People tend to read this as enthusiasm, even when you are nervous."
+    ]
    ],
-   "verdict": "Warm on the surface, self-directed underneath."
+   "presence": "a warm, talkative presence",
+   "rows": [
+    [
+     "Explaining ideas clearly",
+     "Starting more threads than you can follow",
+     [
+      84,
+      57
+     ]
+    ],
+    [
+     "Encouraging others",
+     "Offering advice nobody asked for",
+     null
+    ],
+    [
+     "Optimism about what is possible",
+     "Underestimating the time things take",
+     null
+    ]
+   ],
+   "strong": "Communication",
+   "tip": "scattering your focus",
+   "trait": "encouraging"
+  },
+  "4": {
+   "advice": "ask for another view",
+   "dials": {
+    "approach": 58,
+    "circle": 32,
+    "pace": 36
+   },
+   "manner": "Methodical in manner",
+   "outer": "Independent and practical",
+   "pace_note": "A deliberate pace may be how you work; others may mistake it for resistance.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may see you as reliable and your own person. You may question the usual way of doing things before you accept it."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may work a decision out step by step and then hold to it. To others it can look slow until it is finished."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more reserved and exact. People tend to read this as seriousness."
+    ]
+   ],
+   "presence": "a steady, independent presence",
+   "rows": [
+    [
+     "Original approaches",
+     "Resisting advice that could help",
+     [
+      85,
+      58
+     ]
+    ],
+    [
+     "Persistence",
+     "Holding to a plan after it stops working",
+     null
+    ],
+    [
+     "Building solid foundations",
+     "Taking longer than others expect",
+     null
+    ]
+   ],
+   "strong": "Persistence",
+   "tip": "holding too firmly",
+   "trait": "dependable"
+  },
+  "5": {
+   "advice": "finish before the next idea",
+   "dials": {
+    "approach": 60,
+    "circle": 84,
+    "pace": 85
+   },
+   "manner": "Adaptable in manner",
+   "outer": "Quick and curious",
+   "pace_note": "A quick pace may be how you work; others may mistake it for restlessness.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may find you lively and easy to connect with. You may pick up on new ideas and people quickly."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may weigh options fast and change course as new information arrives. To others it can look like changing your mind."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more talkative or make a joke. People tend to read this as ease."
+    ]
+   ],
+   "presence": "a quick, curious presence",
+   "rows": [
+    [
+     "Adapting quickly",
+     "Leaving things unfinished when something newer arrives",
+     [
+      87,
+      55
+     ]
+    ],
+    [
+     "Making connections",
+     "Spreading yourself across too many people",
+     null
+    ],
+    [
+     "Resourcefulness",
+     "Working without a plan until a late scramble",
+     null
+    ]
+   ],
+   "strong": "Adaptability",
+   "tip": "restlessness",
+   "trait": "adaptable"
+  },
+  "6": {
+   "advice": "say what you need",
+   "dials": {
+    "approach": 40,
+    "circle": 56,
+    "pace": 40
+   },
+   "manner": "Caring in manner",
+   "outer": "Warm and considerate",
+   "pace_note": "A considered pace may be how you work; others may mistake it for hesitation.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may find you warm and well presented. You may notice how a place feels and quietly improve it."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may weigh how a choice affects the people you care about before the practical side. To others it can look like putting people first."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more careful with your words and your appearance. People tend to read this as grace."
+    ]
+   ],
+   "presence": "a caring, graceful presence",
+   "rows": [
+    [
+     "Attention to how things feel",
+     "Taking small criticism to heart",
+     [
+      86,
+      54
+     ]
+    ],
+    [
+     "Loyalty to a team",
+     "Holding on to people for too long",
+     null
+    ],
+    [
+     "Looking after others",
+     "Putting your own needs last",
+     null
+    ]
+   ],
+   "strong": "Care",
+   "tip": "taking things personally",
+   "trait": "devoted"
+  },
+  "7": {
+   "advice": "share earlier",
+   "dials": {
+    "approach": 36,
+    "circle": 18,
+    "pace": 30
+   },
+   "manner": "Reserved in manner",
+   "outer": "Quiet and observant",
+   "pace_note": "A slow, careful pace may be how you work; others may mistake it for distance.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may see you as calm and a little private. You may notice details that others walk past."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may study a choice from several sides on your own before you speak. To others the decision can appear out of nowhere."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become quieter and choose your words with care. People tend to read this as depth."
+    ]
+   ],
+   "presence": "a quiet, thoughtful presence",
+   "rows": [
+    [
+     "Careful analysis",
+     "Overthinking before acting",
+     [
+      88,
+      52
+     ]
+    ],
+    [
+     "Depth of study",
+     "Keeping useful insights to yourself",
+     null
+    ],
+    [
+     "Noticing what others miss",
+     "Feeling misunderstood",
+     null
+    ]
+   ],
+   "strong": "Depth",
+   "tip": "withdrawing",
+   "trait": "thoughtful"
+  },
+  "8": {
+   "advice": "delegate sooner",
+   "dials": {
+    "approach": 60,
+    "circle": 38,
+    "pace": 22
+   },
+   "manner": "Disciplined in manner",
+   "outer": "Composed and serious",
+   "pace_note": "A deliberate pace may be how you work; others may mistake it for rigidity.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may see you as capable and a little reserved. You may take on responsibility before anyone asks."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may weigh a decision carefully and then commit for the long term. To others it can look slow, then very firm."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more formal and exact. People tend to read this as authority."
+    ]
+   ],
+   "presence": "a composed, serious presence",
+   "rows": [
+    [
+     "Organising people and tasks",
+     "Expecting others to match your standard",
+     [
+      87,
+      57
+     ]
+    ],
+    [
+     "Persistence through delays",
+     "Frustration when things stall",
+     null
+    ],
+    [
+     "A strong sense of responsibility",
+     "Carrying too much alone",
+     null
+    ]
+   ],
+   "strong": "Responsibility",
+   "tip": "carrying too much",
+   "trait": "responsible"
+  },
+  "9": {
+   "advice": "pause before replying",
+   "dials": {
+    "approach": 88,
+    "circle": 55,
+    "pace": 82
+   },
+   "manner": "Direct in manner",
+   "outer": "Energetic and bold",
+   "pace_note": "A fast pace may be how you work; others may find it hard to keep up with.",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may see you as spirited and brave. You may step in quickly when someone needs defending."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may act on a decision while it is still fresh and learn as you go. To others it can look like acting before the full picture is clear."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may become more forceful and quick. People tend to read this as confidence."
+    ]
+   ],
+   "presence": "an energetic, protective presence",
+   "rows": [
+    [
+     "Acting decisively",
+     "Acting before the full picture is clear",
+     [
+      88,
+      56
+     ]
+    ],
+    [
+     "Standing up for others",
+     "Taking a challenge personally",
+     null
+    ],
+    [
+     "High energy",
+     "Running short on patience",
+     null
+    ]
+   ],
+   "strong": "Energy",
+   "tip": "acting too fast",
+   "trait": "protective"
   }
  },
  "PS": {
@@ -411,23 +1195,93 @@
   "Venus>Saturn": "friend",
   "Venus>Sun": "adversary"
  },
+ "VERB": {
+  "Jupiter": "guides",
+  "Ketu": "turns inward",
+  "Mars": "drives",
+  "Mercury": "connects",
+  "Moon": "steadies",
+  "Rahu": "stretches",
+  "Saturn": "structures",
+  "Sun": "leads",
+  "Venus": "harmonises"
+ },
  "Y": {
   "1": {
    "continue_": "Which habit that already works for you could you carry into a new beginning?",
    "explore": "Which beginning have you been weighing? Contemporary writing links Year 1 with taking its first step.",
    "often": "Beginnings and visible choices",
    "pace": "Initiate",
+   "reconsider": "Where are you starting several things at once? Contemporary writing links Year 1 with one clear first step.",
    "theme": "A fresh start"
   },
   "2": {
+   "continue_": "Which relationship or partnership already works well and deserves steady attention?",
    "explore": "Who might you invite into something you currently carry alone?",
    "often": "Patience, listening, joining forces",
    "pace": "Cooperate",
    "reconsider": "Where are you pushing for a result? Contemporary writing links Year 2 with patience over speed.",
    "theme": "Partnership"
+  },
+  "3": {
+   "continue_": "Which way of sharing your ideas already works for you, and could you do it more often?",
+   "explore": "What have you wanted to say or make that you have kept to yourself? Contemporary writing links Year 3 with expression and sharing.",
+   "often": "Creativity, communication and wider circles",
+   "pace": "Express",
+   "reconsider": "Where are you spreading your energy across too many things? Contemporary writing links Year 3 with choosing where to focus.",
+   "theme": "Expression and growth"
+  },
+  "4": {
+   "continue_": "Which routine is quietly doing its job and deserves your patience?",
+   "explore": "What foundation would make the next few years easier to build on? Contemporary writing links Year 4 with steady, practical work.",
+   "often": "Routine, planning and steady effort",
+   "pace": "Build",
+   "reconsider": "Where are you pushing yourself harder than the work needs? Contemporary writing links Year 4 with careful, steady effort.",
+   "theme": "Building foundations"
+  },
+  "5": {
+   "continue_": "Which part of your life is steady enough to hold while other things change?",
+   "explore": "Which change have you been circling around? Contemporary writing links Year 5 with movement and fresh options.",
+   "often": "Variety, travel and new options",
+   "pace": "Adapt",
+   "reconsider": "Where might a quick decision deserve a second look? Contemporary writing links Year 5 with choosing change with care.",
+   "theme": "Change and movement"
+  },
+  "6": {
+   "continue_": "Which commitments to others feel right, and are worth keeping as they are?",
+   "explore": "Who or what would benefit from more of your attention? Contemporary writing links Year 6 with care and responsibility.",
+   "often": "Family, duty and care for others",
+   "pace": "Nurture",
+   "reconsider": "Where are you carrying more than your share? Contemporary writing links Year 6 with balancing care for others and for yourself.",
+   "theme": "Home and responsibility"
+  },
+  "7": {
+   "continue_": "Which habit of stepping back already helps you think clearly?",
+   "explore": "What would you like to understand better, given some quiet time? Contemporary writing links Year 7 with reflection and study.",
+   "often": "Quiet time, learning and inner questions",
+   "pace": "Reflect",
+   "reconsider": "Where might pulling away from people be costing you something? Contemporary writing links Year 7 with reflection, not distance.",
+   "theme": "Reflection and study"
+  },
+  "8": {
+   "continue_": "Which part of your work or finances is on a sound footing and deserves steady attention?",
+   "explore": "What result would you like your effort to lead to? Contemporary writing links Year 8 with outcomes and responsibility.",
+   "often": "Career, money matters and authority",
+   "pace": "Achieve",
+   "reconsider": "Where might your standards leave little room for other people? Contemporary writing links Year 8 with fairness as well as results.",
+   "theme": "Results and responsibility"
+  },
+  "9": {
+   "continue_": "Which unfinished piece of work deserves your last push?",
+   "explore": "What is ready to be finished or let go? Contemporary writing links Year 9 with completion before a new cycle.",
+   "often": "Endings, clearing out and letting go",
+   "pace": "Conclude",
+   "reconsider": "Where are you holding on to something that has run its course? Contemporary writing links Year 9 with letting go.",
+   "theme": "Completion and release"
   }
  },
  "rows": {
+  "10_compat_caption": "Compatibility tables vary between traditional schools.",
   "10a": "NO CHANGE",
   "11a": "Often linked with",
   "11b": "Your Personal Year {n1} matches your {Mulank, Bhagyank, or Mulank and Bhagyank}. Your Personal Year {n2} matches your {...}.",
@@ -437,6 +1291,8 @@
   "12b": "unchanged",
   "13a": "NO CHANGE. Behaviour when the lookup is undefined (a Mulank or Bhagyank of 4 or 7, or any number whose row is not reviewed): tile shows \"This reference is not included for your numbers in this edition.\"",
   "13b": "Linked with the Moon and the Sun in the Indian planetary scheme",
+  "13b_one": "Linked with {X} in the Indian planetary scheme",
+  "13b_pair": "Linked with {X} and {Y} in the Indian planetary scheme",
   "13c": "These are associations from contemporary writing, offered for interest and reflection. None is needed, and any gemstone is a matter of personal choice.",
   "14a": "One question for each of your two years. / Prompts drawn from your Personal Years 1 and 2",
   "14b": "EXPLORE. Which beginning have you been weighing? Contemporary writing links Year 1 with taking its first step.",
@@ -460,6 +1316,8 @@
   "4b": "Contemporary Indian numerology writing reads Bhagyank {b}, {Y}, as a direction toward {B.themes}.",
   "4c": "Read together, Mulank {m} sets how you go about things and Bhagyank {b} sets where you are headed.",
   "4d": "PS.general text, stored per pair. 2-1 entry: One contemporary source describes a Mulank 2 with a Bhagyank 1 as an empathetic leader, noting that it can also lead to delayed decisions and accommodating others too readily.",
+  "4d_composed": "In this reading, {X}'s themes ({M.themes}) sit alongside {Y}'s themes ({B.themes}).",
+  "4d_equal": "In this reading, {X}'s themes ({M.themes}) are present in both numbers.",
   "4e": "Heading: Planetary links. Text: In the natural-friendship table used in Jyotish, {X} counts {Y} as {labXY}, and {Y} counts {X} as {labYX}.",
   "4f": "The table is not mirrored, so both directions are given.",
   "4g": "This report states the table, not a reading drawn from it.",
@@ -467,7 +1325,7 @@
   "4i": "This report does not state a planetary friendship for this pair, because published tables differ.",
   "4j": "The \"Moon sets / Sun sets\" idea is stated once, in 4c, as a rule-built sentence; see 6b and 8k",
   "5a": "You may often sense the mood of a room before anyone names it.",
-  "6a": "An illustrative reading of a 2 and 1 pairing on four dials",
+  "6a": "An illustrative reading of a {m} and {b} pairing on four dials",
   "6b": "(deleted; repeats 4c)",
   "6c": "The dial to watch is pace. A deliberate pace may be how you work; others may mistake it for hesitation.",
   "7a": "These are not flaws. Each growth area is the other face of a strength; left unmanaged, the same trait tips toward {tip1}, {tip2} and {tip3}.",
@@ -494,5 +1352,5 @@
   "9g": "This report does not include a field list for Mulank {m} in this edition.",
   "D": "Numerology is a belief system, not a science. Readings follow contemporary writing, for reflection only."
  },
- "version": "mulank-bank-0"
+ "version": "mulank-bank-1"
 }

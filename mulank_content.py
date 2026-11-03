@@ -32,7 +32,7 @@ CONTENT_VERSION = "mulank-content-1"
 NODES = ("Rahu", "Ketu")
 REL_CONFLICTS = (frozenset(("Venus", "Mars")),)     # the sources disagree on this table cell (REL-20)
 _LEDGER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mulank_registry.json")
-_KEY = re.compile(r"^(M[1-9]|B[1-9]|Y[1-9]|(PS|PB|CMP|LK):[1-9]-[1-9]|R:[A-Z][a-z]+>[A-Z][a-z]+)$")
+_KEY = re.compile(r"^((M|B|PM|PG|CB|LK|Y)[1-9]|PS:[1-9]-[1-9]|R:[A-Z][a-z]+>[A-Z][a-z]+)$")
 
 
 @dataclass(frozen=True)
@@ -103,7 +103,7 @@ def required_keys(result: dict) -> list:
     m, b = result["mulank"]["number"], result["bhagyank"]["number"]
     pair = f"{m}-{b}"
     py = result["personal_year"]
-    keys = [f"M{m}", f"B{b}", f"PS:{pair}", f"PB:{pair}", f"CMP:{pair}", f"LK:{pair}",
+    keys = [f"M{m}", f"B{b}", f"PM{m}", f"PG{b}", f"CB{m}", f"LK{m}", f"LK{b}",
             f"Y{py['current']['number']}", f"Y{py['next']['number']}"]
     keys += relation_keys(result["mulank"]["planet"], result["bhagyank"]["planet"])
     return list(dict.fromkeys(keys))

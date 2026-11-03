@@ -26,8 +26,67 @@ NODES = {"Rahu", "Ketu"}
 ART = lambda p: ("the " + p) if p in ("Sun", "Moon") else p
 esc = lambda t: _h.escape(str(t), quote=False)
 norm = lambda t: re.sub(r"\s+", " ", str(t).replace("\xa0", " ")).strip()
-COLOUR_HEX = {"Cream": "#F4EBD7", "White": "#FFFFFF", "Gold": "#C9A34E", "Yellow": "#E2A93B", "Green": "#7FA487",
+COLOUR_HEX = {"Pink": "#E5A9B9", "Smoky grey": "#8E8E93", "Brown": "#8B6B4A", "Cream": "#F4EBD7", "White": "#FFFFFF", "Gold": "#C9A34E", "Yellow": "#E2A93B", "Green": "#7FA487",
               "Blue": "#7B95BF", "Red": "#C25B4A", "Orange": "#E39A5B", "Pink": "#E5A9B9", "Silver": "#C9CCD3"}
+
+
+def _cap(s):
+    return s[:1].upper() + s[1:]
+
+
+def _uniq(seq):
+    return list(dict.fromkeys(seq))
+
+
+def _compose_personality(m, b, mp, bp):
+    """Cards 5-7 for any pair, built from the Mulank block (how you come across) and the Bhagyank overlay (inner drive,
+    direction). Same slots as the approved layout; nothing is taken from another pair."""
+    M_, G_ = bank.PM[m], bank.PG[b]
+    d = M_["dials"]
+    mrows, grows = M_["rows"], G_["rows"]
+    return {
+        "heading": f"{mp} twice over" if mp == bp else f"{mp} {bank.VERB[mp]}, {bp} {bank.VERB[bp]}",
+        "verdict": f"{M_['outer']}, {G_['inner']}.",
+        "pers": [M_["pers"][0], G_["pers"], M_["pers"][1], M_["pers"][2]],
+        "dial_head": f"{M_['manner']}, {G_['purpose']}.",
+        "dials": [["Approach", "Receptive", "Assertive", d["approach"]], ["Pace", "Deliberate", "Quick", d["pace"]],
+                  ["Circle", "A few close ties", "A wide circle", d["circle"]], ["Direction", "Follows", "Leads", G_["direction"]]],
+        "dial_note": "The dial to watch is pace. " + M_["pace_note"],
+        "dial_read": f"{_cap(M_['presence'])} with {G_['lead']}. People may {G_['effect']}.",
+        "table": [mrows[0], grows[0], mrows[1], grows[1], mrows[2]],
+        "tips": [M_["tip"]] + G_["tips"], "strongs": [M_["strong"]] + G_["strongs"], "advice": [M_["advice"]] + G_["advice"],
+    }
+
+
+def _compat_rows(m):
+    """Card 10 compatibility table for a Mulank, read from the planetary-friendship labels (the same table behind card 4).
+    Rahu and Ketu have no source labels, so numbers 4 and 7 are listed as 'not covered' and a Mulank 4 or 7 gets no table."""
+    pm = PLANETS[m]
+    if pm in NODES:
+        return None
+    groups = {"friend": [], "neutral": [], "adversary": [], "other": []}
+    for n in range(1, 10):
+        if n == m:
+            continue
+        pn = PLANETS[n]
+        lab = None if (pn in NODES or frozenset((pm, pn)) in mc.REL_CONFLICTS) else bank.REL.get(f"{pm}>{pn}")
+        groups[lab if lab in groups else "other"].append(n)
+    names = (("friend", "Tend to pair easily"), ("neutral", "Neutral"), ("adversary", "Need more attention"), ("other", "Not covered by this table"))
+    return [[nm, ", ".join(map(str, groups[k]))] for k, nm in names if groups[k]]
+
+
+def _compose_bonds(m, b, mp, bp):
+    C_, G_, M_ = bank.CB[m], bank.PG[b], bank.PM[m]
+    return {"bonds": [["i-people", "Closeness", C_[0], ""],
+                      ["i-target", "Independence", f"Your {b} {G_['bond_ask']}. Partners may sense you are both {M_['trait']} and {G_['trait']}.", ""],
+                      ["i-clock", "Communication", C_[1], ""], ["i-alert", "A pattern to watch", C_[2], " warn"]],
+            "compat": {"mulank": m, "rows": _compat_rows(m)}}
+
+
+def _compose_lucky(m, b, mp, bp):
+    planets = _uniq([mp, bp])
+    return {"numbers": _uniq([m, b]), "planets": planets, "colours": _uniq([bank.LP[p]["colour"] for p in planets]),
+            "days": _uniq([bank.LP[p]["day"] for p in planets]), "gems": _uniq([bank.LP[p]["gem"] for p in planets])}
 
 
 class ReportNotAvailable(Exception):
@@ -120,10 +179,10 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         return text
 
     Mok, Bok = _ok(reg, f"M{m}", sample) and m in bank.M, _ok(reg, f"B{b}", sample) and b in bank.B
-    auth = bank.PB.get(pk) if _ok(reg, f"PB:{pk}", sample) else None
-    cmpd = bank.CMP.get(pk) if _ok(reg, f"CMP:{pk}", sample) else None
-    lk = bank.LK.get(pk) if _ok(reg, f"LK:{pk}", sample) else None
-    psent = bank.PS.get(pk) if _ok(reg, f"PS:{pk}", sample) else None
+    auth = _compose_personality(m, b, mp, bp) if (m in bank.PM and b in bank.PG and _ok(reg, f"PM{m}", sample) and _ok(reg, f"PG{b}", sample)) else None
+    cmpd = _compose_bonds(m, b, mp, bp) if (m in bank.CB and b in bank.PG and _ok(reg, f"CB{m}", sample) and _ok(reg, f"PG{b}", sample)) else None
+    lk = _compose_lucky(m, b, mp, bp) if (mp in bank.LP and bp in bank.LP and _ok(reg, f"LK{m}", sample) and _ok(reg, f"LK{b}", sample)) else None
+    psent = bank.PS.get(pk) if _ok(reg, f"PS:{pk}", sample) else None          # optional sourced pair statement (2-1 only)
     cards = []
 
     # ---------------- card 1 cover ----------------
@@ -223,7 +282,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     items = []
     F_M, F_B = slot(row("8i"), m=m), slot(row("8j"), b=b)
     F_PS = "This report does not include a reading of how these two numbers work together for this combination."
-    ic_m = "i-moon" if mp == "Moon" else "i-compass"
+    ic_m = {"Moon": "i-moon", "Saturn": "i-saturn"}.get(mp, "i-compass")
     if Mok:
         t = slot(row("4a"), m=m, X=X).replace("{M.themes}", bank.M[m]["themes"])
         items.append(pt(ic_m, f"Mulank {m}, {X}", t))
@@ -241,6 +300,10 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     if psent and psent.get("general"):
         t4d = psent["general"]
         rec("4d", t4d)
+    elif Mok and Bok:                      # composed from the two number blocks: no new claim, no other pair's text
+        t4d = (slot(row("4d_equal" if m == b else "4d_composed"), X=X, Y=Y)
+               .replace("{M.themes}", bank.M[m]["themes"]).replace("{B.themes}", bank.B[b]["themes"]))
+        rec("4d-composed", t4d)
     else:
         t4d = fallback("F-PS", F_PS)
     items.append(pt("i-scales", "The two together", t4c + " " + t4d))
@@ -277,12 +340,12 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         pts5 = "".join(pt(i, b_, s) for i, b_, s in auth["pers"])
         cards.append(sec(f'''<div class="eyebrow">Your personality</div>
   <h2 class="head">How you come across</h2><div class="rule"></div>
-  <div class="verdict sum"><svg class="pi ic"><use href="#i-moon"/></svg><span>{esc(auth["verdict"])}</span></div>
+  <div class="verdict sum"><svg class="pi ic"><use href="#{ic_m}"/></svg><span>{esc(auth["verdict"])}</span></div>
   <div class="pts">{pts5}</div>''', "roomy") + FOOT)
         rec("5a", auth["pers"][0][2])
         sp = "".join(f'<div class="sp"><div class="spt">{a}</div><div class="spl"><span>{l}</span><span>{r}</span></div><div class="spline"><span class="spd" style="left:{p}%"></span></div></div>'
                      for a, l, r, p in auth["dials"])
-        t6a, t6c, lead6 = row("6a"), auth["dial_note"], "The dial to watch is pace."
+        t6a, t6c, lead6 = slot(row("6a"), m=m, b=b), auth["dial_note"], "The dial to watch is pace."
         if not t6c.startswith(lead6):
             raise ContentMissing("6c")
         cards.append(sec(f'''<div class="exlabel">Your personality dials</div>
@@ -432,11 +495,11 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         bpts = "".join(pt(i, b_, s, c_) for i, b_, s, c_ in cmpd["bonds"])
         cp = cmpd["compat"]
         comp = ""
-        if cp["mulank"] == m:
+        if cp["mulank"] == m and cp["rows"]:
             trs = "".join(f"<tr><td>{esc(a)}</td><td>{esc(n)}</td></tr>" for a, n in cp["rows"])
             comp = (f'<table class="tw"><tr><th>For a Mulank {m}</th><th>Numbers</th></tr>{trs}</table>\n'
-                    '  <p class="fine" style="text-align:center;margin-top:8px">Compatibility tables vary between traditional schools.</p>')
-        st10 = stamp("PENDING EXPERT REVIEW &middot; compatibility lists") if not mc.is_approved(reg.get(f"CMP:{pk}")) else ""
+                    '  <p class="fine" style="text-align:center;margin-top:8px">' + esc(row("10_compat_caption")) + '</p>')
+        st10 = stamp("DRAFT &middot; not yet approved") if not mc.is_approved(reg.get(f"CB{m}")) else ""
         cards.append(sec(f'''<div class="eyebrow">Career &amp; Relationships &middot; Bonds</div>
   <h2 class="head">How you bond</h2><div class="rule"></div>
   <div class="pts">{bpts}</div>
@@ -447,7 +510,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         cards.append(sec(f'''<div class="eyebrow">Career &amp; Relationships &middot; Bonds</div>
   <h2 class="head">How you bond</h2><div class="rule"></div>
   <div class="scard" style="margin-top:16px;width:100%"><p>{esc(t10a)}</p></div>
-  {DISC}''') + stamp("PENDING EXPERT REVIEW &middot; compatibility lists") + FOOT)
+  {DISC}''') + stamp("DRAFT &middot; not yet approved") + FOOT)
 
     # ---------------- card 11 personal years ----------------
     def py_working(py):
@@ -518,7 +581,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         t12b = f"Your next Personal Year 1 begins on 1 January {y1}."
         lb = esc(t12b)
     rec("12b", t12b)
-    cyc = auth and PYC["number"] == 1 and PYN["number"] == 2
+    cyc = False                          # the per-number model has no pair- or year-pair-specific cycle heading (approved layout allows none)
     head12 = f'<h2 class="action">{esc(auth["cycle_head"])}</h2>' if cyc else ""
     read12 = f'<div class="take"><b>The read</b>{esc(auth["cycle_read"])}</div>' if cyc else ""
     cards.append(sec(f'''<div class="exlabel">Your personal-year cycle</div>
@@ -535,11 +598,11 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     NA = "This reference is not included for your numbers in this edition."
     if lk:
         sw = "".join(f'<span style="width:18px;height:18px;border-radius:50%;background:{COLOUR_HEX[c]};border:1px solid #DCCFB2"></span>' for c in lk["colours"] if c in COLOUR_HEX)
-        numcap = "Traditionally linked: " + ", ".join(f"{n} {PLANETS[n]}" for n in lk["numbers"])
-        t13b = row("13b")
+        numcap = "Linked here: " + ", ".join(f"{n} {PLANETS[n]}" for n in lk["numbers"])
+        t13b = (slot(row("13b_one"), X=X) if len(lk["planets"]) == 1 else slot(row("13b_pair"), X=X, Y=Y))
         tiles = (f'<div class="scard"><div class="sl">Numbers</div><div class="sv" style="font-size:22px">{" &middot; ".join(map(str, lk["numbers"]))}</div><p style="font-size:11.5px;margin-top:6px">{esc(numcap)}</p></div>'
                  f'<div class="scard"><div class="sl">Colours</div><div class="sv" style="font-size:16px">{" &middot; ".join(map(esc, lk["colours"]))}</div><div style="display:flex;gap:6px;margin-top:8px">{sw}</div></div>'
-                 f'<div class="scard"><div class="sl">Days</div><div class="sv" style="font-size:18px">{" &middot; ".join(map(esc, lk["days"]))}</div><p style="font-size:11.5px;margin-top:6px">{mp}\'s day and {bp}\'s day</p></div>'
+                 f'<div class="scard"><div class="sl">Days</div><div class="sv" style="font-size:18px">{" &middot; ".join(map(esc, lk["days"]))}</div><p style="font-size:11.5px;margin-top:6px">{(mp + chr(39) + "s day") if len(lk["planets"]) == 1 else (mp + chr(39) + "s day and " + bp + chr(39) + "s day" if len(lk["days"]) == 2 else "The day linked with " + mp + " and " + bp)}</p></div>'
                  f'<div class="scard"><div class="sl">Gemstone</div><div class="sv" style="font-size:18px">{" &middot; ".join(map(esc, lk["gems"]))}</div><p style="font-size:11.5px;margin-top:6px">{esc(t13b)}</p></div>')
         rec("13b", t13b)
         howto = ('<div class="pts" style="margin-top:14px">\n    <div class="pt"><svg class="pi"><use href="#i-gem"/></svg><div class="tx"><b>How to use them lightly</b>'
@@ -550,7 +613,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         howto = ""
     t13c = row("13c")
     rec("13c", t13c)
-    st13 = stamp("PENDING EXPERT REVIEW &middot; lucky-number selection") if not mc.is_approved(reg.get(f"LK:{pk}")) else ""
+    st13 = stamp("DRAFT &middot; not yet approved") if not (mc.is_approved(reg.get(f"LK{m}")) and mc.is_approved(reg.get(f"LK{b}"))) else ""
     cards.append(sec(f'''<div class="eyebrow">Practical guidance</div>
   <h2 class="head">Your quick reference</h2><div class="rule"></div>
   <div class="sgrid">{tiles}</div>

@@ -92,20 +92,21 @@ def test_verified_registry_renders_the_full_unlabelled_report():
     assert not [t for t, _ in r["trace"] if t.startswith(("F-", "4i", "8i", "8j", "9g", "14g", "10a", "13a"))]
 
 
-def test_verified_but_undrafted_pair_never_gets_another_pairs_reading():
-    for dob in ((15, 3, 1985), (22, 11, 2000), (9, 9, 1999)):
-        with pytest.raises(R.ReportNotAvailable) as e:
-            R.build_report(*dob, "Test", today=PIN, registry=_ver(*dob))
-        assert any(k.startswith("text:") for k in e.value.missing)
+def test_approved_but_undrafted_block_never_borrows_another_numbers_reading(monkeypatch):
+    import mulank_bank as bank
+    monkeypatch.delitem(bank.PG, 5)
+    with pytest.raises(R.ReportNotAvailable) as e:
+        R.build_report(15, 3, 1985, "Test", today=PIN, registry=_ver(15, 3, 1985))              # Bhagyank 5 has no text
+    assert "text:PG5" in e.value.missing
 
 
-def test_sample_mode_for_other_pairs_never_contains_the_2_1_authored_text():
-    two_one = ("Moon steadies, Sun leads", "Attentive listening", "Warm on the surface", "Pearl", "Monday", "Tend to pair easily")
-    for dob in ((15, 3, 1985), (22, 11, 2000), (9, 9, 1999), (4, 7, 1976)):
-        h = R.build_report(*dob, "Someone Else", today=PIN, mode="sample")["html"]
-        for s in two_one:
-            assert s not in _text(h), (dob, s)
-
+def test_each_pair_gets_its_own_numbers_text_and_never_anothers():
+    a = R.build_report(29, 7, 1990, "Kiran Mehta", today=PIN, registry=_ver())["html"]                 # 2-1
+    b = R.build_report(15, 3, 1985, "Kiran Mehta", today=PIN, registry=_ver(15, 3, 1985))["html"]      # 6-5
+    ta, tb = _text(a), _text(b)
+    assert "Moon steadies, Sun leads" in ta and "Moon steadies, Sun leads" not in tb
+    assert "Venus" in tb and "Mercury" in tb
+    assert a != b
 
 def test_sample_mode_is_labelled_on_every_page_and_refused_with_live_keys(monkeypatch):
     r = R.build_report(29, 7, 1990, "Kiran Mehta", today=PIN, mode="sample")
@@ -139,7 +140,10 @@ def test_renderer_key_gate_itself_is_strict():
 def test_text_must_exist_for_the_production_ledger(monkeypatch):
     monkeypatch.setattr(mc, "REGISTRY", _ver(15, 3, 1985))
     r = mc.pair_readiness(15, 3, 1985, today=PIN)
-    assert r["eligible"] is False and any(k.startswith("text:") for k in r["missing"])
+    assert r["eligible"] is True
+    import mulank_bank as bank
+    monkeypatch.delitem(bank.PG, 5)
+    assert mc.pair_readiness(15, 3, 1985, today=PIN)["eligible"] is False
     monkeypatch.setattr(mc, "REGISTRY", _ver())
     assert mc.pair_readiness(29, 7, 1990, today=PIN)["eligible"] is True
 
@@ -329,7 +333,7 @@ def test_successful_payment_unlocks_the_report_and_pdf_and_it_can_be_downloaded_
     r = _verify(client, rz, oid)
     assert r.status_code == 200 and r.json()["ok"] is True and _paid(rid)
     page = client.get(f"/en/numerology/report/{rid}")
-    assert page.status_code == 200 and len(_cards(page.text)) == 15 and "Priya Sharma" in page.text and "Download PDF" in page.text
+    assert page.status_code == 200 and len(_cards(page.text)) == 15 and "Priya Sharma" in page.text and "Download My Full Report" in page.text
     assert "Sample report" not in page.text
     assert page.headers["cache-control"] == "no-store" and "noindex" in page.headers["x-robots-tag"]
     pdf1 = client.get(f"/en/numerology/report/{rid}.pdf")

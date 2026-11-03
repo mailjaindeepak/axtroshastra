@@ -141,18 +141,18 @@ PAID_JS = r"""
   var msg=document.getElementById('vwMsg'), ov=document.getElementById('vwOv'), ovt=document.getElementById('vwOvT');
   function say(t){ msg.textContent=t||''; msg.hidden=!t; if(t) msg.scrollIntoView({block:'nearest'}); }
   function busy(t){ if(t){ovt.textContent=t;ov.classList.add('on');}else{ov.classList.remove('on');} }
-  var dl=document.getElementById('vwDl');
+  var dls=[].slice.call(document.querySelectorAll('[data-dl]'));
   function download(){
-    dl.disabled=true; var old=dl.textContent; dl.textContent='Preparing your PDF\u2026'; say('');
+    var olds=dls.map(function(d){return d.textContent;}); dls.forEach(function(d){d.disabled=true; d.textContent='Preparing your PDF\u2026';}); say('');
     return fetch('/en/numerology/report/'+encodeURIComponent(RID)+'.pdf',{credentials:'same-origin'}).then(function(r){
       if(!r.ok) throw new Error('pdf'); return r.blob();
     }).then(function(b){
       var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='Axtroshastra-Numerology-Report.pdf';
       document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000);
     }).catch(function(){ say('Your PDF is not ready just now. Your payment is safe, so please try again in a minute. You will not be charged again.'); })
-    .then(function(){ dl.disabled=false; dl.textContent=old; });
+    .then(function(){ dls.forEach(function(d,i){d.disabled=false; d.textContent=olds[i];}); });
   }
-  if(dl) dl.addEventListener('click',download);
+  dls.forEach(function(d){ d.addEventListener('click',download); });
   var rt=document.getElementById('vwRetry');
   if(rt) rt.addEventListener('click',function(){
     busy('Preparing your report\u2026');
@@ -164,14 +164,25 @@ PAID_JS = r"""
 """
 
 
+READY_CSS = (".vw-ready{max-width:560px;margin:14px auto 18px;padding:18px 20px;border-radius:16px;background:#FFF8E8;border:1px solid #E3C77A;"
+             "text-align:center;color:#23253B;font:15px/1.5 system-ui}.vw-ready h2{margin:0 0 6px;font-size:21px}.vw-ready p{margin:0 0 14px}"
+             ".vw-big{font:700 17px system-ui;background:#B4572B;color:#fff;border:0;border-radius:100px;padding:15px 30px;cursor:pointer;min-height:48px}"
+             ".vw-big:disabled{opacity:.7}")
+
+
 def render_paid_viewer(doc_html: str, rid: str, state: dict) -> str:
-    """The customer's paid report in the browser: the 15 cards plus a PDF download button."""
+    """The customer's paid report in the browser: a 'ready now' banner with a prominent download button, then the 15 cards.
+    The page is the customer's permanent link, so the same button downloads the PDF again at any time with no second payment."""
     top = ('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
-           '<button type="button" class="vw-dl" id="vwDl">Download PDF</button></div>'
-           '<div class="vw-msg" id="vwMsg" role="status" aria-live="polite" hidden></div>')
+           '<button type="button" class="vw-dl" id="vwDl" data-dl>Download My Full Report</button></div>'
+           '<div class="vw-msg" id="vwMsg" role="status" aria-live="polite" hidden></div>'
+           '<div class="vw-ready"><h2>Your full report is ready</h2>'
+           '<p>Payment received. Your complete 15-page personalised report is below, and you can download it as a PDF now. '
+           'This page stays yours: come back to this link any time to download it again, with no second payment.</p>'
+           '<button type="button" class="vw-big" id="vwDl2" data-dl>Download My Full Report</button></div>')
     overlay = '<div class="vw-ov" id="vwOv" role="alert"><div class="vw-ov-box"><div class="vw-spin"></div><div id="vwOvT"></div></div></div>'
     js = PAID_JS.replace("__RID__", json.dumps(rid).replace("</", "<\\/"))
-    out = doc_html.replace("</style>\n</head>", VIEWER_CSS.replace("body{padding-bottom:96px}", "body{padding-bottom:24px}") + "</style>\n</head>", 1)
+    out = doc_html.replace("</style>\n</head>", (VIEWER_CSS + READY_CSS).replace("body{padding-bottom:96px}", "body{padding-bottom:24px}") + "</style>\n</head>", 1)
     out = out.replace("<body>\n", "<body>\n" + top, 1)
     return out.replace("</body>", overlay + "<script>" + js + "</script>\n</body>", 1)
 

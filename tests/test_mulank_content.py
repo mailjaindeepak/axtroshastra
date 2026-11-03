@@ -57,7 +57,7 @@ def test_each_missing_key_blocks():
 
 def test_ordered_pair_key_not_reversed():
     keys = mc.required_keys(numerology.compute_mulank(29, 7, 1990, today=TODAY))
-    assert "PS:2-1" in keys and "PS:1-2" not in keys
+    assert {"M2", "B1", "PM2", "PG1", "CB2", "LK2", "LK1"} <= set(keys) and "PS:2-1" not in keys
     assert "R:Moon>Sun" in keys and "R:Sun>Moon" in keys
 
 
@@ -135,14 +135,16 @@ def test_expert_owner_and_mixed_approval_are_reported_separately():
 
 
 def test_approved_but_incomplete_is_never_sellable(monkeypatch):
-    monkeypatch.setattr(mc, "REGISTRY", _entries(15, 3, 1985, OWNER))          # every key approved, but no drafted text for 6-5
+    import mulank_bank as bank
+    monkeypatch.setattr(mc, "REGISTRY", _entries(15, 3, 1985, OWNER))          # every key approved, but one block has no drafted text
+    monkeypatch.delitem(bank.PM, 6)
     r = mc.pair_readiness(15, 3, 1985, today=PIN)
     assert r["approved"] is True and r["complete"] is False and r["eligible"] is False
     assert r["reason_code"] == "content_incomplete" and any(k.startswith("text:") for k in r["missing"])
 
 
 def test_complete_but_not_approved_is_never_sellable():
-    r = mc.pair_readiness(29, 7, 1990, today=PIN)                                # shipped ledger: text exists for 2-1, nothing approved
+    r = mc.pair_readiness(29, 7, 1990, today=PIN)                                # shipped ledger: text exists for every pair, nothing approved
     assert r["complete"] is True and r["approved"] is False and r["eligible"] is False and r["reason_code"] == "content_not_approved"
 
 
