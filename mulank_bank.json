@@ -1,0 +1,498 @@
+{
+ "B": {
+  "1": {
+   "edge": "difficulty accepting criticism and a pull to take over",
+   "question": "Which decisions at work do you want to own, and have you said so?",
+   "strengths": "taking initiative, owning results",
+   "themes": "initiative, self-reliance and taking on leadership over time",
+   "want": "a say in the result"
+  },
+  "2": {
+   "edge": "indecision and fear of confrontation",
+   "question": "Which working partnerships have felt steady, and what made them so?",
+   "strengths": "partnership, patience",
+   "themes": "cooperation, patience and relationships",
+   "want": "a cooperative setting"
+  },
+  "3": {
+   "edge": "scattered focus and unrealistic expectations",
+   "question": "What are you learning now that could change how you work?",
+   "strengths": "learning, communicating, widening your circle",
+   "themes": "growth through learning, creativity and social influence",
+   "want": "room to learn and share ideas"
+  },
+  "4": {
+   "edge": "confusion in decisions",
+   "question": "Which change of direction at work taught you the most?",
+   "strengths": "adapting to change",
+   "themes": "an uneven path with changes of direction, and progress that may come after delay",
+   "want": "freedom to try an unusual route"
+  },
+  "5": {
+   "edge": "restlessness",
+   "question": "Where does variety help your work, and where does it scatter it?",
+   "strengths": "adapting quickly, making connections",
+   "themes": "communication, adaptability and movement",
+   "want": "variety"
+  },
+  "6": {
+   "edge": "taking on too much responsibility for others",
+   "question": "Where does responsibility for others stretch you too thin?",
+   "strengths": "responsibility, care, building relationships",
+   "themes": "relationships, duty and growth through responsibility to others",
+   "want": "work that involves caring for others"
+  },
+  "7": {
+   "edge": "feeling misunderstood and overthinking",
+   "question": "How much uninterrupted time does your work give you for thinking?",
+   "strengths": "analysis, specialisation",
+   "themes": "depth, analysis and independent work",
+   "want": "uninterrupted time to think"
+  },
+  "8": {
+   "edge": "loneliness and rigid thinking",
+   "question": "What are you building that needs more time than you would like?",
+   "strengths": "responsibility, persistence",
+   "themes": "responsibility, authority and patience",
+   "want": "clear responsibility and time to build"
+  },
+  "9": {
+   "edge": "impatience",
+   "question": "What cause would you give your energy to?",
+   "strengths": "energy, decisive action",
+   "themes": "drive and a cause to act on",
+   "want": "a cause to act on"
+  }
+ },
+ "CMP": {
+  "2-1": {
+   "bonds": [
+    [
+     "i-people",
+     "Closeness",
+     "Affectionate, loyal and attentive. You may show care through small, steady gestures more than grand ones.",
+     ""
+    ],
+    [
+     "i-target",
+     "Independence",
+     "Your 1 asks for room to decide. Partners may sense you are both nurturing and self-contained.",
+     ""
+    ],
+    [
+     "i-clock",
+     "Communication",
+     "You may hint before you state. A plain sentence now and then helps people meet you halfway.",
+     ""
+    ],
+    [
+     "i-alert",
+     "A pattern to watch",
+     "Keeping feelings unspoken until they surface all at once.",
+     " warn"
+    ]
+   ],
+   "compat": {
+    "mulank": 2,
+    "rows": [
+     [
+      "Tend to pair easily",
+      "1, 3, 6"
+     ],
+     [
+      "Neutral",
+      "5, 7, 9"
+     ],
+     [
+      "Need more attention",
+      "4, 8"
+     ]
+    ]
+   }
+  }
+ },
+ "LK": {
+  "2-1": {
+   "colours": [
+    "Cream",
+    "Gold"
+   ],
+   "days": [
+    "Monday",
+    "Sunday"
+   ],
+   "gems": [
+    "Pearl",
+    "Ruby"
+   ],
+   "numbers": [
+    1,
+    2,
+    7
+   ]
+  }
+ },
+ "M": {
+  "1": {
+   "edge": "impatience and a pull to take over",
+   "fields": [
+    "entrepreneurship",
+    "politics",
+    "management"
+   ],
+   "question": "Where do you lead because the work needs it, and where out of habit?",
+   "strengths": "starting things, taking responsibility for decisions, setting direction for a group",
+   "style": "a preference for taking the lead and owning the outcome, with more room than close direction",
+   "themes": "leadership, determination and independence",
+   "want": "room to decide and to own the outcome"
+  },
+  "2": {
+   "edge": "oversensitivity to criticism and reluctance to state a firm view",
+   "fields": [
+    "advisory and guidance roles",
+    "diplomacy",
+    "the arts"
+   ],
+   "question": "Where have you deferred, and where might stating your terms early change the conversation?",
+   "strengths": "listening in discussions, steady teamwork, helping a group reach agreement",
+   "style": "a preference for collaboration over open competition, and a habit of noticing how others are doing",
+   "themes": "cooperation, intuition and attention to people",
+   "want": "cooperative rather than competitive settings"
+  },
+  "3": {
+   "edge": "scattered focus and impatience",
+   "fields": [
+    "teaching",
+    "writing",
+    "law"
+   ],
+   "question": "Which of your many interests deserves a fixed block of time?",
+   "strengths": "communicating ideas, encouraging others, offering advice",
+   "style": "explaining, advising and sharing ideas",
+   "themes": "optimism, expressiveness and a teaching streak",
+   "want": "room to share and explain ideas"
+  },
+  "4": {
+   "edge": "rigidity and reluctance to follow advice",
+   "fields": [
+    "technology",
+    "research",
+    "engineering"
+   ],
+   "question": "When did you last change course on someone else's advice, and what did it show?",
+   "strengths": "original approaches, persistence, building solid foundations",
+   "style": "working in your own way, building methodically and questioning the standard route",
+   "themes": "independent thinking, hard work and a break from convention",
+   "want": "freedom to work in your own way"
+  },
+  "5": {
+   "edge": "restlessness and inconsistency",
+   "fields": [
+    "business",
+    "media",
+    "writing"
+   ],
+   "question": "Which task do you leave unfinished when something newer arrives?",
+   "strengths": "adapting quickly, making connections, resourcefulness",
+   "style": "variety, quick exchange of ideas and building connections",
+   "themes": "adaptability, curiosity and communication",
+   "want": "variety and room to move"
+  },
+  "6": {
+   "edge": "possessiveness and sensitivity to criticism",
+   "fields": [
+    "hospitality",
+    "fashion",
+    "the arts"
+   ],
+   "question": "How do you respond when your work is criticised, and what would you like colleagues to know?",
+   "strengths": "attention to how things look and feel, loyalty to a team, looking after people",
+   "style": "people-centred work where presentation and atmosphere matter",
+   "themes": "care, a sense of beauty and a wish for harmony",
+   "want": "people-centred settings where care for detail is valued"
+  },
+  "7": {
+   "edge": "withdrawal and difficulty explaining your thinking",
+   "fields": [
+    "research",
+    "analysis",
+    "technology"
+   ],
+   "question": "What do you know that colleagues would find useful if you shared it earlier?",
+   "strengths": "careful analysis, depth of study, noticing what others miss",
+   "style": "quiet, deep focus, often alone or in a small group",
+   "themes": "introspection, analysis and independence",
+   "want": "quiet settings that allow deep focus"
+  },
+  "8": {
+   "edge": "rigid thinking and frustration at delay",
+   "fields": [
+    "law",
+    "finance",
+    "administration"
+   ],
+   "question": "Where does your own standard leave little room for another person's pace?",
+   "strengths": "organising people and tasks, persistence through delays, a strong sense of responsibility",
+   "style": "structured work with clear responsibility, built slowly and steadily",
+   "themes": "discipline, patience and a sense of fairness",
+   "want": "clear responsibility and time to build"
+  },
+  "9": {
+   "edge": "impatience and a short temper",
+   "fields": [
+    "defence services",
+    "sports",
+    "social service"
+   ],
+   "question": "When do you act before the full picture is clear, and what might a pause have added?",
+   "strengths": "acting decisively, standing up for others, high energy",
+   "style": "active, decisive work where action is valued",
+   "themes": "courage, energy and a protective streak",
+   "want": "active settings where decisive action is valued"
+  }
+ },
+ "PB": {
+  "2-1": {
+   "advice": [
+    "ask earlier",
+    "say no sooner",
+    "finish before the next start"
+   ],
+   "cycle_head": "A beginning, then a year to build with others.",
+   "cycle_read": "Move first in the year now running, then bring others in during the year after.",
+   "dial_head": "Receptive in manner, self-directed in purpose.",
+   "dial_note": "The dial to watch is pace. A deliberate pace may be how you work; others may mistake it for hesitation.",
+   "dial_read": "A gentle presence with a quiet lead. People may follow you before you have asked them to.",
+   "dials": [
+    [
+     "Approach",
+     "Receptive",
+     "Assertive",
+     42
+    ],
+    [
+     "Pace",
+     "Deliberate",
+     "Quick",
+     38
+    ],
+    [
+     "Circle",
+     "A few close ties",
+     "A wide circle",
+     44
+    ],
+    [
+     "Direction",
+     "Follows",
+     "Leads",
+     70
+    ]
+   ],
+   "heading": "Moon steadies, Sun leads",
+   "pers": [
+    [
+     "i-people",
+     "First impressions",
+     "People may find you approachable and attentive. You may often sense the mood of a room before anyone names it."
+    ],
+    [
+     "i-target",
+     "Inner drive",
+     "Beneath the softness sits a clear wish to choose your own direction rather than wait to be told."
+    ],
+    [
+     "i-compass",
+     "How you decide",
+     "You may gather feelings and facts quietly, then decide in one clean move. To others it can look sudden."
+    ],
+    [
+     "i-shield",
+     "When attention turns to you",
+     "You may go quiet first and decisive second, a pattern that tends to read as composed."
+    ]
+   ],
+   "strongs": [
+    "Listening",
+    "direction",
+    "fresh starts"
+   ],
+   "table": [
+    [
+     "Attentive listening",
+     "Taking on other people's moods as your own",
+     [
+      88,
+      56
+     ]
+    ],
+    [
+     "Independent direction",
+     "Reluctance to ask for help",
+     [
+      82,
+      60
+     ]
+    ],
+    [
+     "Warm persuasion",
+     "Avoiding a plain, direct \"no\"",
+     null
+    ],
+    [
+     "Energy for fresh starts",
+     "Leaving the follow-through for later",
+     [
+      78,
+      52
+     ]
+    ],
+    [
+     "Loyalty to chosen people",
+     "Holding on after the fit has changed",
+     null
+    ]
+   ],
+   "tips": [
+    "absorbing others' moods",
+    "going it alone",
+    "starting more than finishing"
+   ],
+   "verdict": "Warm on the surface, self-directed underneath."
+  }
+ },
+ "PS": {
+  "2-1": {
+   "general": "One contemporary source describes a Mulank 2 with a Bhagyank 1 as an empathetic leader, noting that it can also lead to delayed decisions and accommodating others too readily.",
+   "work": "One contemporary source adds that, for this pairing, work without contact with people can underuse the Mulank 2 side, and work without creative authority can frustrate the Bhagyank 1 side."
+  }
+ },
+ "REL": {
+  "Jupiter>Mars": "friend",
+  "Jupiter>Mercury": "adversary",
+  "Jupiter>Moon": "friend",
+  "Jupiter>Saturn": "neutral",
+  "Jupiter>Sun": "friend",
+  "Jupiter>Venus": "adversary",
+  "Mars>Jupiter": "friend",
+  "Mars>Mercury": "adversary",
+  "Mars>Moon": "friend",
+  "Mars>Saturn": "neutral",
+  "Mars>Sun": "friend",
+  "Mars>Venus": "neutral",
+  "Mercury>Jupiter": "neutral",
+  "Mercury>Mars": "neutral",
+  "Mercury>Moon": "adversary",
+  "Mercury>Saturn": "neutral",
+  "Mercury>Sun": "friend",
+  "Mercury>Venus": "friend",
+  "Moon>Jupiter": "neutral",
+  "Moon>Mars": "neutral",
+  "Moon>Mercury": "friend",
+  "Moon>Saturn": "neutral",
+  "Moon>Sun": "friend",
+  "Moon>Venus": "neutral",
+  "Saturn>Jupiter": "neutral",
+  "Saturn>Mars": "adversary",
+  "Saturn>Mercury": "friend",
+  "Saturn>Moon": "adversary",
+  "Saturn>Sun": "adversary",
+  "Saturn>Venus": "friend",
+  "Sun>Jupiter": "friend",
+  "Sun>Mars": "friend",
+  "Sun>Mercury": "neutral",
+  "Sun>Moon": "friend",
+  "Sun>Saturn": "adversary",
+  "Sun>Venus": "adversary",
+  "Venus>Jupiter": "neutral",
+  "Venus>Mars": "neutral",
+  "Venus>Mercury": "friend",
+  "Venus>Moon": "adversary",
+  "Venus>Saturn": "friend",
+  "Venus>Sun": "adversary"
+ },
+ "Y": {
+  "1": {
+   "continue_": "Which habit that already works for you could you carry into a new beginning?",
+   "explore": "Which beginning have you been weighing? Contemporary writing links Year 1 with taking its first step.",
+   "often": "Beginnings and visible choices",
+   "pace": "Initiate",
+   "theme": "A fresh start"
+  },
+  "2": {
+   "explore": "Who might you invite into something you currently carry alone?",
+   "often": "Patience, listening, joining forces",
+   "pace": "Cooperate",
+   "reconsider": "Where are you pushing for a result? Contemporary writing links Year 2 with patience over speed.",
+   "theme": "Partnership"
+  }
+ },
+ "rows": {
+  "10a": "NO CHANGE",
+  "11a": "Often linked with",
+  "11b": "Your Personal Year {n1} matches your {Mulank, Bhagyank, or Mulank and Bhagyank}. Your Personal Year {n2} matches your {...}.",
+  "11c": "Year themes follow contemporary numerology writing.",
+  "11d": "unchanged",
+  "12a": "(deleted; the page 11 table carries the themes; \"weighing a beginning\" now appears in 14c)",
+  "12b": "unchanged",
+  "13a": "NO CHANGE. Behaviour when the lookup is undefined (a Mulank or Bhagyank of 4 or 7, or any number whose row is not reviewed): tile shows \"This reference is not included for your numbers in this edition.\"",
+  "13b": "Linked with the Moon and the Sun in the Indian planetary scheme",
+  "13c": "These are associations from contemporary writing, offered for interest and reflection. None is needed, and any gemstone is a matter of personal choice.",
+  "14a": "One question for each of your two years. / Prompts drawn from your Personal Years 1 and 2",
+  "14b": "EXPLORE. Which beginning have you been weighing? Contemporary writing links Year 1 with taking its first step.",
+  "14c": "CONTINUE. Which habit that already works for you could you carry into a new beginning?",
+  "14d": "EXPLORE. Who might you invite into something you currently carry alone?",
+  "14e": "RECONSIDER. Where are you pushing for a result? Contemporary writing links Year 2 with patience over speed.",
+  "14f": "(deleted; repeats card 12)",
+  "14g": "This report does not include prompts for Personal Year {n} in this edition.",
+  "15a": "the readings follow contemporary numerology writing.",
+  "15b": "Numerology is a belief system, shared here for reflection. It is not scientific prediction.",
+  "15c": "www.axtroshastra.com . Indian numerology",
+  "15d": "Interpretations draw on contemporary Indian numerology writing. Planet links follow the scheme used in Indian numerology (1 Sun, 2 Moon, 3 Jupiter, 4 Rahu, 5 Mercury, 6 Venus, 7 Ketu, 8 Saturn, 9 Mars); some writers assign 4 and 7 differently.",
+  "1a": "INDIAN NUMEROLOGY",
+  "2a": "Your date of birth carries two numbers that Indian numerology treats as a signature: the Mulank, from your birth day, and the Bhagyank, from the whole date.",
+  "2b": "Everything here follows contemporary numerology writing and is offered for reflection. It is not scientific prediction and not a guarantee of any event.",
+  "2c": "Your numbers come from your date of birth alone, with no birth time or place. A Kundli reading is a separate kind of reading.",
+  "3a": "Some numerology writers retain 11 and 22 as special numbers; this report reduces them to single digits, so other readings may differ.",
+  "3b": "Contemporary Indian numerology writing reads Mulank as how you go about things and Bhagyank as your direction. Neither is ranked here.",
+  "3c": "Yours: Mulank {m} (how), Bhagyank {b} (direction).",
+  "4a": "Contemporary Indian numerology writing links Mulank {m}, {X}, with {M.themes}.",
+  "4b": "Contemporary Indian numerology writing reads Bhagyank {b}, {Y}, as a direction toward {B.themes}.",
+  "4c": "Read together, Mulank {m} sets how you go about things and Bhagyank {b} sets where you are headed.",
+  "4d": "PS.general text, stored per pair. 2-1 entry: One contemporary source describes a Mulank 2 with a Bhagyank 1 as an empathetic leader, noting that it can also lead to delayed decisions and accommodating others too readily.",
+  "4e": "Heading: Planetary links. Text: In the natural-friendship table used in Jyotish, {X} counts {Y} as {labXY}, and {Y} counts {X} as {labYX}.",
+  "4f": "The table is not mirrored, so both directions are given.",
+  "4g": "This report states the table, not a reading drawn from it.",
+  "4h": "Your Mulank and Bhagyank are both {m}, linked with {X}.",
+  "4i": "This report does not state a planetary friendship for this pair, because published tables differ.",
+  "4j": "The \"Moon sets / Sun sets\" idea is stated once, in 4c, as a rule-built sentence; see 6b and 8k",
+  "5a": "You may often sense the mood of a room before anyone names it.",
+  "6a": "An illustrative reading of a 2 and 1 pairing on four dials",
+  "6b": "(deleted; repeats 4c)",
+  "6c": "The dial to watch is pace. A deliberate pace may be how you work; others may mistake it for hesitation.",
+  "7a": "These are not flaws. Each growth area is the other face of a strength; left unmanaged, the same trait tips toward {tip1}, {tip2} and {tip3}.",
+  "7b": "Bars: strength on the left, its growth edge on the right.",
+  "7c": "{strong1}, {strong2} and {strong3} are your main assets. Keep them as they are, and grow the edge beside each: {advice1}, {advice2}, {advice3}.",
+  "7d": "Bars move onto rows 1, 2, 4 of the table; unique items land in 7a, 7b, 7c (mapping in CHANGE-SUMMARY)",
+  "8a": "Contemporary Indian numerology writing reads Mulank as how you go about work and Bhagyank as the direction your working life takes. The points below are prompts for reflection, not guidance on what to do.",
+  "8b": "Working style, Mulank {m}, {X}. In work terms, writers describe Mulank {m} as {M.style}.",
+  "8c": "Strengths writers note at work. For Mulank {m}: {M.strengths}.",
+  "8d": "For Bhagyank {b}: {B.strengths}.",
+  "8e": "Bringing the two together. Your Mulank {m} may look for {M.want}.",
+  "8f": "Your Bhagyank {b} may look for {B.want}.",
+  "8g": "Both clauses shown: Where does your current work already offer each of these, and where does it not? One clause shown: Where does your current work already offer this, and where does it not?",
+  "8h": "PS.work text, stored per pair. 2-1 entry: One contemporary source adds that, for this pairing, work without contact with people can underuse the Mulank 2 side, and work without creative authority can frustrate the Bhagyank 1 side.",
+  "8i": "This report does not include a work reading for Mulank {m} in this edition.",
+  "8j": "This report does not include a work reading for Bhagyank {b} in this edition.",
+  "8k": "(deleted; the three pair-specific lines have no source support beyond S10, which 4d and 8h now carry; \"small trusted group\" is dropped for lack of a source; the Mulank 2 question 9d keeps the \"deferring\" idea)",
+  "9a": "A point to watch. Writers mention {M.edge} with Mulank {m}.",
+  "9b": "Writers mention {B.edge} with Bhagyank {b}.",
+  "9c": "These are patterns to notice, not verdicts.",
+  "9d": "Questions to reflect on. {M.question}",
+  "9e": "{B.question}",
+  "9f": "Fields linked with Mulank {m}. Contemporary Indian numerology writing links Mulank {m} with {M.fields}. These are interpretations from that writing, not career recommendations. Treat them as questions to explore, not advice.",
+  "9g": "This report does not include a field list for Mulank {m} in this edition.",
+  "D": "Numerology is a belief system, not a science. Readings follow contemporary writing, for reflection only."
+ },
+ "version": "mulank-bank-0"
+}

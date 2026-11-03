@@ -119,3 +119,70 @@ def render_viewer(doc_html: str, rid: str, eligible: bool) -> str:
     out = doc_html.replace("</style>\n</head>", VIEWER_CSS + "</style>\n</head>", 1)
     out = out.replace("<body>\n", "<body>\n" + top, 1)
     return out.replace("</body>", bar + overlay + "<script>" + js + "</script>\n</body>", 1)
+
+
+# ----------------------------------------------------------------------- paid report page
+PAID_JS = r"""
+(function(){
+  var RID=__RID__;
+  var msg=document.getElementById('vwMsg'), ov=document.getElementById('vwOv'), ovt=document.getElementById('vwOvT');
+  function say(t){ msg.textContent=t||''; msg.hidden=!t; if(t) msg.scrollIntoView({block:'nearest'}); }
+  function busy(t){ if(t){ovt.textContent=t;ov.classList.add('on');}else{ov.classList.remove('on');} }
+  var dl=document.getElementById('vwDl');
+  function download(){
+    dl.disabled=true; var old=dl.textContent; dl.textContent='Preparing your PDF\u2026'; say('');
+    return fetch('/en/numerology/report/'+encodeURIComponent(RID)+'.pdf',{credentials:'same-origin'}).then(function(r){
+      if(!r.ok) throw new Error('pdf'); return r.blob();
+    }).then(function(b){
+      var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='Axtroshastra-Numerology-Report.pdf';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000);
+    }).catch(function(){ say('Your PDF is not ready just now. Your payment is safe, so please try again in a minute. You will not be charged again.'); })
+    .then(function(){ dl.disabled=false; dl.textContent=old; });
+  }
+  if(dl) dl.addEventListener('click',download);
+  var rt=document.getElementById('vwRetry');
+  if(rt) rt.addEventListener('click',function(){
+    busy('Preparing your report\u2026');
+    fetch('/api/mulank/report/'+encodeURIComponent(RID)+'/retry',{method:'POST',credentials:'same-origin'}).then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(d){ if(d && d.status==='ready'){ location.reload(); } else { busy(false); say('Your report is still being prepared. Your payment is safe. Please try again in a few minutes. You will not be charged again.'); } })
+    .catch(function(){ busy(false); say('We could not reach the server. Please try again.'); });
+  });
+})();
+"""
+
+
+def render_paid_viewer(doc_html: str, rid: str, state: dict) -> str:
+    """The customer's paid report in the browser: the 15 cards plus a PDF download button."""
+    top = ('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
+           '<button type="button" class="vw-dl" id="vwDl">Download PDF</button></div>'
+           '<div class="vw-msg" id="vwMsg" role="status" aria-live="polite" hidden></div>')
+    overlay = '<div class="vw-ov" id="vwOv" role="alert"><div class="vw-ov-box"><div class="vw-spin"></div><div id="vwOvT"></div></div></div>'
+    js = PAID_JS.replace("__RID__", json.dumps(rid).replace("</", "<\\/"))
+    out = doc_html.replace("</style>\n</head>", VIEWER_CSS.replace("body{padding-bottom:96px}", "body{padding-bottom:24px}") + "</style>\n</head>", 1)
+    out = out.replace("<body>\n", "<body>\n" + top, 1)
+    return out.replace("</body>", overlay + "<script>" + js + "</script>\n</body>", 1)
+
+
+def render_pending_page(rid: str, state: dict) -> str:
+    """Paid, but the report could not be produced yet. Honest, safe, and retryable (never a second charge)."""
+    failed = (state or {}).get("status") == "failed"
+    msg = ("We hit a problem preparing your report. Your payment is safe and you will not be charged again. "
+           "You can try again below, and we will keep trying." if failed else
+           "Your payment is confirmed and your complete numerology report is being prepared.")
+    page = ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            "<meta name=robots content='noindex,nofollow'><meta name=referrer content=no-referrer><title>Your report</title>"
+            "<style>body{font:16px/1.55 system-ui;background:#FAF6ED;color:#23253B;margin:0}main{max-width:520px;margin:0 auto;padding:48px 22px}"
+            "h1{font-size:26px}button{font:700 15px system-ui;background:#B4572B;color:#fff;border:0;border-radius:100px;padding:13px 22px;cursor:pointer}"
+            ".vw-msg{margin:14px 0;padding:11px 14px;border-radius:12px;background:#FFF3E8;border:1px solid #E9C9AE;color:#6B2F12}.vw-msg[hidden]{display:none}"
+            ".vw-ov{position:fixed;inset:0;background:rgba(27,29,42,.55);display:none;align-items:center;justify-content:center}.vw-ov.on{display:flex}"
+            ".vw-ov-box{background:#FAF5ED;border-radius:16px;padding:22px 26px;font-weight:600}.vw-spin{display:none}</style></head><body><main>"
+            f"<h1>Payment received</h1><p>{_esc(msg)}</p><p style='color:#6B6D82;font-size:14px'>Please do not pay again. Keep this page address safe: it is your private link to the report.</p>"
+            "<div class=vw-msg id=vwMsg role=status hidden></div><button type=button id=vwRetry>Prepare my report</button></main>"
+            "<div class=vw-ov id=vwOv role=alert><div class=vw-ov-box><div class=vw-spin></div><div id=vwOvT></div></div></div>"
+            "<script>" + PAID_JS.replace("__RID__", json.dumps(rid).replace("</", "<\\/")) + "</script></body></html>")
+    return page
+
+
+def _esc(t):
+    import html
+    return html.escape(t, quote=True)

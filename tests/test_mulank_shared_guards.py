@@ -78,7 +78,7 @@ def rz(monkeypatch):
 
 @pytest.fixture
 def eligible(monkeypatch):
-    res = numerology.compute_mulank(29, 7, 1990)
+    res = numerology.compute_mulank(29, 7, 1990, today=mc._today())
     monkeypatch.setattr(mc, "REGISTRY", {k: mc.Entry(mc.VERIFIED, "Test Reviewer", "2026-11-03")
                                          for k in mc.required_keys(res)})
 
@@ -246,3 +246,10 @@ def test_guard_helper_is_exact():
     for p in ("marriage", "milan", "iq_test", "career_intelligence", "diwali", "vyapar", "", None):
         assert api._is_mulank_report({"product": p}) is False
     assert api._is_mulank_report(None) is False and api._is_mulank_report({}) is False
+
+
+@pytest.fixture(autouse=True)
+def _pin_today(monkeypatch):
+    """Personal years depend on the calendar; pin it so these tests do not age."""
+    from datetime import date
+    monkeypatch.setattr(mc, "_today", lambda: date(2026, 11, 3))

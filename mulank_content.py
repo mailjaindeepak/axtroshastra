@@ -8,6 +8,7 @@ Tests pass their own registry to `pair_readiness`.
 """
 from dataclasses import dataclass
 
+import mulank_bank
 import numerology
 
 VERIFIED = "verified"
@@ -28,7 +29,7 @@ class Entry:
 
 
 # Key shapes: M<n>, B<n>, Y<n>, PS:<m>-<b>, PB:<m>-<b> (cards 5-7 pair bank),
-# CMP:<m>-<b> (card 10), LK:<n> (card 13), R:<Planet>><Planet>.
+# CMP:<m>-<b> (card 10), LK:<m>-<b> (card 13), R:<Planet>><Planet>.
 # Only entries that exist as drafted text are listed; absence means missing.
 REGISTRY = {
     "M2": Entry(SAMPLE_OK),
@@ -37,7 +38,20 @@ REGISTRY = {
     "Y1": Entry(SAMPLE_OK),
     "Y2": Entry(SAMPLE_OK),
     "R:Moon>Sun": Entry(SAMPLE_OK),
+    "R:Sun>Moon": Entry(SAMPLE_OK),
+    "PB:2-1": Entry(SAMPLE_OK),
+    "CMP:2-1": Entry(SAMPLE_OK),
+    "LK:2-1": Entry(SAMPLE_OK),
 }
+
+
+def _today():
+    """Reference date for personal years; one place so tests can pin it."""
+    from datetime import date
+    return date.today()
+
+
+has_text = mulank_bank.has_text          # tests may replace this; production never does
 
 
 def is_verified(entry) -> bool:
@@ -58,7 +72,7 @@ def required_keys(result: dict) -> list:
     pair = f"{m}-{b}"
     py = result["personal_year"]
     keys = [f"M{m}", f"B{b}", f"PS:{pair}", f"PB:{pair}", f"CMP:{pair}",
-            f"LK:{m}", f"LK:{b}",
+            f"LK:{pair}",
             f"Y{py['current']['number']}", f"Y{py['next']['number']}"]
     if pm != pb:
         keys += [f"R:{pm}>{pb}", f"R:{pb}>{pm}"]
@@ -72,8 +86,11 @@ def pair_readiness(day, month, year, today=None, registry=None) -> dict:
     Raises NumerologyInputError for an invalid DOB.
     """
     reg = REGISTRY if registry is None else registry
+    today = today or _today()
     result = numerology.compute_mulank(day, month, year, today=today)
     missing = [k for k in required_keys(result) if not is_verified(reg.get(k))]
+    if registry is None:     # production ledger: verified is not enough, the drafted text must exist too
+        missing += ["text:" + k for k in required_keys(result) if is_verified(reg.get(k)) and not has_text(k)]
     return {
         "eligible": not missing,
         "reason_code": "ok" if not missing else "content_not_verified",

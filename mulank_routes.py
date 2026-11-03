@@ -21,9 +21,12 @@ from pydantic import BaseModel
 import db_v2
 import mulank_content
 import mulank_form
+import mulank_fulfilment
 import mulank_payment as mp
+import mulank_recovery
 import numerology
 import numerology_preview
+import numerology_report
 import numerology_viewer
 import payments
 import ratelimit
@@ -33,13 +36,7 @@ logger = logging.getLogger("axtroshastra")
 router = APIRouter()
 
 
-def _fulfil(rid: str, background: BackgroundTasks) -> None:
-    """Seam for fulfilment (PDF + website access + optional WhatsApp). The paid-report
-    renderer is a later piece, so for now we only log; entitlement is already recorded."""
-    logger.info("[mulank] paid, fulfilment pending renderer rid=%s", rid)
-
-
-FULFIL = _fulfil
+FULFIL = mulank_fulfilment.schedule      # renders and caches the PDF after verified payment; no WhatsApp is sent
 
 
 class MulankOrderIn(BaseModel):
@@ -293,6 +290,8 @@ def mulank_preview(rid: str, request: Request):
     rec = _load(rid)
     if not rec:
         return _not_found()
+    if not rec["paid"] and _recover_one(rid, request):       # a payment that was captured but never confirmed
+        rec = _load(rid) or rec
     if rec["paid"]:
         return _private(RedirectResponse(f"/en/numerology/report/{rid}", status_code=302))
     try:
@@ -308,25 +307,83 @@ def mulank_preview(rid: str, request: Request):
     return _private(HTMLResponse(page))
 
 
+def _recover_one(rid: str, request: Request) -> bool:
+    """Settle a captured-but-unconfirmed payment for this report (same verification as the dedicated routes)."""
+    import api
+    try:
+        _limit(request, "recover", 12, 12)
+        client = api.rzp_client() if (api.RZP_KEY and api.RZP_SECRET) else None
+    except HTTPException:
+        return False
+    except Exception:
+        return False
+    if client is None:
+        return False
+    res = mulank_recovery.recover(client, limit=5, rid=rid)
+    for paid_rid in res["paid"]:
+        FULFIL(paid_rid, None)
+    return res["recovered"] > 0
+
+
+@router.get("/en/numerology/report/{rid}.pdf", include_in_schema=False)
+def mulank_report_pdf(rid: str, request: Request):
+    """The paid PDF. Only for a paid report; anything else looks exactly like 'no such page'."""
+    _limit(request, "pdf", 8, 8)
+    rec = _load(rid)
+    if not rec or not rec["paid"]:
+        return _not_found()
+    import pdfgen
+    data = pdfgen.get_cached(rid)
+    if not data:
+        mulank_fulfilment.run_fulfilment(rid)                   # retry in place; idempotent, never charges
+        data = pdfgen.get_cached(rid)
+    if not data:
+        return _private(Response(json.dumps({"detail": "pdf_unavailable"}), status_code=503, media_type="application/json"))
+    resp = Response(data, media_type="application/pdf")
+    resp.headers["Content-Disposition"] = 'attachment; filename="Axtroshastra-Numerology-Report.pdf"'
+    return _private(resp)
+
+
 @router.get("/en/numerology/report/{rid}", include_in_schema=False)
-def mulank_report_status(rid: str, request: Request):
-    """After payment. The complete report renderer is a later piece, so this page only confirms the
-    payment and says the report is being prepared; the entitlement itself is already recorded."""
+def mulank_report(rid: str, request: Request):
+    """The customer's paid report. Unpaid reports go back to the preview; nothing paid is ever shown otherwise."""
     _limit(request, "view", 60, 60)
     rec = _load(rid)
     if not rec:
         return _not_found()
     if not rec["paid"]:
         return _private(RedirectResponse(f"/en/numerology/preview/{rid}", status_code=302))
-    body = ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            "<meta name=robots content='noindex,nofollow'><meta name=referrer content=no-referrer><title>Payment received</title></head>"
-            "<body style='font:16px/1.55 system-ui;background:#FAF6ED;color:#23253B;margin:0'><main style='max-width:520px;margin:0 auto;padding:48px 22px'>"
-            "<h1 style='font-size:26px'>Payment received</h1>"
-            "<p>Thank you. Your payment is confirmed and your complete numerology report is being prepared. "
-            "Keep this page address safe: it is your private link to the report.</p>"
-            "<p style='color:#6B6D82;font-size:14px'>Please do not pay again.</p>"
-            f"<p><a href='/en/numerology/preview/{_html.escape(rid)}'>Back to your preview</a></p></main></body></html>")
-    return _private(HTMLResponse(body))
+    state = mulank_fulfilment.get_state(rec["payload"])
+    try:
+        doc = mulank_fulfilment.render(rec)["html"]
+    except (numerology_report.ReportNotAvailable, numerology_report.ContentMissing):
+        state = mulank_fulfilment.run_fulfilment(rid)            # records content_unavailable; nothing unverified is shown
+        return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, state)))
+    except Exception as e:
+        logger.error("[mulank] report render failed: %s", e.__class__.__name__)
+        return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, {"status": "failed"}), status_code=503))
+    if state.get("status") != mulank_fulfilment.READY:
+        mulank_fulfilment.run_fulfilment(rid)                    # opportunistic retry on view; idempotent
+    return _private(HTMLResponse(numerology_viewer.render_paid_viewer(doc, rid, state)))
+
+
+@router.post("/api/mulank/report/{rid}/retry")
+def mulank_report_retry(rid: str, request: Request):
+    """Try fulfilment again for a PAID report. Idempotent; it can never charge or fulfil twice."""
+    _limit(request, "retry", 6, 6)
+    rec = _load(rid)
+    if not rec or not rec["paid"]:
+        raise HTTPException(404, "not found")
+    state = mulank_fulfilment.run_fulfilment(rid)
+    return _private(Response(json.dumps({"status": state.get("status")}), media_type="application/json"))
+
+
+@router.on_event("startup")
+def _start_mulank_recovery():
+    """Background recovery sweep for Mulank payments (a no-op unless Razorpay is configured)."""
+    import api
+    if api.RZP_KEY and api.RZP_SECRET:
+        mulank_recovery.start_loop(lambda: api.rzp_client(), mulank_fulfilment.schedule)
 
 
 @router.get("/en/numerology", include_in_schema=False)

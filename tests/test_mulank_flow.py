@@ -45,7 +45,7 @@ def _report_row(rid):
 
 @pytest.fixture
 def eligible(monkeypatch):
-    res = numerology.compute_mulank(29, 7, 1990)
+    res = numerology.compute_mulank(29, 7, 1990, today=mc._today())
     monkeypatch.setattr(mc, "REGISTRY", {k: mc.Entry(mc.VERIFIED, "Test Reviewer", "2026-11-03")
                                          for k in mc.required_keys(res)})
 
@@ -369,3 +369,10 @@ def test_landing_has_no_name_dob_or_phone_in_urls():
 def test_existing_pages_and_products_unaffected(client):
     assert client.get("/en/iq-test").status_code == 200
     assert client.get("/en/career-intelligence").status_code == 200
+
+
+@pytest.fixture(autouse=True)
+def _pin_today(monkeypatch):
+    """Personal years depend on the calendar; pin it so these tests do not age."""
+    from datetime import date
+    monkeypatch.setattr(mc, "_today", lambda: date(2026, 11, 3))

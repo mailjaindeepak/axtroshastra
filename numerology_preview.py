@@ -365,6 +365,7 @@ def build_preview(day, month, year, name, *, today=None, cta_url=None,
     checkout route (supplied by the caller); it is never built or guessed here.
     Returns {"html", "eligible", "pair_key", "content_version", "pages"}."""
     nm = clean_name(name)
+    today = today or mulank_content._today()
     E = numerology.compute_mulank(day, month, year, today=today)
     ready = mulank_content.pair_readiness(day, month, year, today=today, registry=registry)
     if ready["eligible"]:

@@ -74,7 +74,7 @@ def eligible(monkeypatch):
     from datetime import date
     import numerology
     d = date.fromisoformat(DOB)
-    res = numerology.compute_mulank(d.day, d.month, d.year)
+    res = numerology.compute_mulank(d.day, d.month, d.year, today=mc._today())
     reg = {k: mc.Entry(mc.VERIFIED, "Test Reviewer", "2026-11-03") for k in mc.required_keys(res)}
     monkeypatch.setattr(mc, "REGISTRY", reg)
 
@@ -137,7 +137,7 @@ def test_order_refused_for_every_pair_today_even_in_demo_mode(client, rz):
 
 def test_sample_ok_content_cannot_open_checkout(client, rz, monkeypatch):
     import numerology
-    res = numerology.compute_mulank(29, 7, 1990)
+    res = numerology.compute_mulank(29, 7, 1990, today=mc._today())
     monkeypatch.setattr(mc, "REGISTRY", {k: mc.Entry(mc.SAMPLE_OK, "X", "2026-11-03")
                                          for k in mc.required_keys(res)})
     assert _order(client, _report()).status_code == 409 and rz.orders == []
@@ -320,3 +320,9 @@ def test_check_entity_ok_and_signature_helpers():
     assert not mp.signature_ok("", "o", "p", "x") and not mp.signature_ok("s", "o", "p", "")
     assert not mp.webhook_signature_ok("", b"x", "y")
 
+
+@pytest.fixture(autouse=True)
+def _pin_today(monkeypatch):
+    """Personal years depend on the calendar; pin it so these tests do not age."""
+    from datetime import date
+    monkeypatch.setattr(mc, "_today", lambda: date(2026, 11, 3))
