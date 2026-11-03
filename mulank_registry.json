@@ -1,0 +1,15 @@
+{
+  "_about": "Approval ledger for Mulank content. An entry lets content into a PRODUCTION report only if its status is `verified` (external expert: reviewed_by + reviewed_on) or `owner_approved` (editor + approved_by + approved_on, all named people and a date). sample_ok / needs_review / pending never count. Text lives in mulank_bank.json; a pair is sold only when every key it needs is approved AND has text. Change this file only through a reviewed PR.",
+  "entries": {
+    "M2": {"status": "sample_ok"},
+    "B1": {"status": "sample_ok"},
+    "PS:2-1": {"status": "sample_ok"},
+    "Y1": {"status": "sample_ok"},
+    "Y2": {"status": "sample_ok"},
+    "R:Moon>Sun": {"status": "sample_ok"},
+    "R:Sun>Moon": {"status": "sample_ok"},
+    "PB:2-1": {"status": "sample_ok"},
+    "CMP:2-1": {"status": "sample_ok"},
+    "LK:2-1": {"status": "sample_ok"}
+  }
+}

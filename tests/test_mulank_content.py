@@ -22,7 +22,7 @@ def test_all_pairs_ineligible_with_shipped_registry():
             for d in range(1, 29):
                 r = mc.pair_readiness(d, m, y, today=TODAY)
                 assert r["eligible"] is False
-                assert r["reason_code"] == "content_not_verified"
+                assert r["reason_code"] in ("content_incomplete", "content_not_approved")
                 pairs.add(r["pair_key"])
     assert len(pairs) == 81
 
@@ -94,5 +94,91 @@ def test_no_verified_entry_without_reviewer_in_shipped_registry():
 def test_gap_log_line_has_no_pii():
     r = mc.pair_readiness(29, 7, 1990, today=TODAY)
     line = mc.gap_log_line(r)
-    assert line.startswith("[mulank] ineligible pair=2-1 missing=")
+    assert line.startswith("[mulank] ineligible pair=2-1 reason=") and " missing=" in line
     assert "1990" not in line and "29" not in line.split("missing=")[0]
+
+# ------------------------------------------------------------------ expert verification vs owner approval vs completeness
+PIN = date(2026, 11, 3)
+
+
+def _entries(d, m, y, mk):
+    E = numerology.compute_mulank(d, m, y, today=PIN)
+    return {k: mk() for k in mc.required_keys(E)}
+
+
+EXPERT = lambda: mc.Entry(mc.VERIFIED, "Expert Name", "2026-11-03")
+OWNER = lambda: mc.Entry(mc.OWNER_APPROVED, editor="Editor Name", approved_by="Owner Name", approved_on="2026-11-03")
+
+
+def test_owner_approval_needs_editor_approver_and_date():
+    assert mc.is_owner_approved(OWNER()) and mc.is_approved(OWNER()) and not mc.is_expert_verified(OWNER())
+    for blank in ("editor", "approved_by", "approved_on"):
+        kw = dict(editor="E", approved_by="O", approved_on="2026-11-03")
+        kw[blank] = "  "
+        e = mc.Entry(mc.OWNER_APPROVED, **kw)
+        assert not mc.is_approved(e), blank
+
+
+def test_sample_needs_review_and_pending_never_count_even_with_names_filled_in():
+    for st in (mc.SAMPLE_OK, mc.NEEDS_REVIEW, mc.PENDING):
+        e = mc.Entry(st, "Expert", "2026-11-03", approved_by="Owner", approved_on="2026-11-03", editor="Editor")
+        assert not mc.is_approved(e), st
+
+
+def test_expert_owner_and_mixed_approval_are_reported_separately():
+    for mk, basis in ((EXPERT, "expert"), (OWNER, "owner")):
+        r = mc.pair_readiness(29, 7, 1990, today=PIN, registry=_entries(29, 7, 1990, mk))
+        assert r["eligible"] and r["approved"] and r["approval_basis"] == basis and r["reason_code"] == "ok"
+    reg = _entries(29, 7, 1990, EXPERT)
+    reg["M2"] = OWNER()
+    assert mc.pair_readiness(29, 7, 1990, today=PIN, registry=reg)["approval_basis"] == "mixed"
+
+
+def test_approved_but_incomplete_is_never_sellable(monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", _entries(15, 3, 1985, OWNER))          # every key approved, but no drafted text for 6-5
+    r = mc.pair_readiness(15, 3, 1985, today=PIN)
+    assert r["approved"] is True and r["complete"] is False and r["eligible"] is False
+    assert r["reason_code"] == "content_incomplete" and any(k.startswith("text:") for k in r["missing"])
+
+
+def test_complete_but_not_approved_is_never_sellable():
+    r = mc.pair_readiness(29, 7, 1990, today=PIN)                                # shipped ledger: text exists for 2-1, nothing approved
+    assert r["complete"] is True and r["approved"] is False and r["eligible"] is False and r["reason_code"] == "content_not_approved"
+
+
+def test_approved_and_complete_is_sellable_for_pair_2_1(monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", _entries(29, 7, 1990, OWNER))
+    r = mc.pair_readiness(29, 7, 1990, today=PIN)
+    assert r["eligible"] and r["complete"] and r["approval_basis"] == "owner" and r["missing"] == []
+
+
+def test_sale_open_follows_eligibility_not_a_single_approval(monkeypatch):
+    assert mc.sale_open(today=PIN) is False
+    monkeypatch.setattr(mc, "REGISTRY", {"M2": OWNER()})
+    assert mc.sale_open(today=PIN) is False                                      # one approved entry does not open sale
+    monkeypatch.setattr(mc, "REGISTRY", _entries(29, 7, 1990, OWNER))
+    assert mc.sale_open(today=PIN) is True
+
+
+def test_relation_rule_nodes_and_conflict_use_the_approved_statement_4i():
+    assert mc.relation_keys("Rahu", "Moon") == [] and mc.relation_keys("Sun", "Ketu") == []
+    assert mc.relation_keys("Venus", "Mars") == [] and mc.relation_keys("Mars", "Venus") == []
+    assert mc.relation_keys("Moon", "Sun") == ["R:Moon>Sun", "R:Sun>Moon"] and mc.relation_keys("Moon", "Moon") == []
+
+
+def test_ledger_is_strict_and_the_shipped_one_approves_nothing(tmp_path):
+    import json
+    bad = tmp_path / "x.json"
+    bad.write_text(json.dumps({"entries": {"M2": {"status": "approved-ish"}}}))
+    with pytest.raises(ValueError):
+        mc.load_ledger(str(bad))
+    bad.write_text(json.dumps({"entries": {"M10": {"status": "pending"}}}))
+    with pytest.raises(ValueError):
+        mc.load_ledger(str(bad))
+    assert not [k for k, e in mc.load_ledger().items() if mc.is_approved(e)]
+
+
+def test_every_approved_ledger_entry_has_drafted_text():
+    for k, e in mc.REGISTRY.items():
+        if mc.is_approved(e):
+            assert mc.has_text(k), k

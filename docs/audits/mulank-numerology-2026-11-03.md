@@ -12,13 +12,20 @@ Specs: `docs/numerology-report-spec.md` and `docs/numerology-report-spec-v2-amen
 - **Mutation spot-checks:** removing the paid check on the PDF route and the amount check on settle are both caught by tests. Two other mutations survived for good reasons (a redundant second gate; a redundant status pre-filter).
 - **Browser run (local, stubbed Razorpay, test-only verified fixture):** landing, form, preview, CTA, stub checkout, paid report and PDF, on a 390px phone and a 1280px desktop; no page errors, no horizontal overflow.
 
+## Change of plan (4 Nov 2026): owner approval instead of external verification
+- `mulank_content.py` now separates **approved** (status `verified` = external expert, or `owner_approved` = named editor + named owner + date) from **complete** (drafted text exists in `mulank_bank.json`). A pair is eligible only if both hold; the readiness result reports `approved`, `complete`, `approval_basis` and a precise `reason_code` (`content_incomplete` / `content_not_approved` / `ok`).
+- The approval ledger is `mulank_registry.json` (data, reviewed through PRs, strict loader). `sample_ok`, `needs_review` and `pending` never count even if names are filled in.
+- Rahu/Ketu pairs and the conflicted Venus/Mars pair use the approved line 4i ("published tables differ") and need no relation-table cell.
+- `mulank_qc.py`: bank lint (flagged vocabulary, placeholders, empty fields, paragraphs reused across pairs) and a render-time guard that refuses to deliver a report with any fallback or sample marker, wrong card count or missing disclaimer.
+- Still true: no entry is approved, so every pair is ineligible today. Approval is a data change plus drafted text; neither exists for 80 of 81 pairs (see `docs/numerology-content-gap-and-plan.md`).
+
 ## What this is NOT
 - Not a formally converged section 20b audit. There was no independent reviewer loop; verification was by the tests and checks above.
 - **Not run:** Playwright e2e, `ops/robot_customer`, real Razorpay test-mode calls (no test keys), the dedicated webhook against Razorpay, PDF font loading on the deployment host, any staging environment.
-- **No content is verified.** `mulank_content.REGISTRY` contains no `verified` entry, so every pair is ineligible in production: the site can serve the free preview and the "not available yet" message only.
+- **No content is approved.** `mulank_registry.json` contains no `verified` or `owner_approved` entry, so every pair is ineligible in production: the site can serve the free preview and the "not available yet" message only.
 
 ## Known open items
-- A named numerology reviewer and per-key sign-off (see `docs/numerology-launch-checklist.md`).
+- A named internal editor and approving owner, and approval of drafted content per key (see `docs/numerology-launch-checklist.md`). External expert verification is optional.
 - Privacy policy, terms and refund text have NOT been updated for the new fields (name, date of birth, WhatsApp number, optional marketing opt-in). The marketing opt-in wording on the landing page is a proposal, not approved legal text.
 - Preview redesign (richer page 2, "glimpse" page 3) is a proposal in the owner's review pack, not built.
 - Waitlist endpoint not built. Landing page is `noindex`, not in `sitemap.xml`, not in `ops/robot_customer`'s route list (deliberate until launch).

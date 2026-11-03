@@ -16,6 +16,7 @@ import re
 
 import mulank_bank as bank
 import mulank_content as mc
+import mulank_qc
 import numerology
 from numerology_preview import FONT_LINKS, clean_name
 from numerology_preview_theme import THEME_CSS, THEME_DEFS
@@ -46,7 +47,7 @@ def _live_keys() -> bool:
 
 def _ok(reg, key, sample):
     e = reg.get(key)
-    if mc.is_verified(e):
+    if mc.is_approved(e):
         return True
     return bool(sample and e is not None and e.status == mc.SAMPLE_OK)
 
@@ -75,7 +76,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     E = numerology.compute_mulank(day, month, year, today=today)
     if not sample:
         ready = mc.pair_readiness(day, month, year, today=today, registry=reg)
-        missing = list(ready["missing"]) + ["text:" + k for k in mc.required_keys(E) if mc.is_verified(reg.get(k)) and not bank.has_text(k)]
+        missing = list(ready["missing"]) + ["text:" + k for k in mc.required_keys(E) if mc.is_approved(reg.get(k)) and not bank.has_text(k)]
         if missing:
             raise ReportNotAvailable(missing)
 
@@ -248,7 +249,10 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     if m == b:
         box = slot(row("4h"), m=m, X=X)
         rec("4h", box)
-    elif mp in NODES or bp in NODES or not (relXY and relYX and _ok(reg, f"R:{mp}>{bp}", sample) and _ok(reg, f"R:{bp}>{mp}", sample)):
+    elif not mc.relation_keys(mp, bp):          # Rahu/Ketu pairs and the conflicted Venus/Mars pair: the approved statement 4i
+        box = row("4i")
+        rec("4i", box)
+    elif not (relXY and relYX and _ok(reg, f"R:{mp}>{bp}", sample) and _ok(reg, f"R:{bp}>{mp}", sample)):
         box = fallback("4i", row("4i"))
     else:
         t = row("4e").split("Text: ", 1)[1]
@@ -432,7 +436,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
             trs = "".join(f"<tr><td>{esc(a)}</td><td>{esc(n)}</td></tr>" for a, n in cp["rows"])
             comp = (f'<table class="tw"><tr><th>For a Mulank {m}</th><th>Numbers</th></tr>{trs}</table>\n'
                     '  <p class="fine" style="text-align:center;margin-top:8px">Compatibility tables vary between traditional schools.</p>')
-        st10 = stamp("PENDING EXPERT REVIEW &middot; compatibility lists") if not mc.is_verified(reg.get(f"CMP:{pk}")) else ""
+        st10 = stamp("PENDING EXPERT REVIEW &middot; compatibility lists") if not mc.is_approved(reg.get(f"CMP:{pk}")) else ""
         cards.append(sec(f'''<div class="eyebrow">Career &amp; Relationships &middot; Bonds</div>
   <h2 class="head">How you bond</h2><div class="rule"></div>
   <div class="pts">{bpts}</div>
@@ -546,7 +550,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         howto = ""
     t13c = row("13c")
     rec("13c", t13c)
-    st13 = stamp("PENDING EXPERT REVIEW &middot; lucky-number selection") if not mc.is_verified(reg.get(f"LK:{pk}")) else ""
+    st13 = stamp("PENDING EXPERT REVIEW &middot; lucky-number selection") if not mc.is_approved(reg.get(f"LK:{pk}")) else ""
     cards.append(sec(f'''<div class="eyebrow">Practical guidance</div>
   <h2 class="head">Your quick reference</h2><div class="rule"></div>
   <div class="sgrid">{tiles}</div>
@@ -608,5 +612,9 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     doc = ('<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n'
            '<meta name="robots" content="noindex,nofollow">\n<meta name="referrer" content="no-referrer">\n'
            f"<title>{title}</title>\n{FONT_LINKS}<style>\n{THEME_CSS}{EXTRA_CSS}</style>\n</head>\n<body>\n{THEME_DEFS}\n" + "\n\n".join(cards) + "\n</body>\n</html>\n")
+    if not sample:                          # last line of defence: an incomplete or sample-marked report is never delivered
+        problems = mulank_qc.lint_report_html(doc, 15, vocabulary=False)
+        if problems:
+            raise ContentMissing(problems[0][1])
     meta.update(E=E, pair=pk, days=days, y1=y1)
     return {"html": doc, "pair_key": pk, "n_cards": n_cards, "trace": trace, "meta": meta, "mode": mode}

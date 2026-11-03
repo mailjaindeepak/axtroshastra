@@ -2,6 +2,7 @@
 
 > **Status as built (3 Nov 2026).** The text below is the amendment the owner approved before any application code was written (CLAUDE.md sections 8 and 18). Where the build differs, the difference is listed here and wins over the text below:
 >
+> - **Approval (changed 4 Nov 2026).** External expert verification is no longer required. An entry is approved if `verified` (expert) or `owner_approved` (editor + owner + date) in `mulank_registry.json`, and a pair is sold only if every key is approved AND has drafted text. See `docs/numerology-content-gap-and-plan.md`. Wherever the text below says "verified by a named reviewer", read "approved".
 > - **Registry keys.** `PS:<m>-<b>` (pair statements), `PB:<m>-<b>` (cards 5-7), `CMP:<m>-<b>` (card 10), `LK:<m>-<b>` (card 13, pair level, not per number), `M<n>`, `B<n>`, `Y<n>`, `R:<Planet>><Planet>`. Eligibility needs every key `verified` with a named reviewer and review date, AND drafted text in `mulank_bank.json`. Text alone never makes a pair eligible.
 > - **Price.** Rs 299 charged (`mulank_pricing.py`); Rs 499 is shown struck through on preview page 4 and the purchase bar. The strike-through is only honest if Rs 499 is a genuine price (owner to confirm).
 > - **Ineligible visitors** get five pages: page 4 is the availability message and page 5 is a button-free "What the Report Covers". No price, no checkout script and no checkout button is sent to them; `POST /api/mulank/order` returns 409.

@@ -397,5 +397,5 @@ def mulank_landing():
     body = resp.body.decode("utf-8") if hasattr(resp, "body") else None
     if body is None:
         return resp
-    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.any_verified() else NOT_YET_NOTICE, 1)
+    body = body.replace("<!--MK_NOTICE-->", "" if mulank_content.sale_open() else NOT_YET_NOTICE, 1)
     return HTMLResponse(body)

@@ -1,31 +1,51 @@
-# Mulank numerology: launch checklist
+# Mulank numerology: prioritised launch checklist (revised 4 Nov 2026)
 
-Everything the owner must do or decide before the product is public, and before the Rs 299 button can exist. Nothing here has been done in production.
+Change of plan: external numerologist verification is no longer required. Content is released by the business owner after internal editorial review. The code now supports this: a content entry is **approved** if it is `verified` (external expert) OR `owner_approved` (a named editor + a named owner + a date), and a pair is sold only when every entry it needs is approved AND its drafted text exists (**complete**). Nothing incomplete, sample or substituted can be sold or delivered (`mulank_content.py`, `mulank_qc.py`, `numerology_report.py`).
 
-## A. What is in the PR
-Landing page `/en/numerology` (noindex), `POST /api/mulank`, the five-page preview (HTML viewer + PDF), the Mulank-only payment routes, the 15-page paid report with secure PDF download, fulfilment retries, Mulank payment recovery, and the guards that stop every shared payment path from unlocking a Mulank report. No existing product's behaviour changes.
+Status key: DONE = built and tested locally. OWNER = needs the owner. ME = engineering/drafting work I can do now.
 
-## B. How it gets to production (existing process, owner only)
-1. Review and merge the PR into `aws-mysql` (CI must be green on Python 3.12: `test`, `e2e`).
-2. GitHub Actions > CI > "Run workflow" on `aws-mysql`. The `deploy` job needs both suites green and the `production` environment approval, then runs `eb deploy`, waits for Green, smoke-tests and auto-rolls back.
-3. Merging does not publish anything by itself.
+## Track 1: free preview live (no purchase button). Shortest path.
+| # | Task | Who | Status | Est. |
+|---|---|---|---|---|
+| 1.1 | Approve privacy/terms additions, consent and marketing opt-in wording, refund page (drafts: `docs/numerology-legal-drafts.md`) | OWNER | drafts ready | 0.5-2 days |
+| 1.2 | Decide: keep current preview, or the richer page 2 / "glimpse" page 3 (proposal pack, piece7). Keep or drop the Rs 499 strike-through | OWNER | waiting | 0.5 day |
+| 1.3 | Put approved text into `privacy.html`, `terms.html`, new `refund.html`; update tests | ME | blocked by 1.1 | 0.5 day |
+| 1.4 | (if redesign accepted) build page 2/3 changes, visual QA, tests | ME | blocked by 1.2 | 1-1.5 days |
+| 1.5 | Open PR `mokshi24:mokshi-numerology` -> `aws-mysql`, owner reviews, CI green on Python 3.12 (`test`, `e2e`) | OWNER | branch pushed | 0.5-1 day (CI-only failures possible) |
+| 1.6 | Deploy: CI "Run workflow" on `aws-mysql` (protected `production` environment) | OWNER | waiting | 0.5 day |
+| 1.7 | Post-deploy smoke on mobile + desktop, PDF fonts on the server, DEMO_MODE unset | ME + OWNER | waiting | 0.5 day |
+| 1.8 | Optional: remove noindex, add to sitemap and `ops/robot_customer`, homepage card (owner decision, CLAUDE.md sections 2-4) | OWNER | decision | 0.5 day |
 
-## C. Before deploying the free preview
-- [ ] CI green on the PR (3.12), including `tests/test_diwali_*` and the e2e suite.
-- [ ] Owner approves the privacy policy, terms and consent wording for the new fields (`pages/privacy.html`, `pages/terms.html`), the optional marketing opt-in wording on the form, and a refund policy page. **Not done; the landing page must not go public without this.**
-- [ ] Confirm the landing page slug `/en/numerology` and the product name.
-- [ ] Confirm `DEMO_MODE` is unset in production (`/api/_demo_pay` must not exist there).
-- [ ] After deploy: open `/en/numerology` on a phone and a desktop; submit a test lead; confirm the preview loads, the PDF downloads, fonts look right (the PDF loads Fraunces/Inter through the same Google Fonts link Career Intelligence uses), and the page says the complete report is not available yet.
-- [ ] To make it discoverable: remove `noindex`, add the URL to `sitemap()` in `api.py` and to `ops/robot_customer/robot.spec.js` (CLAUDE.md sections 2 and 3). Decide the homepage card (section 4).
+Until the paid product is ready, visitors get the preview and an honest "not available yet" message (the landing page shows it automatically while nothing is sellable).
 
-## D. Before the Rs 299 button can appear
-1. **Verified content.** A named reviewer signs each key a pair needs (`M<n>`, `B<n>`, `PS`, `PB`, `CMP`, `LK`, `Y<n>` for this and next year, and the planet-relation cells). Record it in `mulank_content.REGISTRY` as `Entry(status="verified", reviewed_by="<name>", reviewed_on="<date>")`. Only pair 2-1 has drafted text for every part today; every other pair also needs its text written in `mulank_bank.json`. Personal-year content (`Y<n>`) must be re-checked every 1 January.
-2. **Razorpay TEST mode end to end.** Owner sets `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` as environment variables with `eb setenv` (never in chat or git). Run a real test payment: preview > CTA > checkout > report > PDF.
-3. **Register the dedicated webhook** in the Razorpay dashboard (test, then live): URL `https://<domain>/api/mulank/webhook`, event `payment.captured`, same webhook secret. Resend an event from the dashboard and confirm it is idempotent; send a tampered one and confirm a 400.
-4. **Recovery and delivery.** Confirm the recovery sweep runs (log lines `[mulank] ...`), a paid report's PDF downloads again without paying, and the retry button works after a forced PDF failure.
-5. **Security checks.** Another customer's link returns 404; unpaid reports never serve the PDF; no personal data in logs.
-6. **Owner confirms** the Rs 499 strike-through is a genuine price (or removes it from `mulank_pricing.py` and `numerology_preview.py`).
-7. Only then switch live keys with `eb setenv` and make a small real purchase and refund.
+## Track 2: paid product (Rs 299). Critical path = content.
+| # | Task | Who | Status | Est. |
+|---|---|---|---|---|
+| 2.1 | Decide the content model for the 80 missing pairs. Recommended: compose from per-number blocks instead of 80 authored pairs (`docs/numerology-content-gap-and-plan.md`) | OWNER | waiting | 0.5 day |
+| 2.2 | Decide the content rules still open: compatibility-list basis (card 10), lucky-reference rule (card 13), Rahu/Ketu planet for numbers 4 and 7, how to treat Bhagyank 2/5/9 (no source) | OWNER | waiting | 0.5-1 day |
+| 2.3 | Name the internal editor and the approving owner for `owner_approved` entries | OWNER | waiting | minutes |
+| 2.4 | Draft Y3-Y9 year blocks (blocks EVERY pair: today only 11% of birthdays have both personal years drafted) | ME | ready to start | 0.5 day |
+| 2.5 | Draft the per-number content (personality, dials, strengths table, bonds, lucky lookups) | ME | blocked by 2.1-2.2 | 1.5-2 days |
+| 2.6 | Data-model and renderer change to number-keyed content; tests | ME | blocked by 2.1 | 3-4 days |
+| 2.7 | Run `mulank_qc` on all content; internal editorial review; owner approves entries in `mulank_registry.json` (about 27 approval units, not 400) | OWNER + editor | blocked by 2.5 | 2-4 days |
+| 2.8 | Render and visually check all 81 pairs x year combinations (overflow, clipping) | ME | blocked by 2.6 | 1-1.5 days |
+| 2.9 | Owner supplies Razorpay TEST keys as environment variables (`eb setenv`; never in chat or git) | OWNER | waiting | 0.5 day |
+| 2.10 | Razorpay test-mode end to end: preview > checkout > report > PDF; webhook; recovery; failed/pending/duplicate cases | ME + OWNER | blocked by 2.9 | 0.5-1 day |
+| 2.11 | Register `https://<domain>/api/mulank/webhook` (event `payment.captured`) in the Razorpay dashboard and resend/tamper tests | OWNER | blocked by 2.9 | 0.5 day |
+| 2.12 | Production-readiness checks (below), then switch live keys, small real purchase and refund | OWNER + ME | last | 0.5 day |
 
-## E. Until then
-Public visitors get the free preview and an honest message that the complete report is not available yet. No purchase button, price or checkout code is sent for any pair that is not fully verified.
+## Production-readiness checks (before any live payment)
+- [ ] CI green on Python 3.12 incl. Diwali tests and e2e; all other products unaffected (shared guards tested).
+- [ ] `DEMO_MODE` unset in production; `RAZORPAY_*` mode matches intent (test vs live).
+- [ ] PDF generation and fonts verified on the deployment host (`/api/pdf_health`); report PDF opens on a phone.
+- [ ] Customer data: only the new fields are stored; none in logs or URLs (tested); report links are private ids; headers no-store/noindex.
+- [ ] Unpaid reports never serve the PDF; another customer's link returns 404 (tested).
+- [ ] Every sold pair passes `lint_bank` and renders 15 cards with no fallback or sample marker (enforced at render time).
+- [ ] Privacy, terms, consent and refund text approved and live. Payment recovery and retry verified against Razorpay test mode.
+- [ ] Delivery is the website link + PDF only. WhatsApp sending stays off until a provider and template are approved.
+
+## How approval works now (no external expert)
+1. Content passes `mulank_qc.lint_bank` (flagged words, placeholders, empty fields, no paragraph reused across pairs).
+2. A named internal editor reviews it; the owner approves it.
+3. Add the entry to `mulank_registry.json`: `{"status": "owner_approved", "editor": "<name>", "approved_by": "<name>", "approved_on": "<date>"}` through a normal PR, so every approval is dated and in git history.
+4. `sample_ok`, `needs_review` and `pending` never count. An approved entry without drafted text still blocks the sale.

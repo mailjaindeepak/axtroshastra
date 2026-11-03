@@ -348,11 +348,13 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert "₹" not in _visible(h)
 
 
-def test_landing_says_the_complete_report_is_not_available_until_content_is_verified(client, monkeypatch):
+def test_landing_says_the_complete_report_is_not_available_until_content_is_approved(client, monkeypatch):
     h = client.get("/en/numerology").text
     assert "The complete numerology report is not available yet" in h and "<!--MK_NOTICE-->" not in h
     assert not mc.any_verified()
-    monkeypatch.setattr(mc, "REGISTRY", {"M2": mc.Entry(mc.VERIFIED, "Test Reviewer", "2026-11-03")})
+    res = numerology.compute_mulank(29, 7, 1990, today=mc._today())
+    monkeypatch.setattr(mc, "REGISTRY", {k: mc.Entry(mc.OWNER_APPROVED, editor="Editor", approved_by="Owner", approved_on="2026-11-03")
+                                         for k in mc.required_keys(res)})
     h2 = client.get("/en/numerology").text
     assert "not available yet" not in h2 and "<!--MK_NOTICE-->" not in h2 and "mk-notice{" in h2
 
