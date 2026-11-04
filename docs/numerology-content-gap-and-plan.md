@@ -5,7 +5,7 @@
 |---|---|---|---|
 | Mulank blocks M1-M9 (card 4, 8, 9) | 9 | 9 | strong sources for 1, 2, 3, 6, 8; planet disagreements for 4 and 7 |
 | Bhagyank blocks B1-B9 | 9 | 9 | no Bhagyank-specific source for B2, B5, B9; one source each for B3, B4, B6, B7, B8 |
-| Personal-year blocks Y1-Y9 (cards 11, 14) | 9 | **2** | **Y3-Y9 blocks every pair.** Only 11% of birthdays have both of their years drafted |
+| Personal-year blocks Y1-Y9 (cards 11, 14) | 9 | 9 | Y3-Y9 drafted after this analysis was written (commit 69646b3); `lint_bank` clean. The note below on 2-1 only predates it |
 | Pair statement PS (card 4, 8) | 81 | **1** | only 2-1 (single source) |
 | Personality, dials, strengths table PB (cards 5-7) | 81 | **1** | only 2-1 (editorial, no source) |
 | Bonds + compatibility CMP (card 10) | 81 | **1** | basis for the lists is an open owner decision |

@@ -468,7 +468,7 @@ Everything below is drafted text that a customer would read, assembled per numbe
   - 
     - i-people
     - First impressions
-    - People may see you as calm and a little private. You may notice details that others walk past.
+    - People may see you as steady and a little private. You may notice details that others walk past.
   - 
     - i-compass
     - How you decide
@@ -927,7 +927,7 @@ Everything below is drafted text that a customer would read, assembled per numbe
 
 - Warm, generous and talkative. You may show care by encouraging the people close to you and keeping the mood light.
 - You may say a lot, quickly. Pausing to ask a question gives others room to answer.
-- Moving on to the next idea before a worry has been heard.
+- Moving on to the next idea before a concern has been heard.
 
 ### CB4 (Rahu)
 

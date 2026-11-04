@@ -32,7 +32,7 @@ Until the paid product is ready, visitors get the preview and an honest "not ava
 | 2.1 | Decide the content model for the 80 missing pairs. Recommended: compose from per-number blocks instead of 80 authored pairs (`docs/numerology-content-gap-and-plan.md`) | OWNER | waiting | 0.5 day |
 | 2.2 | Decide the content rules still open: compatibility-list basis (card 10), lucky-reference rule (card 13), Rahu/Ketu planet for numbers 4 and 7, how to treat Bhagyank 2/5/9 (no source) | OWNER | waiting | 0.5-1 day |
 | 2.3 | Name the internal editor and the approving owner for `owner_approved` entries | OWNER | waiting | minutes |
-| 2.4 | Draft Y3-Y9 year blocks (blocks EVERY pair: today only 11% of birthdays have both personal years drafted) | ME | ready to start | 0.5 day |
+| 2.4 | Draft Y3-Y9 year blocks | ME | DONE (all Y1-Y9 drafted in `mulank_bank.json`, `lint_bank` clean; checked 4 Nov 2026) | - |
 | 2.5 | Draft the per-number content (personality, dials, strengths table, bonds, lucky lookups) | ME | blocked by 2.1-2.2 | 1.5-2 days |
 | 2.6 | Data-model and renderer change to number-keyed content; tests | ME | blocked by 2.1 | 3-4 days |
 | 2.7 | Run `mulank_qc` on all content; internal editorial review; owner approves entries in `mulank_registry.json` (about 27 approval units, not 400) | OWNER + editor | blocked by 2.5 | 2-4 days |
