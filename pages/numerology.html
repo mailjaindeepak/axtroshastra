@@ -377,12 +377,13 @@ body.mk-lock{overflow:hidden}
 <p class="sub" id="ovSub">Your numbers are worked out from your own date of birth, not copied from a template.</p>
 </div></div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
 (function(){
   var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov'), ovt=document.getElementById('ovT');
   function $(id){return document.getElementById(id);}
   var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
-  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null;
+  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null, PHONE=null;
 
   /* ---------- form (same checks as before; the date now uses the three-control row used on Career Intelligence) ---------- */
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -582,7 +583,7 @@ body.mk-lock{overflow:hidden}
       track('checkout');
       await loadRzp();
       var rz=new Razorpay({key:d.key_id,amount:d.amount,currency:d.currency,order_id:d.razorpay_order_id,name:'Axtroshastra',
-        description:'Complete numerology report',theme:{color:'#B4572B'},handler:confirmPay,
+        description:'Complete numerology report',theme:{color:'#C93B2E'},prefill:(PHONE?{contact:PHONE}:{}),handler:confirmPay,
         modal:{ondismiss:function(){busy(false);say('Payment was not completed. You can try again whenever you are ready.');}}});
       rz.on('payment.failed',function(){busy(false);say('That payment did not go through. You have not been charged for the report, and you can try again.');});
       busy(false); rz.open();
@@ -613,7 +614,7 @@ body.mk-lock{overflow:hidden}
         name:v.name,dob:v.dob,gender:$('f-gender').value||null,country_code:'+91',phone:v.phone,
         consent_terms:$('f-consent').checked,marketing_optin:false,website:$('f-website').value})});
       var d=await r.json().catch(function(){return {};});
-      if(r.ok&&d.report_id){ calcStop(); go.disabled=false; RID=d.report_id; track('lead'); openPreview(d.report_id,d.eligible?d.offer:null); return; }
+      if(r.ok&&d.report_id){ calcStop(); go.disabled=false; RID=d.report_id; PHONE='+91'+v.phone; track('lead'); openPreview(d.report_id,d.eligible?d.offer:null); return; }
       calcStop(); go.disabled=false;
       var det=d&&d.detail;
       if(r.status===422&&det&&det.field){ var fld=det.field==='consent_terms'?'consent':det.field; if(fld==='consent'){ $('g-consent').classList.add('ax-err'); $('h-consent').style.display='block'; } else mark(fld,det.message); showErr(det.message); return; }
