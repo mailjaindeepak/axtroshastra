@@ -1,7 +1,7 @@
 """Diwali Wealth & Prosperity Report: the REAL wired path through api.py.
 
 kundli (each work type, gift on/off, both genders) -> month-free teaser -> /api/order
-(amount 49900 chosen by product and stored) -> /api/verify -> delivery (text -> PDF
+(amount 29900 chosen by product and stored) -> /api/verify -> delivery (text -> PDF
 -> WhatsApp to the popup number) -> /report/{id} HTML with the PDF + WhatsApp buttons
 -> /report/{id}.pdf. Plus the landing route, the legacy 301, the sitemap, the gift-text
 validation, the narrative wiring (4 parallel calls, guards, gift never sent to the AI),
@@ -42,7 +42,7 @@ class _StubRzp:
         @staticmethod
         def fetch(pid):
             # Razorpay's PAYMENT contact: must never receive the WhatsApp (§1)
-            return {"contact": "+919999900000", "email": "", "amount": 49900, "method": "upi"}
+            return {"contact": "+919999900000", "email": "", "amount": 29900, "method": "upi"}
 
 
 @pytest.fixture
@@ -127,12 +127,12 @@ def test_diwali_full_paid_path(client, wired, case):
     assert unpaid["paid"] is False
     _assert_month_free(unpaid["teaser"])
 
-    # 2) order: ₹499 chosen by product, stored on the payment row
+    # 2) order: ₹299 chosen by product, stored on the payment row
     r = client.post("/api/order", json={"report_id": rid, "phone": phone})
     assert r.status_code == 200, r.text
     order = r.json()
-    assert order["amount"] == 49900
-    assert _amounts(rid) == [49900]
+    assert order["amount"] == 29900
+    assert _amounts(rid) == [29900]
 
     # 3) verify -> paid -> delivery runs (TestClient runs background tasks inline)
     pid = "pay_diwali_" + case["work_type"]
@@ -140,7 +140,7 @@ def test_diwali_full_paid_path(client, wired, case):
     r = client.post("/api/verify", json={"razorpay_order_id": oid, "razorpay_payment_id": pid,
                                          "razorpay_signature": _sign(oid, pid)})
     assert r.status_code == 200, r.text
-    assert _amounts(rid) == [49900]
+    assert _amounts(rid) == [29900]
     kinds = [e[0] for e in wired if e[1] == rid]
     assert kinds == ["text", "invalidate", "pdf", "wa"]     # instant text first (O-10 3)
     wa = next(e for e in wired if e[0] == "wa")
@@ -200,7 +200,7 @@ def test_other_products_delivery_order_unchanged(client, wired, monkeypatch):
     client.post("/api/verify", json={"razorpay_order_id": oid, "razorpay_payment_id": "pay_dw_marriage",
                                      "razorpay_signature": _sign(oid, "pay_dw_marriage")})
     assert [e[0] for e in wired] == ["pdf", "narrative", "wa"]
-    assert _amounts(rid) == [49900]
+    assert _amounts(rid) == [29900]
 
 
 def test_diwali_input_validation(client):
@@ -231,7 +231,7 @@ def test_landing_route_redirect_and_sitemap(client):
 
 def test_price_is_by_product_not_variant():
     assert api._order_amount_paise({"product": "diwali",
-                                    "payload": {"meta": {"variant": "/milan"}}}) == 49900
+                                    "payload": {"meta": {"variant": "/milan"}}}) == 29900
 
 
 # ----------------------------------------------------------------- narrative wiring

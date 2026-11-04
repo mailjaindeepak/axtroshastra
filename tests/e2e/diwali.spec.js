@@ -105,10 +105,10 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/en/diwali');
 });
 
-test('Landing: head tags, ₹499 shown, no sideways scroll', async ({ page }, testInfo) => {
+test('Landing: head tags, ₹299 shown, no sideways scroll', async ({ page }, testInfo) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.axtroshastra.com/en/diwali');
   await expect(page.locator('link[hreflang="hi"]')).toHaveCount(0);
-  await expect(page.locator('#offerTimer')).toContainText('₹499');
+  await expect(page.locator('#offerTimer')).toContainText('₹299');
   await expect(page.locator('#submitBtn')).toContainText('Check my Diwali report');
   await noHorizontalScroll(page);
   await page.evaluate(() => document.fonts && document.fonts.ready);
@@ -366,7 +366,7 @@ async function expectV8Preview(page, data, o = {}) {
   await expect(page.locator('#ini span')).toHaveText('NDJFMAMJJASO'.split(''));
 
   // buy elements: one Unlock, struck price only in the sticky bar, sample button right under it
-  await expect(page.locator('#unlockBtn')).toContainText('₹499');
+  await expect(page.locator('#unlockBtn')).toContainText('₹299');
   await expect(page.locator('#unlockBtn')).toContainText('Unlock');
   expect(await page.locator('#unlockBtn').evaluate((b) => b.nextElementSibling && [b.nextElementSibling.tagName, b.nextElementSibling.id])).toEqual(['BUTTON', 'sampleOpen2']);
   await expect(page.locator('#sampleOpen2')).toHaveText(/See a sample report/);
@@ -437,7 +437,7 @@ test('Sticky bar: hidden at the top, shown after the cover with timer + struck p
   await expect(bar).toBeVisible();
   await expect(bar.locator('#otClockSticky')).toHaveText(/^(29|30):\d\d$/);
   await expect(bar.locator('s')).toHaveText('₹999');
-  await expect(bar.locator('.amt')).toHaveText('₹499');
+  await expect(bar.locator('.amt')).toHaveText('₹299');
   await expect(page.locator('#stickyBtn')).toHaveText('Unlock');
   // nothing else outside the hero pill and the bar names the offer or the struck price
   const hits = await page.evaluate(() => [...document.querySelectorAll('s, strike, del, .clk')]
@@ -488,7 +488,7 @@ test('Fallback: a response without teaser.preview still shows cover, kundli and 
   await expect(page.locator('#strip')).toBeHidden();
   await page.locator('#unlockBtn').scrollIntoViewIfNeeded();
   await expect(page.locator('#unlockBtn')).toBeVisible();
-  await expect(page.locator('#unlockBtn')).toContainText('₹499');
+  await expect(page.locator('#unlockBtn')).toContainText('₹299');
   expect(errs).toEqual([]);
 });
 
@@ -616,12 +616,12 @@ test('Purchase: unlock -> /api/order -> demo pay -> progress screen -> report wi
   expect(order.body.phone).toMatch(/^\+919\d{9}$/);
   expect([200, 503]).toContain(order.status);
   if (order.status === 200) {
-    // the server's own order: ₹499 by product, the same amount Razorpay is opened with
-    expect(order.server.amount).toBe(49900);
+    // the server's own order: ₹299 by product, the same amount Razorpay is opened with
+    expect(order.server.amount).toBe(29900);
     expect(order.server.currency).toBe('INR');
   } else {
     // CI has no Razorpay keys, so no order (and no payments row) exists to read here; the stored
-    // payments.amount_paise == 49900 is asserted in tests/test_diwali_api.py::test_diwali_full_paid_path.
+    // payments.amount_paise == 29900 is asserted in tests/test_diwali_api.py::test_diwali_full_paid_path.
     testInfo.annotations.push({ type: 'price', description: 'no Razorpay keys: server price checked in test_diwali_api.py' });
   }
 

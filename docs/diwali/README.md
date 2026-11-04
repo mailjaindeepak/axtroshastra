@@ -199,7 +199,7 @@ Skip: email, gotra, marital status, current city.
 - **Length:** the section list decides it. There is no page target. (Owner, 23 Oct)
 - **Hindi ships after the English version is approved.** (Owner, 23 Oct, CLAUDE.md §7)
 - **Homepage:** yes, add a card and tagged reviews in home.html. (Owner, 23 Oct, CLAUDE.md §4)
-- **Price:** ~~₹299 until 8 Nov, then ₹399~~ → **₹499** (owner switched to the uncle's price, 23 Oct). The ₹199 gift price for a second report has not been re-decided.
+- **Price:** ~~₹299 until 8 Nov, then ₹399~~ → ₹499 → **₹299** (owner, 4 Nov 2026) (owner switched to the uncle's price, 23 Oct). The ₹199 gift price for a second report has not been re-decided.
 - **The main-area / "biggest wish" question is OPTIONAL** (uncle's approach). (Owner, 23 Oct)
 - **Focus: COMBINE both pieces of research.** The report includes every "only in uncle's" item and every "only in ours" item. Neither money nor whole-life should overpower the other; how to balance them is still to be designed. (Owner, 23 Oct)
 - **Steering choices (optional):** Money, Career, Business, Family happiness, Better luck, and Marriage. (Owner, 23 Oct)

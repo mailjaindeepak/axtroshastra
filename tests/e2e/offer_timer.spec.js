@@ -63,12 +63,12 @@ test('diwali offer timer does not reset to 30:00 on refresh', async ({ page }) =
   expect(secs(after)).toBeLessThanOrEqual(secs(before) + 1);
 });
 
-test('diwali keeps the ₹999 -> ₹499 cut and a live clock on the sticky bar', async ({ page }) => {
+test('diwali keeps the ₹999 -> ₹299 cut and a live clock on the sticky bar', async ({ page }) => {
   await page.goto('/en/diwali');
   // the sticky bar only unhides on scroll; force it open to check its content directly
   await page.evaluate(() => { document.getElementById('stickyBar').hidden = false; });
   const t2 = page.locator('#stT2');
   await expect(t2).toContainText('₹999');
-  await expect(t2).toContainText('₹499');
+  await expect(t2).toContainText('₹299');
   await expect(t2.locator('.clk')).toBeVisible(); // display:inline, not stacked on its own line
 });
