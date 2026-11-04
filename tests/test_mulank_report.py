@@ -556,20 +556,22 @@ def _state_payload(rid):
 
 
 # ------------------------------------------------------------------ same-URL journey: iframe documents, instant access, retries
-def test_fragment_preview_is_the_same_five_cards_without_chrome_or_script(client, rz, eligible):
+def test_fragment_preview_has_the_career_structure_filled_with_numerology_content_and_no_script(client, rz, eligible):
     rid, _ = _make(client)
     frag = client.get(f"/en/numerology/preview/{rid}?fragment=1")
     std = client.get(f"/en/numerology/preview/{rid}")
     assert frag.status_code == 200 and frag.headers["content-type"].startswith("application/json")
     d = frag.json()
-    assert set(d) == {"css", "html"} and len(_cards(d["html"])) == 5 and len(_cards(std.text)) == 5
-    assert d["html"].count('class="mkcover"') == 1 and "Priya Sharma" in d["html"].split('class="mkcover"')[1].split("</section>")[0]   # the dark cover goes first
-    assert _cards(d["html"]) == _cards(std.text)                                             # exactly the approved cards
-    assert "<script" not in d["html"] and 'id="vwBar"' not in d["html"] and "razorpay" not in (d["css"] + d["html"]).lower()
-    assert ":host{" in d["css"] and "\nbody{" not in d["css"] and "html{background" not in d["css"]   # theme retargeted to the shadow host
-    assert 'id="vwBar"' in std.text and "checkout.razorpay.com" in std.text                  # the standalone page is unchanged
+    h = d["html"]
+    assert set(d) == {"css", "html"} and "<script" not in h and "razorpay" not in (d["css"] + h).lower()
+    cover = h.split('class="tz-cover"')[1].split("</section>")[0]
+    assert "Numerology Report" in cover and "Priya Sharma" in cover and "Born 29 July 1990" in cover                 # dark cover with the customer's own details
+    assert h.count('class="tz-stat"') == 3 and h.count('class="tz-card"') == 2 and h.count('class="tz-ans"') == 5 and h.count("class=tz-chip") == 4
+    assert "Mulank 2 with Bhagyank 1" in h and "Moon" in h and "Sun" in h and "2 + 9 = 11" in h                        # computed from the date of birth, by the engine
+    assert not re.search(r"\u2605|reviews|NASA|IIT|countdown|Launch offer|14,200|4\.8", h)                              # nothing invented or borrowed from Career
+    assert re.search(r'<button[^>]*class="tz-cta"[^>]*data-action="checkout"', h) and "\u20b9299" in h and "\u20b9499" not in h
+    assert len(_cards(std.text)) == 5 and 'id="vwBar"' in std.text and "checkout.razorpay.com" in std.text              # the five approved pages and the PDF are unchanged
     assert frag.headers["cache-control"] == "no-store" and "noindex" in frag.headers["x-robots-tag"]
-    assert re.search(r'<(?:button|a)[^>]*data-action="checkout"', d["html"])                 # the in-preview unlock buttons exist; the page handles the click
 
 
 def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client, rz):
@@ -578,6 +580,7 @@ def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client
     rid = r.json()["report_id"]
     emb = client.get(f"/en/numerology/preview/{rid}?fragment=1").json()["html"]
     assert not re.search(r'<(?:button|a)[^>]*data-action="checkout"', emb) and "₹" not in re.sub(r"<[^>]+>", " ", emb)
+    assert "not available for your numbers yet" in emb and "tz-cta" not in emb
     assert client.post("/api/mulank/order", json={"report_id": rid}).status_code == 409
 
 

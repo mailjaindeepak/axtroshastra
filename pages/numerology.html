@@ -173,13 +173,6 @@ body.mk-lock{overflow:hidden}
 .pv-links{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;margin:10px 0 4px;font-size:14px}
 .linkbtn{background:none;border:0;padding:6px 4px;color:var(--sindoor);font:700 14px var(--body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .linkbtn[disabled]{opacity:.6;cursor:progress}
-.unlock{margin:16px auto 0;max-width:430px;background:#FBF7EF;color:#2A2015;border:1.5px dashed #C9A34E;border-radius:16px;padding:22px 18px 18px;text-align:center}
-.unlock h3{font-size:19px;color:#3a2c18;margin-bottom:4px}
-.unlock .mk-price{margin:8px 0}.unlock .mk-row{justify-content:center}
-.unlock .mk-now{color:#2A2015}.unlock .mk-was{color:#9a8f76}
-.unlock .ul-s{font-size:13px;color:#6B6048;margin:6px 0 14px}
-.unlock .btn{background:#B4674A;border-radius:100px;box-shadow:0 10px 24px rgba(0,0,0,.2);font-size:16px;padding:15px 18px}
-.unlock .btn-note{color:#8A8251}
 .noffer{max-width:460px;margin:16px auto 0;text-align:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--muted)}
 .ready{max-width:520px;margin:0 auto 18px;text-align:center;background:#FFF8E8;border:1px solid #E3C77A;border-radius:var(--radius);padding:20px 18px}
 .ready h2{margin:0 0 6px}.ready p{font-size:15px;margin-bottom:14px}
@@ -307,13 +300,6 @@ body.mk-lock{overflow:hidden}
     <div id="mkPreviewBox" hidden>
       <div class="mk-host" id="mkFrame" role="region" aria-label="Your personalised five-page preview"></div>
       <div class="pv-links"><button type="button" class="linkbtn" id="mkPvPdf">Download preview PDF</button><a href="#" class="linkbtn" data-again>Use a different date of birth</a></div>
-      <div class="unlock" id="mkUnlock" hidden>
-        <h3>Your complete 15-page report</h3>
-        <div class="mk-price"><div class="mk-row" id="mkPrice"></div></div>
-        <div class="ul-s">One-time payment. Pay securely with Razorpay and download your personalised PDF straight away.</div>
-        <button type="button" class="btn" id="mkBuy" data-buy>Unlock My Full Numerology Report</button>
-        <div class="btn-note">Secure payment by Razorpay. Instant access, no waiting.</div>
-      </div>
       <div class="noffer" id="mkNoOffer" hidden>The complete report is not available for your numbers yet. Your free preview stays on this page.</div>
     </div>
 
@@ -529,11 +515,8 @@ body.mk-lock{overflow:hidden}
     $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
     draw(frame,'/en/numerology/preview/'+encodeURIComponent(rid)+'?fragment=1');
     $('mkPvPdf').dataset.rid=rid;
-    var u=$('mkUnlock'), n=$('mkNoOffer');
-    if(OFFER){
-      $('mkPrice').innerHTML=priceHtml(OFFER); $('mkBuy').textContent=OFFER.cta;
-      u.hidden=false; n.hidden=true; barOn(true);
-    } else { u.hidden=true; n.hidden=false; barOn(false); }
+    $('mkNoOffer').hidden=true;                       /* the locked card inside the preview carries the unlock button, or says it is not available */
+    barOn(!!OFFER);
     reveal(quiet);
   }
   function showPaid(quiet){
@@ -592,7 +575,7 @@ body.mk-lock{overflow:hidden}
     if(paying||!RID) return; paying=true; say(''); busy('Opening secure checkout…');
     try{
       var r=await post('/api/mulank/order',{report_id:RID}); var d=await r.json().catch(function(){return {};});
-      if(r.status===409){ busy(false); $('mkUnlock').hidden=true; barOn(false); $('mkNoOffer').hidden=false; say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }
+      if(r.status===409){ busy(false); barOn(false); $('mkNoOffer').hidden=false; say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }
       if(d.already_paid){ showPaid(); return; }
       if(r.status===503){ busy(false); say('Checkout is not available right now. Your preview is saved at this page, so please try again a little later.'); return; }
       if(!r.ok||!d.razorpay_order_id||!d.key_id){ busy(false); say('We could not start checkout. Please try again.'); return; }

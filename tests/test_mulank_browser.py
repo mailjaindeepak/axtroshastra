@@ -128,9 +128,9 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         page.check("#f-consent")
         page.click("#mkGo")
         page.wait_for_selector("#mkModal", state="visible", timeout=20000)
-        page.wait_for_selector("#mkFrame section.page", state="visible", timeout=20000)
+        page.wait_for_selector("#mkFrame .tz-cover", state="visible", timeout=20000)
         assert page.url == url0 and "/preview/" not in page.url and not opened and page.locator("iframe").count() == 0
-        assert page.locator("#mkFrame section.page").count() == 5
+        assert page.locator("#mkFrame .tz-card").count() == 2 and page.locator("#mkFrame .tz-lock").count() == 1
         assert page.evaluate("document.body.classList.contains('mk-lock') && getComputedStyle(document.body).overflow === 'hidden'")   # page behind does not scroll
         assert page.evaluate("document.activeElement.id") == "mkClose" and page.get_attribute("#mkModal", "aria-modal") == "true"
         sheet = page.evaluate("(() => { const r=document.getElementById('mkSheet').getBoundingClientRect(); return {w:Math.round(r.width),h:Math.round(r.height),l:Math.round(r.left)}; })()")
@@ -139,14 +139,14 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         else:
             assert sheet["w"] == size[0] and sheet["h"] == size[1] and sheet["l"] == 0, sheet          # a full-screen-style canvas on desktop too, like the Career preview
         assert page.evaluate("getComputedStyle(document.getElementById('mkSheet')).backgroundColor") == "rgb(233, 225, 211)"       # the warm beige canvas
-        stack = page.evaluate("""() => { const r=document.querySelector('#mkFrame').shadowRoot.querySelector('section.page').getBoundingClientRect(); return {w:Math.round(r.width), cx:Math.round(r.left+r.width/2)}; }""")
+        stack = page.evaluate("""() => { const r=document.querySelector('#mkFrame').shadowRoot.querySelector('.tz').getBoundingClientRect(); return {w:Math.round(r.width), cx:Math.round(r.left+r.width/2)}; }""")
         assert abs(stack["cx"] - size[0] / 2) <= 12 and stack["w"] <= 430, stack                      # a narrow stack centred horizontally
-        cover = page.locator("#mkFrame .mkcover")
+        cover = page.locator("#mkFrame .tz-cover")
         assert cover.count() == 1 and "Priya Sharma" in cover.inner_text() and "Born 29 July 1990" in cover.inner_text()
-        assert page.evaluate("getComputedStyle(document.querySelector('#mkFrame').shadowRoot.querySelector('.mkcover')).backgroundColor") == "rgb(31, 30, 28)"   # the dark cover
+        assert page.evaluate("getComputedStyle(document.querySelector('#mkFrame').shadowRoot.querySelector('.tz-cover')).backgroundColor") == "rgb(31, 30, 28)"   # the dark cover
 
         # 4. the modal scrolls on its own, one scroll container, nothing overflows sideways
-        info = page.evaluate("""() => { const b=document.getElementById('mkBody'), c=document.querySelector('#mkFrame').shadowRoot.querySelector('section.page').getBoundingClientRect();
+        info = page.evaluate("""() => { const b=document.getElementById('mkBody'), c=document.querySelector('#mkFrame').shadowRoot.querySelector('.tz').getBoundingClientRect();
             return {sh:b.scrollHeight, ch:b.clientHeight, cl:Math.round(c.left), cr:Math.round(c.right), cw:Math.round(c.width), bw:b.scrollWidth, bcw:b.clientWidth}; }""")
         assert info["sh"] > info["ch"] and info["cl"] >= 0 and info["cr"] <= size[0] and info["cw"] <= 430 and info["bw"] <= info["bcw"], info
         y0 = page.evaluate("window.scrollY")
@@ -154,21 +154,22 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         page.wait_for_timeout(500)
         assert page.evaluate("document.getElementById('mkBody').scrollTop") > 100 and page.evaluate("window.scrollY") == y0   # only the modal scrolls
 
-        # 5. the offer sits after the preview inside the modal: price, the unlock button, and the unlock bar
-        page.evaluate("document.getElementById('mkUnlock').scrollIntoView()")
-        assert page.is_visible("#mkUnlock") and page.is_visible("#mkFoot")
-        assert "₹299" in page.inner_text("#mkPrice") and "₹499" not in page.inner_text("#mkUnlock")
-        assert re.sub(r"\s+", " ", page.inner_text("#mkBuy")) == "Unlock My Full Numerology Report — ₹299"
-        assert page.inner_text("#mkFL1") == "Numerology Report" and "₹299" in page.inner_text("#mkFL2") and page.inner_text("#mkFBtn") == "Unlock ₹299"
+        # 5. as on Career: a locked "answers are ready" card with the unlock button, then the white sticky bar
+        page.evaluate("document.querySelector('#mkFrame').shadowRoot.querySelector('.tz-lock').scrollIntoView()")
+        cta = page.locator("#mkFrame .tz-cta")
+        assert cta.is_visible() and page.is_visible("#mkFoot") and page.locator("#mkFrame .tz-ans").count() == 5 and page.locator("#mkFrame .tz-chip").count() == 4
+        assert re.sub(r"\s+", " ", cta.inner_text()) == "Unlock My Full Numerology Report \u2014 \u20b9299" and "\u20b9499" not in page.inner_text("#mkModal")
+        assert page.inner_text("#mkFL1") == "Numerology Report" and "\u20b9299" in page.inner_text("#mkFL2") and page.inner_text("#mkFBtn") == "Unlock \u20b9299"
         assert page.evaluate("getComputedStyle(document.getElementById('mkFoot')).backgroundColor") == "rgb(255, 255, 255)"      # the white sticky bar
         assert "left" not in page.inner_text("#mkFoot") and "Launch offer" not in page.inner_text("#mkModal")                   # no countdown
+        assert not re.search(r"\u2605|reviews|NASA|IIT", page.inner_text("#mkModal"))                                           # nothing borrowed from Career: no stars, reviews or claims
 
         # 6. close (button, Escape, backdrop) and reopen: nothing is lost and the address never changes
         page.click("#mkClose")
         assert not page.is_visible("#mkModal") and page.is_visible("#mkReopen") and page.url == url0
         assert page.evaluate("getComputedStyle(document.body).overflow") != "hidden"
         page.click("#mkView")
-        assert page.is_visible("#mkModal") and page.locator("#mkFrame section.page").count() == 5
+        assert page.is_visible("#mkModal") and page.locator("#mkFrame .tz-card").count() == 2
         page.keyboard.press("Escape")
         assert not page.is_visible("#mkModal")
         page.click("#mkView")
@@ -180,13 +181,13 @@ def test_the_whole_journey_in_a_real_browser(live, size):
 
         # 7. a failed payment, then a dismissed checkout: still locked, clear message, retry possible
         outcome["mode"] = "fail"
-        page.click("#mkBuy")
+        cta.click()
         page.wait_for_selector("#mkMsg.on", timeout=10000)
         assert "did not go through" in page.inner_text("#mkMsg") and not page.is_visible("#mkPaid")
         outcome["mode"] = "dismiss"
-        page.click("#mkBuy")
+        cta.click()
         page.wait_for_function("document.getElementById('mkMsg').textContent.indexOf('not completed')>-1", timeout=10000)
-        assert not page.is_visible("#mkPaid") and page.is_visible("#mkUnlock") and page.is_visible("#mkModal")
+        assert not page.is_visible("#mkPaid") and cta.is_visible() and page.is_visible("#mkModal")
 
         # 8. a purchase button inside the preview itself starts the same checkout, and the payment succeeds
         outcome["mode"] = "ok"
@@ -198,7 +199,7 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         pf = page.locator("#mkPaidFrame")
         pf.locator("section.page").first.wait_for(timeout=30000)
         assert pf.locator("section.page").count() == 15 and "Priya Sharma" in pf.evaluate("e => e.shadowRoot.textContent")
-        assert not page.is_visible("#mkFoot") and not page.is_visible("#mkUnlock")
+        assert not page.is_visible("#mkFoot")
 
         # 9. the PDF downloads at once; close, reload (the report comes back from the saved id) and download again, no second payment
         with page.expect_download(timeout=90000) as dl:
@@ -238,9 +239,9 @@ def test_a_failed_document_request_can_be_retried_by_closing_and_reopening(live)
         page.fill("#f-phone", "97%08d" % (int(time.time()) % 100000000)); page.check("#f-consent"); page.click("#mkGo")
         page.wait_for_selector("#mkModal", state="visible", timeout=20000)
         page.wait_for_selector("#mkMsg.on", timeout=10000)
-        assert "could not load" in page.inner_text("#mkMsg") and page.locator("#mkFrame section.page").count() == 0
+        assert "could not load" in page.inner_text("#mkMsg") and page.locator("#mkFrame .tz-cover").count() == 0
         fail["on"] = False
         page.click("#mkClose"); page.click("#mkView")                                    # reopening tries again
-        page.wait_for_selector("#mkFrame section.page", timeout=20000)
-        assert page.locator("#mkFrame section.page").count() == 5
+        page.wait_for_selector("#mkFrame .tz-cover", timeout=20000)
+        assert page.locator("#mkFrame .tz-card").count() == 2
         browser.close()
