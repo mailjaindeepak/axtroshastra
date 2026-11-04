@@ -553,3 +553,53 @@ def _state_payload(rid):
         return reports_v2.read_report(conn, rid)["payload"]
     finally:
         conn.close()
+
+
+# ------------------------------------------------------------------ same-URL journey: iframe documents, instant access, retries
+def test_embedded_preview_has_no_chrome_of_its_own_and_hands_checkout_to_the_page(client, rz, eligible):
+    rid, _ = _make(client)
+    emb = client.get(f"/en/numerology/preview/{rid}?embed=1")
+    std = client.get(f"/en/numerology/preview/{rid}")
+    assert emb.status_code == 200 and len(_cards(emb.text)) == 5 and len(_cards(std.text)) == 5
+    assert 'id="vwBar"' in std.text and "checkout.razorpay.com" in std.text and 'class="vw-top"' in std.text      # standalone page unchanged
+    assert 'id="vwBar"' not in emb.text and "razorpay" not in emb.text.lower() and 'class="vw-top"' not in emb.text
+    assert "mk:'h'" in emb.text and "mk:'checkout'" in emb.text and "parent.postMessage" in emb.text
+    assert emb.headers["cache-control"] == "no-store" and 'name="robots" content="noindex' in emb.text
+    assert re.search(r'<(?:button|a)[^>]*data-action="checkout"', emb.text)                 # the in-preview unlock buttons exist and post to the page
+
+
+def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client, rz):
+    r = client.post("/api/mulank", json={"name": "Asha", "dob": "29/07/1990", "country_code": "+91", "phone": "9677700001", "consent_terms": True})
+    assert r.json()["eligible"] is False and "offer" not in r.json()
+    rid = r.json()["report_id"]
+    emb = client.get(f"/en/numerology/preview/{rid}?embed=1")
+    assert not re.search(r'<(?:button|a)[^>]*data-action="checkout"', emb.text) and "₹" not in re.sub(r"<[^>]+>", " ", emb.text)
+    assert client.post("/api/mulank/order", json={"report_id": rid}).status_code == 409
+
+
+def test_after_verified_payment_the_embedded_report_and_pdf_are_available_at_once_and_again(client, rz, eligible, pdfs, fulfilled, no_whatsapp):
+    rid, oid = _make(client)
+    assert client.get(f"/en/numerology/report/{rid}?embed=1", follow_redirects=False).headers["location"] == f"/en/numerology/preview/{rid}?embed=1"
+    assert _verify(client, rz, oid).json()["ok"] is True
+    assert client.get(f"/en/numerology/preview/{rid}?embed=1", follow_redirects=False).headers["location"] == f"/en/numerology/report/{rid}?embed=1"
+    emb = client.get(f"/en/numerology/report/{rid}?embed=1")
+    assert len(_cards(emb.text)) == 15 and "Priya Sharma" in emb.text and "mk:'h'" in emb.text
+    assert 'class="vw-top"' not in emb.text and "Sample report" not in emb.text
+    for _ in range(2):                                                                   # download again, no second payment
+        pdf = client.get(f"/en/numerology/report/{rid}.pdf")
+        assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+    assert client.post("/api/mulank/order", json={"report_id": rid}).json() == {"already_paid": True}
+    assert client.get(f"/api/mulank/state/{rid}").json() == {"paid": True}
+    assert _payment_rows(rid)[1] == 1 and not no_whatsapp
+
+
+def test_failed_payment_leaves_it_locked_and_a_retry_then_succeeds_once(client, rz, eligible, pdfs, fulfilled):
+    rid, oid = _make(client)
+    bad = _verify(client, rz, oid, status="failed")
+    assert not (bad.status_code == 200 and bad.json().get("ok")) and not _paid(rid)
+    assert client.get(f"/en/numerology/report/{rid}.pdf").status_code == 404
+    assert client.get(f"/api/mulank/state/{rid}").json()["paid"] is False
+    retry = client.post("/api/mulank/order", json={"report_id": rid}).json()             # the same open order is reused, never a second payable one
+    assert retry.get("razorpay_order_id") == oid
+    assert _verify(client, rz, oid).json()["ok"] is True and _paid(rid)
+    assert _verify(client, rz, oid).status_code == 200 and _payment_rows(rid)[1] == 1     # a repeated confirmation never charges or fulfils twice

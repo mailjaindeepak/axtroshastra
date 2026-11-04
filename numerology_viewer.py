@@ -99,9 +99,36 @@ VIEWER_JS = r"""
 """
 
 
+EMBED_CSS = "html,body{overflow:hidden}body{padding:0 0 6px!important}.page:last-of-type{margin-bottom:0!important}"
+
+# Runs inside the iframe on /en/numerology. It reports the document height so the parent can size the frame (the page then scrolls once,
+# never inside the frame) and hands a click on any purchase button to the parent page, which owns checkout. No payment code lives here.
+EMBED_JS = r"""
+(function(){
+  var O=location.origin;
+  function h(){ return Math.ceil(document.body.getBoundingClientRect().height); }      // the content's own height, so the frame can also shrink
+  function send(){ try{ parent.postMessage({mk:'h',h:h()},O); }catch(e){} }
+  window.addEventListener('load',send); window.addEventListener('resize',send);
+  if(window.ResizeObserver){ try{ new ResizeObserver(send).observe(document.body); }catch(e){} }
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(send); }
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-action="checkout"]');
+    if(t){ e.preventDefault(); try{ parent.postMessage({mk:'checkout'},O); }catch(x){} }
+  });
+  send();
+})();
+"""
+
+
+def render_embed(doc_html: str) -> str:
+    """The same preview or report document for the iframe on the landing page: no top bar, purchase bar or checkout script."""
+    out = doc_html.replace("</style>\n</head>", EMBED_CSS + "</style>\n</head>", 1)
+    return out.replace("</body>", "<script>" + EMBED_JS + "</script>\n</body>", 1)
+
+
 def render_viewer(doc_html: str, rid: str, eligible: bool, preorder: bool = False) -> str:
     """Wrap the preview document (from numerology_preview.build_preview) for the browser."""
-    top = ('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
+    top =('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
            '<button type="button" class="vw-dl" id="vwDl">Download PDF</button></div>'
            '<div class="vw-msg" id="vwMsg" role="status" aria-live="polite" hidden></div>')
     bar = ""

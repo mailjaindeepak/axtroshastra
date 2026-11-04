@@ -85,8 +85,6 @@ section{padding:46px 0}
 .cmp-tag.paid{background:var(--haldi);color:var(--midnight)}
 .cmp-card.paid{background:linear-gradient(165deg,var(--midnight-2),var(--midnight));color:#F3EFE4;border:1.5px solid var(--haldi);box-shadow:0 16px 40px rgba(8,10,30,.28)}
 .cmp-card.paid h3{color:#fff}
-.mk-banner{margin-top:16px;max-width:46ch;text-align:center;background:rgba(0,0,0,.35);border:1px solid rgba(228,176,74,.4);border-radius:16px;padding:14px 16px;color:#F3EFE4}
-.mk-banner-t{font-size:14px;font-weight:700;letter-spacing:.02em}.mk-banner-s{font-size:13px;opacity:.85}
 .mk-price{margin:6px 0 4px}
 .mk-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px}
 .mk-was{font-family:var(--display);font-weight:600;font-size:22px;color:#B8BACB;text-decoration:line-through;text-decoration-thickness:2px}
@@ -117,6 +115,31 @@ section{padding:46px 0}
 footer{background:var(--midnight);color:#B9BBD0;padding:26px 0;font-size:14px;text-align:center}
 footer a{color:#E4B04A;text-decoration:none}
 
+.dob-row{display:flex;gap:8px}
+.dob-row input,.dob-row select{min-width:0;padding:13px 8px}
+.dob-row input{text-align:center}
+#f-dd{flex:0 0 24%}#f-mm{flex:1}#f-yy{flex:0 0 30%}
+.result{background:var(--paper);padding:26px 0 40px}
+.result h2{font-size:clamp(22px,5.6vw,28px);margin:6px 0 12px;text-align:center}
+.result .form-err{margin-bottom:14px}
+.mk-frame{display:block;width:100%;border:0;background:transparent;height:900px;overflow:hidden}
+.pv-links{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;margin:10px 0 4px;font-size:14px}
+.linkbtn{background:none;border:0;padding:6px 4px;color:var(--sindoor);font:700 14px var(--body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkbtn[disabled]{opacity:.6;cursor:progress}
+.unlock{margin:18px auto 0;max-width:460px;background:linear-gradient(165deg,var(--midnight-2),var(--midnight));color:#F3EFE4;border:1.5px solid var(--haldi);border-radius:var(--radius);padding:22px 20px 20px;text-align:center;box-shadow:0 16px 40px rgba(8,10,30,.28)}
+.unlock h3{font-size:20px;color:#fff;margin-bottom:6px}
+.unlock .mk-price{margin:8px 0}.unlock .mk-row{justify-content:center}
+.unlock .ul-s{font-size:13.5px;color:#C9CBDB;margin:6px 0 14px}
+.unlock .btn-note{color:#C9CBDB}
+.noffer{max-width:460px;margin:16px auto 0;text-align:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--muted)}
+.ready{max-width:520px;margin:0 auto 18px;text-align:center;background:#FFF8E8;border:1px solid #E3C77A;border-radius:var(--radius);padding:20px 18px}
+.ready h2{margin:0 0 6px}.ready p{font-size:15px;margin-bottom:14px}
+.ready .keep{font-size:12.5px;color:var(--muted);margin-top:12px;word-break:break-all}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
+.sticky[hidden],.sticky.kbd{display:none!important}
+.sticky .sp{flex:0 0 auto;line-height:1.15}.sticky .mk-was{font-size:14px;color:#8A8CA0}
+.sticky .mk-now{font-size:24px;color:var(--ink)}
+.sticky .btn{flex:1;font-size:15px;padding:12px 14px;box-shadow:0 4px 0 var(--sindoor-dark)}
 .ov{position:fixed;inset:0;z-index:200;background:rgba(21,28,57,.72);display:none;align-items:center;justify-content:center;padding:24px}
 .ov.on{display:flex}
 .ov-box{background:#fff;border-radius:16px;padding:26px 28px;text-align:center;max-width:320px;font-weight:600}
@@ -134,6 +157,7 @@ footer a{color:#E4B04A;text-decoration:none}
     </div>
     <div class="eyebrow">Mulank and Bhagyank numerology</div>
     <h1>Discover your <em>Mulank</em> and <em>Bhagyank</em></h1>
+    <div id="mkIntro">
     <p class="sub">Enter your details to see your two core numbers, exactly how they are worked out, and a personal 5-page preview.</p>
     <!--MK_NOTICE-->
     <ul class="perks">
@@ -141,7 +165,9 @@ footer a{color:#E4B04A;text-decoration:none}
       <li><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5 11-11"/></svg><span>Takes under a minute, no payment to see the preview</span></li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5 11-11"/></svg><span>View it on your phone or download it as a PDF</span></li>
     </ul>
+    </div>
 
+    <div id="mkFormWrap">
     <form class="form-card" id="mkForm" novalidate>
       <div class="fc-title">Enter your details</div>
       <div class="form-err" id="formErr" role="alert"></div>
@@ -153,8 +179,12 @@ footer a{color:#E4B04A;text-decoration:none}
       </div>
 
       <div class="field" id="g-dob">
-        <label for="f-dob">Date of birth</label>
-        <input id="f-dob" name="dob" type="text" inputmode="numeric" placeholder="DD/MM/YYYY" autocomplete="bday" maxlength="10" required>
+        <label for="f-dd">Date of birth</label>
+        <div class="dob-row">
+          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" autocomplete="bday-day" aria-label="Day" required>
+          <select id="f-mm" aria-label="Month" autocomplete="bday-month" required><option value="" disabled selected hidden>Month</option></select>
+          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" autocomplete="bday-year" aria-label="Year" required>
+        </div>
         <div class="field-hint" id="h-dob"></div>
       </div>
 
@@ -197,8 +227,45 @@ footer a{color:#E4B04A;text-decoration:none}
       <button type="submit" class="btn" id="mkGo">Generate My Free Preview</button>
       <div class="btn-note"><!--MK_BTNNOTE--></div>
     </form>
+    </div>
   </div>
 </section>
+
+<section class="result" id="mkResult" hidden>
+  <div class="wrap">
+    <div class="form-err" id="mkMsg" role="alert"></div>
+
+    <div id="mkPreviewBox" hidden>
+      <h2>Your free preview</h2>
+      <iframe class="mk-frame" id="mkFrame" title="Your personalised five-page preview" scrolling="no" referrerpolicy="no-referrer"></iframe>
+      <div class="pv-links"><button type="button" class="linkbtn" id="mkPvPdf">Download preview PDF</button><a href="#" class="linkbtn" data-again>Use a different date of birth</a></div>
+      <div class="unlock" id="mkUnlock" hidden>
+        <h3>Your complete 15-page report</h3>
+        <div class="mk-price"><div class="mk-row" id="mkPrice"></div></div>
+        <div class="ul-s">One-time payment. Pay securely with Razorpay and download your personalised PDF straight away.</div>
+        <button type="button" class="btn" id="mkBuy" data-buy>Unlock My Full Numerology Report</button>
+        <div class="btn-note">Secure payment by Razorpay. Instant access, no waiting.</div>
+      </div>
+      <div class="noffer" id="mkNoOffer" hidden>The complete report is not available for your numbers yet. Your free preview stays on this page.</div>
+    </div>
+
+    <div id="mkPaid" hidden>
+      <div class="ready">
+        <h2>Your full report is ready</h2>
+        <p>Payment received. Your complete 15-page personalised report is below, and you can download it as a PDF now. You can come back to this link any time to download it again, with no second payment.</p>
+        <button type="button" class="btn" data-dl-paid>Download My Full Report</button>
+        <div class="keep">Keep this link: <a id="mkKeepA" href="#"><span id="mkKeep"></span></a></div>
+      </div>
+      <iframe class="mk-frame" id="mkPaidFrame" title="Your complete 15-page report" scrolling="no" referrerpolicy="no-referrer"></iframe>
+      <div class="pv-links"><button type="button" class="linkbtn" data-dl-paid>Download My Full Report</button><a href="#" class="linkbtn" data-again>Start with a different date of birth</a></div>
+    </div>
+  </div>
+</section>
+
+<div class="sticky" id="mkBar" hidden>
+  <div class="sp" id="mkBarPrice"></div>
+  <button type="button" class="btn" id="mkBarBtn" data-buy>Unlock My Full Report</button>
+</div>
 
 <!--MK_COMPARE-->
 <section class="how">
@@ -243,16 +310,16 @@ footer a{color:#E4B04A;text-decoration:none}
 
 <script>
 (function(){
-  var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov');
+  var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov'), ovt=document.getElementById('ovT');
   function $(id){return document.getElementById(id);}
-  var dobEl=$('f-dob'), phoneEl=$('f-phone');
+  var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
+  var RID=null, OFFER=null, SK='mk_rid';
 
-  dobEl.addEventListener('input',function(){
-    var d=dobEl.value.replace(/\D/g,'').slice(0,8), o=d;
-    if(d.length>4) o=d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4);
-    else if(d.length>2) o=d.slice(0,2)+'/'+d.slice(2);
-    dobEl.value=o;
-  });
+  /* ---------- form (same checks as before; the date now uses the three-control row used on Career Intelligence) ---------- */
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  months.forEach(function(n,i){ var o=document.createElement('option'); o.value=String(i+1); o.textContent=n; mmEl.appendChild(o); });
+  ddEl.addEventListener('input',function(){ ddEl.value=ddEl.value.replace(/\D/g,'').slice(0,2); });
+  yyEl.addEventListener('input',function(){ yyEl.value=yyEl.value.replace(/\D/g,'').slice(0,4); });
   phoneEl.addEventListener('input',function(){ phoneEl.value=phoneEl.value.replace(/[^\d\s\-]/g,''); });
 
   function mark(field,msg){
@@ -260,15 +327,16 @@ footer a{color:#E4B04A;text-decoration:none}
     if(g) g.classList.toggle('bad',!!msg);
     if(h) h.textContent=msg||'';
   }
-  function parseDob(v){
-    var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v.trim());
-    if(!m) return {e:'Please enter your date of birth as DD/MM/YYYY.'};
-    var d=+m[1], mo=+m[2], y=+m[3], dt=new Date(y,mo-1,d);
+  function parseDob(){
+    var d=+ddEl.value, mo=+mmEl.value, y=+yyEl.value;
+    if(!ddEl.value||!mo||yyEl.value.length!==4) return {e:'Please enter your date of birth: day, month and a 4-digit year.'};
+    var dt=new Date(y,mo-1,d);
     if(y<1900) return {e:'Please enter a year from 1900 onwards.'};
     if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d) return {e:'That date does not exist. Please check the day, month and year.'};
     var now=new Date(); now.setHours(0,0,0,0);
     if(dt>now) return {e:'Your date of birth cannot be in the future.'};
-    return {iso:m[3]+'-'+m[2]+'-'+m[1]};
+    function p(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
+    return {iso:p(y,4)+'-'+p(mo,2)+'-'+p(d,2)};
   }
   function validate(){
     var ok=true, first=null;
@@ -277,7 +345,7 @@ footer a{color:#E4B04A;text-decoration:none}
     var name=$('f-name').value.replace(/\s+/g,' ').trim();
     if(!name) fail('name','Please enter your full name.',$('f-name'));
     else if(name.length>80||!/[A-Za-zÀ-ɏऀ-ॿ]/.test(name)) fail('name','Please enter your name using letters (up to 80 characters).',$('f-name'));
-    var dob=parseDob(dobEl.value); if(dob.e) fail('dob',dob.e,dobEl);
+    var dob=parseDob(); if(dob.e) fail('dob',dob.e,ddEl);
     var ph=phoneEl.value.replace(/[\s\-]/g,'');
     if(!ph) fail('phone','Please enter your WhatsApp number.',phoneEl);
     else if(!/^[6-9]\d{9}$/.test(ph)) fail('phone','Please enter a valid 10-digit Indian mobile number.',phoneEl);
@@ -288,16 +356,119 @@ footer a{color:#E4B04A;text-decoration:none}
   }
   function showErr(t){ var e=$('formErr'); e.textContent=t||''; e.classList.toggle('on',!!t); }
 
+  /* ---------- same-URL result: preview, then (only if the complete report exists) the unlock offer, then the paid report ---------- */
+  var frame=$('mkFrame'), paidFrame=$('mkPaidFrame'), bar=$('mkBar');
+  function store(v){ try{ if(v) sessionStorage.setItem(SK,v); else sessionStorage.removeItem(SK); }catch(e){} }
+  function say(t){ var m=$('mkMsg'); m.textContent=t||''; m.classList.toggle('on',!!t); if(t) m.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+  function busy(t){ if(t){ ovt.textContent=t; ov.classList.add('on'); } else ov.classList.remove('on'); }
+  function barOn(on){ bar.hidden=!on; document.body.style.paddingBottom=on?'84px':''; }
+  function priceHtml(o){ return (o.list_price?'<s class="mk-was">'+o.list_price+'</s> ':'')+'<span class="mk-now">'+o.price+'</span>'; }
+
+  function reveal(){
+    $('mkFormWrap').hidden=true; $('mkIntro').hidden=true; $('mkResult').hidden=false;
+    window.scrollTo(0,$('mkResult').offsetTop-8);
+  }
+  function openPreview(rid,offer){
+    RID=rid; OFFER=offer||null; store(rid); say('');
+    $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
+    frame.src='/en/numerology/preview/'+encodeURIComponent(rid)+'?embed=1';
+    $('mkPvPdf').dataset.rid=rid;
+    var u=$('mkUnlock'), n=$('mkNoOffer');
+    if(OFFER){
+      $('mkPrice').innerHTML=priceHtml(OFFER); $('mkBuy').textContent=OFFER.cta; $('mkBarPrice').innerHTML=priceHtml(OFFER); $('mkBarBtn').textContent=OFFER.bar;
+      u.hidden=false; n.hidden=true; barOn(true);
+    } else { u.hidden=true; n.hidden=false; barOn(false); }
+    reveal();
+  }
+  function showPaid(){
+    store(RID); busy(false); barOn(false); say('');
+    $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
+    paidFrame.src='/en/numerology/report/'+encodeURIComponent(RID)+'?embed=1';
+    $('mkKeep').textContent=location.origin+'/en/numerology/report/'+RID;
+    $('mkKeepA').href='/en/numerology/report/'+encodeURIComponent(RID);
+    reveal();
+  }
+  function startAgain(){
+    store(null); RID=null; OFFER=null; barOn(false); frame.removeAttribute('src'); paidFrame.removeAttribute('src');
+    $('mkResult').hidden=true; $('mkFormWrap').hidden=false; $('mkIntro').hidden=false; go.disabled=false; ov.classList.remove('on');
+    window.scrollTo(0,0);
+  }
+  [].forEach.call(document.querySelectorAll('[data-again]'),function(a){ a.addEventListener('click',function(e){ e.preventDefault(); startAgain(); }); });
+
+  window.addEventListener('message',function(e){
+    if(e.origin!==location.origin||!e.data) return;
+    var fr=e.source===frame.contentWindow?frame:(e.source===paidFrame.contentWindow?paidFrame:null);
+    if(!fr) return;
+    if(e.data.mk==='h'&&typeof e.data.h==='number') fr.style.height=Math.max(200,Math.min(e.data.h,60000))+'px';
+    else if(e.data.mk==='checkout'&&fr===frame&&OFFER) checkout();
+  });
+
+  /* ---------- PDF downloads (preview and paid) ---------- */
+  function download(url,name,btns){
+    var olds=btns.map(function(b){return b.textContent;}); btns.forEach(function(b){b.disabled=true; b.textContent='Preparing your PDF…';}); say('');
+    return fetch(url,{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw new Error('pdf'); return r.blob(); }).then(function(b){
+      var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000);
+    }).catch(function(){ say(btns===paidBtns?'Your PDF is not ready just now. Your payment is safe, so please try again in a minute. You will not be charged again.':'The PDF could not be prepared just now. You can keep reading your preview on this page, or try the download again in a minute.'); })
+    .then(function(){ btns.forEach(function(b,i){b.disabled=false; b.textContent=olds[i];}); });
+  }
+  var paidBtns=[].slice.call(document.querySelectorAll('[data-dl-paid]'));
+  paidBtns.forEach(function(b){ b.addEventListener('click',function(){ download('/en/numerology/report/'+encodeURIComponent(RID)+'.pdf','Axtroshastra-Numerology-Report.pdf',paidBtns); }); });
+  var pvBtns=[$('mkPvPdf')];
+  $('mkPvPdf').addEventListener('click',function(){ download('/en/numerology/preview/'+encodeURIComponent(RID)+'.pdf','Axtroshastra-Numerology-Preview.pdf',pvBtns); });
+
+  /* ---------- checkout: the same protocol as the standalone viewer (server decides the price; signature and amount verified server side) ---------- */
+  function post(url,body){ return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'same-origin'}); }
+  function sleep(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
+  function loadRzp(){ return new Promise(function(ok,no){
+    if(window.Razorpay) return ok();
+    var s=document.createElement('script'); s.src='https://checkout.razorpay.com/v1/checkout.js'; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
+  async function confirmPay(resp){
+    busy('Confirming your payment…');
+    for(var i=0;i<8;i++){
+      try{
+        var r=await post('/api/mulank/verify',{razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
+        var d=await r.json().catch(function(){return {};});
+        if(r.ok&&d.ok){ showPaid(); return; }
+        if(r.ok&&d.status==='pending'){ await sleep(3000); continue; }
+        if(r.status===502){ await sleep(3000); continue; }
+        break;
+      }catch(e){ await sleep(3000); }
+    }
+    busy(false);
+    say('We could not confirm your payment yet. If money was deducted, please do not pay again. Come back to this same page in a few minutes and your payment will be recognised.');
+  }
+  var paying=false;
+  async function checkout(){
+    if(paying||!RID) return; paying=true; say(''); busy('Opening secure checkout…');
+    try{
+      var r=await post('/api/mulank/order',{report_id:RID}); var d=await r.json().catch(function(){return {};});
+      if(r.status===409){ busy(false); $('mkUnlock').hidden=true; barOn(false); $('mkNoOffer').hidden=false; say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }
+      if(d.already_paid){ showPaid(); return; }
+      if(r.status===503){ busy(false); say('Checkout is not available right now. Your preview is saved at this page, so please try again a little later.'); return; }
+      if(!r.ok||!d.razorpay_order_id||!d.key_id){ busy(false); say('We could not start checkout. Please try again.'); return; }
+      await loadRzp();
+      var rz=new Razorpay({key:d.key_id,amount:d.amount,currency:d.currency,order_id:d.razorpay_order_id,name:'Axtroshastra',
+        description:'Complete numerology report',theme:{color:'#B4572B'},handler:confirmPay,
+        modal:{ondismiss:function(){busy(false);say('Payment was not completed. You can try again whenever you are ready.');}}});
+      rz.on('payment.failed',function(){busy(false);say('That payment did not go through. You have not been charged for the report, and you can try again.');});
+      busy(false); rz.open();
+    }catch(e){ busy(false); say('Something went wrong while opening checkout. Please check your connection and try again.'); }
+    finally{ paying=false; }
+  }
+  [].forEach.call(document.querySelectorAll('[data-buy]'),function(b){ b.addEventListener('click',function(e){ e.preventDefault(); checkout(); }); });
+
+  /* ---------- submit ---------- */
   f.addEventListener('submit',async function(ev){
     ev.preventDefault(); showErr('');
     var v=validate(); if(!v) return;
-    go.disabled=true; ov.classList.add('on');
+    go.disabled=true; ovt.textContent='Preparing your preview…'; ov.classList.add('on');
     try{
       var r=await fetch('/api/mulank',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
         name:v.name,dob:v.dob,gender:$('f-gender').value||null,country_code:'+91',phone:v.phone,
         consent_terms:$('f-consent').checked,marketing_optin:$('f-marketing').checked,website:$('f-website').value})});
       var d=await r.json().catch(function(){return {};});
-      if(r.ok&&d.preview_url){ location.href=d.preview_url; return; }
+      if(r.ok&&d.report_id){ ov.classList.remove('on'); go.disabled=false; openPreview(d.report_id,d.eligible?d.offer:null); return; }
       ov.classList.remove('on'); go.disabled=false;
       var det=d&&d.detail;
       if(r.status===422&&det&&det.field){ var fld=det.field==='consent_terms'?'consent':det.field; mark(fld,det.message); if(fld==='consent') $('g-consent').classList.add('bad'); showErr(det.message); return; }
@@ -309,6 +480,20 @@ footer a{color:#E4B04A;text-decoration:none}
     }
   });
   window.addEventListener('pageshow',function(e){ if(e.persisted){ ov.classList.remove('on'); go.disabled=false; } });
+
+  /* ---------- keep the sticky bar out of the way while typing (same idea as Career Intelligence) ---------- */
+  f.addEventListener('focusin',function(){ bar.classList.add('kbd'); });
+  f.addEventListener('focusout',function(){ setTimeout(function(){ if(!f.contains(document.activeElement)) bar.classList.remove('kbd'); },50); });
+
+  /* ---------- restore after a refresh: the URL never changed, so the preview (or the paid report) simply comes back ---------- */
+  var saved=null; try{ saved=sessionStorage.getItem(SK); }catch(e){}
+  if(saved&&/^[A-Za-z0-9_-]{8,40}$/.test(saved)){
+    fetch('/api/mulank/state/'+encodeURIComponent(saved),{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(s){
+      if(!s){ store(null); return; }
+      RID=saved;
+      if(s.paid) showPaid(); else openPreview(saved,s.eligible?s.offer:null);
+    }).catch(function(){});
+  }
 })();
 </script>
 </body>

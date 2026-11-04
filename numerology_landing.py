@@ -43,35 +43,28 @@ def price_block() -> str:
             '<div class="mk-sub">One-time payment, no subscription</div></div>')
 
 
-def price_banner() -> str:
-    """The price shown under the hero while nothing can be bought yet. Selling price only (the regular price appears only once the
-    owner confirms it); no badge, countdown or urgency. The notice that follows says plainly that purchase is not open yet."""
-    return ('<div class="mk-banner"><div class="mk-banner-t">Complete 15-page numerology report</div>' + price_block() +
-            '<div class="mk-banner-s">View your personalised five-page preview first.</div></div>')
-
-
 def hero_offer(state: str, pre: dict) -> str:
     """The short line under the hero text that tells visitors a paid report exists separately."""
     if state == "off":
-        return price_banner() + NOT_YET_NOTICE
+        return NOT_YET_NOTICE
     price = _inr(mulank_pricing.MULANK_PRICE_PAISE)
     if state == "preorder":
         return ('<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete report is not '
                 f'ready yet for every combination of numbers, so after your preview you may be offered a pre-order for {price}, '
                 f'delivered {esc(pre["promise"])}.</div>')
-    return (f'<div class="mk-notice" id="mkNotice"><b>Free preview now.</b> The complete 15-page report is a separate purchase, {price}, '
-            'offered after your preview for the number combinations we have prepared.</div>')
+    return ('<div class="mk-notice" id="mkNotice"><b>Free preview now.</b> Your personalised 15-page report can be unlocked '
+            'after your preview, for the number combinations we have prepared.</div>')
 
 
 def btn_note(state: str) -> str:
     if state == "off":
         return "Free to view. Nothing is charged on this page."
-    return f"Free to view. The complete report is a separate purchase, {_inr(mulank_pricing.MULANK_PRICE_PAISE)}."
+    return "Free to view. Nothing is charged to see your preview."
 
 
 def compare_section(state: str, pre: dict) -> str:
     """Free preview next to the complete report. Empty while nothing can be bought."""
-    if state == "off":
+    if state in ("off", "sale"):         # the price appears only after the free preview opens, never on this page
         return ""
     free = "".join(f"<li>{esc(p)}</li>" for p in FREE_POINTS)
     paid = "".join(f"<li>{esc(p)}</li>" for p in PAID_POINTS)
