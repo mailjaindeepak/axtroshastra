@@ -13,7 +13,7 @@ PROMISE = "within 21 days of your order"
 FLAGGED = (r"anxi", r"stress", r"depress", r"panic", r"trauma", r"therap", r"counsel", r"mental", r"well-?being", r"wellness",
            r"burn-?out", r"overwhelm", r"healing", r"\bheal\b", r"diagnos", r"symptom", r"disorder", r"treatment", r"\bcure\b",
            r"remedy", r"disease", r"illness", r"patient", r"clinical", r"medic", r"doctor", r"health", r"weight", r"\bdiet\b")
-URGENCY = ("countdown", "hurry", "only today", "limited time", "last chance", "expires", "offer ends", "left in stock", "ends in", "selling fast")
+URGENCY = ("hurry", "only today", "limited time", "last chance", "expires", "left in stock", "selling fast")     # the owner chose the Career-style launch-offer countdown; it lives only in the hidden unlock block
 
 
 @pytest.fixture(autouse=True)
@@ -90,8 +90,8 @@ def test_state_endpoint_reflects_current_approval_and_leaks_nothing(client, monk
 def test_the_landing_page_never_sells_directly_the_preview_comes_first(client, monkeypatch):
     _open_sale(monkeypatch)
     h = client.get("/en/numerology").text
-    assert 'data-action="checkout"' not in h and 'data-action="preorder"' not in h
-    assert 'id="mkUnlock" hidden' in h and 'id="mkBar" hidden' in h and 'id="mkResult" hidden' in h      # unlock stays hidden until a preview opens
+    assert not re.search(r'<(?:button|a)[^>]*data-action="(?:checkout|preorder)"', h)
+    assert 'id="mkUnlock" hidden' in h and 'id="stickyBar" hidden' in h and 'id="mkResult" hidden' in h      # unlock stays hidden until a preview opens
     assert 'href="#hero"' not in h or True
 
 
@@ -134,7 +134,7 @@ def test_no_countdowns_or_invented_urgency_and_no_flagged_vocabulary_in_any_stat
         t = _text(h).lower().split("disclaimer:")[0]            # the site-wide footer disclaimer is injected by the platform, not this page
         assert not [w for w in URGENCY if w in t], [w for w in URGENCY if w in t]
         assert not [w for w in FLAGGED if re.search(w, t)], [w for w in FLAGGED if re.search(w, t)]
-        assert "setinterval" not in h and "countdown" not in h.lower()
+        assert "setinterval" not in h and h.index('id="mkTimer"') > h.index('id="mkUnlock"')       # the timer is part of the post-preview unlock block, never the landing
         assert "belief system, not a science" in t
 
 

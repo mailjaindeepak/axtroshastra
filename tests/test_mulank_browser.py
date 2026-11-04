@@ -104,7 +104,7 @@ def test_the_whole_journey_in_a_real_browser(live, size):
 
         # 1. landing: the form only, no price and no payment button
         body = page.inner_text("body")
-        assert "₹" not in body and not page.is_visible("#mkUnlock") and not page.is_visible("#mkBar") and not page.is_visible("#mkResult")
+        assert "₹" not in body and not page.is_visible("#mkUnlock") and not page.is_visible("#stickyBar") and not page.is_visible("#mkResult")
         assert page.evaluate("document.documentElement.scrollWidth") <= size[0]
 
         # 2. the form (three-control date, optional gender), then the preview opens on the SAME url
@@ -115,23 +115,22 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         page.fill("#f-phone", "98%08d" % (int(time.time()) % 100000000))
         page.check("#f-consent")
         page.click("#mkGo")
-        page.wait_for_selector("#mkFrame", state="visible", timeout=20000)
-        frame = page.frame_locator("#mkFrame")
-        frame.locator("section.page").first.wait_for(timeout=20000)
-        assert page.url == url0 and "/preview/" not in page.url
+        page.wait_for_selector("#mkFrame section.page", state="visible", timeout=20000)        # drawn in the page itself (no iframe, no second document)
+        frame = page.locator("#mkFrame")
+        assert page.url == url0 and "/preview/" not in page.url and page.locator("iframe").count() == 0
         assert frame.locator("section.page").count() == 5
         assert not page.is_visible("#f-name")                               # the form made way for the preview
 
-        # 3. mobile layout: one scroll container, nothing overflows sideways, the frame is exactly as tall as its content
-        page.wait_for_timeout(600)
-        info = page.evaluate("""() => { const f=document.getElementById('mkFrame'), d=f.contentDocument;
-            return {fh:f.getBoundingClientRect().height, ch:Math.ceil(d.body.getBoundingClientRect().height), sh:d.documentElement.scrollHeight,
-                    fw:d.documentElement.scrollWidth, cw:f.clientWidth, pw:document.documentElement.scrollWidth}; }""")
-        assert abs(info["fh"] - info["ch"]) <= 6 and info["sh"] <= info["fh"] + 2, info          # no inner scrolling
-        assert info["fw"] <= info["cw"] + 1 and info["pw"] <= size[0], info                       # no horizontal scrolling
+        # 3. mobile layout: one scroll container (the page), nothing overflows sideways, the cards fit the screen
+        page.wait_for_timeout(400)
+        info = page.evaluate("""() => { const c=document.querySelector('#mkFrame').shadowRoot.querySelector('section.page').getBoundingClientRect();
+            return {cw:Math.round(c.width), cl:Math.round(c.left), cr:Math.round(c.right), pw:document.documentElement.scrollWidth, vw:innerWidth,
+                    font:getComputedStyle(document.querySelector('#mkFrame').shadowRoot.querySelector('section.page')).fontFamily}; }""")
+        assert info["pw"] <= size[0] and info["cl"] >= 0 and info["cr"] <= size[0] and info["cw"] <= 430, info
+        assert page.evaluate("[...document.querySelectorAll('*')].filter(e=>e.scrollHeight>e.clientHeight+2 && ['auto','scroll'].includes(getComputedStyle(e).overflowY)).length") == 0
 
         # 4. only now does the offer appear: price, the unlock button and (on every screen) the sticky bar
-        assert page.is_visible("#mkUnlock") and page.is_visible("#mkBar")
+        assert page.is_visible("#mkUnlock") and page.is_visible("#stickyBar")
         assert "₹299" in page.inner_text("#mkPrice") and "₹499" not in page.inner_text("#mkUnlock")
         assert re.sub(r"\s+", " ", page.inner_text("#mkBuy")) == "Unlock My Full Numerology Report \u2014 \u20b9299"
 
@@ -147,14 +146,14 @@ def test_the_whole_journey_in_a_real_browser(live, size):
 
         # 6. a purchase button inside the preview frame hands off to the page's checkout, then payment succeeds
         outcome["mode"] = "ok"
-        frame.locator('[data-action="checkout"]').first.click()
+        frame.locator('[data-action="checkout"]').first.click()          # a button inside the preview itself
         page.wait_for_selector("#mkPaid", state="visible", timeout=30000)
         assert page.url == url0
         assert "Your full report is ready" in page.inner_text("#mkPaid")
-        pf = page.frame_locator("#mkPaidFrame")
+        pf = page.locator("#mkPaidFrame")
         pf.locator("section.page").first.wait_for(timeout=30000)
-        assert pf.locator("section.page").count() == 15 and "Priya Sharma" in pf.locator("body").inner_text()
-        assert not page.is_visible("#mkBar") and not page.is_visible("#mkUnlock")
+        assert pf.locator("section.page").count() == 15 and "Priya Sharma" in pf.evaluate("e => e.shadowRoot.textContent")
+        assert not page.is_visible("#stickyBar") and not page.is_visible("#mkUnlock")
 
         # 7. the PDF downloads at once, and again after a reload, with no second payment
         for attempt in range(2):

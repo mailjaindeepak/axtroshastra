@@ -319,7 +319,7 @@ def mulank_preview_pdf(rid: str, request: Request):
 
 
 @router.get("/en/numerology/preview/{rid}", include_in_schema=False)
-def mulank_preview(rid: str, request: Request, embed: int = 0):
+def mulank_preview(rid: str, request: Request, fragment: int = 0):
     _limit(request, "view", 60, 60)
     rec = _load(rid)
     if not rec:
@@ -327,11 +327,12 @@ def mulank_preview(rid: str, request: Request, embed: int = 0):
     if not rec["paid"] and _recover_one(rid, request):       # a payment that was captured but never confirmed
         rec = _load(rid) or rec
     if rec["paid"]:
-        return _private(RedirectResponse(f"/en/numerology/report/{rid}" + ("?embed=1" if embed else ""), status_code=302))
+        return _private(RedirectResponse(f"/en/numerology/report/{rid}" + ("?fragment=1" if fragment else ""), status_code=302))
     try:
         r = _preview_for(rec, rid)
-        page = (numerology_viewer.render_embed(r["html"]) if embed
-                else numerology_viewer.render_viewer(r["html"], rid, r["eligible"], r["preorder"]))
+        if fragment:                              # drawn directly in /en/numerology: same document, no chrome, no script
+            return _private(Response(json.dumps(numerology_viewer.render_fragment(r["html"])), media_type="application/json"))
+        page = numerology_viewer.render_viewer(r["html"], rid, r["eligible"], r["preorder"])
     except Exception as e:
         logger.error("[mulank] preview render failed: %s", e.__class__.__name__)
         return _private(HTMLResponse(
@@ -380,14 +381,14 @@ def mulank_report_pdf(rid: str, request: Request):
 
 
 @router.get("/en/numerology/report/{rid}", include_in_schema=False)
-def mulank_report(rid: str, request: Request, embed: int = 0):
+def mulank_report(rid: str, request: Request, fragment: int = 0):
     """The customer's paid report. Unpaid reports go back to the preview; nothing paid is ever shown otherwise."""
     _limit(request, "view", 60, 60)
     rec = _load(rid)
     if not rec:
         return _not_found()
     if not rec["paid"]:
-        return _private(RedirectResponse(f"/en/numerology/preview/{rid}" + ("?embed=1" if embed else ""), status_code=302))
+        return _private(RedirectResponse(f"/en/numerology/preview/{rid}" + ("?fragment=1" if fragment else ""), status_code=302))
     state = mulank_fulfilment.get_state(rec["payload"])
     try:
         doc = mulank_fulfilment.render(rec)["html"]
@@ -399,8 +400,8 @@ def mulank_report(rid: str, request: Request, embed: int = 0):
         return _private(HTMLResponse(numerology_viewer.render_pending_page(rid, {"status": "failed"}), status_code=503))
     if state.get("status") != mulank_fulfilment.READY:
         mulank_fulfilment.run_fulfilment(rid)                    # opportunistic retry on view; idempotent
-    if embed:                                    # inside the landing page, which carries its own banner and download button
-        return _private(HTMLResponse(numerology_viewer.render_embed(doc)))
+    if fragment:                                 # inside the landing page, which carries its own banner and download button
+        return _private(Response(json.dumps(numerology_viewer.render_fragment(doc)), media_type="application/json"))
     return _private(HTMLResponse(numerology_viewer.render_paid_viewer(doc, rid, state)))
 
 

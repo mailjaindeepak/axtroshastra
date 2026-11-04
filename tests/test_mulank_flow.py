@@ -346,7 +346,7 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert re.search(r'id="f-marketing"[^>]*checked', h) is None and re.search(r'id="f-consent"[^>]*checked', h) is None
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box
     assert "Not used in your calculation" in h
-    assert 'name="robots" content="noindex' in h
+    assert 'rel="canonical" href="https://www.axtroshastra.com/en/numerology"' in h and 'name="robots" content="noindex' not in h     # indexable English page
     assert "₹499" not in _visible(h) and "Special offer" not in _visible(h)       # the landing shows only the selling price until the owner confirms the regular price
 
 
