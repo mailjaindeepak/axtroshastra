@@ -99,9 +99,22 @@ VIEWER_JS = r"""
 """
 
 
+def render_fragment(doc_html: str) -> dict:
+    """The preview or report document split into {css, html} so the landing page can draw it directly in the page (inside a shadow root, which keeps
+    the approved theme's styles from touching the page and the page's from touching the cards). The theme targets :root, html and body, which become
+    the shadow host. No script is carried across; the page owns checkout."""
+    css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", doc_html, flags=re.S))
+    css = css.replace(":root{", ":host{", 1)
+    css = css.replace("html{background:var(--gutter)}", "", 1)
+    css = css.replace("body{counter-reset:pg;", ":host{display:block;counter-reset:pg;", 1)
+    css = css.replace("padding:22px 0 40px}", "padding:18px 0 4px}", 1)
+    m = re.search(r"<body[^>]*>(.*)</body>", doc_html, flags=re.S)
+    body = re.sub(r"<script\b.*?</script>", "", m.group(1) if m else "", flags=re.S)
+    return {"css": css, "html": body}
+
 def render_viewer(doc_html: str, rid: str, eligible: bool, preorder: bool = False) -> str:
     """Wrap the preview document (from numerology_preview.build_preview) for the browser."""
-    top = ('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
+    top =('<div class="vw-top"><a class="vw-brand" href="/">Axtroshastra</a>'
            '<button type="button" class="vw-dl" id="vwDl">Download PDF</button></div>'
            '<div class="vw-msg" id="vwMsg" role="status" aria-live="polite" hidden></div>')
     bar = ""

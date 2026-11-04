@@ -1,8 +1,14 @@
 # Numerology content model and approval
 
-## What a customer gets
-5-page free preview, then ₹299 via Razorpay, then the complete 15-page personalised report available immediately: the report page shows a
-"Your full report is ready" banner with a **Download My Full Report** button, and the same link downloads the PDF again at any time without a second payment.
+## What a customer gets (all on the one URL, /en/numerology)
+1. The landing page shows the introduction and the form (name, date of birth as day / month / year, optional gender, WhatsApp number). **No price, no payment button.**
+2. After submitting, the personalised 5-page preview opens in place (an iframe of `/en/numerology/preview/{id}?embed=1`); the URL does not change.
+3. Only then, and only if the customer's complete report is approved and drafted, the page shows the offer (₹499 struck through only when `MULANK_LIST_PRICE_CONFIRMED=1`),
+   then ₹299 and **Unlock My Full Numerology Report — ₹299**. If it is not available, nothing is offered and the order route refuses (409).
+4. Razorpay checkout opens from the page; payment is verified server side (signature, order, amount 29900, INR, captured). On success the page swaps the preview for
+   the "Your full report is ready" banner, a **Download My Full Report** button and the 15 cards, with no redirect and no waiting.
+5. The same button downloads the PDF again at any time, with no second payment: after a reload the page restores itself from the opaque report id kept in
+   `sessionStorage`, and `/en/numerology/report/{id}` remains a permanent link (shown to the customer as "Keep this link").
 No manual delivery, WhatsApp or email is involved. Pre-order stays off (`MULANK_PREORDER` unset) and is not part of the journey.
 
 ## Per-number content (81 combinations from nine blocks per kind)
@@ -41,6 +47,15 @@ can be bought**: the landing page shows no price and no purchase button, and the
 `tests/test_mulank_all_pairs.py` proves text completeness, a 15-card production report and clean editorial QC for all 81 combinations in every Personal Year 1-9,
 and Chrome PDF generation (15 pages) for a 21-combination spread by default or all 81 with `MULANK_PDF_ALL=1` and `CHROME_BIN` set.
 These use a test-only approved registry; they do not approve anything for real customers.
+
+`tests/test_mulank_browser.py` drives the real page in Chrome at 360, 390 and 1280 px (Playwright for Python; skipped where Chrome is missing): same URL throughout,
+no horizontal or nested scrolling, failed and dismissed payments, success, 15 cards, a real 15-page PDF downloaded twice and after a reload. Razorpay's checkout is
+stubbed in the browser; the server-side verification is the real code. Set `CHROME_BIN` if Chrome is not found.
+
+## Launch requirements (separate, in order)
+1. Owner approves content (above). Until then no unlock button can appear for anyone.
+2. Set `NAV_NUMEROLOGY=1` (adds "Numerology Report" to the site menu), Razorpay test keys and webhook secret via Elastic Beanstalk environment variables.
+3. Run a ₹299 test-mode payment end to end, then switch to live keys.
 
 ## Not verified here
 Razorpay test-mode checkout with real credentials (none are available in this environment); the payment path is exercised against a faked gateway.

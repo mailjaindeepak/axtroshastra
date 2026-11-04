@@ -111,7 +111,7 @@ def test_create_saves_iso_dob_and_returns_only_an_opaque_link(client):
     r = client.post("/api/mulank", json=b)
     assert r.status_code == 200
     d = r.json()
-    assert set(d) == {"report_id", "preview_url"} and d["preview_url"] == f"/en/numerology/preview/{d['report_id']}"
+    assert set(d) == {"report_id", "preview_url", "eligible"} and d["eligible"] is False and d["preview_url"] == f"/en/numerology/preview/{d['report_id']}"
     assert re.fullmatch(r"[A-Za-z0-9_-]{16}", d["report_id"])
     for secret in ("Priya", "Sharma", "9811100001", "1990", "29"):
         assert secret not in r.text
@@ -339,13 +339,14 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     r = client.get("/en/numerology")
     assert r.status_code == 200
     h = r.text
-    for needle in ('id="f-name"', 'id="f-dob"', 'id="f-gender"', 'id="f-phone"', "DD/MM/YYYY", "Prefer not to say", "+91",
+    for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-gender"', 'id="f-phone"', "Prefer not to say", "+91",
+                   'id="mkResult"', 'id="mkFrame"',
                    'id="f-consent"', 'id="f-marketing"', 'href="/privacy"', 'href="/terms"', "Generate My Free Preview"):
         assert needle in h, needle
     assert re.search(r'id="f-marketing"[^>]*checked', h) is None and re.search(r'id="f-consent"[^>]*checked', h) is None
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box
     assert "Not used in your calculation" in h
-    assert 'name="robots" content="noindex' in h
+    assert 'rel="canonical" href="https://www.axtroshastra.com/en/numerology"' in h and 'name="robots" content="noindex' not in h     # indexable English page
     assert "₹499" not in _visible(h) and "Special offer" not in _visible(h)       # the landing shows only the selling price until the owner confirms the regular price
 
 
@@ -374,8 +375,9 @@ def test_preview_cards_avoid_meta_flagged_vocabulary(client, eligible):
 
 def test_landing_has_no_name_dob_or_phone_in_urls():
     js = open("pages/numerology.html", encoding="utf-8").read()
-    assert "location.href=d.preview_url" in js and "?name=" not in js and "?dob=" not in js and "localStorage" not in js
-    assert "sessionStorage" not in js
+    assert "openPreview(d.report_id" in js and "location.href=d.preview_url" not in js            # the preview opens on the same URL
+    assert "?name=" not in js and "?dob=" not in js and "localStorage" not in js
+    assert "sessionStorage" in js                                     # only the opaque report id is kept, never name, DOB or phone
 
 
 def test_existing_pages_and_products_unaffected(client):

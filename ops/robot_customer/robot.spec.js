@@ -91,6 +91,7 @@ const ALL_PAGES = [
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
   { path: '/en/career-intelligence', label: 'Career Intelligence (EN)' },
+  { path: '/en/numerology', label: 'Numerology (EN)' },
   { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
   { path: '/hi/life-blueprint', label: 'Life Blueprint (HI)' },
   { path: '/login',             label: 'Login' },

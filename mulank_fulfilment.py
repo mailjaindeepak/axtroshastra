@@ -2,7 +2,7 @@
 
 Entitlement is the report's paid status (set only by the verified payment flow). Everything here is
 idempotent and safe to repeat: the PDF cache is keyed by the report id, a retry never charges anyone,
-and no step sends a WhatsApp message. State lives in report_data.meta.fulfilment and holds no personal data.
+and the customer's WhatsApp number gets one message with the report link the first time the report is ready (only when Twilio and the approved text template are configured). State lives in report_data.meta.fulfilment and holds no personal data.
 """
 import json
 import logging
@@ -60,6 +60,33 @@ def render(rec: dict, today=None):
     return numerology_report.build_report(d, m, y, p.get("name") or "", today=today or prepared_on(p))
 
 
+def _send_wa(phone: str, name: str, link: str) -> None:
+    """One WhatsApp message through the approved TEXT template ({{1}} name, {{2}} report link). The shared media template points at another
+    product's PDF path, so it is deliberately not used here: the PDF is one tap away on the report page."""
+    import api
+    from twilio.rest import Client
+    to = phone if phone.startswith("+") else "+91" + phone[-10:]
+    Client(api.TWILIO_SID, api.TWILIO_TOKEN).messages.create(
+        from_=api.TWILIO_FROM, to=f"whatsapp:{to}", content_sid=api.TWILIO_CONTENT_SID_TEXT,
+        content_variables=json.dumps({"1": name, "2": link}))
+
+
+def _ready(conn, rid: str, rec: dict, prepared: str) -> dict:
+    """Record READY, then (once, and only when delivery is configured) tell the customer on WhatsApp. A failed send never affects the report."""
+    state = _record(conn, rid, READY, prepared_on=prepared)
+    if state.get("wa"):
+        return state
+    import api
+    if not (api.TWILIO_SID and api.TWILIO_TOKEN and api.TWILIO_FROM and api.TWILIO_CONTENT_SID_TEXT and api.PUBLIC_BASE_URL and rec.get("user_phone")):
+        return state
+    try:
+        _send_wa(rec["user_phone"], (rec["payload"].get("name") or "").strip() or "there", f"{api.PUBLIC_BASE_URL}/en/numerology/report/{rid}")
+    except Exception as e:
+        logger.error("[mulank] whatsapp delivery failed: %s", e.__class__.__name__)
+        return state
+    return _record(conn, rid, READY, wa=_now())
+
+
 def run_fulfilment(rid: str) -> dict:
     """Generate (or confirm) the PDF for a paid report and record the outcome. Never raises, never charges,
     safe to call any number of times. Returns the recorded state."""
@@ -70,7 +97,7 @@ def run_fulfilment(rid: str) -> dict:
         if not rec or rec.get("product") != mp.PRODUCT or not rec["paid"]:
             return {"status": "not_paid"}
         if pdfgen.get_cached(rid):
-            return _record(conn, rid, READY, prepared_on=(prepared_on(rec["payload"]) or mulank_content._today()).isoformat())
+            return _ready(conn, rid, rec, (prepared_on(rec["payload"]) or mulank_content._today()).isoformat())
         freeze = prepared_on(rec["payload"]) or mulank_content._today()
         try:
             html = render(rec, freeze)["html"]
@@ -89,7 +116,7 @@ def run_fulfilment(rid: str) -> dict:
             logger.error("[mulank] pdf generation failed: %s", e.__class__.__name__)
         if not data:
             return _record(conn, rid, FAILED, "pdf_unavailable")
-        return _record(conn, rid, READY, prepared_on=freeze.isoformat())
+        return _ready(conn, rid, rec, freeze.isoformat())
     finally:
         conn.close()
 

@@ -553,3 +553,70 @@ def _state_payload(rid):
         return reports_v2.read_report(conn, rid)["payload"]
     finally:
         conn.close()
+
+
+# ------------------------------------------------------------------ same-URL journey: iframe documents, instant access, retries
+def test_fragment_preview_is_the_same_five_cards_without_chrome_or_script(client, rz, eligible):
+    rid, _ = _make(client)
+    frag = client.get(f"/en/numerology/preview/{rid}?fragment=1")
+    std = client.get(f"/en/numerology/preview/{rid}")
+    assert frag.status_code == 200 and frag.headers["content-type"].startswith("application/json")
+    d = frag.json()
+    assert set(d) == {"css", "html"} and len(_cards(d["html"])) == 5 and len(_cards(std.text)) == 5
+    assert _cards(d["html"]) == _cards(std.text)                                             # exactly the approved cards
+    assert "<script" not in d["html"] and 'id="vwBar"' not in d["html"] and "razorpay" not in (d["css"] + d["html"]).lower()
+    assert ":host{" in d["css"] and "\nbody{" not in d["css"] and "html{background" not in d["css"]   # theme retargeted to the shadow host
+    assert 'id="vwBar"' in std.text and "checkout.razorpay.com" in std.text                  # the standalone page is unchanged
+    assert frag.headers["cache-control"] == "no-store" and "noindex" in frag.headers["x-robots-tag"]
+    assert re.search(r'<(?:button|a)[^>]*data-action="checkout"', d["html"])                 # the in-preview unlock buttons exist; the page handles the click
+
+
+def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client, rz):
+    r = client.post("/api/mulank", json={"name": "Asha", "dob": "29/07/1990", "country_code": "+91", "phone": "9677700001", "consent_terms": True})
+    assert r.json()["eligible"] is False and "offer" not in r.json()
+    rid = r.json()["report_id"]
+    emb = client.get(f"/en/numerology/preview/{rid}?fragment=1").json()["html"]
+    assert not re.search(r'<(?:button|a)[^>]*data-action="checkout"', emb) and "₹" not in re.sub(r"<[^>]+>", " ", emb)
+    assert client.post("/api/mulank/order", json={"report_id": rid}).status_code == 409
+
+
+def test_after_verified_payment_the_report_fragment_and_pdf_are_available_at_once_and_again(client, rz, eligible, pdfs, fulfilled, no_whatsapp):
+    rid, oid = _make(client)
+    assert client.get(f"/en/numerology/report/{rid}?fragment=1", follow_redirects=False).headers["location"] == f"/en/numerology/preview/{rid}?fragment=1"
+    assert _verify(client, rz, oid).json()["ok"] is True
+    assert client.get(f"/en/numerology/preview/{rid}?fragment=1", follow_redirects=False).headers["location"] == f"/en/numerology/report/{rid}?fragment=1"
+    d = client.get(f"/en/numerology/report/{rid}?fragment=1").json()
+    assert len(_cards(d["html"])) == 15 and "Priya Sharma" in d["html"] and "<script" not in d["html"] and "Sample report" not in d["html"]
+    for _ in range(2):                                                                   # download again, no second payment
+        pdf = client.get(f"/en/numerology/report/{rid}.pdf")
+        assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+    assert client.post("/api/mulank/order", json={"report_id": rid}).json() == {"already_paid": True}
+    assert client.get(f"/api/mulank/state/{rid}").json() == {"paid": True}
+    assert _payment_rows(rid)[1] == 1 and not no_whatsapp
+
+
+def test_failed_payment_leaves_it_locked_and_a_retry_then_succeeds_once(client, rz, eligible, pdfs, fulfilled):
+    rid, oid = _make(client)
+    bad = _verify(client, rz, oid, status="failed")
+    assert not (bad.status_code == 200 and bad.json().get("ok")) and not _paid(rid)
+    assert client.get(f"/en/numerology/report/{rid}.pdf").status_code == 404
+    assert client.get(f"/api/mulank/state/{rid}").json()["paid"] is False
+    retry = client.post("/api/mulank/order", json={"report_id": rid}).json()             # the same open order is reused, never a second payable one
+    assert retry.get("razorpay_order_id") == oid
+    assert _verify(client, rz, oid).json()["ok"] is True and _paid(rid)
+    assert _verify(client, rz, oid).status_code == 200 and _payment_rows(rid)[1] == 1     # a repeated confirmation never charges or fulfils twice
+
+def test_whatsapp_link_is_sent_once_after_the_report_is_ready_and_only_when_configured(client, rz, eligible, pdfs, fulfilled, monkeypatch):
+    sent = []
+    monkeypatch.setattr(mf, "_send_wa", lambda phone, name, link: sent.append((phone, name, link)))
+    rid, oid = _make(client)
+    assert _verify(client, rz, oid).json()["ok"] is True and not sent                      # not configured: nothing is sent
+    rid2, oid2 = _make(client, name="Asha Rao")
+    for k, v in (("TWILIO_SID", "AC1"), ("TWILIO_TOKEN", "t"), ("TWILIO_FROM", "whatsapp:+10000000000"), ("TWILIO_CONTENT_SID_TEXT", "HXtext"),
+                 ("PUBLIC_BASE_URL", "https://www.axtroshastra.com")):
+        monkeypatch.setattr(api, k, v, raising=False)
+    assert _verify(client, rz, oid2).json()["ok"] is True
+    assert len(sent) == 1 and sent[0][1] == "Asha Rao" and sent[0][2] == f"https://www.axtroshastra.com/en/numerology/report/{rid2}"
+    mf.run_fulfilment(rid2); mf.run_fulfilment(rid2); client.get(f"/en/numerology/report/{rid2}.pdf")
+    assert len(sent) == 1                                                                   # once, however often fulfilment runs
+    assert _state(rid2).get("wa") and "+91" not in str(_state(rid2))                         # the state records that it was sent, not the number
