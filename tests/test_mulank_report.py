@@ -563,6 +563,7 @@ def test_fragment_preview_is_the_same_five_cards_without_chrome_or_script(client
     assert frag.status_code == 200 and frag.headers["content-type"].startswith("application/json")
     d = frag.json()
     assert set(d) == {"css", "html"} and len(_cards(d["html"])) == 5 and len(_cards(std.text)) == 5
+    assert d["html"].count('class="mkcover"') == 1 and "Priya Sharma" in d["html"].split('class="mkcover"')[1].split("</section>")[0]   # the dark cover goes first
     assert _cards(d["html"]) == _cards(std.text)                                             # exactly the approved cards
     assert "<script" not in d["html"] and 'id="vwBar"' not in d["html"] and "razorpay" not in (d["css"] + d["html"]).lower()
     assert ":host{" in d["css"] and "\nbody{" not in d["css"] and "html{background" not in d["css"]   # theme retargeted to the shadow host

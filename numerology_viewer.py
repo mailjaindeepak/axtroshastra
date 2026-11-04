@@ -99,18 +99,46 @@ VIEWER_JS = r"""
 """
 
 
-def render_fragment(doc_html: str) -> dict:
+COVER_CSS = """
+.mkc-cap{text-align:center;font:500 11.5px var(--sans);color:#8A8251;margin:4px 0 12px}
+.mkcover{width:min(430px,92vw);margin:0 auto 16px;background:#1F1E1C;color:#F5EEE0;border-radius:18px;padding:30px 24px 26px;text-align:center;position:relative;overflow:hidden;box-shadow:0 14px 38px rgba(48,34,14,.22)}
+.mkcover:before{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(201,163,78,.28),rgba(201,163,78,0) 70%)}
+.mkc-brand{font:700 10.5px var(--sans);letter-spacing:.22em;color:#C9A34E;position:relative}
+.mkcover h2{font:500 26px/1.18 var(--serif);color:#fff;margin:14px 0 14px;position:relative}
+.mkc-name{font:600 17px var(--serif);color:#fff;position:relative}
+.mkc-born{font:400 12px var(--sans);color:#B9B2A2;margin-top:3px;position:relative}
+.mkcover ul{list-style:none;text-align:left;margin:22px auto 0;max-width:330px;position:relative}
+.mkcover li{font:500 13.5px/1.35 var(--sans);color:#E7CE8F;padding:9px 0;border-bottom:1px solid rgba(231,206,143,.22)}
+.mkcover li:last-child{border-bottom:0}
+"""
+
+
+def _cover(name: str, born: str) -> str:
+    import html as _h
+    return ('<p class="mkc-cap">Your preview, worked out from your date of birth.</p>'
+            '<section class="mkcover"><div class="mkc-brand">AXTROSHASTRA</div><h2>Mulank and Bhagyank<br>Numerology Preview</h2>'
+            f'<div class="mkc-name">{_h.escape(name)}</div><div class="mkc-born">{_h.escape(born)}</div>'
+            '<ul><li>What does your Mulank say about how you go about things?</li><li>What does your Bhagyank say about your direction?</li>'
+            '<li>How do your two numbers sit together?</li><li>What is in your complete 15-page report?</li></ul></section>')
+
+
+def render_fragment(doc_html: str, cover: tuple | None = None) -> dict:
     """The preview or report document split into {css, html} so the landing page can draw it directly in the page (inside a shadow root, which keeps
     the approved theme's styles from touching the page and the page's from touching the cards). The theme targets :root, html and body, which become
-    the shadow host. No script is carried across; the page owns checkout."""
+    the shadow host. No script is carried across; the page owns checkout. For the preview, a dark cover card (name, birth date) goes first; the
+    five approved cards after it are byte-for-byte the document's own."""
     css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", doc_html, flags=re.S))
     css = css.replace(":root{", ":host{", 1)
     css = css.replace("html{background:var(--gutter)}", "", 1)
-    css = css.replace("body{counter-reset:pg;", ":host{display:block;counter-reset:pg;", 1)
-    css = css.replace("padding:22px 0 40px}", "padding:18px 0 4px}", 1)
+    css = css.replace("body{counter-reset:pg;background:var(--gutter);", ":host{display:block;counter-reset:pg;background:transparent;", 1)
+    css = css.replace("padding:22px 0 40px}", "padding:6px 0 4px}", 1)
     m = re.search(r"<body[^>]*>(.*)</body>", doc_html, flags=re.S)
     body = re.sub(r"<script\b.*?</script>", "", m.group(1) if m else "", flags=re.S)
+    if cover:
+        css += COVER_CSS
+        body = body.replace('<section class="page', _cover(*cover) + '<section class="page', 1)
     return {"css": css, "html": body}
+
 
 def render_viewer(doc_html: str, rid: str, eligible: bool, preorder: bool = False) -> str:
     """Wrap the preview document (from numerology_preview.build_preview) for the browser."""

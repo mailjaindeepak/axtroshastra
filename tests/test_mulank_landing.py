@@ -125,7 +125,7 @@ def test_no_countdowns_or_invented_urgency_and_no_flagged_vocabulary_in_any_stat
         t = _text(h).lower().split("disclaimer:")[0]            # the site-wide footer disclaimer is injected by the platform, not this page
         assert not [w for w in URGENCY if w in t], [w for w in URGENCY if w in t]
         assert not [w for w in FLAGGED if re.search(w, t)], [w for w in FLAGGED if re.search(w, t)]
-        assert "setinterval" not in h and h.index('id="mkTimer"') > h.index('id="mkUnlock"')       # the timer is part of the post-preview unlock block, never the landing
+        assert "setinterval" not in h and "mkTimer" not in h and "launch offer" not in h.lower()     # no countdown or invented urgency anywhere
         assert "belief system, not a science" in t
 
 

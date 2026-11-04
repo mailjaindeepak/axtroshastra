@@ -280,6 +280,14 @@ def mulank_state(rid: str, request: Request):
     return _private(Response(json.dumps({"paid": False, "eligible": eligible, **_offer(eligible)}), media_type="application/json"))
 
 
+def _cover_for(rec: dict):
+    """(name, 'Born 29 July 1990') for the preview's dark cover card."""
+    import calendar
+    p = rec["payload"]
+    y, m, d = (int(x) for x in p["dob"].split("-"))
+    return numerology_preview.clean_name(p.get("name") or ""), f"Born {d} {calendar.month_name[m]} {y}"
+
+
 def _preview_for(rec: dict, rid: str, absolute_cta: bool = False):
     p = rec["payload"]
     y, m, d = (int(x) for x in p["dob"].split("-"))
@@ -331,7 +339,7 @@ def mulank_preview(rid: str, request: Request, fragment: int = 0):
     try:
         r = _preview_for(rec, rid)
         if fragment:                              # drawn directly in /en/numerology: same document, no chrome, no script
-            return _private(Response(json.dumps(numerology_viewer.render_fragment(r["html"])), media_type="application/json"))
+            return _private(Response(json.dumps(numerology_viewer.render_fragment(r["html"], _cover_for(rec))), media_type="application/json"))
         page = numerology_viewer.render_viewer(r["html"], rid, r["eligible"], r["preorder"])
     except Exception as e:
         logger.error("[mulank] preview render failed: %s", e.__class__.__name__)

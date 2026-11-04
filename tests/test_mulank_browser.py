@@ -137,8 +137,13 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         if mobile:
             assert sheet["w"] == size[0] and sheet["h"] == size[1] and sheet["l"] == 0, sheet          # full-screen on phones
         else:
-            assert sheet["w"] <= 780 and sheet["h"] < size[1] and sheet["l"] > 0, sheet                # a large centred dialog with the page dimmed behind
-            assert page.evaluate("getComputedStyle(document.getElementById('mkModal')).backgroundColor").startswith("rgba(18, 24, 50")
+            assert sheet["w"] == size[0] and sheet["h"] == size[1] and sheet["l"] == 0, sheet          # a full-screen-style canvas on desktop too, like the Career preview
+        assert page.evaluate("getComputedStyle(document.getElementById('mkSheet')).backgroundColor") == "rgb(233, 225, 211)"       # the warm beige canvas
+        stack = page.evaluate("""() => { const r=document.querySelector('#mkFrame').shadowRoot.querySelector('section.page').getBoundingClientRect(); return {w:Math.round(r.width), cx:Math.round(r.left+r.width/2)}; }""")
+        assert abs(stack["cx"] - size[0] / 2) <= 12 and stack["w"] <= 430, stack                      # a narrow stack centred horizontally
+        cover = page.locator("#mkFrame .mkcover")
+        assert cover.count() == 1 and "Priya Sharma" in cover.inner_text() and "Born 29 July 1990" in cover.inner_text()
+        assert page.evaluate("getComputedStyle(document.querySelector('#mkFrame').shadowRoot.querySelector('.mkcover')).backgroundColor") == "rgb(31, 30, 28)"   # the dark cover
 
         # 4. the modal scrolls on its own, one scroll container, nothing overflows sideways
         info = page.evaluate("""() => { const b=document.getElementById('mkBody'), c=document.querySelector('#mkFrame').shadowRoot.querySelector('section.page').getBoundingClientRect();
@@ -154,6 +159,9 @@ def test_the_whole_journey_in_a_real_browser(live, size):
         assert page.is_visible("#mkUnlock") and page.is_visible("#mkFoot")
         assert "₹299" in page.inner_text("#mkPrice") and "₹499" not in page.inner_text("#mkUnlock")
         assert re.sub(r"\s+", " ", page.inner_text("#mkBuy")) == "Unlock My Full Numerology Report — ₹299"
+        assert page.inner_text("#mkFL1") == "Numerology Report" and "₹299" in page.inner_text("#mkFL2") and page.inner_text("#mkFBtn") == "Unlock ₹299"
+        assert page.evaluate("getComputedStyle(document.getElementById('mkFoot')).backgroundColor") == "rgb(255, 255, 255)"      # the white sticky bar
+        assert "left" not in page.inner_text("#mkFoot") and "Launch offer" not in page.inner_text("#mkModal")                   # no countdown
 
         # 6. close (button, Escape, backdrop) and reopen: nothing is lost and the address never changes
         page.click("#mkClose")
