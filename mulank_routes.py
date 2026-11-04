@@ -434,7 +434,7 @@ def mulank_landing():
     if body is None:
         return resp
     pre = mulank_preorder.config()
-    state = "sale" if mulank_content.sale_open() else ("preorder" if pre["enabled"] else "off")
+    state = "sale" if mulank_content.sale_open() else "off"            # the landing never carries a price or a pre-order, whatever is configured
     body = body.replace("<!--MK_NOTICE-->", numerology_landing.hero_offer(state, pre), 1)
     body = body.replace("<!--MK_BTNNOTE-->", numerology_landing.btn_note(state), 1)
     body = body.replace("<!--MK_COMPARE-->", numerology_landing.compare_section(state, pre), 1)

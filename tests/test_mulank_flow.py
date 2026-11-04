@@ -340,25 +340,26 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert r.status_code == 200
     h = r.text
     for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-gender"', 'id="f-phone"', "Prefer not to say", "+91",
-                   'id="mkResult"', 'id="mkFrame"',
-                   'id="f-consent"', 'id="f-marketing"', 'href="/privacy"', 'href="/terms"', "Generate My Free Preview"):
+                   'id="mkModal"', 'id="mkFrame"',
+                   'id="f-consent"', 'href="/privacy"', 'href="/terms"', "Generate My Free Preview"):
         assert needle in h, needle
-    assert re.search(r'id="f-marketing"[^>]*checked', h) is None and re.search(r'id="f-consent"[^>]*checked', h) is None
+    assert re.search(r'id="f-consent"[^>]*checked', h) is None and 'id="f-marketing"' not in h
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box
     assert "Not used in your calculation" in h
     assert 'rel="canonical" href="https://www.axtroshastra.com/en/numerology"' in h and 'name="robots" content="noindex' not in h     # indexable English page
     assert "₹499" not in _visible(h) and "Special offer" not in _visible(h)       # the landing shows only the selling price until the owner confirms the regular price
 
 
-def test_landing_says_the_complete_report_is_not_available_until_content_is_approved(client, monkeypatch):
+def test_landing_is_the_same_before_and_after_approval_and_availability_is_decided_after_the_preview(client, monkeypatch):
+    """The landing sells and promises nothing. Whether the complete report can be offered is decided per customer after the preview opens."""
     h = client.get("/en/numerology").text
-    assert "The complete numerology report is not available yet" in h and "<!--MK_NOTICE-->" not in h
+    assert "<!--MK_" not in h and "not available yet" not in _visible(h).replace("The complete report is not available for your numbers yet. Your free preview stays on this page.", "")
     assert not mc.any_verified()
     res = numerology.compute_mulank(29, 7, 1990, today=mc._today())
     monkeypatch.setattr(mc, "REGISTRY", {k: mc.Entry(mc.OWNER_APPROVED, editor="Editor", approved_by="Owner", approved_on="2026-11-03")
                                          for k in mc.required_keys(res)})
     h2 = client.get("/en/numerology").text
-    assert "not available yet" not in h2 and "<!--MK_NOTICE-->" not in h2 and "mk-notice{" in h2
+    assert "<!--MK_" not in h2 and "₹" not in _visible(h2)
 
 
 def test_landing_page_avoids_meta_flagged_vocabulary():
@@ -401,7 +402,7 @@ def test_privacy_and_terms_cover_the_numerology_form():
     assert "Messages you choose to receive" in priv and "optional box on a report form" in priv and "support@axtroshastra.com" in priv
     assert "Mulank and Bhagyank numbers" in priv and "belief-based" in priv
     assert "Numerology is a belief system, not a science" in terms and "Mulank and Bhagyank" in terms
-    assert "WhatsApp messages about new Axtroshastra reports and offers" in land          # the opt-in the policy describes
+    assert "Terms of Service" in land and "belief system, not a science" in land and "marketing_optin:false" in land     # the form asks only for Terms and Privacy; no marketing opt-in is collected here
     assert "November 2026" in priv and "November 2026" in terms
     for page in (priv, terms):
         t = re.sub(r"<[^>]+>", " ", page).lower()

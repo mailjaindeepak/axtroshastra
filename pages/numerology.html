@@ -138,7 +138,33 @@ footer a{color:#E4B04A;text-decoration:none}
 .dob-row input,.dob-row select{min-width:0;padding:13px 8px}
 .dob-row input{text-align:center}
 #f-dd{flex:0 0 24%}#f-mm{flex:1}#f-yy{flex:0 0 30%}
-.result{background:var(--paper);padding:26px 0 40px}
+.ax-consent{margin:18px 0 14px;font-size:13px;line-height:1.5;padding:10px 12px;border-radius:8px;border:1.5px solid transparent;transition:border-color .2s,background .2s}
+.ax-consent.ax-err{border-color:#C93B2E;background:rgba(201,59,46,.06)}
+.ax-consent label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+.ax-consent input[type=checkbox]{margin-top:3px;min-width:16px;min-height:16px;accent-color:#C93B2E}
+.ax-consent a{color:#C93B2E;text-decoration:underline}
+.ax-consent-err{color:#C93B2E;font-size:12px;font-weight:500;margin:6px 0 0 24px;display:none}
+@keyframes axShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-6px)}30%{transform:translateX(5px)}45%{transform:translateX(-4px)}60%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
+.ax-shake{animation:axShake .4s ease-in-out}
+.form-card.reopen p{font-size:15px;color:#3D3F55;margin-bottom:14px}
+.form-card.reopen .btn-note{margin-top:12px}
+body.mk-lock{overflow:hidden}
+.mk-modal{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(18,24,50,.74);padding:3vh 3vw;animation:mkfade .18s ease}
+.mk-modal[hidden]{display:none}
+@keyframes mkfade{from{opacity:0}to{opacity:1}}
+.mk-sheet{background:var(--paper);width:min(780px,100%);height:100%;max-height:94vh;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:mkrise .22s ease}
+@keyframes mkrise{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+.mk-head{flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px 12px 18px;background:var(--midnight);color:#F3EFE4;border-bottom:2px solid var(--haldi)}
+.mk-ht{flex:1;font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.01em}
+.mk-x{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(228,176,74,.6);background:rgba(228,176,74,.1);color:var(--haldi);font-size:26px;line-height:1;cursor:pointer}
+.mk-x:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
+.mk-body{flex:1;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;padding:14px 14px 28px}
+.mk-foot{flex:none;display:flex;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1.5px solid var(--line);box-shadow:0 -8px 30px rgba(35,37,59,.1)}
+.mk-foot[hidden]{display:none}
+.mk-foot .sp{flex:1;min-width:0}.mk-foot .l1{font-family:var(--display);font-weight:800;font-size:14px}.mk-foot .l2{font-size:11.5px;color:var(--muted)}
+.mk-foot .l2 s{color:#9a9cb0}.mk-foot .l2 b.p{color:var(--sindoor)}.mk-foot .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+@media(max-width:640px){.mk-modal{padding:0}.mk-sheet{max-height:none;height:100vh;height:100dvh;border-radius:0}.mk-body{padding:10px 10px 28px}}
+@media (prefers-reduced-motion:reduce){.mk-modal,.mk-sheet{animation:none}.mk-body{scroll-behavior:auto}}
 .result h2{font-size:clamp(22px,5.6vw,28px);margin:6px 0 12px;text-align:center}
 .result .form-err{margin-bottom:14px}
 .mk-host{display:block;border-radius:18px;overflow:hidden}
@@ -159,7 +185,7 @@ footer a{color:#E4B04A;text-decoration:none}
 .sticky .sp{flex:1;min-width:0}.sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}.sticky .sp .l2 s{color:#9a9cb0}.sticky .sp .l2 b.p{color:var(--sindoor)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
-.ov{position:fixed;inset:0;background:rgba(18,24,50,.97);z-index:200;display:none;align-items:center;justify-content:center;padding:32px}
+.ov{position:fixed;inset:0;background:rgba(18,24,50,.97);z-index:10001;display:none;align-items:center;justify-content:center;padding:32px}
 .ov.on{display:flex}
 .ov .inner{max-width:360px;width:100%;text-align:center}
 .ov svg{width:110px;height:110px;margin:0 auto 26px;animation:spin 7s linear infinite;display:block}
@@ -191,14 +217,16 @@ footer a{color:#E4B04A;text-decoration:none}
     <div id="mkIntro">
     <p class="sub">Your two core numbers and how they are worked out, from your date of birth.</p>
     <p class="sub2">Free 5-page preview &middot; Personalised &middot; Private &middot; Numerology is a belief system, not a science.</p>
-    <!--MK_NOTICE-->
-    <ul class="perks">
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5 11-11"/></svg><span>Your numbers and the step-by-step working, free</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5 11-11"/></svg><span>Takes under a minute, no payment to see the preview</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5 11-11"/></svg><span>View it on your phone or download it as a PDF</span></li>
-    </ul>
     </div>
 
+    <div id="mkReopen" hidden>
+      <div class="form-card reopen">
+        <div class="fc-title" id="rpT">Your preview is ready</div>
+        <p id="rpP">Your personalised five-page preview is ready to read.</p>
+        <button type="button" class="btn" id="mkView">View my preview</button>
+        <p class="btn-note"><a href="#" class="linkbtn" data-again>Use a different date of birth</a></p>
+      </div>
+    </div>
     <div id="mkFormWrap">
     <form class="form-card" id="mkForm" novalidate>
       <div class="fc-title">Enter your details</div>
@@ -208,16 +236,6 @@ footer a{color:#E4B04A;text-decoration:none}
         <label for="f-name">Full name</label>
         <input id="f-name" name="name" type="text" placeholder="e.g. Priya Sharma" autocomplete="name" maxlength="80" required>
         <div class="field-hint" id="h-name"></div>
-      </div>
-
-      <div class="field" id="g-dob">
-        <label for="f-dd">Date of birth</label>
-        <div class="dob-row">
-          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" autocomplete="bday-day" aria-label="Day" required>
-          <select id="f-mm" aria-label="Month" autocomplete="bday-month" required><option value="" disabled selected hidden>Month</option></select>
-          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" autocomplete="bday-year" aria-label="Year" required>
-        </div>
-        <div class="field-hint" id="h-dob"></div>
       </div>
 
       <div class="field" id="g-gender">
@@ -233,6 +251,17 @@ footer a{color:#E4B04A;text-decoration:none}
         <div class="field-hint" id="h-gender"></div>
       </div>
 
+      <div class="field" id="g-dob">
+        <label for="f-dd">Date of birth</label>
+        <div class="dob-row">
+          <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" autocomplete="bday-day" aria-label="Day" required>
+          <select id="f-mm" aria-label="Month" autocomplete="bday-month" required><option value="" disabled selected hidden>Month</option></select>
+          <input id="f-yy" type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" autocomplete="bday-year" aria-label="Year" required>
+        </div>
+        <div class="field-hint" id="h-dob"></div>
+      </div>
+
+
       <div class="field" id="g-phone">
         <label for="f-phone">WhatsApp number</label>
         <div class="wa-wrap"><span>+91</span><input id="f-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="98765 43210" required></div>
@@ -244,17 +273,9 @@ footer a{color:#E4B04A;text-decoration:none}
         <label>Website <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"></label>
       </div>
 
-      <div class="privacy"><b>How we use your details</b>
-        We use your name and date of birth to calculate your numbers and prepare your preview, and your WhatsApp number to contact you about your report.
-        We send marketing messages only if you tick the optional box below. Read our <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
-
-      <label class="chk" id="g-consent"><input type="checkbox" id="f-consent" name="consent_terms">
-        <span>I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>, and understand that numerology is a belief system, not a science.</span></label>
-      <div class="field-hint" id="h-consent" style="margin:-6px 0 6px 32px"></div>
-
-      <label class="chk"><input type="checkbox" id="f-marketing" name="marketing_optin">
-        <span>Optional: yes, send me occasional WhatsApp messages about new Axtroshastra reports and offers.</span></label>
-      <div class="chk-note">Not needed for your preview. You can say stop at any time.</div>
+      <div class="ax-consent" id="g-consent"><label><input type="checkbox" id="f-consent" name="consent_terms">
+        <span>I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>, <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> and understand that numerology is a belief system, not a science.</span></label>
+        <p id="h-consent" class="ax-consent-err">Please accept the Terms of Service to continue.</p></div>
 
       <button type="submit" class="btn" id="mkGo">Generate My Free Preview</button>
       <div class="btn-note"><!--MK_BTNNOTE--></div>
@@ -273,12 +294,13 @@ footer a{color:#E4B04A;text-decoration:none}
   </div>
 </div>
 
-<section class="result" id="mkResult" hidden>
-  <div class="wrap">
+<div class="mk-modal" id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden>
+ <div class="mk-sheet" id="mkSheet">
+  <div class="mk-head"><div class="mk-ht" id="mkModalT">Your free preview</div><button type="button" class="mk-x" id="mkClose" aria-label="Close">&times;</button></div>
+  <div class="mk-body" id="mkBody">
     <div class="form-err" id="mkMsg" role="alert"></div>
 
     <div id="mkPreviewBox" hidden>
-      <h2>Your free preview</h2>
       <div class="mk-host" id="mkFrame" role="region" aria-label="Your personalised five-page preview"></div>
       <div class="pv-links"><button type="button" class="linkbtn" id="mkPvPdf">Download preview PDF</button><a href="#" class="linkbtn" data-again>Use a different date of birth</a></div>
       <div class="unlock" id="mkUnlock" hidden>
@@ -304,7 +326,12 @@ footer a{color:#E4B04A;text-decoration:none}
       <div class="pv-links"><button type="button" class="linkbtn" data-dl-paid>Download My Full Report</button><a href="#" class="linkbtn" data-again>Start with a different date of birth</a></div>
     </div>
   </div>
-</section>
+  <div class="mk-foot" id="mkFoot" hidden>
+    <div class="sp"><p class="l1" id="mkFL1"></p><p class="l2" id="mkFL2"></p></div>
+    <button type="button" class="btn" id="mkFBtn" data-buy>Unlock My Full Report</button>
+  </div>
+ </div>
+</div>
 
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp"><p class="l1" id="stL1">Mulank and Bhagyank Preview</p><p class="l2" id="stL2">Free &middot; takes under a minute</p></div>
@@ -312,17 +339,6 @@ footer a{color:#E4B04A;text-decoration:none}
 </div>
 
 <!--MK_COMPARE-->
-<section class="how">
-  <div class="wrap">
-    <h2>How your two numbers are worked out</h2>
-    <p>In Indian numerology, <b>Mulank</b> comes from your birth day and <b>Bhagyank</b> comes from your whole date of birth. Each is added down to a single digit. Contemporary writers read Mulank as how you go about things and Bhagyank as the direction you are headed.</p>
-    <div class="ex">
-      <div><b>Mulank example.</b> Born on the 27th: 2 + 7 = 9, so the Mulank is 9.</div>
-      <div><b>Bhagyank example.</b> Born 05-04-1988: 0+5+0+4+1+9+8+8 = 35, then 3 + 5 = 8, so the Bhagyank is 8.</div>
-    </div>
-    <p style="margin-top:12px;font-size:14px;color:var(--muted)">Some writers keep 11 and 22 as special numbers. This report reduces them to single digits, so other readings may differ.</p>
-  </div>
-</section>
 
 <section class="free">
   <div class="wrap">
@@ -377,7 +393,7 @@ footer a{color:#E4B04A;text-decoration:none}
   var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov'), ovt=document.getElementById('ovT');
   function $(id){return document.getElementById(id);}
   var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
-  var RID=null, OFFER=null, SK='mk_rid', BUY=false;
+  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null;
 
   /* ---------- form (same checks as before; the date now uses the three-control row used on Career Intelligence) ---------- */
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -405,7 +421,7 @@ footer a{color:#E4B04A;text-decoration:none}
   function validate(){
     var ok=true, first=null;
     function fail(k,msg,el){ mark(k,msg); if(ok){first=el;} ok=false; }
-    ['name','dob','gender','phone','consent'].forEach(function(k){mark(k,'');});
+    ['name','dob','gender','phone'].forEach(function(k){mark(k,'');});
     var name=$('f-name').value.replace(/\s+/g,' ').trim();
     if(!name) fail('name','Please enter your full name.',$('f-name'));
     else if(name.length>80||!/[A-Za-zÀ-ɏऀ-ॿ]/.test(name)) fail('name','Please enter your name using letters (up to 80 characters).',$('f-name'));
@@ -413,8 +429,8 @@ footer a{color:#E4B04A;text-decoration:none}
     var ph=phoneEl.value.replace(/[\s\-]/g,'');
     if(!ph) fail('phone','Please enter your WhatsApp number.',phoneEl);
     else if(!/^[6-9]\d{9}$/.test(ph)) fail('phone','Please enter a valid 10-digit Indian mobile number.',phoneEl);
-    if(!$('f-consent').checked){ mark('consent','Please accept the Terms of Service and Privacy Policy to continue.'); $('g-consent').classList.add('bad'); if(ok) first=$('f-consent'); ok=false; }
-    else $('g-consent').classList.remove('bad');
+    if(!$('f-consent').checked){ var gc=$('g-consent'); $('h-consent').style.display='block'; gc.classList.add('ax-err'); gc.classList.remove('ax-shake'); void gc.offsetWidth; gc.classList.add('ax-shake'); if(ok) first=$('f-consent'); ok=false; }
+    else { $('g-consent').classList.remove('ax-err'); $('h-consent').style.display='none'; }
     if(first) first.focus();
     return ok?{name:name,dob:dob.iso,phone:ph}:null;
   }
@@ -435,11 +451,16 @@ footer a{color:#E4B04A;text-decoration:none}
   /* the sticky bar, as on Career Intelligence: before the preview it points at the form; once an approved report is offered it unlocks it */
   var hero=document.querySelector('.hero');
   function clock(){ var el=document.querySelector('[data-clk]'); return el?el.textContent:'30:00'; }
+  function modalOpen(){ return !$('mkModal').hidden; }
   function syncBar(){
     var show=false, l1=$('stL1'), l2=$('stL2'), b=$('stickyBtn');
-    if(BUY&&OFFER){ show=true; l1.textContent='Full 15-page report'; l2.innerHTML=(OFFER.list_price?'<s>'+OFFER.list_price+'</s> ':'')+'<b class="p">'+OFFER.price+'</b> &middot; <b class="clk" data-clk>'+clock()+'</b> left'; b.textContent=OFFER.bar; }
-    else if(!RID){ show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Mulank and Bhagyank Preview'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
+    if(modalOpen()) show=false;
+    else if(RID){ show=true; l1.textContent=PAID?'Your full report is ready':'Your preview is ready'; l2.innerHTML=PAID?'Download it any time':'Tap to read it'; b.textContent=PAID?'View Report':'View Preview'; }
+    else { show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Mulank and Bhagyank Preview'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
     bar.hidden=!show; document.body.style.paddingBottom=show?'84px':'';
+    var on=BUY&&OFFER&&!PAID, foot=$('mkFoot');                      /* inside the modal: the unlock bar follows the preview */
+    foot.hidden=!on;
+    if(on){ $('mkFL1').textContent='Full 15-page report'; $('mkFL2').innerHTML=(OFFER.list_price?'<s>'+OFFER.list_price+'</s> ':'')+'<b class="p">'+OFFER.price+'</b> &middot; <b class="clk" data-clk>'+clock()+'</b> left'; $('mkFBtn').textContent=OFFER.bar; }
   }
   function barOn(on){ BUY=!!on; syncBar(); }
   window.addEventListener('scroll',syncBar,{passive:true});
@@ -468,9 +489,38 @@ footer a{color:#E4B04A;text-decoration:none}
   f.addEventListener('focusin',function(){ if(window._mkFormStarted) return; window._mkFormStarted=true; if(window.gtag) gtag('event','form_start'); });
   function priceHtml(o){ return (o.list_price?'<s class="mk-was">'+o.list_price+'</s> ':'')+'<span class="mk-now">'+o.price+'</span>'; }
 
-  function reveal(){
-    $('mkFormWrap').hidden=true; $('mkIntro').hidden=true; $('mkResult').hidden=false;
-    window.scrollTo(0,$('mkResult').offsetTop-8);
+  /* ---------- the preview and the paid report live in a modal on this same page: the address never changes ---------- */
+  function ensureDrawn(){
+    var h=PAID?paidFrame:frame;
+    if(!h.shadowRoot||!h.shadowRoot.firstChild) draw(h,(PAID?'/en/numerology/report/':'/en/numerology/preview/')+encodeURIComponent(RID)+'?fragment=1');
+  }
+  function openModal(){
+    var m=$('mkModal'); if(m.hidden) lastFocus=document.activeElement;
+    m.hidden=false; document.body.classList.add('mk-lock'); $('mkBody').scrollTop=0; ensureDrawn(); $('mkClose').focus(); syncBar();
+  }
+  function closeModal(){
+    $('mkModal').hidden=true; document.body.classList.remove('mk-lock'); syncBar();
+    var v=(lastFocus&&document.contains(lastFocus)&&lastFocus.focus)?lastFocus:$('mkView'); try{ v.focus(); }catch(e){}
+  }
+  $('mkClose').addEventListener('click',closeModal);
+  $('mkModal').addEventListener('mousedown',function(e){ if(e.target===$('mkModal')) closeModal(); });
+  $('mkView').addEventListener('click',openModal);
+  document.addEventListener('keydown',function(e){
+    if(!modalOpen()||ov.classList.contains('on')) return;
+    if(e.key==='Escape'){ closeModal(); return; }
+    if(e.key==='Tab'){                                                     /* keep keyboard focus inside the dialog */
+      var els=[].filter.call($('mkSheet').querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'),function(x){ return !x.disabled&&x.offsetParent!==null; });
+      if(!els.length) return; var first=els[0], last=els[els.length-1];
+      if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); } else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  function reveal(quiet){
+    $('mkFormWrap').hidden=true; $('mkIntro').hidden=true; $('mkReopen').hidden=false;
+    $('mkModalT').textContent=PAID?'Your full report':'Your free preview';
+    $('rpT').textContent=PAID?'Your full report is ready':'Your preview is ready';
+    $('rpP').textContent=PAID?'Your complete 15-page report is ready to read and download.':'Your personalised five-page preview is ready to read.';
+    $('mkView').textContent=PAID?'View my full report':'View my preview';
+    if(quiet) syncBar(); else openModal();
   }
   /* the approved preview and report are drawn directly in this page, inside a shadow root: their theme cannot affect the page and the page cannot affect them */
   function draw(host,url,after){
@@ -482,8 +532,8 @@ footer a{color:#E4B04A;text-decoration:none}
       if(after) after();
     }).catch(function(){ say('We could not load your document just now. Please refresh this page in a minute. Your details are saved.'); });
   }
-  function openPreview(rid,offer){
-    RID=rid; OFFER=offer||null; store(rid); say('');
+  function openPreview(rid,offer,quiet){
+    RID=rid; OFFER=offer||null; PAID=false; store(rid); say('');
     $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
     draw(frame,'/en/numerology/preview/'+encodeURIComponent(rid)+'?fragment=1');
     $('mkPvPdf').dataset.rid=rid;
@@ -492,19 +542,20 @@ footer a{color:#E4B04A;text-decoration:none}
       $('mkPrice').innerHTML=priceHtml(OFFER); $('mkBuy').textContent=OFFER.cta;
       u.hidden=false; n.hidden=true; $('mkTimer').hidden=false; barOn(true);
     } else { u.hidden=true; n.hidden=false; barOn(false); }
-    reveal();
+    reveal(quiet);
   }
-  function showPaid(){
-    store(RID); busy(false); barOn(false); say('');
+  function showPaid(quiet){
+    PAID=true; store(RID); busy(false); barOn(false); say('');
     $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
     draw(paidFrame,'/en/numerology/report/'+encodeURIComponent(RID)+'?fragment=1');
     $('mkKeep').textContent=location.origin+'/en/numerology/report/'+RID;
     $('mkKeepA').href='/en/numerology/report/'+encodeURIComponent(RID);
-    reveal();
+    reveal(quiet);
   }
   function startAgain(){
-    store(null); RID=null; OFFER=null; barOn(false); [frame,paidFrame].forEach(function(h){ if(h.shadowRoot) h.shadowRoot.innerHTML=''; });
-    $('mkResult').hidden=true; $('mkFormWrap').hidden=false; $('mkIntro').hidden=false; go.disabled=false; ov.classList.remove('on');
+    store(null); RID=null; OFFER=null; PAID=false; barOn(false); [frame,paidFrame].forEach(function(h){ if(h.shadowRoot) h.shadowRoot.innerHTML=''; });
+    if(modalOpen()) closeModal();
+    $('mkReopen').hidden=true; $('mkFormWrap').hidden=false; $('mkIntro').hidden=false; go.disabled=false; ov.classList.remove('on');
     window.scrollTo(0,0);
   }
   [].forEach.call(document.querySelectorAll('[data-again]'),function(a){ a.addEventListener('click',function(e){ e.preventDefault(); startAgain(); }); });
@@ -566,7 +617,7 @@ footer a{color:#E4B04A;text-decoration:none}
   [].forEach.call(document.querySelectorAll('[data-buy]'),function(b){ b.addEventListener('click',function(e){ e.preventDefault(); checkout(); }); });
   $('stickyBtn').addEventListener('click',function(e){
     e.preventDefault();
-    if(BUY&&OFFER){ checkout(); return; }
+    if(RID&&!modalOpen()){ openModal(); return; }
     if(ddEl.value&&mmEl.value&&yyEl.value&&$('f-name').value.trim()){ if(f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})); return; }
     f.scrollIntoView({behavior:'smooth'});
   });
@@ -585,12 +636,12 @@ footer a{color:#E4B04A;text-decoration:none}
     try{
       var r=await fetch('/api/mulank',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
         name:v.name,dob:v.dob,gender:$('f-gender').value||null,country_code:'+91',phone:v.phone,
-        consent_terms:$('f-consent').checked,marketing_optin:$('f-marketing').checked,website:$('f-website').value})});
+        consent_terms:$('f-consent').checked,marketing_optin:false,website:$('f-website').value})});
       var d=await r.json().catch(function(){return {};});
       if(r.ok&&d.report_id){ calcStop(); go.disabled=false; RID=d.report_id; track('lead'); openPreview(d.report_id,d.eligible?d.offer:null); return; }
       calcStop(); go.disabled=false;
       var det=d&&d.detail;
-      if(r.status===422&&det&&det.field){ var fld=det.field==='consent_terms'?'consent':det.field; mark(fld,det.message); if(fld==='consent') $('g-consent').classList.add('bad'); showErr(det.message); return; }
+      if(r.status===422&&det&&det.field){ var fld=det.field==='consent_terms'?'consent':det.field; if(fld==='consent'){ $('g-consent').classList.add('ax-err'); $('h-consent').style.display='block'; } else mark(fld,det.message); showErr(det.message); return; }
       if(r.status===429){ showErr('Too many attempts. Please wait a minute and try again.'); return; }
       showErr('We could not prepare your preview just now. Please try again in a moment.');
     }catch(e){
@@ -610,7 +661,7 @@ footer a{color:#E4B04A;text-decoration:none}
     fetch('/api/mulank/state/'+encodeURIComponent(saved),{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(s){
       if(!s){ store(null); return; }
       RID=saved;
-      if(s.paid) showPaid(); else openPreview(saved,s.eligible?s.offer:null);
+      if(s.paid) showPaid(true); else openPreview(saved,s.eligible?s.offer:null,true);
     }).catch(function(){});
   }
 })();

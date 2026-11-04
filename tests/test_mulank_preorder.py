@@ -357,13 +357,15 @@ def test_preview_pdf_links_use_absolute_urls_and_state_the_promise(client, on, m
     assert uris and all(u.startswith("https://") for u in uris)
 
 
-def test_landing_notice_mentions_the_preorder_and_promise_only_when_enabled(client, on):
+def test_landing_never_shows_a_preorder_or_a_price_even_when_a_preorder_is_fully_configured(client, on):
     h = client.get("/en/numerology").text
-    assert "pre-order for ₹299" in h and PROMISE in h and "nothing to buy" not in h
+    t = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", h, flags=re.S)
+    assert "₹" not in t and "pre-order" not in t.lower() and PROMISE not in t and 'class="offer"' not in h
 
 
-def test_landing_without_preorder_still_says_nothing_to_buy(client):
-    assert "nothing to buy on this page" in client.get("/en/numerology").text
+def test_landing_without_preorder_shows_no_price_either(client):
+    t = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", client.get("/en/numerology").text, flags=re.S)
+    assert "₹" not in t
 
 
 def test_nav_entry_is_off_unless_the_owner_enables_it(client, monkeypatch):

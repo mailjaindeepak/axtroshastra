@@ -46,7 +46,7 @@ def test_nothing_purchasable_shows_no_price_and_no_paid_section(client):
     t = _text(h)
     assert "Generate My Free Preview" in t and "See My Free Preview" not in t
     assert 'class="offer"' not in h and "₹" not in t and 'class="mk-banner"' not in h
-    assert "nothing to buy on this page" in t and "Nothing is charged on this page" in t
+    assert "Free to view. Nothing is charged on this page." in t and "nothing to buy" not in t        # the landing sells nothing, so it says nothing about a purchase
     assert "<!--MK_" not in h
 
 
@@ -56,7 +56,7 @@ def test_sale_state_landing_still_shows_no_price_or_comparison_card(client, monk
     h = client.get("/en/numerology").text
     t = _text(h)
     assert "₹" not in t and "Save" not in t and 'class="offer"' not in h
-    assert "Free preview now" in t and "can be unlocked after your preview" in t and "Nothing is charged to see your preview" in t
+    assert "unlocked" not in t and "Nothing is charged to see your preview" in t
     assert "<!--MK_" not in h
 
 
@@ -91,7 +91,7 @@ def test_the_landing_page_never_sells_directly_the_preview_comes_first(client, m
     _open_sale(monkeypatch)
     h = client.get("/en/numerology").text
     assert not re.search(r'<(?:button|a)[^>]*data-action="(?:checkout|preorder)"', h)
-    assert 'id="mkUnlock" hidden' in h and 'id="stickyBar" hidden' in h and 'id="mkResult" hidden' in h      # unlock stays hidden until a preview opens
+    assert 'id="mkUnlock" hidden' in h and 'id="stickyBar" hidden' in h and 'id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden' in h      # unlock stays hidden until a preview opens
     assert 'href="#hero"' not in h or True
 
 
@@ -99,21 +99,12 @@ def test_form_fields_are_unchanged(client, monkeypatch):
     _open_sale(monkeypatch)
     h = client.get("/en/numerology").text
     names = set(re.findall(r'<(?:input|select)[^>]*\bname="([^"]+)"', h))
-    assert names == {"name", "gender", "phone", "consent_terms", "marketing_optin", "website"}
+    assert names == {"name", "gender", "phone", "consent_terms", "website"}                       # one Terms and Privacy line, no marketing box
+    assert not re.search(r'id="f-consent"[^>]*checked', h) and "How your two numbers are worked out" not in h
     assert 'id="f-dd"' in h and 'id="f-mm"' in h and 'id="f-yy"' in h and "Gender <small>(optional)</small>" in h
 
 
 # ------------------------------------------------------------------ owner-approved pre-order
-def test_preorder_state_is_worded_as_a_preorder_with_promise_and_refund_link(client, pre):
-    h = client.get("/en/numerology").text
-    t = _text(h)
-    assert 'class="offer"' in h and "Pre-order" in t and PROMISE in t and "This is a pre-order, not an instant download" in t
-    assert 'href="/refund"' in h and "₹299" in t
-    sec = _text(h[h.index('class="offer"'):]).split("numerology is a belief system")[0]            # the pre-order card itself (the inert unlock block below the hero is never shown for pre-orders)
-    assert "Private link and a PDF you can download" not in sec and "instant" not in sec.lower().replace("not an instant download", "")
-    assert "<!--MK_" not in h
-
-
 def test_preorder_stays_hidden_while_not_fully_configured(client, monkeypatch):
     monkeypatch.setenv("MULANK_PREORDER", "1")
     h = client.get("/en/numerology").text

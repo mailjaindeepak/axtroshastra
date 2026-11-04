@@ -75,7 +75,7 @@ def test_the_whole_customer_journey_from_landing_page_to_paid_pdf(client, monkey
     # 1. landing page: four fields, separate consents, no price, not indexed
     land = client.get("/en/numerology")
     assert land.status_code == 200
-    for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-gender"', 'id="f-phone"', 'id="f-consent"', 'id="f-marketing"'):
+    for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-gender"', 'id="f-phone"', 'id="f-consent"'):
         assert needle in land.text
 
     # 2. the registry says nothing is verified yet: the SAME customer sees "unavailable", with no price or checkout
