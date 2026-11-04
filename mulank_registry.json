@@ -2,322 +2,640 @@
  "_about": "Approval ledger for Mulank content. An entry lets content into a PRODUCTION report only if its status is `verified` (external expert: reviewed_by + reviewed_on) or `owner_approved` (editor + approved_by + approved_on, all named people and a date). draft / needs_review / pending never count. Text lives in mulank_bank.json; a pair is sold only when every key it needs is approved AND has text. All content below is DRAFT: nothing is approved. To approve after review use tools/approve_mulank_content.py, then open a reviewed PR.",
  "entries": {
   "M1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "M9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "B9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PM9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PG9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "CB9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "LK9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y2": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y3": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y4": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y5": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y6": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y7": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y8": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "Y9": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Jupiter>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mars>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Mercury>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Moon>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Saturn>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Sun>Venus": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Jupiter": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Mars": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Mercury": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Moon": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Saturn": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "R:Venus>Sun": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   },
   "PS:2-1": {
-   "status": "needs_review"
+   "status": "owner_approved",
+   "editor": "Deepak Jain",
+   "approved_by": "Deepak Jain",
+   "approved_on": "2026-11-04"
   }
  }
 }
