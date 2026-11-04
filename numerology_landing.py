@@ -43,10 +43,17 @@ def price_block() -> str:
             '<div class="mk-sub">One-time payment, no subscription</div></div>')
 
 
+def price_banner() -> str:
+    """The price shown under the hero while nothing can be bought yet. Selling price only (the regular price appears only once the
+    owner confirms it); no badge, countdown or urgency. The notice that follows says plainly that purchase is not open yet."""
+    return ('<div class="mk-banner"><div class="mk-banner-t">Complete 15-page numerology report</div>' + price_block() +
+            '<div class="mk-banner-s">View your personalised five-page preview first.</div></div>')
+
+
 def hero_offer(state: str, pre: dict) -> str:
     """The short line under the hero text that tells visitors a paid report exists separately."""
     if state == "off":
-        return NOT_YET_NOTICE
+        return price_banner() + NOT_YET_NOTICE
     price = _inr(mulank_pricing.MULANK_PRICE_PAISE)
     if state == "preorder":
         return ('<div class="mk-notice" id="mkNotice"><b>Good to know:</b> your free preview is ready now. The complete report is not '

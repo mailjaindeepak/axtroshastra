@@ -45,8 +45,11 @@ def test_nothing_purchasable_shows_no_price_and_no_paid_section(client):
     h = client.get("/en/numerology").text
     t = _text(h)
     assert "Generate My Free Preview" in t and "See My Free Preview" not in t
-    assert 'class="offer"' not in h and "₹" not in t
+    assert 'class="offer"' not in h and 'class="mk-banner"' in h             # price banner only: no comparison section, no buy button
+    assert "₹299" in t and "₹499" not in t and "Save" not in t and "Special offer" not in t and '<s class="mk-was">' not in h
+    assert "View your personalised five-page preview first." in t
     assert "nothing to buy on this page" in t and "Nothing is charged on this page" in t
+    assert 'data-action="checkout"' not in h and "razorpay" not in h.lower()
     assert "<!--MK_" not in h
 
 
@@ -98,7 +101,7 @@ def test_preorder_state_is_worded_as_a_preorder_with_promise_and_refund_link(cli
 def test_preorder_stays_hidden_while_not_fully_configured(client, monkeypatch):
     monkeypatch.setenv("MULANK_PREORDER", "1")
     h = client.get("/en/numerology").text
-    assert 'class="offer"' not in h and "₹" not in _text(h)
+    assert 'class="offer"' not in h and "Pre-order" not in _text(h) and "pre-order" not in _text(h).lower().split("disclaimer:")[0]
 
 
 # ------------------------------------------------------------------ honesty and brand rules in every state

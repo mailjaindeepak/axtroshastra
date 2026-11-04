@@ -346,7 +346,7 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box
     assert "Not used in your calculation" in h
     assert 'name="robots" content="noindex' in h
-    assert "₹" not in _visible(h)
+    assert "₹499" not in _visible(h) and "Special offer" not in _visible(h)       # the landing shows only the selling price until the owner confirms the regular price
 
 
 def test_landing_says_the_complete_report_is_not_available_until_content_is_approved(client, monkeypatch):
