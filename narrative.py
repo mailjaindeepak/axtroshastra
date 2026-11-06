@@ -237,6 +237,9 @@ def generate_narrative(payload: dict) -> dict:
         return {}
     product = (payload.get("product")
                or (payload.get("meta") or {}).get("product") or "marriage")
+    if product == "annual_report":
+        # annual: AI prose off, deterministic text is complete; add _generate_annual in narrative.py when wanted
+        return {}
     spec = SECTION_SPECS.get(product)
     if not spec:
         return {}
