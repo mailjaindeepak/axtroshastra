@@ -166,7 +166,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "vyapar": "Business Growth Report", "career_growth": "Career Report",
                   "career_intelligence": "Career Intelligence Report",
                   "career_intelligence_v2": "Career Intelligence Report",
-                  "diwali": "Diwali Wealth & Prosperity Report"}
+                  "diwali": "Diwali Wealth & Prosperity Report",
+                  "annual_report": "Annual Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -211,6 +212,9 @@ PRODUCT_SVG = {
     "diwali": _SVG_OPEN + '<path d="M6 21 H26 Q16 28 6 21 Z"/>'
               '<path d="M16 20 C13 16.5 16 14 16 10.5 C16 14 19 16.5 16 20 Z"/>'
               '<path d="M16 4 V6.5 M10 6.5 L11.5 8.5 M22 6.5 L20.5 8.5"/></svg>',
+    # annual_report: a 4-point star inside a circle (New Year, no festival art).
+    "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
+                     '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -405,6 +409,9 @@ def _render_for(product, payload):
     if product == "diwali":                      # English-only (Hindi later)
         import diwali_report
         return diwali_report.render_diwali(payload)
+    if product == "annual_report":               # English-only (Hindi twin later); lazy import
+        import annual_report
+        return annual_report.render_annual(payload)
     if product == "career_growth":
         html = career_growth_report.render_career_growth(payload)
         if (payload.get("meta") or {}).get("lang") == "hi":
@@ -451,6 +458,7 @@ MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 IQ_TEST_PRICE_PAISE = 4900                # ₹49 — IQ Test report
 DIWALI_PRICE_PAISE = 29900                # ₹299 — Diwali Wealth & Prosperity Report (by product, never by variant)
+ANNUAL_PRICE_PAISE = 49900                # ₹499 — Annual Report (struck from ₹999 on the page only); by product, never by variant
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
@@ -470,6 +478,8 @@ def _order_amount_paise(rec: dict) -> int:
         return IQ_TEST_PRICE_PAISE
     if product == "diwali":
         return DIWALI_PRICE_PAISE
+    if product == "annual_report":            # explicit: never rely on the PRICE_PAISE fall-through
+        return ANNUAL_PRICE_PAISE
     if product == "career_intelligence_v2":
         return CAREER_INTEL_V2_PRICE_PAISE
     if product == "career_intelligence":
@@ -569,7 +579,7 @@ def _generate_narrative_task(rid):
     try:
         rec = get_report(rid)
         if rec:
-            narr = narrative.generate_narrative(rec["payload"])
+            narr = narrative.generate_narrative(rec["payload"])   # annual_report returns {} (no LLM)
             if (rec["payload"] or {}).get("product") == "diwali":
                 # Diwali's progress screen polls /api/report/{rid} until report.narrative
                 # exists. With AI off/failed the bank text IS the final text, so mark the
@@ -578,6 +588,10 @@ def _generate_narrative_task(rid):
                 failed = (narrative.last_generation or {}).get("fallback_groups")
                 if failed:   # bank text shipped for these groups — keep it visible (O-10 4)
                     narr["_fallback"] = ",".join(failed)
+            elif (rec["payload"] or {}).get("product") == "annual_report":
+                # annual: AI prose off, deterministic text is complete; add _generate_annual in narrative.py when wanted.
+                # No LLM call: just mark the text step done so the progress page (polls report.narrative) moves on.
+                narr = {"_ready": "1"}
             save_narrative(rid, narr)
             if narrative.last_generation:
                 try:
@@ -1721,6 +1735,44 @@ def create_kundli(inp: KundliIn, request: Request):
             raise HTTPException(422, "bad steering")
         if inp.gift_mode not in (None, "", "self", "gift"):
             raise HTTPException(422, "bad gift_mode")
+    if inp.product == "annual_report":                # own validation; Diwali's stays as above
+        if inp.gender not in ("male", "female"):
+            raise HTTPException(422, "gender must be male or female")
+        if inp.work_type not in ("job", "business", "student", "home"):
+            raise HTTPException(422, "work_type required")
+        if inp.steering and inp.steering not in ("career", "money", "marriage", "luck", "strengths"):
+            raise HTTPException(422, "bad steering")
+        # annual only: bound every free-text field it stores or computes from (F5)
+        if not inp.name.strip() or len(inp.name.strip()) > 60:
+            raise HTTPException(422, "name must be 1 to 60 characters")
+        if not inp.place.strip() or len(inp.place) > 120:
+            raise HTTPException(422, "place must be 1 to 120 characters")
+        if inp.lat is not None and not -90 <= inp.lat <= 90:
+            raise HTTPException(422, "lat out of range")
+        if inp.lon is not None and not -180 <= inp.lon <= 180:
+            raise HTTPException(422, "lon out of range")
+        if len(inp.dob) > 10 or len(inp.tob or "") > 8 or len(inp.tz or "") > 64:
+            raise HTTPException(422, "bad date, time or timezone")
+        if len(inp.phone or "") > 20 or len(inp.email or "") > 254 or len(inp.variant or "") > 64:
+            raise HTTPException(422, "phone, email or variant too long")
+        # annual only: reject what the shared parse below would turn into a 500 (R2-4)
+        if inp.time_quality not in ("T0", "T1", "T2", "T3"):
+            raise HTTPException(422, "bad time_quality")
+        if inp.time_band not in (None, "", "subah", "din", "shaam", "raat"):
+            raise HTTPException(422, "bad time_band")
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", inp.dob):
+                raise ValueError
+            datetime.strptime(inp.dob, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(422, "dob must be YYYY-MM-DD")
+        if inp.time_quality in ("T0", "T1") or inp.tob:   # T2/T3 may omit tob, but a given one must parse
+            try:
+                if not re.fullmatch(r"\d{2}:\d{2}", inp.tob or ""):
+                    raise ValueError
+                datetime.strptime(inp.tob, "%H:%M")
+            except ValueError:
+                raise HTTPException(422, "tob must be HH:MM")
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
         tob = inp.tob
@@ -1773,6 +1825,16 @@ def create_kundli(inp: KundliIn, request: Request):
             time_quality=inp.time_quality, gift_on=gift_on,
             giver_name=inp.giver_name or "", gift_message=inp.gift_message or "",
             place=inp.place or "")
+    elif inp.product == "annual_report":
+        import annual
+        try:
+            report = annual.compute_annual({
+                "name": inp.name, "dob": inp.dob, "tob": tob, "tz": tz, "lat": lat, "lon": lon,
+                "gender": inp.gender, "work_type": inp.work_type, "steering": inp.steering or None,
+                "time_quality": inp.time_quality, "place": inp.place or ""})
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+        report.setdefault("product", "annual_report")   # api checks read payload["product"]
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -1784,7 +1846,9 @@ def create_kundli(inp: KundliIn, request: Request):
         report["meta"]["consent_ts"] = inp.consent_ts
         report["meta"]["consent_v"] = inp.consent_v or "2026-09"
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
-    if inp.product != "diwali":                  # diwali sets its own meta.lang ("en", English-only)
+    if inp.product == "annual_report":
+        report["meta"]["lang"] = "en"            # English-only for now (Hindi twin later)
+    elif inp.product != "diwali":                # diwali sets its own meta.lang ("en", English-only)
         report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
     if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
         import career_growth_hi
@@ -1796,7 +1860,7 @@ def create_kundli(inp: KundliIn, request: Request):
     # fields the client already expects in English (moon_sign_en, lagna_en).
     report["meta"]["geo_source"] = geo_source
     try:
-        if report.get("chart") and inp.product != "diwali":   # diwali's teaser draws its own kundli
+        if report.get("chart") and inp.product not in ("diwali", "annual_report"):   # these teasers draw their own kundli
             report["teaser"]["chart_svg"] = north_chart_svg(report)
     except Exception:
         pass         # (#1) provenance
@@ -1951,6 +2015,30 @@ def _deliver_diwali_task(rid: str, wa_phone: str, name: str) -> None:
         send_whatsapp_report(wa_phone, rid, name, "diwali")
 
 
+def _deliver_annual_task(rid: str, wa_phone: str, name: str) -> None:
+    """Annual Report: same order as Diwali. Instant WhatsApp text (text template, report
+    link) -> text step (deterministic, no AI) -> drop stale PDF -> build it -> report
+    WhatsApp (media template when the PDF is fetchable, else the text-only template;
+    send_whatsapp_report picks). wa_phone is the POPUP number only (§1). Each step never
+    raises; if not done within DIWALI_STILL_COMING_S a 'still on its way' text goes out."""
+    timer = None
+    if wa_phone:
+        send_whatsapp_text(wa_phone, rid, name)
+        timer = threading.Timer(DIWALI_STILL_COMING_S, send_whatsapp_text,
+                                (wa_phone, rid, name))
+        timer.daemon = True
+        timer.start()
+    try:
+        _generate_narrative_task(rid)
+        pdfgen.invalidate(rid)
+        _pregenerate_pdf_task(rid)
+    finally:
+        if timer:
+            timer.cancel()
+    if wa_phone:
+        send_whatsapp_report(wa_phone, rid, name, "annual_report")
+
+
 def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = "",
                          pay_email: str = "", background=None) -> None:
     """Shared 'the report is paid -> deliver it' path (Piece 5, 5b). Used by the
@@ -1990,6 +2078,8 @@ def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = ""
 
     if product == "diwali":                    # text -> PDF -> WhatsApp, in that order
         _run(_deliver_diwali_task, rid, wa_phone, name)
+    elif product == "annual_report":
+        _run(_deliver_annual_task, rid, wa_phone, name)
     else:
         _run(_pregenerate_pdf_task, rid)       # PDF first so WhatsApp can attach it
         _run(_generate_narrative_task, rid)
@@ -2378,7 +2468,7 @@ def _refresh_current_period(payload: dict) -> dict:
     from stored birth data so it is accurate as of *now*, not frozen at the time
     the report was created. No-op if birth data is missing (e.g. milan)."""
     birth = (payload.get("meta") or {}).get("_birth")
-    if not birth or payload.get("product") == "diwali":   # diwali: fixed as_of, month-free teaser
+    if not birth or payload.get("product") in ("diwali", "annual_report"):   # fixed as_of, month-free teaser
         return payload
     try:
         from engine import compute_chart, current_period
@@ -2711,10 +2801,14 @@ _DIWALI_ACTIONS = (
     "else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+u),'_blank');}};</script>")
 
 
-def _add_diwali_actions(html: str) -> str:
+_ANNUAL_ACTIONS = _DIWALI_ACTIONS.replace("My Diwali report from Axtroshastra",
+                                          "My Annual Report from Axtroshastra")
+
+
+def _add_diwali_actions(html: str, bar: str = _DIWALI_ACTIONS) -> str:
     if "</body>" in html:
-        return html.replace("</body>", _DIWALI_ACTIONS + "</body>", 1)
-    return html + _DIWALI_ACTIONS
+        return html.replace("</body>", bar + "</body>", 1)
+    return html + bar
 
 
 @app.get("/report/{rid}.pdf", include_in_schema=False)
@@ -2752,6 +2846,8 @@ def report_page(rid: str, v2: int = 1):
     html = _render_for(payload.get("product", "marriage"), payload)
     if payload.get("product") == "diwali":
         html = _add_diwali_actions(html)
+    elif payload.get("product") == "annual_report":
+        html = _add_diwali_actions(html, _ANNUAL_ACTIONS)
     return HTMLResponse(_wire_report_chrome(html, rid, lang))
 
 
@@ -2913,7 +3009,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/iq-test", "/en/diwali", "/blog",
+            "/en/career-intelligence", "/en/iq-test", "/en/diwali", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3479,6 +3575,19 @@ def business_growth_redirect(request: Request):
 def diwali_en():
     """Diwali Wealth & Prosperity Report landing (English; Hindi later)."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "diwali.html"))
+
+
+@app.get("/en/annual-report", include_in_schema=False)
+def annual_report_en():
+    """Annual Report landing (English; Hindi twin later). Before /{slug}."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "annual-report.html"))
+
+
+@app.get("/annual-report", include_in_schema=False)
+def annual_report_redirect(request: Request):
+    """Legacy /annual-report → /en/annual-report (301), query string kept. Before /{slug}."""
+    q = request.url.query
+    return RedirectResponse("/en/annual-report" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/diwali", include_in_schema=False)

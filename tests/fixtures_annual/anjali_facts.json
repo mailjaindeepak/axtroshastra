@@ -1,0 +1,371 @@
+{
+ "areas": {
+  "business": {
+   "2026-12": "strong",
+   "2027-01": "strong",
+   "2027-02": "mixed",
+   "2027-03": "careful",
+   "2027-04": "careful",
+   "2027-05": "mixed",
+   "2027-06": "mixed",
+   "2027-07": "strong",
+   "2027-08": "mixed",
+   "2027-09": "strong",
+   "2027-10": "strong",
+   "2027-11": "mixed"
+  },
+  "career": {
+   "2026-12": "strong",
+   "2027-01": "strong",
+   "2027-02": "mixed",
+   "2027-03": "careful",
+   "2027-04": "careful",
+   "2027-05": "strong",
+   "2027-06": "mixed",
+   "2027-07": "strong",
+   "2027-08": "mixed",
+   "2027-09": "strong",
+   "2027-10": "strong",
+   "2027-11": "mixed"
+  },
+  "family": {
+   "2026-12": "strong",
+   "2027-01": "strong",
+   "2027-02": "strong",
+   "2027-03": "mixed",
+   "2027-04": "mixed",
+   "2027-05": "strong",
+   "2027-06": "mixed",
+   "2027-07": "strong",
+   "2027-08": "strong",
+   "2027-09": "strong",
+   "2027-10": "strong",
+   "2027-11": "mixed"
+  },
+  "marriage": {
+   "2026-12": "strong",
+   "2027-01": "strong",
+   "2027-02": "strong",
+   "2027-03": "careful",
+   "2027-04": "careful",
+   "2027-05": "mixed",
+   "2027-06": "mixed",
+   "2027-07": "strong",
+   "2027-08": "mixed",
+   "2027-09": "strong",
+   "2027-10": "strong",
+   "2027-11": "mixed"
+  },
+  "money": {
+   "2026-12": "strong",
+   "2027-01": "strong",
+   "2027-02": "strong",
+   "2027-03": "mixed",
+   "2027-04": "mixed",
+   "2027-05": "strong",
+   "2027-06": "mixed",
+   "2027-07": "strong",
+   "2027-08": "mixed",
+   "2027-09": "strong",
+   "2027-10": "strong",
+   "2027-11": "mixed"
+  }
+ },
+ "birth": {
+  "date": "1996-10-19",
+  "place": "Pune",
+  "time_known": true,
+  "time_text": "12:30"
+ },
+ "dhaiya": {
+  "active": true,
+  "ends": "2027-06-03",
+  "kind": "4th",
+  "restarts": "2027-10-20"
+ },
+ "first_name": "Anjali",
+ "first_open_topic": "Career and work",
+ "gender": "female",
+ "kaal_sarp": false,
+ "kundli": {
+  "1": [
+   "Mo",
+   "Ju"
+  ],
+  "10": [
+   "Me",
+   "Ra"
+  ],
+  "11": [
+   "Su"
+  ],
+  "12": [],
+  "2": [],
+  "3": [],
+  "4": [
+   "Sa",
+   "Ke"
+  ],
+  "5": [],
+  "6": [],
+  "7": [],
+  "8": [
+   "Ma"
+  ],
+  "9": [
+   "Ve"
+  ]
+ },
+ "manglik": {
+  "cancelled": false,
+  "from_lagna": true,
+  "from_moon": true,
+  "note": null,
+  "status": "manglik"
+ },
+ "moon_sign": "Sagittarius",
+ "nakshatra": "Purva Ashadha",
+ "name": "Anjali Deshpande",
+ "pada": 4,
+ "past_months": [
+  {
+   "label": "Oct 2026",
+   "ym": "2026-10"
+  },
+  {
+   "label": "Nov 2026",
+   "ym": "2026-11"
+  }
+ ],
+ "pitra": false,
+ "planet_period": {
+  "main": "Rahu",
+  "next_start": "2028-05-12",
+  "next_sub": "Rahu/Mercury",
+  "sub": "Saturn",
+  "until": "2028-05-12"
+ },
+ "planet_table": [
+  {
+   "nakshatra": "Chitra",
+   "pada": 3,
+   "planet": "Sun",
+   "sign": "Libra",
+   "strength_label": "Needs care"
+  },
+  {
+   "nakshatra": "Purva Ashadha",
+   "pada": 4,
+   "planet": "Moon",
+   "sign": "Sagittarius",
+   "strength_label": "Average"
+  },
+  {
+   "nakshatra": "Ashlesha",
+   "pada": 4,
+   "planet": "Mars",
+   "sign": "Cancer",
+   "strength_label": "Needs care"
+  },
+  {
+   "nakshatra": "Hasta",
+   "pada": 4,
+   "planet": "Mercury",
+   "sign": "Virgo",
+   "strength_label": "Strong"
+  },
+  {
+   "nakshatra": "Purva Ashadha",
+   "pada": 2,
+   "planet": "Jupiter",
+   "sign": "Sagittarius",
+   "strength_label": "Strong"
+  },
+  {
+   "nakshatra": "Purva Phalguni",
+   "pada": 4,
+   "planet": "Venus",
+   "sign": "Leo",
+   "strength_label": "Average"
+  },
+  {
+   "nakshatra": "Uttara Bhadrapada",
+   "pada": 2,
+   "planet": "Saturn",
+   "sign": "Pisces",
+   "strength_label": "Average"
+  },
+  {
+   "nakshatra": "Hasta",
+   "pada": 1,
+   "planet": "Rahu",
+   "sign": "Virgo",
+   "strength_label": "Average"
+  },
+  {
+   "nakshatra": "Uttara Bhadrapada",
+   "pada": 3,
+   "planet": "Ketu",
+   "sign": "Pisces",
+   "strength_label": "Average"
+  }
+ ],
+ "rising_sign": "Sagittarius",
+ "sade_sati": {
+  "active": false,
+  "change_dates": [],
+  "stage": null
+ },
+ "saturn_now": {
+  "changes": [
+   {
+    "date": "2027-06-03",
+    "from": "Pisces",
+    "house_from_moon": 5,
+    "to": "Aries"
+   },
+   {
+    "date": "2027-10-20",
+    "from": "Aries",
+    "house_from_moon": 4,
+    "to": "Pisces"
+   }
+  ],
+  "house_from_moon": 4,
+  "sign": "Pisces"
+ },
+ "sign_changes": [
+  {
+   "date": "2026-12-05",
+   "from": "Aquarius",
+   "planet": "Rahu",
+   "to": "Capricorn"
+  },
+  {
+   "date": "2026-12-05",
+   "from": "Leo",
+   "planet": "Ketu",
+   "to": "Cancer"
+  },
+  {
+   "date": "2027-01-25",
+   "from": "Leo",
+   "planet": "Jupiter",
+   "to": "Cancer"
+  },
+  {
+   "date": "2027-06-03",
+   "from": "Pisces",
+   "planet": "Saturn",
+   "to": "Aries"
+  },
+  {
+   "date": "2027-06-26",
+   "from": "Cancer",
+   "planet": "Jupiter",
+   "to": "Leo"
+  },
+  {
+   "date": "2027-10-20",
+   "from": "Aries",
+   "planet": "Saturn",
+   "to": "Pisces"
+  },
+  {
+   "date": "2027-11-26",
+   "from": "Leo",
+   "planet": "Jupiter",
+   "to": "Virgo"
+  }
+ ],
+ "span_months": [
+  {
+   "label": "Dec 2026",
+   "ym": "2026-12"
+  },
+  {
+   "label": "Jan 2027",
+   "ym": "2027-01"
+  },
+  {
+   "label": "Feb 2027",
+   "ym": "2027-02"
+  },
+  {
+   "label": "Mar 2027",
+   "ym": "2027-03"
+  },
+  {
+   "label": "Apr 2027",
+   "ym": "2027-04"
+  },
+  {
+   "label": "May 2027",
+   "ym": "2027-05"
+  },
+  {
+   "label": "Jun 2027",
+   "ym": "2027-06"
+  },
+  {
+   "label": "Jul 2027",
+   "ym": "2027-07"
+  },
+  {
+   "label": "Aug 2027",
+   "ym": "2027-08"
+  },
+  {
+   "label": "Sep 2027",
+   "ym": "2027-09"
+  },
+  {
+   "label": "Oct 2027",
+   "ym": "2027-10"
+  },
+  {
+   "label": "Nov 2027",
+   "ym": "2027-11"
+  }
+ ],
+ "today": "2026-11-06",
+ "tones": {
+  "2026-10": "mixed",
+  "2026-11": "strong",
+  "2026-12": "strong",
+  "2027-01": "strong",
+  "2027-02": "mixed",
+  "2027-03": "careful",
+  "2027-04": "careful",
+  "2027-05": "mixed",
+  "2027-06": "careful",
+  "2027-07": "strong",
+  "2027-08": "mixed",
+  "2027-09": "strong",
+  "2027-10": "strong",
+  "2027-11": "strong"
+ },
+ "work_type": "job",
+ "yogas": [
+  {
+   "detail": "Jupiter in a kendra from the Moon",
+   "effect": "Wisdom, reputation, steady rise.",
+   "name": "Gajakesari Yoga"
+  },
+  {
+   "detail": "Mercury strong (exalted) in a kendra",
+   "effect": "A defining strength of personality and success.",
+   "name": "Bhadra Yoga (Pancha Mahapurusha)"
+  },
+  {
+   "detail": "Jupiter strong (own) in a kendra",
+   "effect": "A defining strength of personality and success.",
+   "name": "Hamsa Yoga (Pancha Mahapurusha)"
+  },
+  {
+   "detail": "Mars debilitated but dispositor Moon in a kendra",
+   "effect": "Early struggle turning into notable success.",
+   "name": "Neecha Bhanga Raja Yoga (indication)"
+  }
+ ]
+}
