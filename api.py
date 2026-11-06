@@ -3250,6 +3250,7 @@ async function logout(){{
   location.href='/';
 }}
 </script>
+<p style="text-align:center;font-size:12px;opacity:.65;margin:0;padding:0 0 24px">Managed by ACubeD Global</p>
 </body></html>"""
 
 
