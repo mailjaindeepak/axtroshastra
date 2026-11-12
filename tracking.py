@@ -74,9 +74,9 @@ LINKEDIN_CONV_PURCHASE_CAPI = os.getenv("LINKEDIN_CONV_PURCHASE_CAPI", "")
 LINKEDIN_API_VERSION = os.getenv("LINKEDIN_API_VERSION", "202608")
 OAIQ_PIXEL_ID = os.getenv("OAIQ_PIXEL_ID", "R75Tit1TvD1Jm8uJDnGStU")
 OAIQ_CAPI_TOKEN = os.getenv("OAIQ_CAPI_TOKEN", "")
-X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2")
+X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rgvp6")
 X_PIXEL_TOKEN = os.getenv("X_PIXEL_TOKEN", "")
-X_EVENT_PURCHASE = os.getenv("X_EVENT_PURCHASE", "tw-rf9y2-rgqob")
+X_EVENT_PURCHASE = os.getenv("X_EVENT_PURCHASE", "tw-rgvp6-rix10")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://www.axtroshastra.com").rstrip("/")
 
 _TIMEOUT = 5   # seconds; a slow ad-network call must never hold a request
@@ -287,9 +287,9 @@ def _oaiq_purchase(rid):
 
 
 def _x_purchase(rid, phone=None, email=None, twclid=None,
-                client_user_agent=None, client_ip_address=None):
+                client_user_agent=None, client_ip_address=None, value=None):
     """Stream a Purchase to X's Conversion API.
-    Server-side backstop for the browser twq('event','tw-rf9y2-rgqob') fire.
+    Server-side backstop for the browser twq('event','tw-rgvp6-rix10') fire.
     Dedup: conversion_id = report id, same value the browser pixel sends.
     Dormant until X_PIXEL_TOKEN is set."""
     if not (X_PIXEL_TOKEN and X_PIXEL_ID and X_EVENT_PURCHASE):
@@ -320,6 +320,8 @@ def _x_purchase(rid, phone=None, email=None, twclid=None,
             "identifiers": [identifiers],
         }],
     }
+    if value is not None:   # X's API takes the amount as a string, e.g. "499.00"
+        payload["conversions"][0]["value"] = "%.2f" % value
     url = f"https://ads-api.x.com/12/measurement/conversions/{X_PIXEL_ID}"
     headers = {
         "Content-Type": "application/json",
@@ -358,7 +360,7 @@ def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
         lambda: _oaiq_purchase(rid),
         lambda: _x_purchase(rid, phone, email, twclid=twclid,
                             client_user_agent=client_user_agent,
-                            client_ip_address=client_ip_address),
+                            client_ip_address=client_ip_address, value=value),
     ):
         try:
             fire()

@@ -77,7 +77,7 @@ GADS_CHECKOUT_SEND_TO = os.getenv(
     "GADS_CHECKOUT_SEND_TO", "AW-18380046629/2LE5CI7K7JkdEKWCpbxE").strip()
 
 # ---- X (Twitter) pixel -----------------------------------------------------
-X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
+X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rgvp6").strip()
 
 # ---- Meta Pixel, split by domain -------------------------------------------
 # axtroshastra.com and axtroshastra.in serve the same app off one CloudFront
@@ -1113,10 +1113,13 @@ def _inject_x_pixel(html: str) -> str:
     """Add the X (Twitter) pixel + funnel bridge + twclid capture. Idempotent:
     skips any page already loading the X UWT SDK. Set X_PIXEL_ID="" to disable.
 
-    The funnel bridge wraps window.fbq (same pattern as the LinkedIn bridge) so
-    every page that already fires Lead / InitiateCheckout / Purchase through Meta
-    automatically fires the matching X conversion — zero per-page edits needed.
-    Purchase also fires server-side via tracking._x_purchase (the reliable path);
+    The funnel bridge wraps window.gtag (like the Google Ads bridge and the
+    beacon), because gtag is the call that carries value/currency on every page:
+    form_start / generate_lead / begin_checkout / purchase fire the matching X
+    event with zero per-page edits. Lead sends a flat Rs.1 (a lead is free; same
+    as the Google Ads lead conversion). It wraps once (closure flag, not a flag
+    on the function) because the beacon re-wraps gtag after it without copying
+    flags. Purchase also fires server-side via tracking._x_purchase;
     conversion_id = report id dedups the browser + server fires."""
     if not X_PIXEL_ID:
         return html
@@ -1124,9 +1127,10 @@ def _inject_x_pixel(html: str) -> str:
         if not html or "ads-twitter.com/uwt.js" in html:
             return html
         x_conv = json.dumps({
-            "Lead": "tw-%s-rgqp0" % X_PIXEL_ID,
-            "InitiateCheckout": "tw-%s-rgqow" % X_PIXEL_ID,
-            "Purchase": "tw-%s-rgqob" % X_PIXEL_ID,
+            "form_start": "tw-%s-rix15" % X_PIXEL_ID,
+            "generate_lead": "tw-%s-rix0i" % X_PIXEL_ID,
+            "begin_checkout": "tw-%s-rix0n" % X_PIXEL_ID,
+            "purchase": "tw-%s-rix10" % X_PIXEL_ID,
         })
         snippet = (
             '<!-- X conversion tracking (injected server-side) -->\n'
@@ -1136,29 +1140,25 @@ def _inject_x_pixel(html: str) -> str:
             'a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,\'script\');\n'
             'twq(\'config\',\'' + X_PIXEL_ID + '\');\n'
             '(function(){\n'
-            '  var CONV = ' + x_conv + ';\n'
-            '  function xfire(evId, cid){\n'
-            '    if(!evId || !window.twq) return;\n'
-            '    var p = {};\n'
-            '    if(cid) p.conversion_id = String(cid);\n'
-            '    try{ twq(\'event\', evId, p); }catch(e){}\n'
-            '  }\n'
+            '  var XEV = ' + x_conv + ';\n'
+            '  var done = 0;\n'
             '  function bridge(){\n'
-            '    var orig = window.fbq;\n'
-            '    if(typeof orig !== \'function\' || orig.__axTw) return;\n'
-            '    var wrapped = function(){\n'
+            '    var orig = window.gtag;\n'
+            '    if(done || typeof orig !== \'function\') return;\n'
+            '    done = 1;\n'
+            '    window.gtag = function(){\n'
             '      try{\n'
-            '        if(arguments[0] === \'track\'){\n'
-            '          var id = CONV[arguments[1]];\n'
-            '          if(id) xfire(id, arguments[3] && arguments[3].eventID);\n'
+            '        var id = arguments[0] === \'event\' && XEV[arguments[1]];\n'
+            '        if(typeof id === \'string\' && window.twq){\n'
+            '          var a = arguments[2] || {}, p = {};\n'
+            '          if(arguments[1] === \'generate_lead\'){ p.value = 1; p.currency = \'INR\'; }\n'
+            '          else if(a.value != null){ p.value = a.value; p.currency = a.currency || \'INR\'; }\n'
+            '          if(a.transaction_id) p.conversion_id = String(a.transaction_id);\n'
+            '          twq(\'event\', id, p);\n'
             '        }\n'
             '      }catch(e){}\n'
             '      return orig.apply(this, arguments);\n'
             '    };\n'
-            '    for(var k in orig){ try{ wrapped[k] = orig[k]; }catch(e){} }\n'
-            '    wrapped.__axLi = orig.__axLi;\n'
-            '    wrapped.__axTw = 1;\n'
-            '    window.fbq = wrapped;\n'
             '  }\n'
             '  bridge();\n'
             '  document.addEventListener(\'DOMContentLoaded\', bridge);\n'
@@ -1284,8 +1284,7 @@ def _inject_tracking(html: str) -> str:
 
     Order matters — the Google Ads bridge wraps gtag (must exist first); LinkedIn
     goes in after the Meta block so its funnel bridge is parsed after window.fbq
-    exists; X goes after OAIQ and before LinkedIn so the LinkedIn bridge (which
-    also wraps fbq) sees the X-wrapped fbq and preserves the __axTw flag; the
+    exists; X wraps gtag too, so it also needs gtag defined first; the
     beacon goes in LAST of the wrapping scripts so it wraps the gtag defined by
     _inject_ga_meta_clarity (or hardcoded in the page). Taboola is standalone
     (no wrapping) so it goes after the beacon."""
