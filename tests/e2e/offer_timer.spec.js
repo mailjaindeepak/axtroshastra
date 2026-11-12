@@ -73,34 +73,13 @@ test('diwali keeps the ₹999 -> ₹299 cut and a live clock on the sticky bar',
   await expect(t2.locator('.clk')).toBeVisible(); // display:inline, not stacked on its own line
 });
 
-// Annual Report twin of the Diwali tests above: same 30-minute sessionStorage timer, key axs_annual_offer_end.
-test('annual offer timer does not reset to 30:00 on refresh', async ({ page }) => {
+// Annual Report: price and countdown were removed from the sticky bar (price shows only at the pay buttons).
+test('annual sticky bar shows no price and no countdown, on desktop too with a form field focused', async ({ page }) => {
   await page.goto('/en/annual-report');
-  const clk = page.locator('#otClockSticky');
-  await page.waitForTimeout(1500);
-  const before = (await clk.textContent()).trim();
-  expect(before).toMatch(/^\d{2}:\d{2}$/);
-  expect(before).not.toBe('30:00');
-
-  const end1 = await page.evaluate(() => sessionStorage.getItem('axs_annual_offer_end'));
-  expect(end1).toBeTruthy();
-
-  await page.reload();
-  await page.waitForTimeout(300);
-  const after = (await page.locator('#otClockSticky').textContent()).trim();
-  const end2 = await page.evaluate(() => sessionStorage.getItem('axs_annual_offer_end'));
-
-  expect(end2).toBe(end1);
-  expect(after).not.toBe('30:00');
-  expect(secs(after)).toBeLessThanOrEqual(secs(before) + 1);
-});
-
-test('annual keeps the ₹999 -> ₹499 cut, "Offer ends in" and a live clock on the sticky bar', async ({ page }) => {
-  await page.goto('/en/annual-report');
-  await page.evaluate(() => { document.getElementById('stickyBar').hidden = false; });
-  const t2 = page.locator('#stT2');
-  await expect(t2).toContainText('Offer ends in');
-  await expect(t2).toContainText('₹999');
-  await expect(t2).toContainText('₹499');
-  await expect(t2.locator('.clk')).toBeVisible();
+  await page.locator('#f-name').focus();
+  await page.evaluate(() => window.scrollTo(0, document.getElementById('kundliForm').offsetTop + 400));
+  const bar = page.locator('#stickyBar');
+  if (!(await page.evaluate(() => matchMedia('(hover:none)').matches))) await expect(bar).toBeVisible();
+  await expect(bar).not.toContainText('₹');
+  await expect(page.locator('#otClockSticky, #otClock, #offerTimer')).toHaveCount(0);
 });

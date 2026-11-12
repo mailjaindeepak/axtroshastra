@@ -41,11 +41,6 @@ h1,h2,h3{font-family:var(--display);line-height:1.12}
 .btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sindoor-dark)}
 .btn:disabled{opacity:.7;cursor:wait}
 .btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
-.offer-timer{margin:16px auto 0;max-width:360px;background:#fff;border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(228,176,74,.18)}
-.offer-timer b.clk,.sticky b.clk{font-variant-numeric:tabular-nums;font-weight:800;display:inline;white-space:nowrap}
-.offer-timer b.clk{color:var(--midnight);background:#FFF1D0;border:1px solid var(--haldi);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
-.offer-timer s{color:var(--muted)}.offer-timer .amt{color:var(--sindoor);font-weight:800}
-.sticky .t b.amt{display:inline;font-size:inherit;color:var(--haldi)}.sticky .t b.clk{display:inline;font-size:inherit;color:#fff}.sticky .t s{opacity:.7}
 .btn-note{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
 section{padding:52px 0}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -281,8 +276,7 @@ footer .note{display:block;max-width:520px;margin:10px auto 0;color:#9C8BB0;font
 .sticky .t{flex:1;min-width:0;font-size:12.5px;line-height:1.4}
 .sticky .t span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky button{flex:none;min-height:44px;border:0;border-radius:100px;background:#F2A516;color:#2B0D00;font:800 14px var(--body);padding:0 20px;cursor:pointer}
-.sticky.kbd{display:none!important}
-.sticky .t b.clk{font-family:var(--display)}
+@media(hover:none){.sticky.kbd{display:none!important}} /* phone-keyboard rule only; on desktop focus stays in the form and hid the bar for good */
 
 /* ---------- overlays: calculating (before preview) + progress (after payment) ---------- */
 .ov{position:fixed;inset:0;background:radial-gradient(120% 70% at 50% 0%,#2A1846,#1A1030 70%);z-index:200;display:none;align-items:center;justify-content:center;padding:32px 20px;overflow:hidden}
@@ -455,7 +449,6 @@ fbq('track', 'PageView');
       </div>
       <button class="btn" type="submit" id="submitBtn">Check my Annual Report</button>
     </form>
-    <div class="offer-timer" id="offerTimer">Offer ends in <b class="clk" id="otClock">30:00</b> · <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -617,7 +610,7 @@ fbq('track', 'PageView');
 
 <div class="sticky" id="stickyBar" hidden role="region" aria-label="Get your report">
   <div class="in">
-    <div class="t" id="stT2"><span>Offer ends in <b class="clk" id="otClockSticky">30:00</b></span><span><s>₹999</s> <b class="amt">₹499</b></span></div>
+    <div class="t" id="stT2"><span>Your Annual Report</span></div>
     <button type="button" id="stickyBtn">Check my Annual Report</button>
   </div>
 </div>
@@ -1094,20 +1087,6 @@ $('unlockBtn').addEventListener('animationend',function(e){ if(e.animationName==
   form.addEventListener('focusout',function(){ setTimeout(function(){ if(!form.contains(document.activeElement)) sticky.classList.remove('kbd'); },120); });
 })();
 
-/* launch-offer countdown (same logic as the CI page: 30 min, per-tab sessionStorage, stops at 00:00) */
-(function(){
-  var DUR=30*60*1000, KEY='axs_annual_offer_end', end=0;
-  try{ end=+sessionStorage.getItem(KEY); }catch(e){}
-  if(!end){ end=Date.now()+DUR; try{ sessionStorage.setItem(KEY,String(end)); }catch(e){} }
-  function two(n){ return (n<10?'0':'')+n; }
-  function tick(){
-    var ms=end-Date.now(); if(ms<0) ms=0;
-    var t=two(Math.floor(ms/60000))+':'+two(Math.floor((ms%60000)/1000));
-    ['otClock','otClockSticky'].forEach(function(i){ var e=document.getElementById(i); if(e) e.textContent=t; });
-    if(ms>0) setTimeout(tick,1000);
-  }
-  tick();
-})();
 </script>
 </body>
 </html>

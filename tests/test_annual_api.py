@@ -187,7 +187,7 @@ def test_landing_page_and_hooks(client):
     r = client.get("/en/annual-report")
     assert r.status_code == 200
     h = r.text
-    assert "axs_annual_offer_end" in h and "annual_report" in h
+    assert "axs_annual_offer_end" not in h and "annual_report" in h  # countdown removed from the page
     assert '<link rel="canonical" href="https://www.axtroshastra.com/en/annual-report">' in h
     assert not FESTIVAL.search(h), FESTIVAL.search(h)
 
