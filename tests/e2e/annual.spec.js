@@ -66,9 +66,8 @@ test.afterEach(() => { expect(errs, 'console errors').toEqual([]); });
 test('Landing: title, Rs 499 struck from Rs 999, no festival words, form options, no sideways scroll', async ({ page }) => {
   await expect(page).toHaveTitle(/Annual Report/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.axtroshastra.com/en/annual-report');
-  await expect(page.locator('#offerTimer')).toContainText('Offer ends in');
-  await expect(page.locator('#offerTimer')).toContainText('₹499');
-  await expect(page.locator('#offerTimer s')).toHaveText('₹999');
+  // no price or countdown below the form: price shows only at the pay buttons
+  await expect(page.locator('#offerTimer')).toHaveCount(0);
   await expect(page.locator('#submitBtn')).toContainText('Check my Annual Report');
   const visible = await page.evaluate(() => document.body.innerText);
   expect(visible, 'festival word in visible text').not.toMatch(FESTIVAL_RE);
@@ -160,9 +159,8 @@ test('Sticky bar: hidden at the top, shown after the cover, hidden while the mai
   await expect(bar).toBeHidden();
   await page.evaluate(() => { const c = document.getElementById('cover'); window.scrollTo(0, c.getBoundingClientRect().top + scrollY + c.offsetHeight * 0.8); });
   await expect(bar).toBeVisible();
-  await expect(bar.locator('#otClockSticky')).toHaveText(/^(29|30):\d\d$/);
-  await expect(bar.locator('s')).toHaveText('₹999');
-  await expect(bar.locator('.amt')).toHaveText('₹499');
+  await expect(bar).not.toContainText('₹');
+  await expect(bar.locator('#otClockSticky')).toHaveCount(0);
   await expect(page.locator('#stickyBtn')).toHaveText('Unlock');
   // the bar's button scrolls to the main Unlock, and the bar hides there
   await page.locator('#stickyBtn').click();

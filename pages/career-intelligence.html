@@ -117,10 +117,6 @@ section{padding:52px 0}
 .tob-toggle .spec{color:var(--sindoor);font-weight:600}
 
 /* ---------- LAUNCH-OFFER TIMER ---------- */
-.offer-timer{margin:16px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(201,163,78,.14)}
-.offer-timer b.clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--midnight);background:var(--haldi-soft);border:1px solid var(--haldi);border-radius:6px;padding:2px 8px;letter-spacing:.5px}
-.offer-timer s{color:var(--muted)}
-.offer-timer .amt{color:var(--sindoor);font-weight:800}
 
 /* ---------- TRUST STRIP ---------- */
 .trust{background:var(--midnight);padding:0 0 26px}
@@ -184,7 +180,7 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
-.sticky.kbd{display:none!important}
+@media(hover:none){.sticky.kbd{display:none!important}} /* phone-keyboard rule only; on desktop focus stays in the form and hid the bar for good */
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -391,7 +387,6 @@ fbq('track', 'PageView');
       <p class="btn-note">Free · No card needed · Takes about 2 minutes</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹299</span></div>
   </div>
 </header>
 
@@ -876,7 +871,6 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career Intelligence Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹299</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Snapshot</a>
 </div>
@@ -1426,21 +1420,6 @@ window.addEventListener('scroll', function(){
   }).catch(function(){ if(sec) sec.style.display='none'; });
 })();
 
-/* launch-offer countdown */
-(function(){
-  var DUR = 30 * 60 * 1000, KEY = 'axs_career_offer_end';
-  var end = +sessionStorage.getItem(KEY);
-  if (!end) { end = Date.now() + DUR; try { sessionStorage.setItem(KEY, String(end)); } catch(e){} }
-  var a = document.getElementById('otClock'), b = document.getElementById('otClockSticky'), c = document.getElementById('otClockSample');
-  function two(n){ return (n < 10 ? '0' : '') + n; }
-  function tick(){
-    var ms = end - Date.now(); if (ms < 0) ms = 0;
-    var t = two(Math.floor(ms/60000)) + ':' + two(Math.floor((ms%60000)/1000));
-    if (a) a.textContent = t; if (b) b.textContent = t; if (c) c.textContent = t;
-    if (ms > 0) setTimeout(tick, 1000);
-  }
-  tick();
-})();
 </script>
 </body>
 </html>
