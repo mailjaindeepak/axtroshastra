@@ -30,6 +30,13 @@ def pinned(monkeypatch):
     monkeypatch.setattr(mc, "_today", lambda: PIN)
 
 
+@pytest.fixture(autouse=True)
+def unapproved(monkeypatch):
+    """Pre-order exists for content that is not approved yet. The shipped ledger now approves every key, so each test starts from an explicit
+    empty ledger; tests that need approved content set their own registry."""
+    monkeypatch.setattr(mc, "REGISTRY", {})
+
+
 @pytest.fixture
 def on(monkeypatch):
     monkeypatch.setenv("MULANK_PREORDER", "1")

@@ -46,13 +46,13 @@ def _cards(html):
 
 
 # ------------------------------------------------------------------ renderer: what may be shown
-def test_production_refuses_every_pair_with_the_shipped_registry():
+def test_production_refuses_every_pair_with_an_empty_ledger():
     seen = set()
     for y in range(1950, 2010):
         for m in range(1, 13):
             for d in range(1, 10):
                 try:
-                    R.build_report(d, m, y, "Test", today=PIN)
+                    R.build_report(d, m, y, "Test", today=PIN, registry={})
                 except R.ReportNotAvailable as e:
                     assert e.missing
                     seen.add(numerology.compute_mulank(d, m, y, today=PIN)["pair_key"])
@@ -574,7 +574,8 @@ def test_fragment_preview_has_the_career_structure_filled_with_numerology_conten
     assert frag.headers["cache-control"] == "no-store" and "noindex" in frag.headers["x-robots-tag"]
 
 
-def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client, rz):
+def test_ineligible_customer_gets_no_unlock_anywhere_and_order_is_refused(client, rz, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})                       # nothing approved
     r = client.post("/api/mulank", json={"name": "Asha", "dob": "29/07/1990", "country_code": "+91", "phone": "9677700001", "consent_terms": True})
     assert r.json()["eligible"] is False and "offer" not in r.json()
     rid = r.json()["report_id"]

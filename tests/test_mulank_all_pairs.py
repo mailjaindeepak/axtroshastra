@@ -1,8 +1,8 @@
 """Content completeness for every Mulank-Bhagyank combination (all 81) across every Personal Year (1-9).
 
-The approval ledger ships with nothing approved, so these tests use a clearly-test registry (every required key owner-approved) to prove that
-the DRAFTED TEXT is complete for every combination and that the production renderer, the editorial QC and the PDF engine all accept it.
-Passing here does not make anything sellable: the real ledger stays closed until the owner approves content (see docs).
+The shipped ledger approves every key (owner, 4 Nov 2026). These tests use a clearly-test registry (every required key owner-approved) so they
+prove that the DRAFTED TEXT is complete for every combination, independent of the ledger, and that the production renderer, the editorial QC and
+the PDF engine all accept it. The "not approved" cases use an explicit empty ledger, never the shipped one.
 Set MULANK_PDF_ALL=1 to render all 81 PDFs with Chrome; by default a spread of combinations covering every Mulank, Bhagyank and Personal Year is rendered."""
 import os
 import re
@@ -54,11 +54,13 @@ def test_drafted_text_exists_for_every_key_every_combination_and_year_needs():
             assert not missing, (pk, yr, missing)
 
 
-def test_the_shipped_ledger_opens_no_combination_until_the_owner_approves():
+def test_the_shipped_ledger_opens_every_combination_and_an_empty_one_opens_none():
     for pk, dob in PAIRS.items():
-        r = mc.pair_readiness(*dob, today=PIN)
-        assert r["eligible"] is False and r["complete"] is True and r["reason_code"] == "content_not_approved", pk
-    assert mc.sale_open(today=PIN) is False
+        shipped = mc.pair_readiness(*dob, today=PIN)
+        assert shipped["eligible"] is True and shipped["approved"] is True and shipped["complete"] is True and shipped["reason_code"] == "ok", (pk, shipped["missing"])
+        empty = mc.pair_readiness(*dob, today=PIN, registry={})
+        assert empty["eligible"] is False and empty["complete"] is True and empty["reason_code"] == "content_not_approved", pk
+    assert mc.sale_open(today=PIN) is True and mc.sale_open(registry={}, today=PIN) is False
 
 
 def test_all_81_combinations_build_a_full_15_card_report_for_every_personal_year_and_pass_the_editorial_qc():
@@ -88,7 +90,7 @@ def test_the_only_way_to_a_production_report_is_approval_and_text_never_a_fallba
     for pk in ("1-1", "9-9", "2-1", "5-8"):
         dob = PAIRS[pk]
         with pytest.raises(R.ReportNotAvailable):
-            R.build_report(*dob, "Test Person", today=PIN)                                 # shipped ledger: nothing approved
+            R.build_report(*dob, "Test Person", today=PIN, registry={})                    # nothing approved
         reg = _approved(dob, PIN)
         reg.pop("PM" + pk.split("-")[0])
         with pytest.raises(R.ReportNotAvailable):

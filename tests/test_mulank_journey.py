@@ -80,6 +80,7 @@ def test_the_whole_customer_journey_from_landing_page_to_paid_pdf(client, monkey
 
     # 2. the registry says nothing is verified yet: the SAME customer sees "unavailable", with no price or checkout
     form = {"name": "Priya Sharma", "dob": "29/07/1990", "gender": "female", "country_code": "+91", "phone": "9755500001", "consent_terms": True}
+    monkeypatch.setattr(mc, "REGISTRY", {})                                  # nothing approved
     rid0 = client.post("/api/mulank", json=form).json()["report_id"]
     p0 = client.get(f"/en/numerology/preview/{rid0}")
     assert "not ready for your numbers yet" in p0.text and "₹" not in _words(p0.text) and 'data-action="checkout"' not in p0.text

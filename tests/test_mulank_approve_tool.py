@@ -1,7 +1,7 @@
 """The owner-approval tool records names and a date, refuses blanks and keys with no drafted text, and never touches the shipped ledger in tests."""
 import importlib.util
+import json
 import os
-import shutil
 
 import pytest
 
@@ -15,8 +15,12 @@ def tool(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location("approve_tool", _P)
     t = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(t)
+    # Start from a ledger where every key is still pending review (the shipped ledger is fully approved), keeping the real key set.
+    with open(t.LEDGER, encoding="utf-8") as f:
+        shipped = json.load(f)
+    pending = {"_about": "test copy: every key pending review", "entries": {k: {"status": mc.NEEDS_REVIEW} for k in shipped["entries"]}}
     copy = tmp_path / "mulank_registry.json"
-    shutil.copy(t.LEDGER, copy)
+    copy.write_text(json.dumps(pending), encoding="utf-8")
     monkeypatch.setattr(t, "LEDGER", str(copy))
     return t
 

@@ -21,7 +21,7 @@ def _reg(d, m, y):
 
 
 def _build(d=29, m=7, y=1990, name="Kiran Mehta", eligible=True, **kw):
-    reg = _reg(d, m, y) if eligible else None
+    reg = _reg(d, m, y) if eligible else {}          # {} = an explicit empty ledger: nothing approved (not the shipped ledger)
     return P.build_preview(d, m, y, name, today=TODAY, registry=reg, **kw)
 
 
@@ -51,11 +51,19 @@ def test_always_exactly_five_pages_eligible_or_not():
             assert len(_pages(r)) == 5 and r["pages"] == 5 and r["eligible"] is elig
 
 
-def test_shipped_registry_makes_every_pair_unavailable():
+def test_an_empty_ledger_makes_every_pair_unavailable():
     for d, m, y in _one_dob_per_pair():
-        r = P.build_preview(d, m, y, "Test", today=TODAY)
+        r = P.build_preview(d, m, y, "Test", today=TODAY, registry={})
         assert r["eligible"] is False
         assert "data-action=\"checkout\"" not in r["html"] and "₹" not in r["html"]
+
+
+def test_shipped_ledger_makes_every_pair_available():
+    """The owner approved all 106 entries on 4 Nov 2026 (mulank_registry.json), so every pair is sold."""
+    for d, m, y in _one_dob_per_pair():
+        r = P.build_preview(d, m, y, "Test", today=TODAY)
+        assert r["eligible"] is True
+        assert r["html"].count("data-action=\"checkout\"") >= 1
 
 
 def test_static_pages_identical_for_all_81_pairs_and_any_name():

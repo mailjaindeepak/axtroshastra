@@ -128,11 +128,18 @@ def test_price_is_299_rupees_in_inr():
     assert mp.MULANK_PRICE_PAISE == 29900 and mp.MULANK_CURRENCY == "INR"
 
 
-def test_order_refused_for_every_pair_today_even_in_demo_mode(client, rz):
+def test_order_refused_while_nothing_is_approved_even_in_demo_mode(client, rz, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})
     rid = _report()
     r = _order(client, rid)
     assert r.status_code == 409 and r.json()["detail"] == "not_available"
     assert rz.orders == []                      # no Razorpay order was ever created
+
+
+def test_the_shipped_ledger_lets_a_customer_order_at_the_fixed_price(client, rz):
+    r = _order(client, _report())
+    assert r.status_code == 200 and r.json()["amount"] == 29900 and r.json()["currency"] == "INR"
+    assert len(rz.orders) == 1 and rz.orders[0]["amount"] == 29900
 
 
 def test_sample_ok_content_cannot_open_checkout(client, rz, monkeypatch):

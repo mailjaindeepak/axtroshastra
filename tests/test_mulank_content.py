@@ -15,16 +15,22 @@ def _full_registry(day, month, year):
     return {k: V for k in mc.required_keys(res)}
 
 
-def test_all_pairs_ineligible_with_shipped_registry():
+def test_all_pairs_eligible_with_shipped_registry():
+    """All 106 ledger entries were approved by the owner on 4 Nov 2026 and text exists for each, so every birthday is sellable."""
     pairs = set()
     for y in range(1900, 2026):
         for m in range(1, 13):
             for d in range(1, 29):
                 r = mc.pair_readiness(d, m, y, today=TODAY)
-                assert r["eligible"] is False
-                assert r["reason_code"] in ("content_incomplete", "content_not_approved")
+                assert r["eligible"] is True and r["reason_code"] == "ok", (d, m, y, r["missing"])
                 pairs.add(r["pair_key"])
     assert len(pairs) == 81
+
+
+def test_empty_ledger_makes_every_pair_ineligible():
+    for d, m, y in ((29, 7, 1990), (15, 3, 1985), (22, 11, 2000), (9, 9, 1999)):
+        r = mc.pair_readiness(d, m, y, today=TODAY, registry={})
+        assert r["eligible"] is False and r["reason_code"] == "content_not_approved"
 
 
 def test_sample_ok_never_counts():
@@ -144,7 +150,7 @@ def test_approved_but_incomplete_is_never_sellable(monkeypatch):
 
 
 def test_complete_but_not_approved_is_never_sellable():
-    r = mc.pair_readiness(29, 7, 1990, today=PIN)                                # shipped ledger: text exists for every pair, nothing approved
+    r = mc.pair_readiness(29, 7, 1990, today=PIN, registry={})                   # text exists for every pair, nothing approved
     assert r["complete"] is True and r["approved"] is False and r["eligible"] is False and r["reason_code"] == "content_not_approved"
 
 
@@ -155,7 +161,8 @@ def test_approved_and_complete_is_sellable_for_pair_2_1(monkeypatch):
 
 
 def test_sale_open_follows_eligibility_not_a_single_approval(monkeypatch):
-    assert mc.sale_open(today=PIN) is False
+    assert mc.sale_open(registry={}, today=PIN) is False                         # an empty ledger sells nothing
+    assert mc.sale_open(today=PIN) is True                                       # the shipped ledger approves every key
     monkeypatch.setattr(mc, "REGISTRY", {"M2": OWNER()})
     assert mc.sale_open(today=PIN) is False                                      # one approved entry does not open sale
     monkeypatch.setattr(mc, "REGISTRY", _entries(29, 7, 1990, OWNER))
@@ -168,7 +175,7 @@ def test_relation_rule_nodes_and_conflict_use_the_approved_statement_4i():
     assert mc.relation_keys("Moon", "Sun") == ["R:Moon>Sun", "R:Sun>Moon"] and mc.relation_keys("Moon", "Moon") == []
 
 
-def test_ledger_is_strict_and_the_shipped_one_approves_nothing(tmp_path):
+def test_ledger_is_strict_and_the_shipped_one_approves_every_entry(tmp_path):
     import json
     bad = tmp_path / "x.json"
     bad.write_text(json.dumps({"entries": {"M2": {"status": "approved-ish"}}}))
@@ -177,7 +184,8 @@ def test_ledger_is_strict_and_the_shipped_one_approves_nothing(tmp_path):
     bad.write_text(json.dumps({"entries": {"M10": {"status": "pending"}}}))
     with pytest.raises(ValueError):
         mc.load_ledger(str(bad))
-    assert not [k for k, e in mc.load_ledger().items() if mc.is_approved(e)]
+    shipped = mc.load_ledger()
+    assert shipped and all(mc.is_approved(e) and mc.has_text(k) for k, e in shipped.items())
 
 
 def test_every_approved_ledger_entry_has_drafted_text():

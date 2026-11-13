@@ -111,9 +111,11 @@ def test_create_saves_iso_dob_and_returns_only_an_opaque_link(client):
     r = client.post("/api/mulank", json=b)
     assert r.status_code == 200
     d = r.json()
-    assert set(d) == {"report_id", "preview_url", "eligible"} and d["eligible"] is False and d["preview_url"] == f"/en/numerology/preview/{d['report_id']}"
+    # the shipped ledger approves every pair, so the response also carries the offer: price and button wording only, nothing personal
+    assert set(d) == {"report_id", "preview_url", "eligible", "offer"} and d["eligible"] is True and d["preview_url"] == f"/en/numerology/preview/{d['report_id']}"
+    assert set(d["offer"]) == {"price", "list_price", "cta", "bar"}
     assert re.fullmatch(r"[A-Za-z0-9_-]{16}", d["report_id"])
-    for secret in ("Priya", "Sharma", "9811100001", "1990", "29"):
+    for secret in ("Priya", "Sharma", "9811100001", "1990", "29/07"):      # a bare "29" is not checked: the price text "₹299" legitimately contains it
         assert secret not in r.text
     assert r.headers["cache-control"] == "no-store" and "noindex" in r.headers["x-robots-tag"]
     rec = _report_row(d["report_id"])
@@ -191,8 +193,16 @@ def test_preview_shows_five_cards_with_the_customers_numbers(client):
     assert "googletagmanager" not in r.text and "fbq(" not in r.text and "clarity" not in r.text.lower()
 
 
-def test_ineligible_visitor_sees_unavailable_message_and_no_checkout(client):
-    rid = _rid(client)                                    # shipped registry: nothing is verified
+def test_create_for_a_pair_that_cannot_be_sold_returns_no_offer(client, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})               # nothing approved
+    r = client.post("/api/mulank", json=_body(phone="9811100002"))
+    d = r.json()
+    assert r.status_code == 200 and set(d) == {"report_id", "preview_url", "eligible"} and d["eligible"] is False
+
+
+def test_ineligible_visitor_sees_unavailable_message_and_no_checkout(client, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})               # nothing approved: the path for a pair that cannot be sold
+    rid = _rid(client)
     t = client.get(f"/en/numerology/preview/{rid}").text
     assert "not ready for your numbers yet" in t
     assert "₹" not in t and 'data-action="checkout"' not in t and 'id="vwBar"' not in t
@@ -265,8 +275,12 @@ def test_pdf_route_headers_cache_key_and_no_name_in_filename(client, monkeypatch
     assert r.status_code == 200 and r.headers["content-type"] == "application/pdf"
     assert r.headers["content-disposition"] == 'attachment; filename="Axtroshastra-Numerology-Preview.pdf"'
     assert r.headers["cache-control"] == "no-store"
-    assert seen["key"] == f"pv0_{rid}" and seen["key"] != rid          # never the paid report's cache key
+    assert seen["key"] == f"pv1_{rid}" and seen["key"] != rid          # sellable (shipped ledger): never the paid report's cache key
     assert seen["html"].count('<section class="page') == 5
+    monkeypatch.setattr(mc, "REGISTRY", {})
+    rid2 = _rid(client)
+    assert client.get(f"/en/numerology/preview/{rid2}.pdf").status_code == 200
+    assert seen["key"] == f"pv0_{rid2}" and seen["key"] != rid2        # a different tag when the report cannot be sold
 
 
 def test_pdf_failure_is_a_clean_503(client, monkeypatch):
@@ -352,6 +366,7 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
 
 def test_landing_is_the_same_before_and_after_approval_and_availability_is_decided_after_the_preview(client, monkeypatch):
     """The landing sells and promises nothing. Whether the complete report can be offered is decided per customer after the preview opens."""
+    monkeypatch.setattr(mc, "REGISTRY", {})                # nothing approved
     h = client.get("/en/numerology").text
     assert "<!--MK_" not in h and "not available yet" not in _visible(h).replace("The complete report is not available for your numbers yet. Your free preview stays on this page.", "")
     assert not mc.any_verified()

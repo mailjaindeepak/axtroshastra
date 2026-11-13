@@ -41,7 +41,8 @@ def pre(monkeypatch):
 
 
 # ------------------------------------------------------------------ the landing page never shows a price, in any state
-def test_nothing_purchasable_shows_no_price_and_no_paid_section(client):
+def test_nothing_purchasable_shows_no_price_and_no_paid_section(client, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})                       # nothing is approved, so nothing can be bought
     h = client.get("/en/numerology").text
     t = _text(h)
     assert "Generate My Free Preview" in t and "See My Free Preview" not in t
@@ -61,6 +62,7 @@ def test_sale_state_landing_still_shows_no_price_or_comparison_card(client, monk
 
 
 def test_price_appears_only_with_the_preview_and_only_for_a_complete_approved_report(client, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})                                  # nothing approved yet
     form = {"name": "Priya Sharma", "dob": "1990-07-29", "gender": "female", "country_code": "+91", "phone": "9811100071", "consent_terms": True}
     d = client.post("/api/mulank", json=form).json()
     assert d["eligible"] is False and "offer" not in d                       # nothing approved: no price, no unlock
@@ -75,6 +77,7 @@ def test_price_appears_only_with_the_preview_and_only_for_a_complete_approved_re
 
 
 def test_state_endpoint_reflects_current_approval_and_leaks_nothing(client, monkeypatch):
+    monkeypatch.setattr(mc, "REGISTRY", {})                                  # nothing approved yet
     form = {"name": "Priya Sharma", "dob": "1990-07-29", "gender": "female", "country_code": "+91", "phone": "9811100074", "consent_terms": True}
     rid = client.post("/api/mulank", json=form).json()["report_id"]
     s = client.get(f"/api/mulank/state/{rid}")
@@ -127,6 +130,17 @@ def test_no_countdowns_or_invented_urgency_and_no_flagged_vocabulary_in_any_stat
         assert not [w for w in FLAGGED if re.search(w, t)], [w for w in FLAGGED if re.search(w, t)]
         assert "setinterval" not in h and "mkTimer" not in h and "launch offer" not in h.lower()     # no countdown or invented urgency anywhere
         assert "belief system, not a science" in t
+
+
+def test_landing_carries_each_tracking_tag_exactly_once_and_is_a_funnel_page(client):
+    """The page hardcodes the standard GA4 + Meta Pixel + Clarity block like every other funnel page (tests/test_linkedin.py requires
+    fbq('init') in the file). The shared injector must skip its own copy, so nothing fires twice."""
+    import api
+    h = client.get("/en/numerology").text
+    for needle in ("fbq('init'", "clarity.ms/tag", "googletagmanager.com/gtag/js", "function gtag(", "fbq('track', 'PageView')"):
+        assert h.count(needle) == 1, (needle, h.count(needle))
+    assert "fbq('init', '1498790608627206')" in h                       # the site pixel, which the server-side sender also uses
+    assert api._is_funnel_page(h)                                       # the LinkedIn landing conversion recognises this page
 
 
 def test_price_block_uses_the_single_price_constant():
