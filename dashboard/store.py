@@ -446,53 +446,42 @@ def ops_log_last(db, kind):
 
 
 # --------------------------------------------------------------------------- #
-# Robot cleanup — remove all reports created by the robot customer.
-# Robot reports are identified by payload containing 'Robot Customer',
-# 'Robot Student', 'Robot Aisha', or 'Robot Arjun'.
+# Robot cleanup — remove the previews the robot customer leaves behind.
+# A report is deleted only when ALL of these hold:
+#   - a person on it has a name starting with 'Smoke ', 'Test ' or 'Robot '
+#     (the fake names in ops/robot_customer/robot.spec.js; owner-approved rule,
+#     so a hand-made 'Test Somebody' preview is cleaned up too),
+#   - it has NO payment row (a paid report is never touched, whatever the name),
+#   - it was created in the last 30 days.
 #
-# The LIKE scan below is against the JSON `report_data` column, which has no
-# index, so it must not run over the whole table's history — that's what was
-# timing out (504) on live, since the smoke test runs this on every deploy and
-# the table only grows. Bounding to a recent window lets it use idx_reports_created
-# to skip everything older, keeping the cost flat regardless of total table size.
-# The robot always cleans up right after it runs, so a 30-day window comfortably
-# covers any normal gap between cleanups; a backlog older than that needs a
-# one-off manual cleanup (widen/drop this filter for that single run).
+# The name is matched on report_subjects.name (a short column), NOT on the big
+# unindexed reports.report_data JSON: scanning that JSON is what timed out (504)
+# on live twice and rolled back deploys, since the smoke test calls this on every
+# deploy. The 30-day window uses idx_reports_created, and the join uses
+# idx_subjects_report, so the cost stays small as the table grows. A backlog older
+# than 30 days needs a one-off manual cleanup.
 # --------------------------------------------------------------------------- #
-_ROBOT_PATTERNS = ["%Robot Customer%", "%Robot Student%", "%Robot Aisha%", "%Robot Arjun%"]
-_ROBOT_WINDOW_SQL = "created_at > (NOW() - INTERVAL 30 DAY)"
-
-
-def robot_report_count(db):
-    import db_v2                       # v2: robot marker lives in report_data JSON
-    clauses = " OR ".join(["report_data LIKE %s" for _ in _ROBOT_PATTERNS])
-    conn = db_v2.get_conn()
-    try:
-        with conn.cursor() as c:
-            c.execute(f"SELECT COUNT(*) FROM reports WHERE {_ROBOT_WINDOW_SQL} AND ({clauses})",
-                      tuple(_ROBOT_PATTERNS))
-            row = c.fetchone()
-    finally:
-        conn.close()
-    return row[0] if row else 0
+_ROBOT_PATTERNS = ["Smoke %", "Test %", "Robot %"]
 
 
 def robot_cleanup(db, dry_run=True):
     import db_v2
-    clauses = " OR ".join(["report_data LIKE %s" for _ in _ROBOT_PATTERNS])
-    where = f"{_ROBOT_WINDOW_SQL} AND ({clauses})"
-    params = tuple(_ROBOT_PATTERNS)
+    clauses = " OR ".join(["s.name LIKE %s" for _ in _ROBOT_PATTERNS])
     conn = db_v2.get_conn()
     try:
         with conn.cursor() as c:
-            c.execute("SELECT COUNT(*) FROM reports WHERE " + where, params)
-            count = c.fetchone()[0]
+            c.execute("SELECT DISTINCT r.id FROM reports r "
+                      "JOIN report_subjects s ON s.report_id = r.id "
+                      "WHERE r.created_at > (NOW() - INTERVAL 30 DAY) AND (" + clauses + ") "
+                      "AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.report_id = r.id)",
+                      tuple(_ROBOT_PATTERNS))
+            ids = [row[0] for row in c.fetchall()]
+            count = len(ids)
             if dry_run:
                 return {"deleted": 0, "would_delete": count, "dry_run": True}
-            if count:
-                # report_subjects cascade; a robot report with a payment (FK
-                # RESTRICT) would block, but robot rows are unpaid test data.
-                c.execute("DELETE FROM reports WHERE " + where, params)
+            if ids:
+                # report_subjects rows go with it (ON DELETE CASCADE).
+                c.execute("DELETE FROM reports WHERE id IN (" + ",".join(["%s"] * count) + ")", ids)
                 conn.commit()
     finally:
         conn.close()
