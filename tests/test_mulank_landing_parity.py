@@ -78,6 +78,8 @@ def test_the_proof_tiles_and_heading_match_career_intelligence():
     assert 'id="reportCountTile" hidden' in PAGE                             # shown only once the live count is real, as on Career Intelligence
     assert '<p class="eyebrow dark">Loved by professionals</p>' in PAGE and "<h2>You're in good company</h2>" in PAGE
     assert '<p class="revs-hint">← swipe, or hover to pause →</p>' in PAGE
+    assert re.findall(r"#reportCountTile\{border-color:([^}]+)\}", PAGE) == ["var(--sindoor)"]    # red outline on the count tile only
+    assert "#reportCountTile" not in CI                                                          # a deliberate difference from the career page
 
 
 def _reviews(doc):
