@@ -39,8 +39,8 @@ Plain words used below (for the spec reader; the report itself follows R3 in §2
 | Covers | From this Diwali to the next (Nov 2026 – Oct 2027) |
 | Product key (internal) | `diwali`: **PROPOSED, owner to confirm** |
 | Route / slug | `/en/diwali`: **PROPOSED, owner to confirm.** `/diwali-report` → 301 to `/en/diwali` (CLAUDE.md §11.6). `/hi/diwali` only when Hindi ships. |
-| Price | **₹499** (Owner, 23 Oct; switched from ₹299/₹399 to the uncle's price). Shown on the page before checkout (CCPA). `amount_paise = 49900` stored on the order (CLAUDE.md §13). |
-| Gift price | **DECIDED (Owner, 26 Oct: Self / Gift toggle): same ₹499 as a self purchase.** No separate second-order offer. |
+| Price | **₹299** (Owner, 4 Nov 2026, cut from ₹499; before that, 23 Oct: switched from ₹299/₹399 to the uncle's price). Shown on the page before checkout (CCPA). `amount_paise = 49900` stored on the order (CLAUDE.md §13). |
+| Gift price | **DECIDED (Owner, 26 Oct: Self / Gift toggle): same ₹299 as a self purchase.** No separate second-order offer. |
 | Language | **English first. Hindi ships after the English version is approved** (Owner, 23 Oct). A written exception to CLAUDE.md §7 "both together". No Hinglish (CLAUDE.md §7). |
 | Homepage | **Yes**: a card plus tagged reviews in `pages/home.html` (Owner, 23 Oct; CLAUDE.md §4). See open item O-14 on reviews. |
 | After 8 Nov | Keep selling as a **"Year Ahead"** report. Only the Diwali dates page changes (Owner, 23 Oct). |
@@ -110,10 +110,10 @@ Plain words used below (for the spec reader; the report itself follows R3 in §2
 13. **Never predict** death, illness, divorce, accidents or infertility (README D).
 14. **Every caution has 4 parts:** what, when, what to do, and from when it gets better (README D;
     approved "Months to go slow" job). Under R3 the "when" is a careful-time pointer to the timeline.
-15. **CCPA (dark patterns, 2023):** ₹499 shown before checkout; no add-ons appear later in the
+15. **CCPA (dark patterns, 2023):** ₹299 shown before checkout; no add-ons appear later in the
     flow; no hard-coded trust numbers (bugs.md #7). **SUPERSEDED (Owner, 27 Oct 2026): the
     countdown and the struck "was ₹999" price are wanted after all, same as the CI page — this
-    line originally banned them by mistake.** The 30-min offer timer and `<s>₹999</s> ₹499` cut
+    line originally banned them by mistake.** The 30-min offer timer and `<s>₹999</s> ₹299` cut
     ship on the hero, the unlock box, the sample-modal buy button and the sticky bar, exactly as
     on `/en/career-intelligence` and `/en/compatibility` (bugs.md #6 still applies to removing
     the timer elsewhere, not to adding it here).
@@ -200,7 +200,7 @@ every branch of every input (CLAUDE.md §12), not every combination.
 
 ## 4. Funnel
 
-**Form → free preview → Razorpay ₹499 → delivery.** The popup is removed (Owner, 23 Oct). This is a
+**Form → free preview → Razorpay ₹299 → delivery.** The popup is removed (Owner, 23 Oct). This is a
 written exception to CLAUDE.md §1, where a popup captures the number before payment.
 
 1. **Form** (all inputs in §3). The WhatsApp number is sent to `/api/order` exactly as the popup
@@ -214,8 +214,8 @@ written exception to CLAUDE.md §1, where a popup captures the number before pay
      drawing, Moon sign, birth star, current planet period (name only), Sade Sati yes/no, the **Wrapped card**
      (see O-33), and the uncle's emphasis line ("Your report starts with [area]: ..."). LOCKED: the 5 answers
      (one teaser line each) and every month and date.
-   - Price ₹499 visible here, before checkout (CCPA).
-3. **Razorpay ₹499.** Price chosen on the server by product, not from the browser's page path
+   - Price ₹299 visible here, before checkout (CCPA).
+3. **Razorpay ₹299.** Price chosen on the server by product, not from the browser's page path
    (add a `product == "diwali"` branch in `_order_amount_paise`, `api.py:447-468`; avoids bugs.md #5).
 4. **Delivery** (after bug #1 fix, §9): AI text → PDF → WhatsApp (both templates,
    `TWILIO_CONTENT_SID` + `TWILIO_CONTENT_SID_TEXT`, CLAUDE.md §1).
@@ -223,7 +223,7 @@ written exception to CLAUDE.md §1, where a popup captures the number before pay
 **Ad tracking** (Owner, 23 Oct): the funnel events fire at the usual points (CLAUDE.md §9). The only
 new field sent is **the chosen category** (or "skipped"). Birth date, time, place, name, gender
 and the gift note are **never** sent. The purchase value is the real server amount, not a
-hard-coded ₹499 (bugs.md #8). Note: the existing server-side purchase event already sends the phone
+hard-coded ₹299 (bugs.md #8). Note: the existing server-side purchase event already sends the phone
 and email as match keys (`api.py:1883-1887`); whether that stays is O-12.
 
 ## 5. Sections
@@ -623,7 +623,7 @@ design kept** (Owner, 25 Oct).
 | 5-buyer test | No identical paragraph across 5 people (AI-on output only; deterministic fallback may be generic); no repeated sentence across one report's area sections | §9 |
 | Leak + lint | Leak grep 0; banned-word lint clean on all generated reports and the landing page | §9 |
 | Delivery order | AI text saved before the PDF is built; WhatsApp after the PDF; goes to the form number only, never Razorpay's | bugs.md #1; CLAUDE.md §1 |
-| Price | Server charges 49900 paise for this product whatever the page path; stored on the order | CLAUDE.md §13 |
+| Price | Server charges 29900 paise for this product whatever the page path; stored on the order | CLAUDE.md §13 |
 | Ad payload | Tracking carries the category (or "skipped") only; no birth data or gift note | Owner, 23 Oct |
 | E2E | Playwright: form → preview (5 locked questions for the chosen or first area) → checkout | CLAUDE.md §10 |
 | Report buttons | `axPdfDl` + `axShare` present (`tests/test_report_buttons.py`) | CLAUDE.md §9 |
@@ -660,7 +660,7 @@ design kept** (Owner, 25 Oct).
 
 | # | Item | Notes |
 |---|---|---|
-| O-1 | ~~Gift price~~ **DECIDED (Owner, 26 Oct: Self / Gift toggle)**: same ₹499; no second-order offer |
+| O-1 | ~~Gift price~~ **DECIDED (Owner, 26 Oct: Self / Gift toggle)**: same ₹299; no second-order offer |
 | O-2 | ~~Slug~~ **DECIDED (Owner, 26 Oct)**: `/en/diwali` (Hindi later `/hi/diwali`); file `pages/diwali.html` |
 | O-3 | ~~Does the giver get a copy?~~ **DECIDED (Owner, 26 Oct: Self / Gift toggle)**: the person who fills the form is the only recipient (Self or Gift); the giver forwards it themselves |
 | O-4 | **Tamil Deepavali date** | Sat 7 Nov from Hindutone only; confirm against Drik's Tamil calendar. README "Key dates" calls Sun 8 Nov "Choti Diwali (North Indian calendar)"; the Tamil oil-bath day is Sat 7 Nov. Confirm |
