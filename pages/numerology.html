@@ -126,6 +126,27 @@ footer{line-height:1.8}
 .faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-bottom:10px}
 .faq summary{font-weight:700;cursor:pointer}
 .faq details p{margin-top:8px;color:#3D3F55;font-size:15px}
+/* ---------- sections shared with Career Intelligence (same markup and styles): sample button, proof, why different ---------- */
+.eyebrow.dark{color:var(--sindoor)}
+.sec-head{max-width:560px}
+.sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
+.sample-jump{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:10px 18px;border:1.5px solid rgba(228,176,74,.55);border-radius:100px;background:rgba(228,176,74,.08);color:var(--haldi);font-family:var(--display);font-weight:700;font-size:13.5px;text-decoration:none;letter-spacing:.01em;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .1s ease}
+.sample-jump:hover{background:rgba(228,176,74,.16);border-color:var(--haldi)}
+.sample-jump:active{transform:translateY(1px)}
+.sample-jump svg{width:14px;height:14px;flex:none}
+.proof{text-align:center}
+.stats-row{display:flex;gap:10px;margin:22px 0}
+.stat-tile{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
+.stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
+.stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
+.why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
+.why .block h3{font-size:18px;margin-bottom:8px}
+.why .block p{font-size:14.5px;color:#4A4C63}
+.why .block.gold{border-left-color:var(--haldi)}
+.cred{margin-top:16px;background:var(--midnight);color:#E8E4D6;border-radius:var(--radius);padding:20px}
+.cred h3{color:#fff;font-size:18px;margin-bottom:8px}
+.cred p{font-size:14.5px;color:#B9BBD0}
+.cred .badge{display:inline-flex;align-items:center;gap:7px;background:var(--midnight-2);border:1px solid #333B63;color:var(--haldi);font-size:12px;font-weight:700;border-radius:20px;padding:6px 12px;margin-bottom:12px;letter-spacing:.05em}
 .disc{font-size:13px;color:var(--muted);text-align:center;padding:0 0 36px}
 footer{background:var(--midnight);color:#B9BBD0;padding:26px 0;font-size:14px;text-align:center}
 footer a{color:#E4B04A;text-decoration:none}
@@ -235,11 +256,15 @@ fbq('track', 'PageView');
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#E4B04A"/></svg>
       <span>Axtroshastra</span>
     </div>
-    <div class="eyebrow">Mulank and Bhagyank numerology</div>
+    <div class="eyebrow"><span style="font-size:1.4em;vertical-align:middle">&#128290;</span> Mulank and Bhagyank numerology</div>
     <h1>Discover your <em>Mulank</em> and <em>Bhagyank</em></h1>
     <div id="mkIntro">
     <p class="sub">Your two core numbers and how they are worked out, from your date of birth.</p>
     <p class="sub2">Free 5-page preview &middot; Personalised &middot; Private &middot; Numerology is a belief system, not a science.</p>
+    <a class="sample-jump" id="heroSampleBtn" href="#sampleReport" role="button">
+      View a sample report
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
     </div>
 
     <div id="mkReopen" hidden>
@@ -340,6 +365,16 @@ fbq('track', 'PageView');
       <div class="mk-host" id="mkPaidFrame" role="region" aria-label="Your complete 15-page report"></div>
       <div class="pv-links"><button type="button" class="linkbtn" data-dl-paid>Download My Full Report</button><a href="#" class="linkbtn" data-again>Start with a different date of birth</a></div>
     </div>
+
+    <div id="mkSample" hidden>
+      <div class="ready">
+        <h2>A sample report</h2>
+        <p>This sample is for a made-up person and date of birth, so you can see how a complete report looks and reads. It is illustrative and is not a real reading.</p>
+        <a class="linkbtn" href="/static/numerology-sample.pdf" download>Download the sample PDF</a>
+      </div>
+      <div class="mk-host" id="mkSampleFrame" role="region" aria-label="A sample numerology report"></div>
+      <div class="pv-links"><button type="button" class="btn" id="mkSampleCta" style="max-width:360px">Get my free preview</button></div>
+    </div>
   </div>
   <div class="mk-foot" id="mkFoot" hidden><div class="mk-foot-in">
     <div class="sp"><p class="l1" id="mkFL1">Numerology Report</p><p class="l2" id="mkFL2"></p></div>
@@ -363,6 +398,45 @@ fbq('track', 'PageView');
       <li><b>Your numbers together</b>How the two numbers sit side by side, with the nine numbers and their planets.</li>
       <li><b>A look at the complete report</b>A preview of what the complete report covers, so you can decide if you would like it.</li>
     </ul>
+  </div>
+</section>
+
+<section class="proof">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:none;text-align:center">
+      <p class="eyebrow dark">At a glance</p>
+      <h2>What you get</h2>
+    </div>
+    <div class="stats-row">
+      <div class="stat-tile"><div class="n">15</div><div class="c">pages in the complete report</div></div>
+      <div class="stat-tile"><div class="n">5</div><div class="c">pages in your free preview</div></div>
+      <div class="stat-tile"><div class="n">1 min</div><div class="c">or less to your preview</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow dark">Why it's different</p>
+      <h2>Why this report is different</h2>
+    </div>
+
+    <div class="block">
+      <h3>Worked out, not guessed.</h3>
+      <p>Your Mulank and Bhagyank come from simple arithmetic on your date of birth. The full working is shown, so you can check every step yourself. Same date, same numbers, every time.</p>
+    </div>
+
+    <div class="block gold">
+      <h3>We don't predict. We offer a lens.</h3>
+      <p>Numerology is a belief system, not a science. The readings follow contemporary numerology writing and are for reflection. Nobody can tell you what will happen, and we don't try to.</p>
+    </div>
+
+    <div class="cred">
+      <span class="badge">SHOWN, NOT HIDDEN</span>
+      <h3>See the working behind every number.</h3>
+      <p>Your report shows how each number was reached: the digits added, the steps in between, and how this year and next year are worked out from the same date. Nothing is looked up from a fortune-teller.</p>
+    </div>
   </div>
 </section>
 
@@ -409,7 +483,9 @@ fbq('track', 'PageView');
   var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov'), ovt=document.getElementById('ovT');
   function $(id){return document.getElementById(id);}
   var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
-  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null, PHONE=null;
+  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null, PHONE=null, SAMPLE=false;
+  /* a free-pass link (?pass=MK-...): keep the token in memory only and take it out of the address bar, so it is not left in history or shared */
+  var PASS=''; try{ var pm=location.search.match(/[?&]pass=([^&#]*)/); if(pm){ PASS=decodeURIComponent(pm[1]).slice(0,40); if(history.replaceState) history.replaceState(null,'',location.pathname+location.hash); } }catch(e){}
 
   /* ---------- form (same checks as before; the date now uses the three-control row used on Career Intelligence) ---------- */
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -473,7 +549,7 @@ fbq('track', 'PageView');
     else if(RID){ show=true; l1.textContent=PAID?'Your full report is ready':'Your preview is ready'; l2.innerHTML=PAID?'Download it any time':'Tap to read it'; b.textContent=PAID?'View Report':'View Preview'; }
     else { show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Mulank and Bhagyank Preview'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
     bar.hidden=!show; document.body.style.paddingBottom=show?'84px':'';
-    var on=BUY&&OFFER&&!PAID, foot=$('mkFoot');                      /* inside the modal: the unlock bar follows the preview */
+    var on=BUY&&OFFER&&!PAID&&!SAMPLE, foot=$('mkFoot');                      /* inside the modal: the unlock bar follows the preview */
     foot.hidden=!on;
     if(on){ $('mkFL1').textContent='Numerology Report'; $('mkFL2').innerHTML=(OFFER.list_price?'<s>'+OFFER.list_price+'</s> ':'')+'<b class="p">'+OFFER.price+'</b> &middot; One-time payment, instant PDF'; $('mkFBtn').textContent='Unlock '+OFFER.price; }
   }
@@ -496,20 +572,35 @@ fbq('track', 'PageView');
 
   /* ---------- the preview and the paid report live in a modal on this same page: the address never changes ---------- */
   function ensureDrawn(){
+    if(SAMPLE||!RID) return;
     var h=PAID?paidFrame:frame;
     if(!h.shadowRoot||!h.shadowRoot.firstChild) draw(h,(PAID?'/en/numerology/report/':'/en/numerology/preview/')+encodeURIComponent(RID)+'?fragment=1');
   }
+  /* the modal shows one of three things: the sample, the free preview, or the paid report */
+  function area(){ $('mkSample').hidden=!SAMPLE; $('mkPreviewBox').hidden=SAMPLE||PAID||!RID; $('mkPaid').hidden=SAMPLE||!PAID; }
   function openModal(){
     var m=$('mkModal'); if(m.hidden) lastFocus=document.activeElement;
-    m.hidden=false; document.body.classList.add('mk-lock'); $('mkBody').scrollTop=0; ensureDrawn(); $('mkClose').focus(); syncBar();
+    $('mkModalT').textContent=SAMPLE?'Sample report':(PAID?'Your full report':'Your free preview');
+    area(); m.hidden=false; document.body.classList.add('mk-lock'); $('mkBody').scrollTop=0; ensureDrawn(); $('mkClose').focus(); syncBar();
+  }
+  function openSample(){
+    SAMPLE=true; say('');
+    var host=$('mkSampleFrame');
+    if(!host.shadowRoot||!host.shadowRoot.firstChild) draw(host,'/static/numerology-sample.json');
+    openModal();
   }
   function closeModal(){
-    $('mkModal').hidden=true; document.body.classList.remove('mk-lock'); syncBar();
+    SAMPLE=false; $('mkModal').hidden=true; document.body.classList.remove('mk-lock'); syncBar();
     var v=(lastFocus&&document.contains(lastFocus)&&lastFocus.focus)?lastFocus:$('mkView'); try{ v.focus(); }catch(e){}
   }
   $('mkClose').addEventListener('click',closeModal);
   $('mkModal').addEventListener('mousedown',function(e){ if(e.target===$('mkModal')) closeModal(); });
   $('mkView').addEventListener('click',openModal);
+  $('heroSampleBtn').addEventListener('click',function(e){ e.preventDefault(); openSample(); });
+  $('mkSampleCta').addEventListener('click',function(){
+    closeModal();
+    if(!$('mkFormWrap').hidden){ f.scrollIntoView({behavior:'smooth'}); setTimeout(function(){ try{ $('f-name').focus({preventScroll:true}); }catch(e){} },450); }
+  });
   document.addEventListener('keydown',function(e){
     if(!modalOpen()||ov.classList.contains('on')) return;
     if(e.key==='Escape'){ closeModal(); return; }
@@ -538,8 +629,8 @@ fbq('track', 'PageView');
     }).catch(function(){ say('We could not load your document just now. Please refresh this page in a minute. Your details are saved.'); });
   }
   function openPreview(rid,offer,quiet){
-    RID=rid; OFFER=offer||null; PAID=false; store(rid); say('');
-    $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
+    RID=rid; OFFER=offer||null; PAID=false; SAMPLE=false; store(rid); say('');
+    $('mkSample').hidden=true; $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
     draw(frame,'/en/numerology/preview/'+encodeURIComponent(rid)+'?fragment=1');
     $('mkPvPdf').dataset.rid=rid;
     $('mkNoOffer').hidden=true;                       /* the locked card inside the preview carries the unlock button, or says it is not available */
@@ -547,8 +638,8 @@ fbq('track', 'PageView');
     reveal(quiet);
   }
   function showPaid(quiet){
-    PAID=true; store(RID); busy(false); barOn(false); say('');
-    $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
+    PAID=true; SAMPLE=false; store(RID); busy(false); barOn(false); say('');
+    $('mkSample').hidden=true; $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
     draw(paidFrame,'/en/numerology/report/'+encodeURIComponent(RID)+'?fragment=1');
     $('mkKeep').textContent=location.origin+'/en/numerology/report/'+RID;
     $('mkKeepA').href='/en/numerology/report/'+encodeURIComponent(RID);
@@ -602,7 +693,9 @@ fbq('track', 'PageView');
   async function checkout(){
     if(paying||!RID) return; paying=true; say(''); busy('Opening secure checkout…');
     try{
-      var r=await post('/api/mulank/order',{report_id:RID,fbc:ck('_fbc'),fbp:ck('_fbp')}); var d=await r.json().catch(function(){return {};});
+      var r=await post('/api/mulank/order',{report_id:RID,fbc:ck('_fbc'),fbp:ck('_fbp'),pass:PASS||undefined}); var d=await r.json().catch(function(){return {};});
+      if(d.free){ PASS=''; showPaid(); return; }                    /* a free pass is not a sale: no checkout events, no Purchase */
+      if(r.status===409&&d.detail==='invalid_pass'){ PASS=''; busy(false); say('That pass link is not valid, or it has already been used.'); return; }
       if(r.status===409){ busy(false); barOn(false); $('mkNoOffer').hidden=false; say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }
       if(d.already_paid){ showPaid(); return; }
       if(r.status===503){ busy(false); say('Checkout is not available right now. Your preview is saved at this page, so please try again a little later.'); return; }

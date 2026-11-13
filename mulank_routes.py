@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import db_v2
 import mulank_content
@@ -31,6 +31,7 @@ import numerology_preview
 import numerology_report
 import numerology_viewer
 import payments
+import payments_v2
 import ratelimit
 import reports_v2
 
@@ -41,10 +42,15 @@ router = APIRouter()
 FULFIL = mulank_fulfilment.schedule      # renders and caches the PDF after verified payment; no WhatsApp is sent
 
 
+PASS_PREFIX = "MK-"                      # Numerology free passes only; a pass minted for another product is never accepted here
+
+
 class MulankOrderIn(BaseModel):
     report_id: str | None = None        # price comes from the server, never from here
     fbc: str | None = None              # Meta click and browser cookies, kept only so the server Purchase can be attributed
     fbp: str | None = None
+    pass_token: str | None = Field(default=None, alias="pass")      # a Numerology free-pass link (?pass=MK-...), for testing and gifts
+    model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
 def _http(e: mp.MulankPaymentError):
@@ -71,9 +77,70 @@ def _store_attribution(conn, request: Request, body: MulankOrderIn) -> None:
         logger.error("[mulank] attribution not stored: %s", e.__class__.__name__)
 
 
-@router.post("/api/mulank/order")
-def mulank_order(body: MulankOrderIn, request: Request):
+def _redeem_pass(request: Request, body: MulankOrderIn, tok: str, background_tasks: BackgroundTasks):
+    """Unlock a report with a Numerology free pass. Every cheap check runs BEFORE the pass is spent, so a refused attempt never burns it:
+    prefix, rate limit, report exists and is a Mulank report, not already paid, the pair is sellable, a contact exists. The atomic redeem is
+    last (one winner per pass). A pass is not a sale: no Purchase is sent, in the browser or on the server (mulank_tracking skips free_pass)."""
+    _limit(request, "pass", 6, 6)
+    if not tok.startswith(PASS_PREFIX) or len(tok) > 40:
+        raise HTTPException(409, "invalid_pass")
+    rid = body.report_id or ""
+    conn = db_v2.get_conn()
+    try:
+        rec = mp._mulank_report(conn, rid)
+        if not rec:
+            raise HTTPException(404, "report_not_found")
+        if rec["paid"]:
+            return {"already_paid": True}
+        ready = mp.readiness_for(rec)
+        if not ready["eligible"]:
+            logger.info(mulank_content.gap_log_line(ready))
+            raise HTTPException(409, "not_available")
+        urec = db_v2.get_report(conn, rid)
+        uid = urec.get("user_id") if urec else None
+        if not uid:
+            raise HTTPException(400, "contact_required")
+        if not payments_v2.redeem_free_pass(conn, token=tok, report_id=rid, user_id=uid):
+            conn.rollback()
+            raise HTTPException(409, "invalid_pass")
+        conn.commit()
+    finally:
+        conn.close()
+    logger.info("[mulank] free pass redeemed")
+    FULFIL(rid, background_tasks)
+    return {"free": True}
+
+
+@router.get("/api/mulank/make_pass")
+def mulank_make_pass(request: Request, key: str = "", n: int = 5):
+    """Mint one-time Numerology free passes (admin only: the same STATS_KEY gate as /api/make_pass). Each token starts with MK- and unlocks exactly
+    one Numerology report. Shared passes from other products are not accepted by the Numerology order route, and these are not meant for them."""
     import api
+    _limit(request, "admin", 20, 20)
+    if not api._valid_admin_key(key):
+        raise HTTPException(403, "forbidden")
+    n = max(1, min(int(n), 30))
+    toks = [PASS_PREFIX + secrets.token_urlsafe(8) for _ in range(n)]
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as cur:
+            for t in toks:
+                cur.execute("INSERT INTO passes(token) VALUES(%s)", (t,))
+        conn.commit()
+    finally:
+        conn.close()
+    base = (api.PUBLIC_BASE_URL or "").rstrip("/")
+    return _private(Response(json.dumps({"passes": toks, "links": [f"{base}/en/numerology?pass={t}" for t in toks],
+                                         "note": "Each link unlocks one Numerology report. Open it, make a preview, then tap Unlock."}),
+                             media_type="application/json"))
+
+
+@router.post("/api/mulank/order")
+def mulank_order(body: MulankOrderIn, request: Request, background_tasks: BackgroundTasks):
+    import api
+    tok = (body.pass_token or "").strip()
+    if tok:
+        return _redeem_pass(request, body, tok, background_tasks)
     conn = db_v2.get_conn()
     try:
         try:
