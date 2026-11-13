@@ -73,8 +73,8 @@ test('diwali keeps the ₹999 -> ₹299 cut and a live clock on the sticky bar',
   await expect(t2.locator('.clk')).toBeVisible(); // display:inline, not stacked on its own line
 });
 
-// Annual Report: price and countdown were removed from the sticky bar (price shows only at the pay buttons).
-test('annual sticky bar shows no price and no countdown, on desktop too with a form field focused', async ({ page }) => {
+// Annual Report: before the preview the sticky bar has no price and no countdown (the struck price appears on its button only after the preview; see annual.spec.js).
+test('annual sticky bar before the preview shows no price and no countdown, on desktop too with a form field focused', async ({ page }) => {
   await page.goto('/en/annual-report');
   await page.locator('#f-name').focus();
   await page.evaluate(() => window.scrollTo(0, document.getElementById('kundliForm').offsetTop + 400));

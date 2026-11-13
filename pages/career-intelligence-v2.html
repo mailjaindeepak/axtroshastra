@@ -715,7 +715,7 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;499</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; <s style="opacity:.7;font-weight:600">₹999</s> &#8377;499</button>
         <div class="ps-subnote2">Personalised using your exact birth details</div>
         <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
         <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
@@ -1331,7 +1331,7 @@ function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock'; sb.setAttribute('href', '#sampleReport'); }
+  if(sb){ sb.innerHTML = 'Unlock · <s style="opacity:.7;font-weight:600">₹999</s> ₹499'; /* price on the bar only after the preview */ sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow

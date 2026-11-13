@@ -150,18 +150,20 @@ for (const work of ['business', 'student', 'home']) {
   });
 }
 
-test('Sticky bar: hidden at the top, shown after the cover, hidden while the main Unlock is on screen', async ({ page }) => {
+test('Sticky bar: hidden at the top, shown once the cover is on screen, hidden only while the main Unlock is on screen', async ({ page }) => {
   test.setTimeout(120_000);
   await fillValid(page, { work: 'job' });
   await submitReal(page);
   const bar = page.locator('#stickyBar');
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(bar).toBeHidden();
-  await page.evaluate(() => { const c = document.getElementById('cover'); window.scrollTo(0, c.getBoundingClientRect().top + scrollY + c.offsetHeight * 0.8); });
+  await page.evaluate(() => { const c = document.getElementById('cover'); window.scrollTo(0, c.getBoundingClientRect().top + scrollY - innerHeight + 80); });  // cover just entering the screen
   await expect(bar).toBeVisible();
-  await expect(bar).not.toContainText('₹');
   await expect(bar.locator('#otClockSticky')).toHaveCount(0);
-  await expect(page.locator('#stickyBtn')).toHaveText('Unlock');
+  // after the preview the bar's button carries the struck price, same as the main Unlock button
+  await expect(page.locator('#stickyBtn')).toHaveText('Unlock · ₹999 ₹499');
+  await expect(page.locator('#stickyBtn s')).toHaveText('₹999');
+  await expect(page.locator('#unlockBtn s')).toHaveText('₹999');
   // the bar's button scrolls to the main Unlock, and the bar hides there
   await page.locator('#stickyBtn').click();
   await expect(page.locator('#unlockBtn')).toBeInViewport();

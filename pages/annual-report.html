@@ -525,7 +525,7 @@ fbq('track', 'PageView');
         <li><span>Sent on screen and to your WhatsApp</span></li>
       </ul>
       <div class="cta-grp">
-        <button class="cta" type="button" id="unlockBtn"><svg aria-hidden="true"><use href="#ring"/></svg>Unlock my Annual Report · ₹499</button>
+        <button class="cta" type="button" id="unlockBtn"><svg aria-hidden="true"><use href="#ring"/></svg>Unlock my Annual Report · <s style="opacity:.7;font-weight:600">₹999</s> ₹499</button>
         <button type="button" class="sample-link" id="sampleOpen2"><svg aria-hidden="true"><use href="#doc"/></svg>See a sample report<svg class="ar" aria-hidden="true"><use href="#arrow"/></svg></button>
       </div>
       <p class="sent">Your report is made for you and sent right after payment. If it does not reach you, we will resend it.</p>
@@ -941,7 +941,7 @@ function renderTeaser(t){
     $('strip').setAttribute('aria-label',st.length+' months, '+(st.length?st[0].label+' to '+st[st.length-1].label:'')+'. The first '+open+' are open, the other '+(st.length-open)+' are inside your report.');
   }
 
-  $('stickyBtn').textContent='Unlock';
+  $('stickyBtn').innerHTML='Unlock · <s style="opacity:.7;font-weight:600">₹999</s> ₹499'; /* price on the bar only after the preview */
 
   var el=$('teaser'); el.classList.add('show');
   stickyUpdate();
@@ -1059,14 +1059,13 @@ $('unlockBtn').addEventListener('click',startPayment);
 })();
 
 /* ---- sticky bar. Before the preview: shows from the form down, button submits/scrolls to the form.
-   After the preview: hidden at the top, shown once the cover is passed, hidden again while the main
+   After the preview: shown from the moment the cover scrolls into view, hidden only while the main
    Unlock button is on screen (never two Unlock buttons at once); its button scrolls to the main one. ---- */
 var btnOn=false;
 function stickyUpdate(){
   var s=$('stickyBar'), form=$('kundliForm');
   if(!TEASER){ s.hidden=window.scrollY<(form.offsetTop-120); return; }
-  var c=$('cover'), top=c.getBoundingClientRect().top+window.scrollY;
-  s.hidden=!(window.scrollY>top+c.offsetHeight*0.6 && !btnOn);
+  s.hidden=!($('cover').getBoundingClientRect().top<window.innerHeight && !btnOn);
 }
 $('stickyBtn').addEventListener('click',function(){
   if(REPORT_ID&&TEASER){
