@@ -51,6 +51,19 @@ def test_the_hero_has_the_same_sample_button_and_icon_eyebrow():
     assert re.search(r'<div class="eyebrow"><span[^>]*>&#\d+;</span> Mulank and Bhagyank numerology</div>', PAGE)
 
 
+def test_the_preview_and_the_paid_report_are_inline_and_only_the_sample_is_an_overlay():
+    """Owner decision: like Career Intelligence, the preview appears in the page itself. A full-screen sheet read as a new page."""
+    result = PAGE.split('<section class="mk-result"')[1].split("</section>")[0]
+    modal = PAGE.split('<div class="mk-modal"')[1].split('<div class="sticky"')[0]
+    for needle in ('id="mkPreviewBox"', 'id="mkPaid"', 'id="mkFrame"', 'id="mkPaidFrame"', 'id="mkMsg"'):
+        assert needle in result and needle not in modal
+    assert 'id="mkSample"' in modal and 'id="mkSample"' not in result
+    assert PAGE.index('class="trust"') < PAGE.index('class="mk-result"') < PAGE.index('<section class="proof">')     # under the hero, above the rest of the page
+    sheet = re.search(r"\.mk-sheet\{([^}]*)\}", PAGE).group(1)
+    assert "max-width:780px" in sheet and "height:100%" not in sheet and "width:100%;height" not in sheet           # a panel, not a full-screen sheet
+    assert "id=\"mkFoot\"" not in PAGE                                                                                # the unlock bar is the sticky bar, as on the career page
+
+
 # ------------------------------------------------------------------ honesty
 @pytest.mark.parametrize("claim", ["NASA", "planetary data", "23,250", "25,000", "What is in your free preview"])
 def test_what_cannot_be_true_for_this_report_is_not_on_the_page(claim):
@@ -189,7 +202,12 @@ def test_the_sample_opens_in_the_modal_on_the_same_address_and_the_real_flow_sti
         page.wait_for_function("document.getElementById('mkSampleFrame').shadowRoot && document.getElementById('mkSampleFrame').shadowRoot.querySelectorAll('section.page').length === 15", timeout=15000)
         assert page.url == url0 and not popups and page.locator("iframe").count() == 0
         assert page.inner_text("#mkModalT") == "Sample report" and page.is_visible("#mkSample")
-        assert not page.is_visible("#mkPreviewBox") and not page.is_visible("#mkPaid") and not page.is_visible("#mkFoot")
+        assert not page.is_visible("#mkResult") and page.locator("#mkFoot").count() == 0
+        sheet = page.evaluate("(() => { const r = document.getElementById('mkSheet').getBoundingClientRect(); return {w: Math.round(r.width), h: Math.round(r.height), l: Math.round(r.left), t: Math.round(r.top)}; })()")
+        if size[0] <= 560:
+            assert sheet["w"] == size[0] and sheet["l"] == 0, sheet                  # full screen on phones, as the career page's sample modal
+        else:
+            assert sheet["w"] <= 780 and sheet["l"] > 100 and sheet["h"] < size[1], sheet   # a centred panel with the dimmed page showing around it
         assert page.get_attribute("a[href='/static/numerology-sample.pdf']", "download") is not None
         shadow_text = page.evaluate("document.getElementById('mkSampleFrame').shadowRoot.textContent")
         assert "Sample Reader" in shadow_text and shadow_text.count(LABEL) == 15
@@ -203,11 +221,11 @@ def test_the_sample_opens_in_the_modal_on_the_same_address_and_the_real_flow_sti
         assert not page.is_visible("#mkModal")
         page.wait_for_function("document.activeElement && document.activeElement.id === 'f-name'", timeout=5000)
 
-        # the real flow after the sample: the preview shows, the sample does not
+        # the real flow after the sample: the preview appears inline in the page, the sample overlay stays closed
         page.fill("#f-name", "Browser Sample Check"); page.fill("#f-dd", "21"); page.select_option("#f-mm", "8"); page.fill("#f-yy", "1988")
         page.fill("#f-phone", "98%08d" % (int(time.time()) % 100000000)); page.check("#f-consent")
         page.click("#mkGo")
         page.wait_for_selector("#mkFrame .tz-cover", state="visible", timeout=25000)
-        assert page.inner_text("#mkModalT") == "Your free preview" and page.is_visible("#mkPreviewBox") and not page.is_visible("#mkSample")
+        assert page.is_visible("#mkResult") and page.is_visible("#mkPreviewBox") and not page.is_visible("#mkModal")
         assert page.url == url0 and not popups
         browser.close()

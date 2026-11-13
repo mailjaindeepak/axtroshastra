@@ -94,7 +94,9 @@ def test_the_landing_page_never_sells_directly_the_preview_comes_first(client, m
     _open_sale(monkeypatch)
     h = client.get("/en/numerology").text
     assert not re.search(r'<(?:button|a)[^>]*data-action="(?:checkout|preorder)"', h)
-    assert 'id="mkFoot" hidden' in h and 'id="stickyBar" hidden' in h and 'mkUnlock' not in h and 'id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden' in h      # unlock stays hidden until a preview opens
+    # nothing that offers a purchase is visible until a preview exists: the result section, the sticky bar (which becomes the unlock bar) and the sample overlay all start hidden
+    assert 'id="mkResult" hidden' in h and 'id="stickyBar" hidden' in h and 'mkUnlock' not in h and 'id="mkFoot"' not in h
+    assert 'id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden' in h
     assert 'href="#hero"' not in h or True
 
 

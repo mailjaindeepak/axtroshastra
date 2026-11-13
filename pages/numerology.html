@@ -177,10 +177,16 @@ footer a{color:#E4B04A;text-decoration:none}
 .form-card.reopen p{font-size:15px;color:#3D3F55;margin-bottom:14px}
 .form-card.reopen .btn-note{margin-top:12px}
 body.mk-lock{overflow:hidden}
-.mk-modal{position:fixed;inset:0;z-index:10000;display:flex;background:rgba(18,24,50,.74);animation:mkfade .18s ease}
+/* the preview and the paid report are drawn INLINE in the page (like Career Intelligence); only the sample report opens as an overlay panel, with the page dimmed behind it */
+.mk-result{background:#E9E1D3;padding:26px 0 36px}
+.mk-result[hidden]{display:none}
+.mk-result .wrap{max-width:520px;padding:0 12px}
+.mk-result .wrap>*{max-width:460px;margin-left:auto;margin-right:auto}
+.mk-result .wrap>.ready,.mk-result #mkPaid>.ready{max-width:520px}
+.mk-modal{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(18,24,50,.74);animation:mkfade .18s ease}
 .mk-modal[hidden]{display:none}
 @keyframes mkfade{from{opacity:0}to{opacity:1}}
-.mk-sheet{background:#E9E1D3;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;animation:mkrise .22s ease}
+.mk-sheet{background:#E9E1D3;width:100%;max-width:780px;max-height:92vh;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;animation:mkrise .22s ease}
 @keyframes mkrise{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
 .mk-head{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 18px;background:var(--midnight);color:#F3EFE4;border-bottom:2px solid var(--haldi)}
 .mk-hl{flex:1;min-width:0}
@@ -191,13 +197,8 @@ body.mk-lock{overflow:hidden}
 .mk-x:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
 .mk-body{flex:1;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;padding:18px 14px 36px}
 .mk-body>*{max-width:460px;margin-left:auto;margin-right:auto}
-.mk-foot{flex:none;display:flex;justify-content:center;background:#fff;border-top:1.5px solid var(--line);box-shadow:0 -8px 30px rgba(35,37,59,.12)}
-.mk-foot[hidden]{display:none}
-.mk-foot-in{width:100%;display:flex;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
-.mk-foot .sp{flex:1;min-width:0}.mk-foot .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mk-foot .l2{font-size:11.5px;color:var(--muted)}.mk-foot .l2 s{color:#9a9cb0}.mk-foot .l2 b.p{color:var(--sindoor)}
-.mk-foot .btn{width:auto;flex:none;font-size:15px;padding:12px 20px;box-shadow:0 4px 0 var(--sindoor-dark)}
-@media(max-width:640px){.mk-sheet{height:100vh;height:100dvh}.mk-body{padding:12px 8px 28px}}
+@media(max-width:640px){.mk-body{padding:12px 8px 28px}}
+@media(max-width:560px){.mk-modal{padding:0}.mk-sheet{max-width:100%;height:100vh;height:100dvh;max-height:100dvh;border-radius:0}}
 @media (prefers-reduced-motion:reduce){.mk-modal,.mk-sheet{animation:none}.mk-body{scroll-behavior:auto}}
 .result h2{font-size:clamp(22px,5.6vw,28px);margin:6px 0 12px;text-align:center}
 .result .form-err{margin-bottom:14px}
@@ -352,10 +353,9 @@ fbq('track', 'PageView');
   </div>
 </div>
 
-<div class="mk-modal" id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden>
- <div class="mk-sheet" id="mkSheet">
-  <div class="mk-head"><div class="mk-hl"><div class="mk-brand"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#E4B04A"/></svg><span>Axtroshastra</span></div><div class="mk-ht" id="mkModalT">Your free preview</div></div><button type="button" class="mk-x" id="mkClose" aria-label="Close">&times;</button></div>
-  <div class="mk-body" id="mkBody">
+<!-- the free preview and the paid report appear HERE, inside the page, under the hero (as on Career Intelligence): the header, the rest of the page and the sticky bar stay -->
+<section class="mk-result" id="mkResult" hidden aria-label="Your numerology preview">
+  <div class="wrap">
     <div class="form-err" id="mkMsg" role="alert"></div>
 
     <div id="mkPreviewBox" hidden>
@@ -375,8 +375,15 @@ fbq('track', 'PageView');
       <div class="mk-host" id="mkPaidFrame" role="region" aria-label="Your complete 15-page report"></div>
       <div class="pv-links"><button type="button" class="linkbtn" data-dl-paid>Download My Full Report</button><a href="#" class="linkbtn" data-again>Start with a different date of birth</a></div>
     </div>
+  </div>
+</section>
 
-    <div id="mkSample" hidden>
+<!-- the sample report is the only overlay: a panel over the dimmed page, full screen on phones (as the career page's sample modal) -->
+<div class="mk-modal" id="mkModal" role="dialog" aria-modal="true" aria-labelledby="mkModalT" hidden>
+ <div class="mk-sheet" id="mkSheet">
+  <div class="mk-head"><div class="mk-hl"><div class="mk-brand"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#E4B04A"/></svg><span>Axtroshastra</span></div><div class="mk-ht" id="mkModalT">Sample report</div></div><button type="button" class="mk-x" id="mkClose" aria-label="Close">&times;</button></div>
+  <div class="mk-body" id="mkBody">
+    <div id="mkSample">
       <div class="ready">
         <h2>A sample report</h2>
         <p>This sample is for a made-up person and date of birth, so you can see how a complete report looks and reads. It is illustrative and is not a real reading.</p>
@@ -386,10 +393,6 @@ fbq('track', 'PageView');
       <div class="pv-links"><button type="button" class="btn" id="mkSampleCta" style="max-width:360px">Get my free preview</button></div>
     </div>
   </div>
-  <div class="mk-foot" id="mkFoot" hidden><div class="mk-foot-in">
-    <div class="sp"><p class="l1" id="mkFL1">Numerology Report</p><p class="l2" id="mkFL2"></p></div>
-    <button type="button" class="btn" id="mkFBtn" data-buy>Unlock</button>
-  </div></div>
  </div>
 </div>
 
@@ -490,7 +493,7 @@ fbq('track', 'PageView');
   var f=document.getElementById('mkForm'), go=document.getElementById('mkGo'), ov=document.getElementById('ov'), ovt=document.getElementById('ovT');
   function $(id){return document.getElementById(id);}
   var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
-  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null, PHONE=null, SAMPLE=false;
+  var RID=null, OFFER=null, SK='mk_rid', BUY=false, PAID=false, lastFocus=null, PHONE=null;
   /* a free-pass link (?pass=MK-...): keep the token in memory only and take it out of the address bar, so it is not left in history or shared */
   var PASS=''; try{ var pm=location.search.match(/[?&]pass=([^&#]*)/); if(pm){ PASS=decodeURIComponent(pm[1]).slice(0,40); if(history.replaceState) history.replaceState(null,'',location.pathname+location.hash); } }catch(e){}
 
@@ -549,17 +552,20 @@ fbq('track', 'PageView');
   function calcStop(){ clearInterval(calcT); $('ovBar').style.width='0'; ov.classList.remove('on'); }
   /* the sticky bar, as on Career Intelligence: before the preview it points at the form; once an approved report is offered it unlocks it */
   var hero=document.querySelector('.hero');
-  function modalOpen(){ return !$('mkModal').hidden; }
+  function modalOpen(){ return !$('mkModal').hidden; }                      /* the sample overlay is the only modal */
   function syncBar(){
-    var show=false, l1=$('stL1'), l2=$('stL2'), b=$('stickyBtn');
+    var show=false, l1=$('stL1'), l2=$('stL2'), b=$('stickyBtn'), unlock=false;
     if(modalOpen()) show=false;
-    else if(RID){ show=true; l1.textContent=PAID?'Your full report is ready':'Your preview is ready'; l2.innerHTML=PAID?'Download it any time':'Tap to read it'; b.textContent=PAID?'View Report':'View Preview'; }
+    else if(RID){
+      show=true;
+      if(BUY&&OFFER&&!PAID){ unlock=true; l1.textContent='Numerology Report'; l2.innerHTML=(OFFER.list_price?'<s>'+OFFER.list_price+'</s> ':'')+'<b class="p">'+OFFER.price+'</b> &middot; One-time payment, instant PDF'; b.textContent='Unlock '+OFFER.price; }
+      else { l1.textContent=PAID?'Your full report is ready':'Your preview is ready'; l2.innerHTML=PAID?'Download it any time':'Tap to read it'; b.textContent=PAID?'View Report':'View Preview'; }
+    }
     else { show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Mulank and Bhagyank Preview'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
+    b.dataset.unlock=unlock?'1':'';                                          /* once an approved report is offered, the sticky bar unlocks it, as on Career Intelligence */
     bar.hidden=!show; document.body.style.paddingBottom=show?'84px':'';
-    var on=BUY&&OFFER&&!PAID&&!SAMPLE, foot=$('mkFoot');                      /* inside the modal: the unlock bar follows the preview */
-    foot.hidden=!on;
-    if(on){ $('mkFL1').textContent='Numerology Report'; $('mkFL2').innerHTML=(OFFER.list_price?'<s>'+OFFER.list_price+'</s> ':'')+'<b class="p">'+OFFER.price+'</b> &middot; One-time payment, instant PDF'; $('mkFBtn').textContent='Unlock '+OFFER.price; }
   }
+  function scrollToResult(){ var r=$('mkResult'); if(!r.hidden) r.scrollIntoView({behavior:'smooth',block:'start'}); }
   function barOn(on){ BUY=!!on; syncBar(); }
   window.addEventListener('scroll',syncBar,{passive:true});
   /* funnel events (no personal data; the report id is a private access key, so only a one-way hash of it is ever sent) */
@@ -577,32 +583,26 @@ fbq('track', 'PageView');
   f.addEventListener('focusin',function(){ if(window._mkFormStarted) return; window._mkFormStarted=true; if(window.gtag) gtag('event','form_start'); });
   function priceHtml(o){ return (o.list_price?'<s class="mk-was">'+o.list_price+'</s> ':'')+'<span class="mk-now">'+o.price+'</span>'; }
 
-  /* ---------- the preview and the paid report live in a modal on this same page: the address never changes ---------- */
-  function ensureDrawn(){
-    if(SAMPLE||!RID) return;
-    var h=PAID?paidFrame:frame;
-    if(!h.shadowRoot||!h.shadowRoot.firstChild) draw(h,(PAID?'/en/numerology/report/':'/en/numerology/preview/')+encodeURIComponent(RID)+'?fragment=1');
-  }
-  /* the modal shows one of three things: the sample, the free preview, or the paid report */
-  function area(){ $('mkSample').hidden=!SAMPLE; $('mkPreviewBox').hidden=SAMPLE||PAID||!RID; $('mkPaid').hidden=SAMPLE||!PAID; }
-  function openModal(){
-    var m=$('mkModal'); if(m.hidden) lastFocus=document.activeElement;
-    $('mkModalT').textContent=SAMPLE?'Sample report':(PAID?'Your full report':'Your free preview');
-    area(); m.hidden=false; document.body.classList.add('mk-lock'); $('mkBody').scrollTop=0; ensureDrawn(); $('mkClose').focus(); syncBar();
+  /* ---------- the preview and the paid report are drawn INLINE in this page, under the hero (the address never changes and the page stays around them).
+                 Only the sample report opens as an overlay panel. ---------- */
+  /* "View my preview" / the sticky bar: jump to the result, and draw it again if an earlier request for it failed */
+  function showResult(){
+    if(RID){ var h=PAID?paidFrame:frame; if(!h.shadowRoot||!h.shadowRoot.firstChild) draw(h,(PAID?'/en/numerology/report/':'/en/numerology/preview/')+encodeURIComponent(RID)+'?fragment=1'); }
+    scrollToResult();
   }
   function openSample(){
-    SAMPLE=true; say('');
-    var host=$('mkSampleFrame');
+    say('');
+    var host=$('mkSampleFrame'), m=$('mkModal'); if(m.hidden) lastFocus=document.activeElement;
     if(!host.shadowRoot||!host.shadowRoot.firstChild) draw(host,'/static/numerology-sample.json');
-    openModal();
+    m.hidden=false; document.body.classList.add('mk-lock'); $('mkBody').scrollTop=0; $('mkClose').focus(); syncBar();
   }
   function closeModal(){
-    SAMPLE=false; $('mkModal').hidden=true; document.body.classList.remove('mk-lock'); syncBar();
+    $('mkModal').hidden=true; document.body.classList.remove('mk-lock'); syncBar();
     var v=(lastFocus&&document.contains(lastFocus)&&lastFocus.focus)?lastFocus:$('mkView'); try{ v.focus(); }catch(e){}
   }
   $('mkClose').addEventListener('click',closeModal);
   $('mkModal').addEventListener('mousedown',function(e){ if(e.target===$('mkModal')) closeModal(); });
-  $('mkView').addEventListener('click',openModal);
+  $('mkView').addEventListener('click',showResult);
   $('heroSampleBtn').addEventListener('click',function(e){ e.preventDefault(); openSample(); });
   $('mkSampleCta').addEventListener('click',function(){
     closeModal();
@@ -618,44 +618,43 @@ fbq('track', 'PageView');
     }
   });
   function reveal(quiet){
-    $('mkFormWrap').hidden=true; $('mkIntro').hidden=true; $('mkReopen').hidden=false;
-    $('mkModalT').textContent=PAID?'Your full report':'Your free preview';
+    $('mkFormWrap').hidden=true; $('mkIntro').hidden=true; $('mkReopen').hidden=false; $('mkResult').hidden=false;
     $('rpT').textContent=PAID?'Your full report is ready':'Your preview is ready';
     $('rpP').textContent=PAID?'Your complete 15-page report is ready to read and download.':'Your personalised five-page preview is ready to read.';
     $('mkView').textContent=PAID?'View my full report':'View my preview';
-    if(quiet) syncBar(); else openModal();
+    syncBar();
   }
   /* the approved preview and report are drawn directly in this page, inside a shadow root: their theme cannot affect the page and the page cannot affect them */
   function draw(host,url,after){
     return fetch(url,{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw new Error('doc'); return r.json(); }).then(function(d){
       var root=host.shadowRoot||host.attachShadow({mode:'open'});
-      root.innerHTML='<style>'+d.css+'</style>'+d.html;
+      root.innerHTML='<style>'+d.css+'</style>'+d.html; say('');       /* a successful (re)load clears an earlier "could not load" message */
       if(!host.__wired){ host.__wired=true; root.addEventListener('click',function(e){
         var t=e.target.closest&&e.target.closest('[data-action="checkout"]'); if(t){ e.preventDefault(); if(OFFER) checkout(); } }); }
       if(after) after();
     }).catch(function(){ say('We could not load your document just now. Please refresh this page in a minute. Your details are saved.'); });
   }
   function openPreview(rid,offer,quiet){
-    RID=rid; OFFER=offer||null; PAID=false; SAMPLE=false; store(rid); say('');
-    $('mkSample').hidden=true; $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
-    draw(frame,'/en/numerology/preview/'+encodeURIComponent(rid)+'?fragment=1');
+    RID=rid; OFFER=offer||null; PAID=false; store(rid); say('');
+    $('mkPaid').hidden=true; $('mkPreviewBox').hidden=false;
     $('mkPvPdf').dataset.rid=rid;
     $('mkNoOffer').hidden=true;                       /* the locked card inside the preview carries the unlock button, or says it is not available */
     barOn(!!OFFER);
     reveal(quiet);
+    draw(frame,'/en/numerology/preview/'+encodeURIComponent(rid)+'?fragment=1',function(){ if(!quiet) scrollToResult(); });
   }
   function showPaid(quiet){
-    PAID=true; SAMPLE=false; store(RID); busy(false); barOn(false); say('');
-    $('mkSample').hidden=true; $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
-    draw(paidFrame,'/en/numerology/report/'+encodeURIComponent(RID)+'?fragment=1');
+    PAID=true; store(RID); busy(false); barOn(false); say('');
+    $('mkPreviewBox').hidden=true; $('mkPaid').hidden=false;
     $('mkKeep').textContent=location.origin+'/en/numerology/report/'+RID;
     $('mkKeepA').href='/en/numerology/report/'+encodeURIComponent(RID);
     reveal(quiet);
+    draw(paidFrame,'/en/numerology/report/'+encodeURIComponent(RID)+'?fragment=1',function(){ if(!quiet) scrollToResult(); });
   }
   function startAgain(){
     store(null); RID=null; OFFER=null; PAID=false; barOn(false); [frame,paidFrame].forEach(function(h){ if(h.shadowRoot) h.shadowRoot.innerHTML=''; });
     if(modalOpen()) closeModal();
-    $('mkReopen').hidden=true; $('mkFormWrap').hidden=false; $('mkIntro').hidden=false; go.disabled=false; ov.classList.remove('on');
+    $('mkResult').hidden=true; $('mkReopen').hidden=true; $('mkFormWrap').hidden=false; $('mkIntro').hidden=false; go.disabled=false; ov.classList.remove('on');
     window.scrollTo(0,0);
   }
   [].forEach.call(document.querySelectorAll('[data-again]'),function(a){ a.addEventListener('click',function(e){ e.preventDefault(); startAgain(); }); });
@@ -720,7 +719,7 @@ fbq('track', 'PageView');
   [].forEach.call(document.querySelectorAll('[data-buy]'),function(b){ b.addEventListener('click',function(e){ e.preventDefault(); checkout(); }); });
   $('stickyBtn').addEventListener('click',function(e){
     e.preventDefault();
-    if(RID&&!modalOpen()){ openModal(); return; }
+    if(RID){ if($('stickyBtn').dataset.unlock==='1') checkout(); else showResult(); return; }   /* unlock the offered report, or jump to the preview */
     if(ddEl.value&&mmEl.value&&yyEl.value&&$('f-name').value.trim()){ if(f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})); return; }
     f.scrollIntoView({behavior:'smooth'});
   });
