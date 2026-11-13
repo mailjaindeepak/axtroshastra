@@ -446,8 +446,13 @@ def ops_log_last(db, kind):
 
 
 # --------------------------------------------------------------------------- #
-# Robot cleanup — remove reports created by the robot customer, identified by
-# the person's name ('Robot Customer', 'Robot Student', 'Robot Aisha', 'Robot Arjun').
+# Robot cleanup — remove the previews the robot customer leaves behind.
+# A report is deleted only when ALL of these hold:
+#   - a person on it has a name starting with 'Smoke ', 'Test ' or 'Robot '
+#     (the fake names in ops/robot_customer/robot.spec.js; owner-approved rule,
+#     so a hand-made 'Test Somebody' preview is cleaned up too),
+#   - it has NO payment row (a paid report is never touched, whatever the name),
+#   - it was created in the last 30 days.
 #
 # The name is matched on report_subjects.name (a short column), NOT on the big
 # unindexed reports.report_data JSON: scanning that JSON is what timed out (504)
@@ -456,7 +461,7 @@ def ops_log_last(db, kind):
 # idx_subjects_report, so the cost stays small as the table grows. A backlog older
 # than 30 days needs a one-off manual cleanup.
 # --------------------------------------------------------------------------- #
-_ROBOT_PATTERNS = ["%Robot Customer%", "%Robot Student%", "%Robot Aisha%", "%Robot Arjun%"]
+_ROBOT_PATTERNS = ["Smoke %", "Test %", "Robot %"]
 
 
 def robot_cleanup(db, dry_run=True):
@@ -467,15 +472,15 @@ def robot_cleanup(db, dry_run=True):
         with conn.cursor() as c:
             c.execute("SELECT DISTINCT r.id FROM reports r "
                       "JOIN report_subjects s ON s.report_id = r.id "
-                      "WHERE r.created_at > (NOW() - INTERVAL 30 DAY) AND (" + clauses + ")",
+                      "WHERE r.created_at > (NOW() - INTERVAL 30 DAY) AND (" + clauses + ") "
+                      "AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.report_id = r.id)",
                       tuple(_ROBOT_PATTERNS))
             ids = [row[0] for row in c.fetchall()]
             count = len(ids)
             if dry_run:
                 return {"deleted": 0, "would_delete": count, "dry_run": True}
             if ids:
-                # report_subjects cascade; a robot report with a payment (FK
-                # RESTRICT) would block, but robot rows are unpaid test data.
+                # report_subjects rows go with it (ON DELETE CASCADE).
                 c.execute("DELETE FROM reports WHERE id IN (" + ",".join(["%s"] * count) + ")", ids)
                 conn.commit()
     finally:
