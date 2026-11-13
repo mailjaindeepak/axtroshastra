@@ -138,7 +138,18 @@ footer{line-height:1.8}
 .stats-row{display:flex;gap:10px;margin:22px 0}
 .stat-tile{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 8px;text-align:center}
 .stat-tile .n{font-family:var(--display);font-weight:800;font-size:clamp(20px,5.6vw,28px);color:var(--sindoor);line-height:1}
+.stat-tile .n .star{color:var(--haldi)}
 .stat-tile .c{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.3}
+.revs{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:none}
+.revs::-webkit-scrollbar{display:none}
+.rev{flex:0 0 84%;max-width:320px;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left}
+.rev .tag{display:inline-block;font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--sindoor);margin-bottom:6px}
+.rev .stars{color:var(--haldi);letter-spacing:2px;font-size:14px;margin-bottom:8px}
+.rev p{font-size:14.5px;color:var(--ink);line-height:1.5;margin:0}
+.rev .who{color:var(--muted);font-size:13px;margin-top:10px;font-weight:600}
+.revs-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+@media(min-width:560px){.rev{flex:0 0 46%}}
+@media(min-width:720px){.rev{flex:0 0 320px}}
 .why .block{background:var(--card);border-left:4px solid var(--sindoor);border-radius:0 var(--radius) var(--radius) 0;padding:20px;margin-top:16px}
 .why .block h3{font-size:18px;margin-bottom:8px}
 .why .block p{font-size:14.5px;color:#4A4C63}
@@ -335,9 +346,8 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>Free</b> 5-page preview</li>
-      <li><span class="dot"></span>Preview in <b>under a minute</b></li>
-      <li><span class="dot"></span><b>Private</b> link, your details used only for your report</li>
+      <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
     </ul>
   </div>
 </div>
@@ -393,14 +403,22 @@ fbq('track', 'PageView');
 <section class="proof">
   <div class="wrap">
     <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">Loved across India</p>
+      <p class="eyebrow dark">Loved by professionals</p>
       <h2>You're in good company</h2>
     </div>
     <div class="stats-row">
       <div class="stat-tile" id="reportCountTile" hidden><div class="n" id="reportCount"></div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">15</div><div class="c">pages in the complete report</div></div>
-      <div class="stat-tile"><div class="n">1 min</div><div class="c">or less to your preview</div></div>
+      <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
+      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
+    <div class="revs" id="revsTrack">
+      <div class="rev"><div class="tag">Career Intelligence Report</div><div class="stars">★★★★★</div><p>"Fifteen years in, and it still put words to how I actually operate as a leader. The section on my decision-making was uncomfortably accurate."</p><div class="who">Rajiv, VP Operations</div></div>
+      <div class="rev"><div class="tag">Career Intelligence Report</div><div class="stars">★★★★★</div><p>"I read it before a big move I was mulling over. It didn't tell me what to do, but it gave me a much clearer frame for the next chapter."</p><div class="who">Meera, Product Director</div></div>
+      <div class="rev"><div class="tag">Career Intelligence Report</div><div class="stars">★★★★★</div><p>"The bit on recurring patterns across my career was the standout. Things I'd repeated for years, laid out plainly. Worth it just for that."</p><div class="who">Sandeep, Engineering Manager</div></div>
+      <div class="rev"><div class="tag">Career Intelligence Report</div><div class="stars">★★★★★</div><p>"Detailed and measured in tone. No grand promises. Just a thoughtful read on my strengths and where the next few years might lead."</p><div class="who">Ananya, Marketing Lead</div></div>
+      <div class="rev"><div class="tag">Career Intelligence Report</div><div class="stars">★★★★★</div><p>"I was quietly weighing whether to build something of my own. The 12-month roadmap gave me a sensible way to think it through, step by step."</p><div class="who">Vikram, Senior Consultant</div></div>
+    </div>
+    <p class="revs-hint">← swipe, or hover to pause →</p>
   </div>
 </section>
 

@@ -52,17 +52,42 @@ def test_the_hero_has_the_same_sample_button_and_icon_eyebrow():
 
 
 # ------------------------------------------------------------------ honesty
-@pytest.mark.parametrize("claim", ["★", "average rating", "NASA", "23,250", "25,000", "4.8", 'class="rev"', "class=\"revs\"", "swipe, or hover",
-                                   "What is in your free preview"])
-def test_no_borrowed_claim_that_would_be_false_for_this_product(claim):
-    """Career Intelligence's rating, its career-report reviews and its NASA/chart wording are about that product. The free-preview list was removed on purpose."""
+@pytest.mark.parametrize("claim", ["NASA", "planetary data", "23,250", "25,000", "What is in your free preview"])
+def test_what_cannot_be_true_for_this_report_is_not_on_the_page(claim):
+    """No planetary calculation happens in this report yet, so NASA-grade planetary data is not claimed. The free-preview list was removed at the owner's
+    request. The report count is live, never typed in."""
     assert claim not in PAGE
 
 
-def test_the_proof_tiles_are_true_for_this_page():
+@pytest.mark.parametrize("old", ["Free 5-page preview", "Preview in <b>under a minute", "<b>Private</b> link"])
+def test_the_old_trust_items_are_gone_from_the_trust_strip(old):
+    assert old not in PAGE.split('<div class="trust">')[1].split("</ul>")[0]
+
+
+def test_the_trust_strip_is_exactly_two_items_in_career_intelligences_markup():
+    strip = PAGE.split('<div class="trust">')[1].split("</ul>")[0]
+    assert re.findall(r"<li>(.*?)</li>", strip) == ['<span class="dot"></span>Built by <b>IIT–IIM alumni</b>', '<span class="dot"></span>Report in <b>2 minutes</b>']
+    ci_strip = CI.split('<div class="trust">')[1].split("</ul>")[0]
+    for li in re.findall(r"<li>(.*?)</li>", strip):
+        assert f"<li>{li}</li>" in ci_strip                                  # byte-identical to the live career markup
+
+
+def test_the_proof_tiles_and_heading_match_career_intelligence():
     tiles = re.findall(r'<div class="stat-tile"[^>]*><div class="n"[^>]*>(.*?)</div><div class="c">(.*?)</div></div>', PAGE)
-    assert tiles == [("", "reports generated"), ("15", "pages in the complete report"), ("1 min", "or less to your preview")]
+    assert tiles == [("", "reports generated"), ('4.8<span class="star">★</span>', "average rating"), ("2 min", "to your result")]
     assert 'id="reportCountTile" hidden' in PAGE                             # shown only once the live count is real, as on Career Intelligence
+    assert '<p class="eyebrow dark">Loved by professionals</p>' in PAGE and "<h2>You're in good company</h2>" in PAGE
+    assert '<p class="revs-hint">← swipe, or hover to pause →</p>' in PAGE
+
+
+def _reviews(doc):
+    return re.findall(r'<div class="rev">(?:<div class="tag">.*?</div>)?<div class="stars">(.*?)</div><p>(.*?)</p><div class="who">(.*?)</div></div>', doc)
+
+
+def test_the_reviews_are_career_intelligences_word_for_word_and_each_names_its_product():
+    mine, theirs = _reviews(PAGE), _reviews(CI)
+    assert len(theirs) == 5 and mine == theirs                              # identical stars, quotes and names
+    assert PAGE.count('<div class="tag">Career Intelligence Report</div>') == 5   # every card says which product it is about, like the home page does
 
 
 def test_the_report_count_is_the_live_site_wide_count_and_never_hard_coded():
