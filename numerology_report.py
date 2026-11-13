@@ -318,7 +318,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     elif not (relXY and relYX and _ok(reg, f"R:{mp}>{bp}", sample) and _ok(reg, f"R:{bp}>{mp}", sample)):
         box = fallback("4i", row("4i"))
     else:
-        t = row("4e").split("Text: ", 1)[1]
+        t = row("4e_text")
         box = slot(t, X=X, Y=Y, labXY=L[relXY], labYX=L[relYX])
         rec("4e", box)
         if relXY != relYX:
@@ -392,7 +392,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     if Mok:
         mm = bank.M[m]
         t8b_head = f"Working style, Mulank {m}, {X}."
-        t8b = "In work terms" + slot(row("8b").split(". In work terms", 1)[1], m=m).replace("{M.style}", mm["style"])
+        t8b = slot(row("8b_text"), m=m).replace("{M.style}", mm["style"])
         it8.append(pt("i-scales", t8b_head, t8b))
         rec("8b", t8b_head + " " + t8b)
     else:
@@ -426,10 +426,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
     if not Bok:
         it8.append(pt("i-people", None, fallback("8j", F_B)))
     if clauses:
-        g = row("8g")
-        both = g.split("One clause shown:")[0].replace("Both clauses shown:", "").strip()
-        one = g.split("One clause shown:")[1].strip()
-        t8g = both if clauses == 2 else one
+        t8g = row("8g_both") if clauses == 2 else row("8g_one")
         wants.append(t8g)
         rec("8g", t8g)
         it8.append(pt("i-compass", lead8e if Mok else None, " ".join(wants)))
@@ -632,8 +629,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
             out += f'<div class="blk {cls}"><div class="bh">{lbl}</div><div class="bb">{esc(y[k])}</div></div>'
             rec({"cur": {"explore": "14b", "continue_": "14c"}, "nxt": {"explore": "14d", "reconsider": "14e"}}[role][k], lbl.upper() + ". " + y[k])
         return out
-    a1, a2 = row("14a").split("/ Prompts", 1)
-    t14a1, t14a2 = a1.strip(), ("Prompts" + a2).replace("Years 1 and 2", f"Years {PYC['number']} and {PYN['number']}").strip()
+    t14a1, t14a2 = row("14a_title"), slot(row("14a_sub"), n1=PYC["number"], n2=PYN["number"])
     cards.append(sec(f'''<div class="exlabel">Practical guidance</div>
   <h2 class="action">{esc(t14a1)}</h2>
   <div class="subtit">{esc(t14a2)}</div><div class="exrule"></div>

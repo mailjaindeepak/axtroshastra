@@ -1,0 +1,5 @@
+{
+ "_about": "Release gate: if mulank_bank.json changes, bump CONTENT_VERSION in mulank_content.py and update this file (tests/test_mulank_qc.py checks both).",
+ "content_version": "mulank-content-1",
+ "bank_sha256": "99cdb87d67359cf952ae64a5a398cbf262db7479edabf908eaaf0abc26196ede"
+}

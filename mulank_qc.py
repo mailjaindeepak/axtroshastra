@@ -23,6 +23,10 @@ INCOMPLETE_MARKERS = ("does not include", "is not included in this edition", "no
 PLACEHOLDER = re.compile(r"\{|\}|\bTODO\b|\bTBD\b|\bXXX\b|lorem|\[\[|\]\]|PLACEHOLDER", re.I)
 DISCLAIMER = "belief system, not a science"
 _BANKS = ("M", "B", "PS", "PM", "PG", "CB", "LP", "Y")
+# Editing notes that once lived inside the wording rows ("NO CHANGE", "(deleted; ...)", "One clause shown: ..."). Customer text
+# never contains these; a row or a rendered report that does is a drafting leftover, not wording.
+NOTE_MARKERS = re.compile(r"NO CHANGE|\(deleted|^unchanged$|One clause shown|Both clauses shown|\bHeading:|\bText:|stored per pair|"
+                          r"Behaviour when|CHANGE-SUMMARY", re.M)
 
 
 def _leaves(obj, path=""):
@@ -61,6 +65,16 @@ def lint_bank(bank=None) -> list:
                 prev = seen.setdefault(text.strip().lower(), owner)
                 if prev != owner:
                     issues.append((where, f"same paragraph also used for {name}:{prev} (another pair's reading)"))
+    for key, text in (data.get("rows") or {}).items():           # the approved wording rows: slots like {X} are legitimate here
+        where = f"rows/{key}"
+        if not text.strip():
+            issues.append((where, "empty text"))
+            continue
+        if NOTE_MARKERS.search(text):
+            issues.append((where, "editing note left in the wording"))
+        hits = flagged_words(text)
+        if hits:
+            issues.append((where, "flagged vocabulary: " + ", ".join(hits)))
     return issues
 
 
@@ -69,11 +83,17 @@ def visible_text(doc: str) -> str:
     return re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", t)))
 
 
-def lint_report_html(doc: str, expected_cards: int = 15, vocabulary: bool = True) -> list:
+def lint_report_html(doc: str, expected_cards: int = 15, vocabulary: bool = True, slots: bool = False) -> list:
     """Problems in a rendered production report. `vocabulary=False` skips the flagged-word scan (the runtime guard
-    only refuses incomplete reports; vocabulary is an approval-time check)."""
+    only refuses incomplete reports; vocabulary is an approval-time check). `slots=True` also fails on a leftover `{` or `}`
+    and on editing notes; it is for the release gate (tests), not the runtime guard, because a customer's name may contain a brace."""
     issues = []
     text = visible_text(doc)
+    if slots:
+        if "{" in text or "}" in text:
+            issues.append(("report", "unresolved slot or brace in the visible text"))
+        if NOTE_MARKERS.search(text):
+            issues.append(("report", "editing note in the visible text"))
     for marker in INCOMPLETE_MARKERS:
         if marker.lower() in text.lower():
             issues.append(("report", f"incomplete or sample marker: {marker}"))
