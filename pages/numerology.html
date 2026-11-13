@@ -390,26 +390,15 @@ fbq('track', 'PageView');
 
 <!--MK_COMPARE-->
 
-<section class="free">
-  <div class="wrap">
-    <h2>What is in your free preview</h2>
-    <ul>
-      <li><b>Your core numbers</b>Mulank, Bhagyank, their ruling planets and the full working, made for your date of birth.</li>
-      <li><b>Your numbers together</b>How the two numbers sit side by side, with the nine numbers and their planets.</li>
-      <li><b>A look at the complete report</b>A preview of what the complete report covers, so you can decide if you would like it.</li>
-    </ul>
-  </div>
-</section>
-
 <section class="proof">
   <div class="wrap">
     <div class="sec-head" style="max-width:none;text-align:center">
-      <p class="eyebrow dark">At a glance</p>
-      <h2>What you get</h2>
+      <p class="eyebrow dark">Loved across India</p>
+      <h2>You're in good company</h2>
     </div>
     <div class="stats-row">
+      <div class="stat-tile" id="reportCountTile" hidden><div class="n" id="reportCount"></div><div class="c">reports generated</div></div>
       <div class="stat-tile"><div class="n">15</div><div class="c">pages in the complete report</div></div>
-      <div class="stat-tile"><div class="n">5</div><div class="c">pages in your free preview</div></div>
       <div class="stat-tile"><div class="n">1 min</div><div class="c">or less to your preview</div></div>
     </div>
   </div>
@@ -423,19 +412,19 @@ fbq('track', 'PageView');
     </div>
 
     <div class="block">
-      <h3>Worked out, not guessed.</h3>
-      <p>Your Mulank and Bhagyank come from simple arithmetic on your date of birth. The full working is shown, so you can check every step yourself. Same date, same numbers, every time.</p>
+      <h3>No astrologer's opinion. Just calculation.</h3>
+      <p>Traditional readers go by experience, and every one gives a different answer. Your Mulank and Bhagyank are not a matter of opinion: they come from simple arithmetic on your date of birth, and the full working is shown. Same date, same numbers, every time.</p>
     </div>
 
     <div class="block gold">
-      <h3>We don't predict. We offer a lens.</h3>
-      <p>Numerology is a belief system, not a science. The readings follow contemporary numerology writing and are for reflection. Nobody can tell you what will happen, and we don't try to.</p>
+      <h3>We don't guarantee. We offer a reading.</h3>
+      <p>Anyone who tells you "this is the year it all changes" is guessing. Numerology is a belief system, not a science. The readings follow contemporary numerology writing and are for reflection. The decisions are yours.</p>
     </div>
 
     <div class="cred">
-      <span class="badge">SHOWN, NOT HIDDEN</span>
-      <h3>See the working behind every number.</h3>
-      <p>Your report shows how each number was reached: the digits added, the steps in between, and how this year and next year are worked out from the same date. Nothing is looked up from a fortune-teller.</p>
+      <span class="badge">&#9881;&#65039; IIT&ndash;IIM ALUMNI BUILT</span>
+      <h3>Built by IIT&ndash;IIM engineers.</h3>
+      <p>That's why we trust calculation, not a fortune-teller's connection. We're not selling reassurance. We're engineers who turned the working behind each number into software, so the answer comes from your date of birth, not from someone's mood that day.</p>
     </div>
   </div>
 </section>
@@ -746,6 +735,11 @@ fbq('track', 'PageView');
     }
   });
   window.addEventListener('pageshow',function(e){ if(e.persisted){ calcStop(); go.disabled=false; } });
+
+  /* ---------- honest live counter, exactly as on Career Intelligence: all reports on the site (rounded down), hidden until the real volume passes 50 ---------- */
+  fetch('/api/count').then(function(r){ return r.json(); }).then(function(d){
+    if(d&&d.count>=50){ $('reportCount').textContent=d.count.toLocaleString('en-IN')+'+'; $('reportCountTile').hidden=false; }
+  }).catch(function(){});
 
   /* ---------- keep the sticky bar out of the way while typing (same idea as Career Intelligence) ---------- */
   f.addEventListener('focusin',function(){ bar.classList.add('kbd'); });

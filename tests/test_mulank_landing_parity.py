@@ -52,20 +52,30 @@ def test_the_hero_has_the_same_sample_button_and_icon_eyebrow():
 
 
 # ------------------------------------------------------------------ honesty
-@pytest.mark.parametrize("claim", ["★", "reports generated", "average rating", "NASA", "IIT", "Loved by", "23,250", "25,000", "4.8", 'class="rev"',
-                                   "class=\"revs\"", "swipe, or hover"])
+@pytest.mark.parametrize("claim", ["★", "average rating", "NASA", "23,250", "25,000", "4.8", 'class="rev"', "class=\"revs\"", "swipe, or hover",
+                                   "What is in your free preview"])
 def test_no_borrowed_claim_that_would_be_false_for_this_product(claim):
+    """Career Intelligence's rating, its career-report reviews and its NASA/chart wording are about that product. The free-preview list was removed on purpose."""
     assert claim not in PAGE
 
 
-def test_the_proof_tiles_state_only_facts_about_this_report():
-    tiles = re.findall(r'<div class="stat-tile"><div class="n">(.*?)</div><div class="c">(.*?)</div></div>', PAGE)
-    assert tiles == [("15", "pages in the complete report"), ("5", "pages in your free preview"), ("1 min", "or less to your preview")]
+def test_the_proof_tiles_are_true_for_this_page():
+    tiles = re.findall(r'<div class="stat-tile"[^>]*><div class="n"[^>]*>(.*?)</div><div class="c">(.*?)</div></div>', PAGE)
+    assert tiles == [("", "reports generated"), ("15", "pages in the complete report"), ("1 min", "or less to your preview")]
+    assert 'id="reportCountTile" hidden' in PAGE                             # shown only once the live count is real, as on Career Intelligence
 
 
-def test_the_why_section_makes_no_promise_and_no_claim_about_who_built_it():
+def test_the_report_count_is_the_live_site_wide_count_and_never_hard_coded():
+    js = PAGE.split("honest live counter")[1].split("keep the sticky bar")[0]
+    assert "fetch('/api/count')" in js and "d.count>=50" in js and "toLocaleString('en-IN')" in js
+    assert not re.search(r'id="reportCount">\s*\d', PAGE)
+
+
+def test_the_why_section_matches_career_intelligence_where_true_and_claims_nothing_false():
     why = PAGE.split('<section class="why">')[1].split("</section>")[0]
-    for bad in ("guarantee", "you will", "accurate", "proven", "scientific", "astrolog", "alumni", "engineers", "NASA"):
+    assert "No astrologer's opinion. Just calculation." in why and "IIT&ndash;IIM ALUMNI BUILT" in why and "Built by IIT&ndash;IIM engineers." in why
+    assert 'class="block gold"' in why and 'class="cred"' in why
+    for bad in ("you will", "accurate", "proven", "scientific", "NASA", "chart", "dasha", "transit", "ephemeris", "planetary data", "probabilit"):
         assert bad.lower() not in why.lower().replace("not a science", "")
     assert "belief system, not a science" in why
 
