@@ -42,19 +42,42 @@ FULFIL = mulank_fulfilment.schedule      # renders and caches the PDF after veri
 
 
 class MulankOrderIn(BaseModel):
-    report_id: str | None = None        # nothing else is read: price comes from the server
+    report_id: str | None = None        # price comes from the server, never from here
+    fbc: str | None = None              # Meta click and browser cookies, kept only so the server Purchase can be attributed
+    fbp: str | None = None
 
 
 def _http(e: mp.MulankPaymentError):
     return HTTPException(e.http, e.code)
 
 
+def _store_attribution(conn, request: Request, body: MulankOrderIn) -> None:
+    """Keep the ad-click context with the report so the server Purchase can be attributed (same fields and store as Career Intelligence's
+    /api/order). Only for an existing Mulank report; any failure is logged and never blocks checkout."""
+    try:
+        rid = body.report_id or ""
+        if not rid or not mp._mulank_report(conn, rid):
+            return
+        clean = lambda v: (v or "").strip()[:300]
+        reports_v2.store_attribution(
+            conn, rid, fbc=clean(body.fbc), fbp=clean(body.fbp),
+            ua=request.headers.get("user-agent", "")[:300],
+            ip=(request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+                or (request.client.host if request.client else "")),
+            li_fat_id=clean(request.cookies.get("ax_li_fat")), twclid=clean(request.cookies.get("ax_twclid")))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        logger.error("[mulank] attribution not stored: %s", e.__class__.__name__)
+
+
 @router.post("/api/mulank/order")
-def mulank_order(body: MulankOrderIn):
+def mulank_order(body: MulankOrderIn, request: Request):
     import api
     conn = db_v2.get_conn()
     try:
         try:
+            _store_attribution(conn, request, body)
             out = mp.create_order(conn, lambda: api.rzp_client(), body.report_id or "")
             if "razorpay_order_id" in out:
                 out["key_id"] = api.RZP_KEY          # public key id, by design; the secret never leaves the server

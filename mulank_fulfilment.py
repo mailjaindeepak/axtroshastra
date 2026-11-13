@@ -12,6 +12,7 @@ import db_v2
 import mulank_content
 import mulank_payment as mp
 import mulank_preorder
+import mulank_tracking
 import numerology_report
 import reports_v2
 
@@ -126,5 +127,7 @@ def schedule(rid: str, background) -> None:
     logger.info("[mulank] paid, starting fulfilment")
     if background is not None:
         background.add_task(run_fulfilment, rid)
+        background.add_task(mulank_tracking.run, rid)      # server Purchase; once per paid report, same path as fulfilment
     else:
         run_fulfilment(rid)
+        mulank_tracking.run(rid)

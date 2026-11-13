@@ -598,10 +598,11 @@ fbq('track', 'PageView');
     say('We could not confirm your payment yet. If money was deducted, please do not pay again. Come back to this same page in a few minutes and your payment will be recognised.');
   }
   var paying=false;
+  function ck(n){ try{ var m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)')); return m?decodeURIComponent(m[1]):''; }catch(e){ return ''; } }
   async function checkout(){
     if(paying||!RID) return; paying=true; say(''); busy('Opening secure checkout…');
     try{
-      var r=await post('/api/mulank/order',{report_id:RID}); var d=await r.json().catch(function(){return {};});
+      var r=await post('/api/mulank/order',{report_id:RID,fbc:ck('_fbc'),fbp:ck('_fbp')}); var d=await r.json().catch(function(){return {};});
       if(r.status===409){ busy(false); barOn(false); $('mkNoOffer').hidden=false; say('The complete report is not available for your numbers yet. Your free preview stays on this page.'); return; }
       if(d.already_paid){ showPaid(); return; }
       if(r.status===503){ busy(false); say('Checkout is not available right now. Your preview is saved at this page, so please try again a little later.'); return; }

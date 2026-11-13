@@ -25,6 +25,14 @@ PRODUCT = "numerology_mulank"
 from mulank_pricing import MULANK_PRICE_PAISE, MULANK_LIST_PRICE_PAISE, MULANK_CURRENCY  # noqa: E402,F401
 
 
+def numerology_event_id(rid: str) -> str:
+    """The id every ad and analytics platform sees for this report: "mk_" + the first 16 hex characters of SHA-256 of the report id.
+    The report id is the private link token, so it never leaves the server or the page; the page computes the identical value in
+    pages/numerology.html (evId) so the browser and server copies of one event deduplicate. One-way: the id cannot be turned back
+    into the report id."""
+    return "mk_" + hashlib.sha256(str(rid).encode("utf-8")).hexdigest()[:16]
+
+
 class MulankPaymentError(Exception):
     def __init__(self, code: str, http: int = 400):
         super().__init__(code)
