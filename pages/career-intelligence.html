@@ -1241,7 +1241,7 @@ async function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = mc.cta.sticky; sb.setAttribute('href', '#sampleReport'); }
+  if(sb){ sb.innerHTML = mc.cta.sticky; /* price on the bar only after the preview */ sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow

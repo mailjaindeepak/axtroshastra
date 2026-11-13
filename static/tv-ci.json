@@ -29,10 +29,10 @@
     "also": ["Income growth", "Next 3 years", "Best-fit roles", "12-month plan"]
   },
   "cta": {
-    "text": "Unlock My Complete Career Reading — ₹299",
+    "text": "Unlock My Complete Career Reading — <s style=\"opacity:.7;font-weight:600\">₹999</s> ₹299",
     "sub": "Personalised using your exact birth details",
     "sample": "View the full sample report →",
-    "sticky": "Unlock"
+    "sticky": "Unlock · <s style=\"opacity:.7;font-weight:600\">₹999</s> ₹299"
   },
   "proof": {
     "heading": "What others are saying",
