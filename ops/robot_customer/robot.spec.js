@@ -47,7 +47,7 @@ test.beforeAll(() => {
 // read /healthz {version} and run a feature's tests only when its commit is an
 // ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
 const PENDING_DEPLOY = new Set(
-  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth,/en/diwali,/en/annual-report')
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth,/en/annual-report')
     .split(',').map((s) => s.trim()).filter(Boolean),
 );
 
@@ -98,7 +98,6 @@ const ALL_PAGES = [
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
   { path: '/en/iq-test',         label: 'IQ Test (EN)' },
-  { path: '/en/diwali',          label: 'Diwali Report (EN)' },
   { path: '/en/annual-report',   label: 'Annual Report (EN)' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
@@ -397,13 +396,6 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillBlueprint,
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
-  },
-  {
-    name: 'diwali',
-    paths: { en: '/en/diwali' },
-    form: '#kundliForm',
-    fill: fillDiwali,
-    hasTeaser: true,    // free preview (#teaser) from the /api/kundli teaser
   },
   {
     name: 'annual-report',
