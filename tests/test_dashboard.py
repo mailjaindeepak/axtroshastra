@@ -766,6 +766,23 @@ def test_robot_cleanup_execute(client):
     d = r.json()
     assert d["dry_run"] is False
     assert d["deleted"] >= 1
+    import db_v2
+    conn = db_v2.get_conn()
+    try:
+        assert db_v2.get_report(conn, rid) is None      # the robot's report is gone
+    finally:
+        conn.close()
+
+
+def test_robot_cleanup_leaves_real_customers(client):
+    rid = _new_report(client, name="Asha Verma")
+    client.post(f"/api/admin/robot_cleanup?key={KEY}")
+    import db_v2
+    conn = db_v2.get_conn()
+    try:
+        assert db_v2.get_report(conn, rid) is not None
+    finally:
+        conn.close()
 
 
 def test_robot_cleanup_requires_key(client):
