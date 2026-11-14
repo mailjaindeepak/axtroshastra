@@ -298,19 +298,6 @@ fbq('track', 'PageView');
         <div class="field-hint" id="h-name"></div>
       </div>
 
-      <div class="field" id="g-gender">
-        <label for="f-gender">Gender <small>(optional)</small></label>
-        <select id="f-gender" name="gender">
-          <option value="">Select (optional)</option>
-          <option value="female">Female</option>
-          <option value="male">Male</option>
-          <option value="other">Other</option>
-          <option value="prefer_not_to_say">Prefer not to say</option>
-        </select>
-        <div class="field-sub">Not used in your calculation.</div>
-        <div class="field-hint" id="h-gender"></div>
-      </div>
-
       <div class="field" id="g-dob">
         <label for="f-dd">Date of birth</label>
         <div class="dob-row">
@@ -523,7 +510,7 @@ fbq('track', 'PageView');
   function validate(){
     var ok=true, first=null;
     function fail(k,msg,el){ mark(k,msg); if(ok){first=el;} ok=false; }
-    ['name','dob','gender','phone'].forEach(function(k){mark(k,'');});
+    ['name','dob','phone'].forEach(function(k){mark(k,'');});
     var name=$('f-name').value.replace(/\s+/g,' ').trim();
     if(!name) fail('name','Please enter your full name.',$('f-name'));
     else if(name.length>80||!/[A-Za-zÀ-ɏऀ-ॿ]/.test(name)) fail('name','Please enter your name using letters (up to 80 characters).',$('f-name'));
@@ -745,7 +732,7 @@ fbq('track', 'PageView');
     go.disabled=true; calcStart();
     try{
       var r=await fetch('/api/mulank',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
-        name:v.name,dob:v.dob,gender:$('f-gender').value||null,country_code:'+91',phone:v.phone,
+        name:v.name,dob:v.dob,country_code:'+91',phone:v.phone,
         consent_terms:$('f-consent').checked,marketing_optin:false,website:$('f-website').value})});
       var d=await r.json().catch(function(){return {};});
       if(r.ok&&d.report_id){ calcStop(); go.disabled=false; RID=d.report_id; PHONE='+91'+v.phone; track('lead'); openPreview(d.report_id,d.eligible?d.offer:null); return; }

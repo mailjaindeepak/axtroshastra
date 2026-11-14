@@ -104,9 +104,10 @@ def test_form_fields_are_unchanged(client, monkeypatch):
     _open_sale(monkeypatch)
     h = client.get("/en/numerology").text
     names = set(re.findall(r'<(?:input|select)[^>]*\bname="([^"]+)"', h))
-    assert names == {"name", "gender", "phone", "consent_terms", "website"}                       # one Terms and Privacy line, no marketing box
+    assert names == {"name", "phone", "consent_terms", "website"}                       # no gender (owner removed it), one Terms and Privacy line, no marketing box
     assert not re.search(r'id="f-consent"[^>]*checked', h) and "How your two numbers are worked out" not in h
-    assert 'id="f-dd"' in h and 'id="f-mm"' in h and 'id="f-yy"' in h and "Gender <small>(optional)</small>" in h
+    assert 'id="f-dd"' in h and 'id="f-mm"' in h and 'id="f-yy"' in h
+    assert "f-gender" not in h and "Prefer not to say" not in h and not re.search(r"gender\s*:", h)      # neither the field nor the script's gender value is left
 
 
 # ------------------------------------------------------------------ owner-approved pre-order

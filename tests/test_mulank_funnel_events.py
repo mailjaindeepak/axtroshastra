@@ -139,7 +139,10 @@ def _journey(live, no_subtle=False):
         if no_subtle:
             page.add_init_script("Object.defineProperty(window.crypto,'subtle',{value:undefined,configurable:true})")
         _route(page, base)
+        page.on("request", lambda r: live.setdefault("posted", []).append(r.post_data or "")
+                if r.url.endswith("/api/mulank") and r.method == "POST" else None)
         page.goto(base + "/en/numerology")
+        assert page.locator("#f-gender").count() == 0          # the gender field is gone from the real form
         page.fill("#f-name", "Funnel Check")
         page.fill("#f-dd", "29")
         page.select_option("#f-mm", "7")
@@ -160,6 +163,7 @@ def _journey(live, no_subtle=False):
 @browser_only
 def test_every_funnel_event_reaches_the_events_table(live):
     rid, rows = _journey(live)
+    assert live["posted"] and all("gender" not in b for b in live["posted"]), live["posted"]      # the lead request carries no gender
     names = [r[0] for r in rows]
     for ev in ("page_view", "form_start", "generate_lead", "begin_checkout", "purchase"):
         assert ev in names, f"{ev} never reached the events table: {names}"

@@ -353,13 +353,13 @@ def test_landing_page_has_the_four_fields_and_separate_consents(client):
     r = client.get("/en/numerology")
     assert r.status_code == 200
     h = r.text
-    for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-gender"', 'id="f-phone"', "Prefer not to say", "+91",
+    for needle in ('id="f-name"', 'id="f-dd"', 'id="f-mm"', 'id="f-yy"', 'id="f-phone"', "+91",
                    'id="mkModal"', 'id="mkFrame"',
                    'id="f-consent"', 'href="/privacy"', 'href="/terms"', "Generate My Free Preview"):
         assert needle in h, needle
     assert re.search(r'id="f-consent"[^>]*checked', h) is None and 'id="f-marketing"' not in h
     assert h.count('id="f-consent"') == 1                       # the shared injector did not add a second consent box
-    assert "Not used in your calculation" in h
+    assert "Not used in your calculation" not in h and 'id="f-gender"' not in h        # that sentence belonged to the gender field, which the owner removed
     assert 'rel="canonical" href="https://www.axtroshastra.com/en/numerology"' in h and 'name="robots" content="noindex' not in h     # indexable English page
     assert "₹499" not in _visible(h) and "Special offer" not in _visible(h)       # the landing shows only the selling price until the owner confirms the regular price
 
