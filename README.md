@@ -43,7 +43,10 @@ uvicorn api:app --reload
 ```
 
 Visit http://localhost:8000. With `DEMO_MODE=1` you can unlock a report locally via
-`POST /api/_demo_pay/{report_id}` instead of paying.
+`POST /api/_demo_pay/{report_id}` instead of paying. This works for Numerology too (same rule as a real
+purchase: the pair must be approved); a demo unlock is never a sale, so no purchase event is sent and no
+WhatsApp message goes out. `DEMO_MODE` is switched off automatically on anything that looks like production
+(`demo_guard.py`), so it can never stay on there.
 
 ### Smoke test & backtest
 
@@ -74,7 +77,8 @@ for the full list. Secrets (Razorpay keys, webhook secret, Twilio, `STATS_KEY`) 
 2. Razorpay **Settings > Webhooks →** `https://<your-domain>/api/webhook`, event
    `payment.captured`.
 3. Mount a **persistent volume** at the `DB_PATH` directory (SQLite database).
-4. Set all secrets in the host dashboard. Never set `DEMO_MODE=1` in production.
+4. Set all secrets in the host dashboard. Never set `DEMO_MODE=1` in production: it lets anyone unlock a
+   report for free. The app ignores it (and logs CRITICAL) when it detects production, but do not rely on that.
 
 Health check for the platform: `GET /healthz`.
 

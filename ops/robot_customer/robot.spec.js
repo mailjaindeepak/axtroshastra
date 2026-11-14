@@ -91,6 +91,7 @@ const ALL_PAGES = [
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
   { path: '/en/career-intelligence', label: 'Career Intelligence (EN)' },
+  { path: '/en/numerology', label: 'Numerology (EN)' },
   { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
   { path: '/hi/life-blueprint', label: 'Life Blueprint (HI)' },
   { path: '/login',             label: 'Login' },
@@ -339,7 +340,21 @@ async function fillAnnual(page) {
   await fillDiwali(page);
 }
 
+// Numerology Report: own form (#mkForm), approved Mulank/Bhagyank pair (29 Jul 1990).
+// The name carries "Robot Customer" so /api/admin/robot_cleanup removes the lead.
+async function fillNumerology(page) {
+  await page.fill('#f-name', 'Robot Customer Numerology');
+  await page.fill('#f-dd', '29');
+  await page.selectOption('#f-mm', '7');
+  await page.fill('#f-yy', '1990');
+  await page.fill('#f-phone', testPhone());
+  await page.check('#f-consent');
+  await page.locator('#mkForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
+// Optional per-funnel keys: `teaser` (selector of the preview, default '#teaser')
+// and `reportId` (browser function returning the report id, default window.REPORT_ID).
 const FUNNELS = [
   {
     name: 'marriage',
@@ -403,6 +418,15 @@ const FUNNELS = [
     form: '#kundliForm',
     fill: fillAnnual,
     hasTeaser: true,    // free preview from the /api/kundli teaser
+  },
+  {
+    name: 'numerology',
+    paths: { en: '/en/numerology' },
+    form: '#mkForm',
+    fill: fillNumerology,
+    hasTeaser: true,    // free preview renders inline in #mkResult
+    teaser: '#mkResult',
+    reportId: () => sessionStorage.getItem('mk_rid'),   // private id lives in sessionStorage, never on window
   },
   {
     name: 'iq-test',
@@ -500,7 +524,7 @@ test.describe('B2 — Funnel smoke', () => {
         // 4) For funnels with a teaser step, the free preview must render.
         if (funnel.hasTeaser) {
           await expect(
-            page.locator('#teaser'),
+            page.locator(funnel.teaser || '#teaser'),
             'teaser/preview never appeared after submit',
           ).toBeVisible({ timeout: 30_000 });
         }
@@ -508,8 +532,14 @@ test.describe('B2 — Funnel smoke', () => {
         // 5) REPORT_ID must be set — proves the backend processed the chart.
         //    Marriage-v2 has a 9s min-wait animation; milan has 7s; shaadi and
         //    career have 9s. 30s timeout covers all cases comfortably.
-        await page.waitForFunction(() => window.REPORT_ID != null, { timeout: 30_000 });
-        const rid = await page.evaluate(() => window.REPORT_ID);
+        // Other funnels keep their exact original call; only a funnel that defines `reportId` (Numerology) uses its own probe.
+        const ridFn = funnel.reportId || (() => window.REPORT_ID);
+        if (funnel.reportId) {
+          await page.waitForFunction(ridFn, null, { timeout: 30_000 });
+        } else {
+          await page.waitForFunction(() => window.REPORT_ID != null, { timeout: 30_000 });
+        }
+        const rid = await page.evaluate(ridFn);
         expect(rid, 'window.REPORT_ID was not set — backend did not persist').toBeTruthy();
 
         // 6) No horizontal overflow after the form/teaser expanded the page.
