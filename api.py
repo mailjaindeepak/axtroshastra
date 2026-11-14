@@ -61,8 +61,6 @@ logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
-import mulank_payment, mulank_routes       # Mulank-only payment routes (own verification)
-app.include_router(mulank_routes.router)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
@@ -463,12 +461,6 @@ _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
 
-def _is_mulank_report(rec) -> bool:
-    """Mulank reports are paid ONLY through the dedicated /api/mulank/* flow (amount, currency,
-    captured-status and eligibility are verified there). Every shared path below skips them."""
-    return (rec or {}).get("product") == mulank_payment.PRODUCT
-
-
 def _order_amount_paise(rec: dict) -> int:
     """The price actually charged for a report, by product then funnel variant.
     Single source for both order creation and the server-side purchase-tracking value."""
@@ -698,8 +690,6 @@ NAV_LINKS_HI = [
 
 def _nav_html(lang: str = "en") -> str:
     links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
-    if lang != "hi" and os.getenv("NAV_NUMEROLOGY", "") == "1":      # owner-approved nav entry; off unless the owner sets it
-        links = links[:2] + [("Numerology Report", "/en/numerology")] + links[2:]
     menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
         f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links
@@ -2105,7 +2095,7 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
     conn = db_v2.get_conn()
     try:
         rec = reports_v2.read_report(conn, rid)
-        if not rec or _is_mulank_report(rec):
+        if not rec:
             raise HTTPException(404, "report not found")
         # Persist the popup contact FIRST — even for retries/free passes — so the
         # capture path prefers the typed WhatsApp number over Razorpay's contact.
@@ -2196,9 +2186,6 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         urec = db_v2.get_report(conn, rid)
         if not urec:
             return {"ok": True}
-        if _is_mulank_report(urec):          # verified by /api/mulank/webhook, never by notes.report_id
-            logger.warning("[webhook] ignored a payment event for a Mulank report")
-            return {"ok": True}
         # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
         # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
         popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
@@ -2256,8 +2243,6 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         if not prow:
             raise HTTPException(404, "order not found")
         rid = prow[0]
-        if _is_mulank_report(db_v2.get_report(conn, rid)):   # Mulank orders settle via /api/mulank/verify
-            raise HTTPException(404, "order not found")
         # Delivery number = the order-popup user on the report (never Razorpay's
         # contact, §1). The report always has one here (record_order attached it).
         popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
@@ -2351,7 +2336,7 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
         for cand in candidates:
             rid = cand["rid"]
             urec = db_v2.get_report(conn, rid)
-            if not urec or _is_mulank_report(urec):
+            if not urec:
                 continue
             # Delivery number = the order-popup user, read BEFORE any orphan fallback,
             # so Razorpay's contact can never leak into WhatsApp delivery (§1).
@@ -2904,8 +2889,7 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
             return {"ok": True}
         conn = db_v2.get_conn()
         try:
-            rec = db_v2.get_report(conn, rid)
-            if not rec or _is_mulank_report(rec):      # never, even with DEMO_MODE=1
+            if not db_v2.get_report(conn, rid):
                 raise HTTPException(404, "report not found")
             db_v2.set_report_paid(conn, rid)
             conn.commit()
@@ -3008,7 +2992,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/iq-test", "/en/diwali", "/en/annual-report", "/blog",
+            "/en/career-intelligence", "/en/iq-test", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3572,8 +3556,9 @@ def business_growth_redirect(request: Request):
 
 @app.get("/en/diwali", include_in_schema=False)
 def diwali_en():
-    """Diwali Wealth & Prosperity Report landing (English; Hindi later)."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "diwali.html"))
+    """Diwali landing is UNLIVE for now: send visitors to the coming-soon page.
+    To re-publish: serve pages/diwali.html again, restore the home card + sitemap entry."""
+    return RedirectResponse("/en/coming-soon?topic=Diwali%20Report", status_code=302)
 
 
 @app.get("/en/annual-report", include_in_schema=False)
