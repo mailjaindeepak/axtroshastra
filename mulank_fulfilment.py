@@ -75,7 +75,7 @@ def _send_wa(phone: str, name: str, link: str) -> None:
 def _ready(conn, rid: str, rec: dict, prepared: str) -> dict:
     """Record READY, then (once, and only when delivery is configured) tell the customer on WhatsApp. A failed send never affects the report."""
     state = _record(conn, rid, READY, prepared_on=prepared)
-    if state.get("wa"):
+    if state.get("wa") or mp.is_demo_unlock(rec.get("payload")):      # a demo unlock never messages the number on the report
         return state
     import api
     if not (api.TWILIO_SID and api.TWILIO_TOKEN and api.TWILIO_FROM and api.TWILIO_CONTENT_SID_TEXT and api.PUBLIC_BASE_URL and rec.get("user_phone")):

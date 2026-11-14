@@ -25,6 +25,7 @@ import mulank_fulfilment
 import mulank_payment as mp
 import mulank_preorder
 import mulank_recovery
+import mulank_tracking
 import numerology
 import numerology_landing
 import numerology_preview
@@ -364,10 +365,21 @@ def mulank_state(rid: str, request: Request):
     if not rec:
         raise HTTPException(404, "not found")
     if rec["paid"]:
-        return _private(Response(json.dumps({"paid": True}), media_type="application/json"))
+        return _private(Response(json.dumps({"paid": True, "real": _real_sale(rid, rec)}), media_type="application/json"))
     y, m, d = (int(x) for x in rec["payload"]["dob"].split("-"))
     eligible = bool(mulank_content.pair_readiness(d, m, y)["eligible"])
     return _private(Response(json.dumps({"paid": False, "eligible": eligible, **_offer(eligible)}), media_type="application/json"))
+
+
+def _real_sale(rid: str, rec: dict) -> bool:
+    """True only for a report paid with real money. A free pass and a demo unlock are not sales, so the page fires no Purchase event for them."""
+    if mp.is_demo_unlock(rec.get("payload")):
+        return False
+    conn = db_v2.get_conn()
+    try:
+        return not mulank_tracking._is_free_pass(conn, rid)
+    finally:
+        conn.close()
 
 
 def _teaser_for(rec: dict, eligible: bool) -> dict:

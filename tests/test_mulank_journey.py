@@ -122,8 +122,8 @@ def test_the_whole_customer_journey_from_landing_page_to_paid_pdf(client, monkey
     assert o.status_code == 200 and o.json()["amount"] == 29900 and o.json()["currency"] == "INR" and rz.orders[-1]["amount"] == 29900
     oid = o.json()["razorpay_order_id"]
 
-    # 7. the shared (other-product) payment paths cannot unlock it
-    assert client.post(f"/api/_demo_pay/{rid}").status_code == 404 and client.post("/api/order", json={"report_id": rid}).status_code == 404
+    # 7. the shared (other-product) order path cannot unlock it (demo pay is covered separately in test_mulank_demo_pay.py: it is DEMO_MODE only)
+    assert client.post("/api/order", json={"report_id": rid}).status_code == 404
     assert not _report(rid)["paid"]
 
     # 8. a payment that fails verification changes nothing

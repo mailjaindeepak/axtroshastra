@@ -167,7 +167,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "career_intelligence": "Career Intelligence Report",
                   "career_intelligence_v2": "Career Intelligence Report",
                   "diwali": "Diwali Wealth & Prosperity Report",
-                  "annual_report": "Annual Report"}
+                  "annual_report": "Annual Report",
+                  "numerology_mulank": "Numerology Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -215,6 +216,9 @@ PRODUCT_SVG = {
     # annual_report: a 4-point star inside a circle (New Year, no festival art).
     "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                      '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
+    # numerology (Mulank) — a 3x3 grid of numbers, the classic numerology square.
+    "numerology_mulank": _SVG_OPEN + '<rect x="6" y="6" width="20" height="20" rx="3"/>'
+                         '<path d="M12.7 6 V26 M19.3 6 V26 M6 12.7 H26 M6 19.3 H26"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -446,7 +450,8 @@ def email_report(to_addr, rid, payload):        # (#7) fire-and-forget; never ra
 RZP_KEY = os.getenv("RAZORPAY_KEY_ID", "")
 RZP_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-DEMO_MODE = os.getenv("DEMO_MODE") == "1"
+import demo_guard
+DEMO_MODE = demo_guard.enforce(os.getenv("DEMO_MODE") == "1")   # forced OFF when this looks like production (live key, public URL, Elastic Beanstalk...)
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
@@ -2830,6 +2835,8 @@ def report_page(rid: str, v2: int = 1):
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
+    if _is_mulank_report(rec):             # the shared renderer does not know Numerology: its own page serves it (and enforces paid)
+        return RedirectResponse(f"/en/numerology/report/{rid}", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     lang = "hi" if (payload.get("meta") or {}).get("lang") == "hi" else "en"
@@ -2861,6 +2868,8 @@ def report_pdf(rid: str):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         raise HTTPException(404, "report not found")
+    if _is_mulank_report(rec):             # Numerology's PDF is served (and cached) by its own route
+        return RedirectResponse(f"/en/numerology/report/{rid}.pdf", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     report_html = _full_report_html(payload)
@@ -2906,8 +2915,14 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
         conn = db_v2.get_conn()
         try:
             rec = db_v2.get_report(conn, rid)
-            if not rec or _is_mulank_report(rec):      # never, even with DEMO_MODE=1
+            if not rec:
                 raise HTTPException(404, "report not found")
+            if _is_mulank_report(rec):                 # Numerology has its own checks: same eligibility rule, never a sale (see mulank_demo.py)
+                import mulank_demo, mulank_routes
+                out = mulank_demo.unlock(conn, rid)
+                if not out.get("already_paid"):
+                    mulank_routes.FULFIL(rid, background_tasks)    # renders and caches the PDF; sends no message and no Purchase for a demo unlock
+                return out
             db_v2.set_report_paid(conn, rid)
             conn.commit()
         finally:
@@ -3226,8 +3241,9 @@ def _render_account(user: dict, reports: list) -> str:
             date = _html.escape((r.get("created_at") or "")[:10])
             sub = f'<div class="rp-sub">{subject}</div>' if subject else ""
             date_row = f'<span class="rp-date">{date}</span>' if date else ""
+            href = f'/en/numerology/report/{r["id"]}' if product == "numerology_mulank" else f'/report/{r["id"]}'   # Numerology has its own report page
             cards += (
-                f'<a class="rp-card" href="/report/{r["id"]}">'
+                f'<a class="rp-card" href="{href}">'
                 f'<div class="rp-band"><span class="rp-icon">{icon}</span></div>'
                 f'<div class="rp-body"><span class="rp-label">{label}</span>{sub}'
                 f'<div class="rp-meta">{date_row}'

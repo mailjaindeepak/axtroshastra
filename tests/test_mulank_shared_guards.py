@@ -141,15 +141,20 @@ def test_demo_pay_route_exists_in_this_run(client):
     assert client.post("/api/_demo_pay/nonexistent").status_code == 404
 
 
-def test_demo_pay_cannot_pay_a_mulank_report_even_in_demo_mode(client, rz, eligible):
+def test_demo_pay_for_a_mulank_report_follows_numerology_rules_not_the_shared_shortcut(client, rz, eligible, monkeypatch):
+    """Owner decision (14 Nov 2026): Numerology unlocks through /api/_demo_pay like every other product, in DEMO_MODE only. It is NOT the shared
+    shortcut: an incomplete pair is refused (409) and stays unpaid, an unknown id is a 404. The full behaviour is in test_mulank_demo_pay.py."""
+    import mulank_content
     rid, _ = _mulank(client)
     r = client.post(f"/api/_demo_pay/{rid}")
-    assert r.status_code == 404 and not _paid(rid)
-    # also for a Mulank report that has no order at all, and an ineligible one
+    assert r.status_code == 200 and _paid(rid)
+    # an ineligible pair (nothing approved for its numbers) cannot be unlocked
+    monkeypatch.setattr(mulank_content, "REGISTRY", {})
     r2 = client.post("/api/mulank", json={"name": "No Order", "dob": "15/03/1985", "country_code": "+91",
                                           "phone": "97%08d" % (60000000 + next(_seq)), "consent_terms": True})
     rid2 = r2.json()["report_id"]
-    assert client.post(f"/api/_demo_pay/{rid2}").status_code == 404 and not _paid(rid2)
+    assert client.post(f"/api/_demo_pay/{rid2}").status_code == 409 and not _paid(rid2)
+    assert client.post("/api/_demo_pay/no-such-report").status_code == 404
 
 
 def test_demo_pay_still_works_for_other_products(client):

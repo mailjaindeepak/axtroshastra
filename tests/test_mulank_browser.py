@@ -233,3 +233,49 @@ def test_a_failed_document_request_can_be_retried_with_view_my_preview(live):
         page.wait_for_selector("#mkFrame .tz-cover", timeout=20000)
         assert page.locator("#mkFrame .tz-card").count() == 2 and not page.is_visible("#mkMsg.on")
         browser.close()
+
+
+def test_demo_pay_unlocks_the_paid_report_through_the_real_page(live):
+    """The way tests/e2e/checkout.spec.js does it for the other products: the Razorpay popup is stubbed, the stub calls /api/_demo_pay/{id} (DEMO_MODE) and
+    then fires the page's own success handler. Nothing else is faked: the form, the order route, the preview, the page's confirmation, the paid report.
+    The handler's signature is deliberately not a real one, so the page must find the payment through the saved state (as Career Intelligence polls until
+    paid), show the report inline, and fire NO Purchase event, because a demo unlock is not a sale."""
+    import urllib.request
+    base = live["base"]
+    demo = []
+
+    def pay(order_id):
+        rid = order_id[len("order_"):]
+        with urllib.request.urlopen(urllib.request.Request(f"{base}/api/_demo_pay/{rid}", method="POST"), timeout=60) as r:
+            demo.append((rid, r.status))
+        return {"razorpay_order_id": order_id, "razorpay_payment_id": "pay_TEST", "razorpay_signature": "not-a-real-signature"}
+
+    with sync_api.sync_playwright() as p:
+        browser = p.chromium.launch(executable_path=CHROME, headless=True)
+        page = browser.new_context(viewport={"width": 390, "height": 844}).new_page()
+        page.expose_function("__mkPay", pay)
+        _route(page, base)
+        verify = []
+        page.on("response", lambda r: verify.append(r.status) if r.url.endswith("/api/mulank/verify") else None)
+        page.goto(base + "/en/numerology")
+        url0 = page.url
+        page.fill("#f-name", "Demo Buyer"); page.fill("#f-dd", "29"); page.select_option("#f-mm", "7"); page.fill("#f-yy", "1990")
+        page.fill("#f-phone", "98%08d" % (int(time.time()) % 100000000)); page.check("#f-consent"); page.click("#mkGo")
+        page.wait_for_selector("#mkFrame .tz-cover", state="visible", timeout=25000)
+        assert page.inner_text("#stickyBtn") == "Unlock \u20b9299"
+
+        page.click("#stickyBtn")                                                          # opens the (stubbed) popup, which demo-pays and fires the handler
+        page.wait_for_selector("#mkPaid", state="visible", timeout=60000)
+        pf = page.locator("#mkPaidFrame")
+        pf.locator("section.page").first.wait_for(timeout=30000)
+        assert pf.locator("section.page").count() == 15 and "Demo Buyer" in pf.evaluate("e => e.shadowRoot.textContent")
+        assert page.url == url0 and not page.is_visible("#mkModal")
+        assert demo and demo[0][1] == 200                                                 # the demo-pay route was really called
+        assert verify and set(verify) == {400}                                            # the fake signature was refused by the server: only the saved state unlocked the page
+        events = page.evaluate("[...window.dataLayer].filter(a => a[0] === 'event').map(a => a[1])")
+        assert "begin_checkout" in events and "purchase" not in events                    # checkout started, but a demo unlock is never reported as a sale
+
+        page.reload()                                                                      # and the paid report comes back from the saved id
+        page.wait_for_selector("#mkReopen", state="visible", timeout=30000)
+        assert "full report" in page.inner_text("#rpT").lower()
+        browser.close()

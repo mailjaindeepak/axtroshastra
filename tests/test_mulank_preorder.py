@@ -258,7 +258,12 @@ def test_paid_preorder_records_the_payment_but_unlocks_nothing(client, rz, on, p
     assert client.get(f"/en/numerology/report/{rid}.pdf").status_code == 503 and pdfs["keys"] == []
     assert mf.get_state(_row(rid)["payload"])["status"] == mf.AWAITING
     assert quiet == []
-    assert client.post(f"/api/_demo_pay/{rid}").status_code == 404 and client.post("/api/order", json={"report_id": rid}).status_code == 404
+    # demo pay (DEMO_MODE only) on a report that is already paid is a no-op: it must not deliver, render or change anything for a pre-order awaiting content
+    d = client.post(f"/api/_demo_pay/{rid}")
+    assert d.status_code == 200 and d.json() == {"ok": True, "already_paid": True}
+    assert mf.get_state(_row(rid)["payload"])["status"] == mf.AWAITING and quiet == [] and pdfs["keys"] == []
+    assert not mp.is_demo_unlock(_row(rid)["payload"])
+    assert client.post("/api/order", json={"report_id": rid}).status_code == 404
 
 
 def test_preorder_payment_goes_through_the_same_verification(client, rz, on):

@@ -691,6 +691,14 @@ fbq('track', 'PageView');
         break;
       }catch(e){ await sleep(3000); }
     }
+    /* the payment may already have been settled another way (the webhook, the recovery check): look at the saved state before giving up, as Career Intelligence polls until paid */
+    for(var j=0;j<6;j++){
+      try{
+        var sr=await fetch('/api/mulank/state/'+encodeURIComponent(RID),{credentials:'same-origin'}); var s=sr.ok?await sr.json():null;
+        if(s&&s.paid){ if(s.real) track('purchase'); showPaid(); return; }     /* a purchase event only for a real sale, never for a pass or a demo unlock */
+      }catch(e){}
+      await sleep(2000);
+    }
     busy(false);
     say('We could not confirm your payment yet. If money was deducted, please do not pay again. Come back to this same page in a few minutes and your payment will be recognised.');
   }

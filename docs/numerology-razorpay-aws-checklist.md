@@ -13,7 +13,7 @@ AWS Console: Elastic Beanstalk, `AxtroShastraProd`, Configuration, Updates / Mon
 | `RAZORPAY_KEY_SECRET` | the secret that pairs with that key id | [ ] present |
 | `RAZORPAY_WEBHOOK_SECRET` | the same string entered on the Razorpay webhook | [ ] present |
 | `PUBLIC_BASE_URL` | `https://www.axtroshastra.com` | [ ] present |
-| `DEMO_MODE` | **must be unset** (it enables a fake payment route) | [ ] unset |
+| `DEMO_MODE` | **must be unset** (it lets anyone unlock any report for free and echoes login codes). The app now switches it off by itself on Elastic Beanstalk, with a live key or with a public `PUBLIC_BASE_URL`, and logs a CRITICAL line starting `[security] DEMO_MODE=1 was set but is IGNORED`; remove it anyway | [ ] unset, [ ] no CRITICAL line in the logs |
 
 If any are missing, set them on the environment (`eb setenv NAME=value`, run privately) and let the environment restart. GitHub Secrets alone do not reach the running app.
 

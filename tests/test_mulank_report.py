@@ -596,7 +596,7 @@ def test_after_verified_payment_the_report_fragment_and_pdf_are_available_at_onc
         pdf = client.get(f"/en/numerology/report/{rid}.pdf")
         assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
     assert client.post("/api/mulank/order", json={"report_id": rid}).json() == {"already_paid": True}
-    assert client.get(f"/api/mulank/state/{rid}").json() == {"paid": True}
+    assert client.get(f"/api/mulank/state/{rid}").json() == {"paid": True, "real": True}      # paid with real money, so the page may report the sale
     assert _payment_rows(rid)[1] == 1 and not no_whatsapp
 
 

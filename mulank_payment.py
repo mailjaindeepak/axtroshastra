@@ -25,6 +25,14 @@ PRODUCT = "numerology_mulank"
 from mulank_pricing import MULANK_PRICE_PAISE, MULANK_LIST_PRICE_PAISE, MULANK_CURRENCY  # noqa: E402,F401
 
 
+DEMO_UNLOCK_KEY = "demo_unlock"           # report meta set by mulank_demo.py (development only). Such a report is never a sale.
+
+
+def is_demo_unlock(payload) -> bool:
+    """True when the report was unlocked by demo pay: no server Purchase and no WhatsApp message must ever be sent for it."""
+    return bool(((payload or {}).get("meta") or {}).get(DEMO_UNLOCK_KEY))
+
+
 def numerology_event_id(rid: str) -> str:
     """The id every ad and analytics platform sees for this report: "mk_" + the first 16 hex characters of SHA-256 of the report id.
     The report id is the private link token, so it never leaves the server or the page; the page computes the identical value in

@@ -38,8 +38,8 @@ def run(rid: str) -> bool:
             rec = reports_v2.read_report(conn, rid)
             if not rec or rec.get("product") != mp.PRODUCT or not rec.get("paid"):
                 return False
-            if _is_free_pass(conn, rid):
-                return False
+            if _is_free_pass(conn, rid) or mp.is_demo_unlock(rec.get("payload")):
+                return False                            # a pass or a demo unlock is not a sale
         finally:
             conn.close()
         meta = (rec.get("payload") or {}).get("meta") or {}
