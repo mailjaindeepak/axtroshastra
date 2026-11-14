@@ -64,6 +64,8 @@ def record_event(conn, *, visitor_id, event_name, visit_id=None, user_id=None,
     lazily create the visitor + visit on the first event. Returns the event id."""
     if event_name not in VALID_EVENTS:
         raise ValueError(f"unknown event_name: {event_name!r}")
+    if isinstance(report_id, str) and report_id.startswith("mk_"):
+        report_id = None        # Numerology sends a one-way hash as its event id (mulank_payment.numerology_event_id), not a reports.id; the FK would reject it
     s = session or {}
     ensure_visitor(conn, visitor_id, utm_source=s.get("utm_source"),
                    utm_medium=s.get("utm_medium"), utm_campaign=s.get("utm_campaign"),
