@@ -569,7 +569,7 @@ fbq('track', 'PageView');
   function barOn(on){ BUY=!!on; syncBar(); }
   window.addEventListener('scroll',syncBar,{passive:true});
   /* funnel events (no personal data; the report id is a private access key, so only a one-way hash of it is ever sent) */
-  function evId(){ try{ var b=new TextEncoder().encode(RID||''); return crypto.subtle.digest('SHA-256',b).then(function(h){ return 'mk_'+[].map.call(new Uint8Array(h).slice(0,8),function(x){return ('0'+x.toString(16)).slice(-2);}).join(''); }); }catch(e){ return Promise.resolve('mk'); } }
+  function evId(){ try{ var b=new TextEncoder().encode(RID||''); return crypto.subtle.digest('SHA-256',b).then(function(h){ return 'mk_'+[].map.call(new Uint8Array(h).slice(0,8),function(x){return ('0'+x.toString(16)).slice(-2);}).join(''); }); }catch(e){ return Promise.resolve('mk_nohash'); } }  /* fallback must keep the mk_ prefix: the server drops mk_ ids, while a bare 'mk' hits the reports FK and the whole event is lost */
   function track(kind){
     evId().then(function(id){
       try{
