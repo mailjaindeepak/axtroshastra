@@ -160,7 +160,7 @@ def build_report(day, month, year, name, *, today=None, registry=None, mode="pro
         label = foot_label or "Sample report &middot; illustrative, not production-verified"
         FOOT = f'<div class="rp-foot sample">{label}</div><div class="pgn"></div></section>'
     else:
-        FOOT = '<div class="rp-foot">Axtroshastra &middot; Mulank numerology report</div><div class="pgn"></div></section>'
+        FOOT = '<div class="pgn"></div></section>'      # the owner removed the per-card footer line
     stamp = (lambda t: f'<div class="rp-stamp">{t}</div>') if sample else (lambda t: "")
     sec = lambda inner, cls="": f'<section class="page{(" " + cls) if cls else ""}"><div class="col">\n  {inner}\n</div>'
     DISC = f'<p class="fine" style="text-align:center;margin-top:14px">{esc(row("D"))}</p>'

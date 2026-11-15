@@ -99,10 +99,15 @@ def _reviews(doc):
     return re.findall(r'<div class="rev">(?:<div class="tag">.*?</div>)?<div class="stars">(.*?)</div><p>(.*?)</p><div class="who">(.*?)</div></div>', doc)
 
 
-def test_the_reviews_are_career_intelligences_word_for_word_and_each_names_its_product():
-    mine, theirs = _reviews(PAGE), _reviews(CI)
-    assert len(theirs) == 5 and mine == theirs                              # identical stars, quotes and names
-    assert PAGE.count('<div class="tag">Career Intelligence Report</div>') == 5   # every card says which product it is about, like the home page does
+def test_the_reviews_are_the_three_numerology_testimonials_the_owner_supplied():
+    mine = _reviews(PAGE)
+    assert [(q, w) for _s, q, w in mine] == [
+        ('"I genuinely found the numerology report very helpful. The personality dials were so on point, tried wearing my lucky colors and it worked."', "Meenal, 28"),
+        ("\"It's not at all vague. Tried it randomly and it was unexpectedly so accurate, should be tried.\"", "Sandeep, 41"),
+        ('"Career and relationship part was accurate, my numerologist confirmed the same things."', "Manav, 32")]
+    assert all(st == "★★★★★" for st, _q, _w in mine)
+    assert PAGE.count('<div class="tag">Numerology Report</div>') == 3          # every card says which product it is about
+    assert "Career Intelligence Report" not in PAGE.split('id="revsTrack"')[1].split("revs-hint")[0]
 
 
 def test_the_report_count_is_the_live_site_wide_count_and_never_hard_coded():
@@ -127,12 +132,12 @@ def test_the_landing_copy_passes_the_vocabulary_scan():
 
 
 # ------------------------------------------------------------------ the sample assets
-def test_the_sample_files_exist_and_are_labelled_on_every_card():
+def test_the_sample_files_exist_and_carry_no_per_card_footer():
     frag = json.loads(SAMPLE_JSON.read_text(encoding="utf-8"))
     assert set(frag) == {"css", "html"} and len(frag["css"]) > 1000
     html = frag["html"]
     assert len(re.findall(r'<section class="page', html)) == 15
-    assert html.count(LABEL) == 15                                           # one label per card
+    assert LABEL not in html and 'class="rp-foot' not in html                # the owner removed the per-card footer line, so no card carries one
     assert "Sample Reader" in html and "<script" not in html.lower()
     text = re.sub(r"<[^>]+>", " ", html)
     assert "{" not in text and "}" not in text
@@ -211,7 +216,7 @@ def test_the_sample_opens_in_the_modal_on_the_same_address_and_the_real_flow_sti
             assert sheet["w"] <= 780 and sheet["l"] > 100 and sheet["h"] < size[1], sheet   # a centred panel with the dimmed page showing around it
         assert page.get_attribute("a[href='/static/numerology-sample.pdf']", "download") is not None
         shadow_text = page.evaluate("document.getElementById('mkSampleFrame').shadowRoot.textContent")
-        assert "Sample Reader" in shadow_text and shadow_text.count(LABEL) == 15
+        assert "Sample Reader" in shadow_text and LABEL not in shadow_text
 
         page.click("#mkClose")
         assert not page.is_visible("#mkModal") and page.url == url0
