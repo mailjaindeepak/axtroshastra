@@ -46,9 +46,10 @@ def test_sections_come_in_the_same_order_as_career_intelligence():
     assert pos_ci == sorted(pos_ci)
 
 
-def test_the_hero_has_the_same_sample_button_and_icon_eyebrow():
+def test_the_hero_has_the_sample_button_and_a_plain_text_eyebrow():
     assert 'class="sample-jump"' in PAGE and "View a sample report" in PAGE
-    assert re.search(r'<div class="eyebrow"><span[^>]*>&#\d+;</span> Mulank and Bhagyank numerology</div>', PAGE)
+    assert '<div class="eyebrow">Mulank and Bhagyank numerology</div>' in PAGE       # owner removed the number-keypad emoji (was &#128290;)
+    assert "&#128290;" not in PAGE and "🔢" not in PAGE
 
 
 def test_the_preview_and_the_paid_report_are_inline_and_only_the_sample_is_an_overlay():
