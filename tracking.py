@@ -116,7 +116,7 @@ def _post_json(url: str, payload: dict, headers: dict = None):
 
 def _meta_purchase(rid, value, currency, phone, email,
                    fbc=None, fbp=None, client_user_agent=None,
-                   client_ip_address=None):
+                   client_ip_address=None, source_url=None):
     if not META_CAPI_TOKEN:
         return
     user_data = {}
@@ -140,7 +140,7 @@ def _meta_purchase(rid, value, currency, phone, email,
             "event_time": int(time.time()),
             "event_id": rid,                       # dedup key vs the browser Pixel
             "action_source": "website",
-            "event_source_url": f"{PUBLIC_BASE_URL}/report/{rid}",
+            "event_source_url": source_url or f"{PUBLIC_BASE_URL}/report/{rid}",
             "user_data": user_data,
             "custom_data": {"currency": currency, "value": float(value)},
         }],
@@ -256,7 +256,7 @@ def _linkedin_purchase(rid, value, currency, email,
         logger.error("[li-capi] purchase failed for %s: %s", rid, e)
 
 
-def _oaiq_purchase(rid):
+def _oaiq_purchase(rid, source_url=None):
     """Stream a Purchase (order_created) to OpenAI's Conversions API.
     Server-side backstop for the browser oaiq('measure','order_created') fire.
     Dedup: event id = report id, same value the browser pixel would send."""
@@ -268,7 +268,7 @@ def _oaiq_purchase(rid):
             "id": rid,
             "type": "order_created",
             "timestamp_ms": int(time.time() * 1000),
-            "source_url": f"{PUBLIC_BASE_URL}/report/{rid}",
+            "source_url": source_url or f"{PUBLIC_BASE_URL}/report/{rid}",
             "action_source": "web",
             "data": {"type": "contents"},
         }],
@@ -287,7 +287,7 @@ def _oaiq_purchase(rid):
 
 
 def _x_purchase(rid, phone=None, email=None, twclid=None,
-                client_user_agent=None, client_ip_address=None, value=None):
+                client_user_agent=None, client_ip_address=None, value=None, source_url=None):
     """Stream a Purchase to X's Conversion API.
     Server-side backstop for the browser twq('event','tw-rgvp6-rix10') fire.
     Dedup: conversion_id = report id, same value the browser pixel sends.
@@ -315,7 +315,7 @@ def _x_purchase(rid, phone=None, email=None, twclid=None,
         "conversions": [{
             "conversion_time": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()),
             "event_id": X_EVENT_PURCHASE,
-            "event_source_url": f"{PUBLIC_BASE_URL}/report/{rid}",
+            "event_source_url": source_url or f"{PUBLIC_BASE_URL}/report/{rid}",
             "conversion_id": rid,
             "identifiers": [identifiers],
         }],
@@ -338,11 +338,17 @@ def _x_purchase(rid, phone=None, email=None, twclid=None,
 def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
                    ga_client_id=None, fbc=None, fbp=None,
                    client_user_agent=None, client_ip_address=None,
-                   li_fat_id=None, twclid=None):
+                   li_fat_id=None, twclid=None, source_url=None):
     """Fire a Purchase to Meta CAPI + GA4 MP + LinkedIn CAPI + OpenAI CAPI + X CAPI.
     No-op unless a secret is set. Never raises — safe to hand to a payment
     background task. Do NOT call for free-pass unlocks (no real revenue; the
     browser skips them too).
+
+    `rid` is used as the event id / transaction id on every platform. A product whose
+    report id is a private link token passes a one-way hash here instead (Numerology:
+    mulank_payment.numerology_event_id) and an explicit `source_url`, so the private id
+    never reaches a vendor. `source_url` defaults to <site>/report/{rid}, so every other
+    product is unchanged.
 
     Each destination is wrapped separately so one network failure cannot stop
     the others from reporting the same sale."""
@@ -352,15 +358,17 @@ def track_purchase(rid, value=499, currency="INR", phone=None, email=None,
         lambda: _meta_purchase(rid, value, currency, phone, email,
                                fbc=fbc, fbp=fbp,
                                client_user_agent=client_user_agent,
-                               client_ip_address=client_ip_address),
+                               client_ip_address=client_ip_address,
+                               source_url=source_url),
         lambda: _ga4_purchase(rid, value, currency, ga_client_id),
         lambda: _linkedin_purchase(rid, value, currency, email,
                                    li_fat_id=li_fat_id,
                                    client_ip_address=client_ip_address),
-        lambda: _oaiq_purchase(rid),
+        lambda: _oaiq_purchase(rid, source_url=source_url),
         lambda: _x_purchase(rid, phone, email, twclid=twclid,
                             client_user_agent=client_user_agent,
-                            client_ip_address=client_ip_address, value=value),
+                            client_ip_address=client_ip_address, value=value,
+                            source_url=source_url),
     ):
         try:
             fire()

@@ -61,6 +61,8 @@ logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
+import mulank_payment, mulank_routes       # Mulank-only payment routes (own verification)
+app.include_router(mulank_routes.router)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
@@ -165,7 +167,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "career_intelligence": "Career Intelligence Report",
                   "career_intelligence_v2": "Career Intelligence Report",
                   "diwali": "Diwali Wealth & Prosperity Report",
-                  "annual_report": "Annual Report"}
+                  "annual_report": "Annual Report",
+                  "numerology_mulank": "Numerology Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -213,6 +216,9 @@ PRODUCT_SVG = {
     # annual_report: a 4-point star inside a circle (New Year, no festival art).
     "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                      '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
+    # numerology (Mulank) — a 3x3 grid of numbers, the classic numerology square.
+    "numerology_mulank": _SVG_OPEN + '<rect x="6" y="6" width="20" height="20" rx="3"/>'
+                         '<path d="M12.7 6 V26 M19.3 6 V26 M6 12.7 H26 M6 19.3 H26"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -444,7 +450,8 @@ def email_report(to_addr, rid, payload):        # (#7) fire-and-forget; never ra
 RZP_KEY = os.getenv("RAZORPAY_KEY_ID", "")
 RZP_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-DEMO_MODE = os.getenv("DEMO_MODE") == "1"
+import demo_guard
+DEMO_MODE = demo_guard.enforce(os.getenv("DEMO_MODE") == "1")   # forced OFF when this looks like production (live key, public URL, Elastic Beanstalk...)
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
@@ -459,6 +466,12 @@ DIWALI_PRICE_PAISE = 29900                # ₹299 — Diwali Wealth & Prosperit
 ANNUAL_PRICE_PAISE = 49900                # ₹499 — Annual Report (struck from ₹999 on the page only); by product, never by variant
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
+
+
+def _is_mulank_report(rec) -> bool:
+    """Mulank reports are paid ONLY through the dedicated /api/mulank/* flow (amount, currency,
+    captured-status and eligibility are verified there). Every shared path below skips them."""
+    return (rec or {}).get("product") == mulank_payment.PRODUCT
 
 
 def _order_amount_paise(rec: dict) -> int:
@@ -690,6 +703,8 @@ NAV_LINKS_HI = [
 
 def _nav_html(lang: str = "en") -> str:
     links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
+    if lang != "hi" and os.getenv("NAV_NUMEROLOGY", "") == "1":      # owner-approved nav entry; off unless the owner sets it
+        links = links[:2] + [("Numerology Report", "/en/numerology")] + links[2:]
     menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
         f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links
@@ -2095,7 +2110,7 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
     conn = db_v2.get_conn()
     try:
         rec = reports_v2.read_report(conn, rid)
-        if not rec:
+        if not rec or _is_mulank_report(rec):
             raise HTTPException(404, "report not found")
         # Persist the popup contact FIRST — even for retries/free passes — so the
         # capture path prefers the typed WhatsApp number over Razorpay's contact.
@@ -2186,6 +2201,9 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         urec = db_v2.get_report(conn, rid)
         if not urec:
             return {"ok": True}
+        if _is_mulank_report(urec):          # verified by /api/mulank/webhook, never by notes.report_id
+            logger.warning("[webhook] ignored a payment event for a Mulank report")
+            return {"ok": True}
         # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
         # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
         popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
@@ -2243,6 +2261,8 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         if not prow:
             raise HTTPException(404, "order not found")
         rid = prow[0]
+        if _is_mulank_report(db_v2.get_report(conn, rid)):   # Mulank orders settle via /api/mulank/verify
+            raise HTTPException(404, "order not found")
         # Delivery number = the order-popup user on the report (never Razorpay's
         # contact, §1). The report always has one here (record_order attached it).
         popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
@@ -2336,7 +2356,7 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
         for cand in candidates:
             rid = cand["rid"]
             urec = db_v2.get_report(conn, rid)
-            if not urec:
+            if not urec or _is_mulank_report(urec):
                 continue
             # Delivery number = the order-popup user, read BEFORE any orphan fallback,
             # so Razorpay's contact can never leak into WhatsApp delivery (§1).
@@ -2814,6 +2834,8 @@ def report_page(rid: str, v2: int = 1):
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
+    if _is_mulank_report(rec):             # the shared renderer does not know Numerology: its own page serves it (and enforces paid)
+        return RedirectResponse(f"/en/numerology/report/{rid}", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     lang = "hi" if (payload.get("meta") or {}).get("lang") == "hi" else "en"
@@ -2845,6 +2867,8 @@ def report_pdf(rid: str):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         raise HTTPException(404, "report not found")
+    if _is_mulank_report(rec):             # Numerology's PDF is served (and cached) by its own route
+        return RedirectResponse(f"/en/numerology/report/{rid}.pdf", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     report_html = _full_report_html(payload)
@@ -2889,8 +2913,15 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
             return {"ok": True}
         conn = db_v2.get_conn()
         try:
-            if not db_v2.get_report(conn, rid):
+            rec = db_v2.get_report(conn, rid)
+            if not rec:
                 raise HTTPException(404, "report not found")
+            if _is_mulank_report(rec):                 # Numerology has its own checks: same eligibility rule, never a sale (see mulank_demo.py)
+                import mulank_demo, mulank_routes
+                out = mulank_demo.unlock(conn, rid)
+                if not out.get("already_paid"):
+                    mulank_routes.FULFIL(rid, background_tasks)    # renders and caches the PDF; sends no message and no Purchase for a demo unlock
+                return out
             db_v2.set_report_paid(conn, rid)
             conn.commit()
         finally:
@@ -2992,7 +3023,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/iq-test", "/en/annual-report", "/blog",
+            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3209,8 +3240,9 @@ def _render_account(user: dict, reports: list) -> str:
             date = _html.escape((r.get("created_at") or "")[:10])
             sub = f'<div class="rp-sub">{subject}</div>' if subject else ""
             date_row = f'<span class="rp-date">{date}</span>' if date else ""
+            href = f'/en/numerology/report/{r["id"]}' if product == "numerology_mulank" else f'/report/{r["id"]}'   # Numerology has its own report page
             cards += (
-                f'<a class="rp-card" href="/report/{r["id"]}">'
+                f'<a class="rp-card" href="{href}">'
                 f'<div class="rp-band"><span class="rp-icon">{icon}</span></div>'
                 f'<div class="rp-body"><span class="rp-label">{label}</span>{sub}'
                 f'<div class="rp-meta">{date_row}'
