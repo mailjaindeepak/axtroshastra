@@ -461,20 +461,48 @@ def ops_log_last(db, kind):
 # idx_subjects_report, so the cost stays small as the table grows. A backlog older
 # than 30 days needs a one-off manual cleanup.
 # --------------------------------------------------------------------------- #
-_ROBOT_PATTERNS = ["Smoke %", "Test %", "Robot %"]
+_ROBOT_NAME_PATTERNS = [
+    "Robot %",   # old v1 robot names + test fixtures
+    "Smoke %",   # v2 robot (robot.spec.js)
+    "Test %",    # v2 robot (robot.spec.js)
+]
+
+_ROBOT_WHERE = (
+    " OR ".join(["rs.name LIKE %s" for _ in _ROBOT_NAME_PATTERNS])
+)
+
+
+def robot_report_count(db):
+    import db_v2
+    conn = db_v2.get_conn()
+    try:
+        with conn.cursor() as c:
+            c.execute(
+                "SELECT COUNT(DISTINCT r.id) FROM reports r "
+                "JOIN report_subjects rs ON rs.report_id = r.id "
+                "WHERE " + _ROBOT_WHERE,
+                tuple(_ROBOT_NAME_PATTERNS),
+            )
+            row = c.fetchone()
+    finally:
+        conn.close()
+    return row[0] if row else 0
 
 
 def robot_cleanup(db, dry_run=True):
     import db_v2
-    clauses = " OR ".join(["s.name LIKE %s" for _ in _ROBOT_PATTERNS])
+    params = tuple(_ROBOT_NAME_PATTERNS)
     conn = db_v2.get_conn()
     try:
         with conn.cursor() as c:
-            c.execute("SELECT DISTINCT r.id FROM reports r "
-                      "JOIN report_subjects s ON s.report_id = r.id "
-                      "WHERE r.created_at > (NOW() - INTERVAL 30 DAY) AND (" + clauses + ") "
-                      "AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.report_id = r.id)",
-                      tuple(_ROBOT_PATTERNS))
+            c.execute(
+                "SELECT DISTINCT r.id FROM reports r "
+                "JOIN report_subjects rs ON rs.report_id = r.id "
+                "WHERE r.created_at > (NOW() - INTERVAL 30 DAY) "
+                "AND (" + _ROBOT_WHERE + ") "
+                "AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.report_id = r.id)",
+                params,
+            )
             ids = [row[0] for row in c.fetchall()]
             count = len(ids)
             if dry_run:

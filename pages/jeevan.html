@@ -262,6 +262,12 @@ section{padding:52px 0}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
 footer{background:var(--midnight);color:#8F92AB;font-size:12px;text-align:center;padding:26px 20px 120px}
 footer b{color:#B9BBD0}
+@media(max-width:480px){
+  .hero{padding-top:20px;padding-bottom:32px}
+  .brand{margin-top:22px;margin-bottom:14px}
+  .hero h1{font-size:clamp(26px,7vw,35px)}
+  .form-card{margin-top:16px}
+}
 @media(min-width:720px){
   .kundli-bg{width:520px;right:-60px;opacity:.6}
   .hero{padding:48px 0 72px}
@@ -344,19 +350,10 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
 
-    <p class="eyebrow">Life Blueprint Report</p>
-    <h1>Your Birth Chart Tells<br><em>a Story About You</em></h1>
-    <p class="sub">Personality. Career. Strengths.<br>Life Patterns.</p>
+    <h1>Create Your Birth Chart<br><em>with AI in 2 minutes</em></h1>
+    <p class="sub">Wealth. Career Success. Relationships Success. Life Blueprint Report.</p>
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Enter your birth details 👇</p>
-      <div class="field">
-        <label for="f-name">Name</label>
-        <input id="f-name" type="text" placeholder="Your name" required>
-      </div>
-      <div class="field">
-        <label for="f-gender">You are</label>
-        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
-      </div>
+      <p class="fc-title">Enter your birth details to get started</p>
       <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
@@ -390,11 +387,19 @@ fbq('track', 'PageView');
         <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
       </div>
       <div class="field">
+        <label for="f-name">Name</label>
+        <input id="f-name" type="text" placeholder="Your name" required>
+      </div>
+      <div class="field">
+        <label for="f-gender">Gender</label>
+        <select id="f-gender" required aria-label="Gender"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
+      </div>
+      <div class="field">
         <label for="f-whatsapp">WhatsApp number</label>
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
         <div style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Your report is sent here as a PDF — make sure it's your WhatsApp number.</div>
       </div>
-      <button class="btn" type="submit">Check my chart — FREE</button>
+      <button class="btn" type="submit">Create My Birth Chart</button>
       <p class="btn-note">Free · No card needed · Takes 2 minutes</p>
     </form>
   </div>
@@ -565,7 +570,7 @@ fbq('track', 'PageView');
 <section class="final">
   <div class="wrap">
     <h2>Know your next phase<br><em>before it arrives.</em></h2>
-    <a class="btn" href="#kundliForm">Check my chart — FREE</a>
+    <a class="btn" href="#kundliForm">Create My Birth Chart</a>
   </div>
 </section>
 
@@ -580,10 +585,10 @@ fbq('track', 'PageView');
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
-    <p class="l1">Life Blueprint Report</p>
+    <p class="l1">Your Personalised Birth Chart</p>
     <p class="l2" id="stickyPricing" hidden><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b></p>
   </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn">Create My Chart</a>
 </div>
 
 
@@ -711,14 +716,14 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     REPORT_ID = data.report_id;
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
-    renderTeaser(data.teaser);
+    await renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
     alert(err.message + ' — please try again.');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'Check my chart — FREE'; btn.disabled = false;
+    btn.textContent = 'Create My Birth Chart'; btn.disabled = false;
   }
 });
 
@@ -842,7 +847,7 @@ function tvStandout(wheel){
   return parts.join(' ') || 'Your chart shows a balanced spread across all areas.';
 }
 
-function renderTeaser(t){
+async function renderTeaser(t){
   var fullName = (document.getElementById('f-name').value || '').trim();
   var firstName = fullName.split(/\s+/)[0] || 'You';
   var months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -851,39 +856,31 @@ function renderTeaser(t){
   var place = (document.getElementById('f-place').value || '').trim();
   var today = new Date();
   var dateStr = today.getDate() + ' ' + months[today.getMonth()+1] + ' ' + today.getFullYear();
-
-  // Tag line (injected)
-  document.getElementById('tv-tag').innerHTML = '<p class="ps-tag">Free preview — a real glimpse of your paid report, computed from your own birth chart.</p>';
-
-  // Cover card (injected — not in static HTML)
   var lockSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  var credSvgs = ['<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'];
+  var mc = await fetch('/static/tv-jeevan.json').then(function(r){ return r.json(); });
+
+  // Tag line
+  document.getElementById('tv-tag').innerHTML = '<p class="ps-tag">'+mc.tag+'</p>';
+
+  // Cover card
   document.getElementById('tv-cover').innerHTML =
     '<div class="ps-cover">' +
-      '<div class="ps-cv-brand">Axtroshastra</div>' +
-      '<div class="ps-cv-title">Your Life Blueprint</div>' +
-      '<div class="ps-cv-sub">Your Chart. Your Story. Your Next Chapter.</div>' +
+      '<div class="ps-cv-brand">'+mc.cover.brand+'</div>' +
+      '<div class="ps-cv-title">'+mc.cover.title+'</div>' +
+      '<div class="ps-cv-sub">'+mc.cover.sub+'</div>' +
       '<div class="ps-cv-rule"></div>' +
       '<div class="ps-cv-name">' + (fullName || 'You') + '</div>' +
       '<div class="ps-cv-dob">' + dobDisplay.trim() + (place ? ' · ' + place : '') + '</div>' +
-      '<div class="ps-cv-qlabel">This report answers:</div>' +
-      '<ol class="ps-cv-qlist">' +
-        '<li><span class="qn">1</span> Are your best years still ahead of you?</li>' +
-        '<li><span class="qn">2</span> When is your next major turning point?</li>' +
-        '<li><span class="qn">3</span> Will you finally find the right direction in life?</li>' +
-        '<li><span class="qn">4</span> Will you find lasting happiness in your relationships?</li>' +
-        '<li><span class="qn">5</span> Will you achieve the financial security you want?</li>' +
-      '</ol>' +
-      '<div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#tv-locked" onclick="document.getElementById(\'tv-locked\').scrollIntoView({behavior:\'smooth\'});return false;">Unlock Answers</a></div>' +
-      '<div class="ps-cv-date">Report prepared ' + dateStr + '</div>' +
+      '<div class="ps-cv-qlabel">'+mc.cover.qlabel+'</div>' +
+      '<ol class="ps-cv-qlist">'+mc.cover.questions.map(function(q,i){return '<li><span class="qn">'+(i+1)+'</span> '+q+'</li>';}).join('')+'</ol>' +
+      '<div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#tv-locked" onclick="document.getElementById(\'tv-locked\').scrollIntoView({behavior:\'smooth\'});return false;">'+mc.cover.ghostCta+'</a></div>' +
+      '<div class="ps-cv-date">'+mc.cover.datePrefix+' ' + dateStr + '</div>' +
     '</div>';
 
-  // Trust strip (injected)
+  // Trust strip
   document.getElementById('tv-trust').innerHTML =
-    '<div class="ps-trust">' +
-      '<div class="ps-trust-stat"><div class="tn">25,000+</div><div class="tl">Reports</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">4.8 ★</div><div class="tl">Avg Rating</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>' +
-    '</div>';
+    '<div class="ps-trust">'+mc.trust.map(function(s){return '<div class="ps-trust-stat"><div class="tn">'+s.n+'</div><div class="tl">'+s.l+'</div></div>';}).join('')+'</div>';
 
   // Kundli SVG
   var kundliWrap = document.getElementById('tv-kundli');
@@ -923,38 +920,33 @@ function renderTeaser(t){
   // Current phase
   document.getElementById('tv-phase').textContent = t.current_dasha || '—';
 
-  // Locked questions + CTA + social proof (injected)
+  // Locked questions + CTA + social proof
+  var lqHtml = mc.locked.questions.map(function(item){
+    return '<div class="ps-lq"><div class="ps-lq-icon">'+lockSvg+'</div><div class="ps-lq-text"><div class="qt">'+item.q+'</div><div class="qd">'+item.d+'</div></div></div>';
+  }).join('');
+  var alsoHtml = mc.locked.also.map(function(a){
+    return '<div class="ps-also-box">'+lockSvg+' '+a+'</div>';
+  }).join('');
+  var reviewsHtml = mc.proof.reviews.map(function(r){
+    return '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">'+r.text+'</div><div class="ps-proof-who">'+r.who+'</div></div>';
+  }).join('');
+  var credsHtml = mc.proof.creds.map(function(c,i){
+    return '<div class="ps-cred-badge">'+credSvgs[i]+' '+c+'</div>';
+  }).join('');
   document.getElementById('tv-locked').innerHTML =
     '<div class="ps-locked">' +
-      '<div class="ps-locked-heading">Your full report also answers…</div>' +
-      '<div class="ps-locked-sub">Locked — unlock with your complete Life Blueprint</div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When will your next big career shift happen?</div><div class="qd">Dasha windows for promotion, role change or new direction.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Is marriage or a serious relationship near?</div><div class="qd">Venus, 7th house and navamsa timing decoded.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Will you build lasting wealth?</div><div class="qd">2nd &amp; 11th house strength, dhana yogas, peak earning years.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">What hidden strengths does your chart reveal?</div><div class="qd">Raja yogas, special combinations only your chart carries.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">What should you watch out for in the next 2 years?</div><div class="qd">Challenging transits and practical remedies to navigate them.</div></div></div>' +
-      '<div class="ps-also-grid">' +
-        '<div class="ps-also-box">' + lockSvg + ' Energy &amp; Vitality</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Family &amp; Happiness</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Home &amp; Property</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Wealth &amp; Prosperity</div>' +
-      '</div>' +
+      '<div class="ps-locked-heading">'+mc.locked.heading+'</div>' +
+      '<div class="ps-locked-sub">'+mc.locked.sub+'</div>' +
+      lqHtml +
+      '<div class="ps-also-grid">'+alsoHtml+'</div>' +
       '<div style="text-align:center;margin-top:22px">' +
-        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint — <s>₹999</s> ₹499</button>' +
-        '<div class="ps-subnote2">Personalised using your exact birth details</div>' +
+        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">'+mc.cta.text+'</button>' +
+        '<div class="ps-subnote2">'+mc.cta.sub+'</div>' +
       '</div>' +
       '<div class="ps-proof">' +
-        '<div class="ps-proof-h">What others are saying</div>' +
-        '<div class="ps-proof-list">' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">The timing section was eerily accurate. I was already thinking about a big move and this gave me the exact year to watch for.</div><div class="ps-proof-who">Priya, 31 · Marketing Manager</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">Showed it to my mom and she said the personality part was spot on. 499 for something this detailed is nothing tbh.</div><div class="ps-proof-who">Rahul, 27</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">I got the career and marriage reports before, so tried this one too. It connects everything into one picture. Makes way more sense now.</div><div class="ps-proof-who">Sneha, 34 · Chartered Accountant</div></div>' +
-        '</div>' +
-        '<div class="ps-cred-row">' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>' +
-        '</div>' +
+        '<div class="ps-proof-h">'+mc.proof.heading+'</div>' +
+        '<div class="ps-proof-list">'+reviewsHtml+'</div>' +
+        '<div class="ps-cred-row">'+credsHtml+'</div>' +
       '</div>' +
     '</div>';
 
@@ -963,7 +955,7 @@ function renderTeaser(t){
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
+  sb.textContent = mc.cta.sticky; sb.setAttribute('href', '#teaser');
   var sp = document.getElementById('stickyPricing'); if(sp) sp.hidden = false;
 }
 
@@ -1110,7 +1102,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     return;
   }
   form.scrollIntoView({behavior:'smooth'});
-  var first = document.getElementById('f-name');
+  var first = document.getElementById('f-dd');
   if(first) setTimeout(function(){ try{ first.focus(); }catch(_){}}, 400);
 });
 </script>
@@ -1217,8 +1209,8 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
     nm.value=clean;
-    if(!clean){ nameHint.textContent="Please enter your name."; stop(); nm.focus(); return; } nameHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(!clean){ nameHint.textContent="Please enter your name."; stop(); nm.focus(); return; } nameHint.textContent="";
     var h=[nm.value,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,
            document.getElementById("f-approx").value, (document.getElementById("f-place").value||"")].join("~");
     var teaser=document.getElementById("teaser");

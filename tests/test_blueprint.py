@@ -32,6 +32,17 @@ def test_blueprint_page_serves_200(client):
     assert r.status_code == 200
 
 
+def test_blueprint_marketing_json_serves(client):
+    """Marketing content lives in static/tv-jeevan.json, loaded dynamically."""
+    r = client.get("/static/tv-jeevan.json")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["cover"]["title"]
+    assert len(data["cover"]["questions"]) == 5
+    assert len(data["locked"]["questions"]) == 5
+    assert len(data["proof"]["reviews"]) >= 2
+
+
 def test_jeevan_legacy_redirects_to_canonical(client):
     r = client.get("/jeevan", follow_redirects=False)
     assert r.status_code == 301
