@@ -1,0 +1,49 @@
+{
+  "tag": "Free preview — a real glimpse of your paid report, computed from your own birth chart.",
+  "cover": {
+    "brand": "Axtroshastra",
+    "title": "Your Life Blueprint",
+    "sub": "Your Chart. Your Story. Your Next Chapter.",
+    "qlabel": "This report answers:",
+    "questions": [
+      "Are your best years still ahead of you?",
+      "When is your next major turning point?",
+      "Will you finally find the right direction in life?",
+      "Will you find lasting happiness in your relationships?",
+      "Will you achieve the financial security you want?"
+    ],
+    "ghostCta": "Unlock Answers",
+    "datePrefix": "Report prepared"
+  },
+  "trust": [
+    {"n": "25,000+", "l": "Reports"},
+    {"n": "4.8 ★", "l": "Avg Rating"},
+    {"n": "2 min", "l": "Delivery"}
+  ],
+  "locked": {
+    "heading": "Your full report also answers…",
+    "sub": "Locked — unlock with your complete Life Blueprint",
+    "questions": [
+      {"q": "When will your next big career shift happen?", "d": "Dasha windows for promotion, role change or new direction."},
+      {"q": "Is marriage or a serious relationship near?", "d": "Venus, 7th house and navamsa timing decoded."},
+      {"q": "Will you build lasting wealth?", "d": "2nd &amp; 11th house strength, dhana yogas, peak earning years."},
+      {"q": "What hidden strengths does your chart reveal?", "d": "Raja yogas, special combinations only your chart carries."},
+      {"q": "What should you watch out for in the next 2 years?", "d": "Challenging transits and practical remedies to navigate them."}
+    ],
+    "also": ["Energy &amp; Vitality", "Family &amp; Happiness", "Home &amp; Property", "Wealth &amp; Prosperity"]
+  },
+  "cta": {
+    "text": "Unlock My Complete Life Blueprint — <s>₹999</s> ₹499",
+    "sub": "Personalised using your exact birth details",
+    "sticky": "Unlock ₹499"
+  },
+  "proof": {
+    "heading": "What others are saying",
+    "reviews": [
+      {"text": "The timing section was eerily accurate. I was already thinking about a big move and this gave me the exact year to watch for.", "who": "Priya, 31 · Marketing Manager"},
+      {"text": "Showed it to my mom and she said the personality part was spot on. 499 for something this detailed is nothing tbh.", "who": "Rahul, 27"},
+      {"text": "I got the career and marriage reports before, so tried this one too. It connects everything into one picture. Makes way more sense now.", "who": "Sneha, 34 · Chartered Accountant"}
+    ],
+    "creds": ["NASA JPL Data", "IIT-IIM Alumni", "Secure Payment"]
+  }
+}
