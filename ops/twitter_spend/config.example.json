@@ -1,0 +1,25 @@
+{
+  "_setup": "Get credentials at https://developer.x.com/en/portal → App → Keys and tokens",
+
+  "consumer_key": "YOUR_API_KEY",
+  "consumer_secret": "YOUR_API_SECRET",
+  "access_token": "YOUR_ACCESS_TOKEN",
+  "access_token_secret": "YOUR_ACCESS_TOKEN_SECRET",
+
+  "accounts": [
+    {"id": "ACCOUNT_ID_1", "name": "Account 1"},
+    {"id": "ACCOUNT_ID_2", "name": "Account 2"}
+  ],
+
+  "db": {
+    "host": "YOUR_RDS_HOST",
+    "port": 3306,
+    "user": "YOUR_DB_USER",
+    "password": "YOUR_DB_PASSWORD",
+    "database": "axtroshastra_v2"
+  },
+
+  "server_url": "https://www.axtroshastra.com",
+  "stats_key": "YOUR_STATS_KEY",
+  "google_sa_key": "sa_key.json"
+}
