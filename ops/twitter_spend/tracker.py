@@ -651,21 +651,55 @@ def cmd_export(args):
         print(buf.getvalue())
 
 
-def _push_sheet(rows: list[dict], spreadsheet_id: str, tab: str):
+def _get_sheets_client():
     import gspread
+    sa_path = os.getenv("GOOGLE_SA_KEY") or load_config().get("google_sa_key", "")
+    creds_path = HERE / "authorized_user.json"
 
-    sa_path = os.getenv("GOOGLE_SA_KEY", "sa_key.json")
-    gc = gspread.service_account(filename=sa_path)
+    if sa_path and Path(sa_path).exists():
+        return gspread.service_account(filename=sa_path)
+    if creds_path.exists():
+        return gspread.oauth(credentials_filename=str(HERE / "oauth_creds.json"),
+                             authorized_user_filename=str(creds_path))
+    print("First-time Google Sheets setup — a browser will open for you to sign in.", file=sys.stderr)
+    oauth_creds = HERE / "oauth_creds.json"
+    if not oauth_creds.exists():
+        sys.exit(
+            f"Place your OAuth client credentials at {oauth_creds}\n"
+            "Get them from: Google Cloud Console → APIs & Services → Credentials → "
+            "Create Credentials → OAuth client ID → Desktop app → Download JSON"
+        )
+    return gspread.oauth(credentials_filename=str(oauth_creds),
+                         authorized_user_filename=str(creds_path))
+
+
+def _push_sheet(rows: list[dict], spreadsheet_id: str, tab: str, append: bool = False):
+    import gspread
+    gc = _get_sheets_client()
     sh = gc.open_by_key(spreadsheet_id)
     try:
         ws = sh.worksheet(tab)
     except gspread.WorksheetNotFound:
         ws = sh.add_worksheet(title=tab, rows=max(len(rows) + 1, 100), cols=len(COLUMNS))
-    data = [HEADER] + [[r[c] for c in COLUMNS] for r in rows]
-    ws.clear()
-    ws.update(range_name="A1", values=data)
-    ws.format(f"A1:{chr(64 + len(COLUMNS))}1", {"textFormat": {"bold": True}})
-    print(f"Pushed {len(rows)} rows → '{tab}'", file=sys.stderr)
+        append = False  # new sheet, do full write
+
+    if append:
+        existing = ws.col_values(1)  # dates in column A
+        existing_dates = set(existing[1:])  # skip header
+        new_rows = [r for r in rows if r["date"] not in existing_dates]
+        if not new_rows:
+            print(f"  no new dates to append → '{tab}'", file=sys.stderr)
+            return
+        data = [[r[c] for c in COLUMNS] for r in new_rows]
+        next_row = len(existing) + 1
+        ws.update(range_name=f"A{next_row}", values=data)
+        print(f"Appended {len(new_rows)} rows → '{tab}'", file=sys.stderr)
+    else:
+        data = [HEADER] + [[r[c] for c in COLUMNS] for r in rows]
+        ws.clear()
+        ws.update(range_name="A1", values=data)
+        ws.format(f"A1:{chr(64 + len(COLUMNS))}1", {"textFormat": {"bold": True}})
+        print(f"Pushed {len(rows)} rows → '{tab}'", file=sys.stderr)
 
 
 # ---- enrich (events DB) -----------------------------------------------------
@@ -785,16 +819,17 @@ def cmd_daily(args):
         print(f"  enrich failed (DB unreachable?): {e}", file=sys.stderr)
         print("  continuing without event data…", file=sys.stderr)
 
-    # 3. Export to Google Sheet
+    # 3. Export to Google Sheet (append only new dates)
     print("\n=== EXPORT → SHEET ===", file=sys.stderr)
     sa_key = config.get("google_sa_key")
     if sa_key:
         os.environ.setdefault("GOOGLE_SA_KEY", sa_key)
     sheet_id = args.sheet or ROAS_SHEET
-    export_args = argparse.Namespace(
-        days=args.export_days, csv=None, sheet=sheet_id, tab=args.tab,
-    )
-    cmd_export(export_args)
+    rows = _query_rows(args.export_days)
+    if rows:
+        _push_sheet(rows, sheet_id, args.tab, append=True)
+    else:
+        print("  no data to export", file=sys.stderr)
     print("\nDaily run complete.", file=sys.stderr)
 
 
