@@ -737,7 +737,7 @@ def cmd_enrich(args):
 
     since = (datetime.now(timezone.utc) - timedelta(days=args.days)).strftime("%Y-%m-%d")
     spend_rows = db.execute(
-        "SELECT DISTINCT date, landing_page, utm_source, utm_medium, utm_campaign "
+        "SELECT DISTINCT date, landing_page, utm_source, utm_medium, utm_campaign, utm_content "
         "FROM ad_spend WHERE date >= ?", (since,),
     ).fetchall()
     if not spend_rows:
@@ -751,7 +751,7 @@ def cmd_enrich(args):
 
     event_rows = _fetch_events_from_api(start_date, end_date)
 
-    # Build lookup: (date, path, utm_source, utm_medium, utm_campaign) → metrics
+    # Build lookup: (date, path, utm_source, utm_medium, utm_campaign, utm_content) → metrics
     lookup: dict[tuple, dict] = {}
     for r in event_rows:
         path = _normalize_path(r["landing_page"] or "")
@@ -761,6 +761,7 @@ def cmd_enrich(args):
             (r["utm_source"] or "").lower(),
             (r["utm_medium"] or "").lower(),
             (r["utm_campaign"] or "").lower(),
+            (r.get("utm_content") or "").lower(),
         )
         lookup[key] = {
             "page_views": int(r["page_views"]),
@@ -774,20 +775,22 @@ def cmd_enrich(args):
 
     matched = 0
     for srow in spend_rows:
-        date, lp, src, med, camp = srow
+        date, lp, src, med, camp, cont = srow
         path = _normalize_path(lp or "")
-        key = (date, path, (src or "").lower(), (med or "").lower(), (camp or "").lower())
+        key = (date, path, (src or "").lower(), (med or "").lower(),
+               (camp or "").lower(), (cont or "").lower())
         metrics = lookup.get(key)
         if not metrics:
             continue
         matched += 1
         db.execute(
             "UPDATE ad_spend SET page_views=?, form_starts=?, leads=?, purchases=?, revenue_inr=? "
-            "WHERE date=? AND landing_page=? AND utm_source=? AND utm_medium=? AND utm_campaign=?",
+            "WHERE date=? AND landing_page=? AND utm_source=? AND utm_medium=? "
+            "AND utm_campaign=? AND utm_content=?",
             (
                 metrics["page_views"], metrics["form_starts"],
                 metrics["leads"], metrics["purchases"], metrics["revenue_inr"],
-                date, lp, src, med, camp,
+                date, lp, src, med, camp, cont,
             ),
         )
 

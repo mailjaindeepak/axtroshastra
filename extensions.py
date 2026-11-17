@@ -98,6 +98,10 @@ def install(app, ctx):
                 vs.utm_source,
                 vs.utm_medium,
                 COALESCE(vs.utm_campaign, '')                            AS utm_campaign,
+                CASE WHEN vs.landing_url LIKE '%%utm_content=%%'
+                    THEN SUBSTRING_INDEX(SUBSTRING_INDEX(vs.landing_url, 'utm_content=', -1), '&', 1)
+                    ELSE ''
+                END                                                      AS utm_content,
                 SUM(e.event_name = 'page_view')                         AS page_views,
                 SUM(e.event_name = 'form_start')                        AS form_starts,
                 SUM(e.event_name = 'generate_lead')                     AS leads,
@@ -111,7 +115,8 @@ def install(app, ctx):
             WHERE vs.utm_source IS NOT NULL
               AND e.created_at >= %s
               AND e.created_at < %s
-            GROUP BY event_date, landing_page, vs.utm_source, vs.utm_medium, utm_campaign
+            GROUP BY event_date, landing_page, vs.utm_source, vs.utm_medium,
+                     utm_campaign, utm_content
         """
         conn = db_v2.get_conn()
         try:
@@ -129,11 +134,12 @@ def install(app, ctx):
                     "utm_source": r[2] or "",
                     "utm_medium": r[3] or "",
                     "utm_campaign": r[4] or "",
-                    "page_views": int(r[5]),
-                    "form_starts": int(r[6]),
-                    "leads": int(r[7]),
-                    "purchases": int(r[8]),
-                    "revenue_inr": float(r[9]),
+                    "utm_content": r[5] or "",
+                    "page_views": int(r[6]),
+                    "form_starts": int(r[7]),
+                    "leads": int(r[8]),
+                    "purchases": int(r[9]),
+                    "revenue_inr": float(r[10]),
                 }
                 for r in rows
             ],
