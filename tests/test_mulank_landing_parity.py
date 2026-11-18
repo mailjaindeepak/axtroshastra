@@ -102,7 +102,7 @@ def _reviews(doc):
 def test_the_reviews_are_the_three_numerology_testimonials_the_owner_supplied():
     mine = _reviews(PAGE)
     assert [(q, w) for _s, q, w in mine] == [
-        ('"I genuinely found the numerology report very helpful. The personality dials were so on point, tried wearing my lucky colors and it worked."', "Meenal, 28"),
+        ('"I found the report helpful. The personality dials were close to my actual personality. I would recommend it to everyone."', "Meenal, 28"),
         ("\"It's not at all vague. Tried it randomly and it was unexpectedly so accurate, should be tried.\"", "Sandeep, 41"),
         ('"Career and relationship part was accurate, my numerologist confirmed the same things."', "Manav, 32")]
     assert all(st == "★★★★★" for st, _q, _w in mine)
