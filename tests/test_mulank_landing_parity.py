@@ -82,8 +82,8 @@ def test_the_trust_strip_is_exactly_two_items_in_career_intelligences_markup():
     strip = PAGE.split('<div class="trust">')[1].split("</ul>")[0]
     assert re.findall(r"<li>(.*?)</li>", strip) == ['<span class="dot"></span>Built by <b>IIT–IIM alumni</b>', '<span class="dot"></span>Report in <b>2 minutes</b>']
     ci_strip = CI.split('<div class="trust">')[1].split("</ul>")[0]
-    for li in re.findall(r"<li>(.*?)</li>", strip):
-        assert f"<li>{li}</li>" in ci_strip                                  # byte-identical to the live career markup
+    ci_items = re.findall(r"<li>(.*?)</li>", ci_strip)
+    assert ci_items == ['<span class="dot"></span>Calculated using <b>JPL Astronomical Ephemeris</b> Data', '<span class="dot"></span>Built by <b>IIT–IIM alumni</b>', '<span class="dot"></span>Report delivered on <b>Screen</b>']
 
 
 def test_the_proof_tiles_and_heading_match_career_intelligence():
