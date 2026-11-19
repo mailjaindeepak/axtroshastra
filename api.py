@@ -1,4 +1,4 @@
-"""
+﻿"""
 Axtroshastra API — production wiring.
 
 POST /api/kundli      : compute FULL report server-side, store, return TEASER only
@@ -87,7 +87,7 @@ X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rgvp6").strip()
 # this middleware rewrites it in every HTML response. CloudFront forwards the
 # viewer Host header (Managed-AllViewer) and never caches our HTML (origin
 # sends no Cache-Control), so the swap is per-request safe.
-META_PIXEL_ID_COM = "1498790608627206"
+META_PIXEL_ID_COM = "1133766182500475"
 META_PIXEL_ID_IN = os.getenv("META_PIXEL_ID_IN", "4575834769362738")
 
 
@@ -819,7 +819,7 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1498790608627206');
+fbq('init', '1133766182500475');
 fbq('track', 'PageView');
 </script>
 <script type="text/javascript">

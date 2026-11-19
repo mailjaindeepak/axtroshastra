@@ -1,4 +1,4 @@
-"""Safety-net tests for the admin dashboard plugin (dashboard/).
+﻿"""Safety-net tests for the admin dashboard plugin (dashboard/).
 
 These prove the plugin is additive: the site keeps working, every /api/admin/*
 route is locked without the key, the endpoints return well-formed JSON with the
@@ -386,7 +386,7 @@ def test_config_has_facebook_pixel_block_without_fabricated_numbers(client):
     cfg = client.get(f"/api/admin/config?key={KEY}").json()["config"]
     fp = cfg["facebook_pixel"]
     # the real site pixel id is carried through
-    assert fp["pixel_id"] == "1498790608627206"
+    assert fp["pixel_id"] == "1133766182500475"
     assert fp["events_manager_url"].endswith(fp["pixel_id"])
     # NOT connected -> every event count is null and the series is empty
     assert fp.get("connected") is False

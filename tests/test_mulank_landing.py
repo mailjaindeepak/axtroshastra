@@ -1,4 +1,4 @@
-"""Landing page purchase experience: honest in every state. Nothing is shown as buyable unless it can be fulfilled."""
+﻿"""Landing page purchase experience: honest in every state. Nothing is shown as buyable unless it can be fulfilled."""
 import re
 from datetime import date
 
@@ -142,7 +142,7 @@ def test_landing_carries_each_tracking_tag_exactly_once_and_is_a_funnel_page(cli
     h = client.get("/en/numerology").text
     for needle in ("fbq('init'", "clarity.ms/tag", "googletagmanager.com/gtag/js", "function gtag(", "fbq('track', 'PageView')"):
         assert h.count(needle) == 1, (needle, h.count(needle))
-    assert "fbq('init', '1498790608627206')" in h                       # the site pixel, which the server-side sender also uses
+    assert "fbq('init', '1133766182500475')" in h                       # the site pixel, which the server-side sender also uses
     assert api._is_funnel_page(h)                                       # the LinkedIn landing conversion recognises this page
 
 

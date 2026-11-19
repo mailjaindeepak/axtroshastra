@@ -353,10 +353,6 @@ fbq('track', 'PageView');
         <input id="f-name" type="text" placeholder="Your name" required>
       </div>
       <div class="field">
-        <label for="f-gender">You are</label>
-        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Gender</option><option value="male">Male</option><option value="female">Female</option></select>
-      </div>
-      <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
           <input id="f-dd" type="text" inputmode="numeric" maxlength="2" placeholder="DD" required aria-label="Date" autocomplete="off">
@@ -1345,7 +1341,6 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   if(!dob){ alert('Please select your full date of birth.'); return; }
   if(dob === 'invalid'){ alert('This date does not exist — please re-check.'); return; }
   if(!document.getElementById('f-name').value.trim()){ alert('Please enter your name.'); return; }
-  if(!document.getElementById('f-gender').value){ alert('Please select whether you are male or female.'); return; }
   var waPhone = axNormPhone(document.getElementById('f-whatsapp').value);
   if(!waPhone){ alert('Please enter a valid 10-digit WhatsApp number.'); document.getElementById('f-whatsapp').focus(); return; }
 
@@ -1368,7 +1363,6 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
-        gender: document.getElementById('f-gender').value || null,
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
@@ -1475,8 +1469,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   if(REPORT_ID){ startPayment(); return; }
   var form = document.getElementById('kundliForm');
   var dob = buildDob();
-  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); })
-    && document.getElementById('f-gender').value;
+  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); });
   if(textFilled && dob && dob !== 'invalid'){
     if(typeof form.requestSubmit === 'function'){ form.requestSubmit(); }
     else { form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true})); }

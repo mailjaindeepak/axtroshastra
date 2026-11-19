@@ -1,4 +1,4 @@
-"""dashboard/config.py — manually-maintained values for the dashboard tabs that
+﻿"""dashboard/config.py — manually-maintained values for the dashboard tabs that
 do NOT have a live data source wired yet.
 
 Everything here is a PLACEHOLDER that a developer fills/updates by hand until the
@@ -110,14 +110,14 @@ CONFIG = {
     # per-day breakdown: {day, PageView, Lead, InitiateCheckout, Purchase}.
     "facebook_pixel": {
         "connected": False,
-        "pixel_id": "1498790608627206",   # the real site pixel
+        "pixel_id": "1133766182500475",   # the real site pixel
         "events": {"PageView": None, "ViewContent": None, "Lead": None,
                    "InitiateCheckout": None, "Purchase": None},  # last-7-day totals
         "series_7d": [],   # {day, PageView, Lead, InitiateCheckout, Purchase} — empty until wired (no fake bars)
         "note": "Facebook Pixel isn't connected yet — wire the Meta "
                 "Conversions/Marketing API to see event counts and the events "
                 "funnel.",
-        "events_manager_url": "https://business.facebook.com/events_manager2/list/pixel/1498790608627206",
+        "events_manager_url": "https://business.facebook.com/events_manager2/list/pixel/1133766182500475",
     },
 
     # ---- LLM: Claude credit + generation stats ------------------------------
