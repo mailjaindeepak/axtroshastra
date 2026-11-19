@@ -228,11 +228,64 @@ section{padding:52px 0}
 .ps-cred-badge{font-size:10px;font-weight:600;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:100px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .ps-subnote2{font-size:12.5px;color:var(--pmuted);text-align:center;margin-top:11px}
 
+/* Blurred preview cards */
+.ps-preview-intro{text-align:center;margin:24px 0 14px}
+.ps-preview-intro .ps-plabel{margin-bottom:4px}
+.ps-preview-intro p{font-size:13.5px;color:var(--pmuted);max-width:38ch;margin:0 auto;line-height:1.45}
+.ps-prev{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:22px 20px;margin-bottom:12px;box-shadow:0 6px 18px var(--pshadow);position:relative;overflow:hidden}
+.ps-prev .ps-prev-eyebrow{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--pgold);font-weight:700;margin-bottom:8px}
+.ps-prev .ps-prev-title{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--phead);line-height:1.2;margin-bottom:14px}
+.ps-prev-verdict{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;border-radius:8px;padding:7px 14px;margin-bottom:16px}
+.ps-prev-verdict.thriving{background:rgba(62,125,90,.12);color:var(--pgreen)}
+.ps-prev-verdict.building{background:rgba(201,163,78,.14);color:#8C7430}
+.ps-prev-verdict.watch{background:rgba(180,87,43,.1);color:var(--pterra)}
+.ps-prev-verdict svg{width:14px;height:14px;flex-shrink:0}
+.ps-prev-timeline{margin-bottom:16px}
+.ps-prev-tl-row{position:relative;padding:12px 16px;border-left:3px solid var(--pline);margin-left:4px}
+.ps-prev-tl-row:first-child{border-radius:3px 0 0 0}
+.ps-prev-tl-row:last-child{border-radius:0 0 0 3px}
+.ps-prev-tl-row.favorable{border-left-color:var(--pgreen)}
+.ps-prev-tl-row.watch{border-left-color:var(--pterra)}
+.ps-prev-tl-row.steady{border-left-color:var(--pgold)}
+.ps-prev-tl-row.beyond{border-left:3px solid var(--pline);background:rgba(201,163,78,.06);border-radius:0 0 10px 0;padding:14px 16px}
+.ps-prev-tl-header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ps-prev-tl-label{font-size:12px;font-weight:600;color:var(--phead)}
+.ps-prev-tl-dates{font-size:12px;color:var(--pmuted);font-variant-numeric:tabular-nums}
+.ps-prev-tl-tag{display:inline-flex;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 8px;border-radius:4px}
+.ps-prev-tl-tag.favorable{background:rgba(62,125,90,.12);color:var(--pgreen)}
+.ps-prev-tl-tag.watch{background:rgba(180,87,43,.1);color:var(--pterra)}
+.ps-prev-tl-tag.steady{background:rgba(201,163,78,.14);color:#8C7430}
+.ps-prev-tl-desc{margin-top:6px;font-size:13px;color:var(--pmuted);line-height:1.4;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.ps-prev-dowatch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.ps-prev-dw{background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px}
+.ps-prev-dw.do{background:rgba(62,125,90,.06)}
+.ps-prev-dw.wt{background:rgba(180,87,43,.06)}
+.ps-prev-dw h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ps-prev-dw.do h4{color:var(--pgreen)}
+.ps-prev-dw.wt h4{color:var(--pterra)}
+.ps-prev-dw h4 svg{width:12px;height:12px;flex-shrink:0}
+.ps-prev-dw-lines{font-size:12.5px;color:var(--pmuted);line-height:1.5;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.ps-prev-unlock{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0 0;border-top:1px dashed var(--pline);font-size:13px;font-weight:600;color:var(--pgold);cursor:pointer}
+.ps-prev-unlock svg{width:14px;height:14px;flex-shrink:0}
+.ps-prev-trait{font-size:14px;color:var(--pmuted);line-height:1.55;margin:6px 0 0}
+.ps-prev-trait b{color:var(--phead);font-weight:600;font-family:var(--disp)}
+.ps-prev-dw-lines-visible{font-size:12.5px;color:var(--pmuted);line-height:1.5}
+.ps-prev-also{text-align:center;margin:16px 0 4px}
+.ps-prev-also-head{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead);margin-bottom:12px}
+.ps-prev-also-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ps-prev-also-grid span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:8px;padding:7px 14px}
+.ps-prev-also-grid span svg{flex-shrink:0;opacity:.5}
+.ps-prev-cta-block{text-align:center;margin:20px 0 6px;padding:20px;background:var(--panel);border:1.5px solid var(--pgold);border-radius:14px;box-shadow:0 6px 18px var(--pshadow)}
+.ps-prev-cta-block p{font-size:14px;color:var(--phead);line-height:1.5;margin-bottom:4px}
+.ps-prev-cta-block .ps-prev-cta-em{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead);margin-bottom:16px}
+
 @media(max-width:420px){
   .ps-snap .c .v{font-size:13.5px}
   .ps-lq-text .qt{font-size:13px}
   .ps-also-grid{gap:6px}
   .ps-also-box{font-size:11.5px;padding:8px 10px}
+  .ps-prev-title{font-size:17px}
+  .ps-prev-dowatch{grid-template-columns:1fr}
 }
 
 /* ---------- WHY DIFFERENT ---------- */
@@ -471,7 +524,6 @@ fbq('track', 'PageView');
         <li><span class="qn">4</span> आपके रिश्तों का भविष्य कैसा दिखता है?</li>
         <li><span class="qn">5</span> आपकी आर्थिक तरक्की में रुकावट क्या है?</li>
       </ol>
-      <div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#unlockBtn" onclick="document.getElementById('unlockBtn').scrollIntoView({behavior:'smooth'});return false;">जवाब अनलॉक करें</a></div>
       <div class="ps-cv-date" id="tv-cv-date"></div>
     </div>
 
@@ -496,16 +548,8 @@ fbq('track', 'PageView');
       </div>
     </div>
 
-    <!-- 4. About You -->
-    <div class="ps-pcard">
-      <div class="ps-plabel">आपके बारे में</div>
-      <div class="ps-snap">
-        <div class="c"><div class="k">लग्न (राशि)</div><div class="v" id="tv-lagna">—</div></div>
-        <div class="c"><div class="k">चंद्र राशि</div><div class="v" id="tv-moon">—</div></div>
-        <div class="c"><div class="k">नक्षत्र</div><div class="v" id="tv-nak">—</div></div>
-      </div>
-      <div class="ps-persona" id="tv-persona"></div>
-    </div>
+    <!-- About You (data rendered inside Who You Are preview card) -->
+    <div id="tv-lagna" hidden></div><div id="tv-moon" hidden></div><div id="tv-nak" hidden></div>
 
     <!-- 5. Life Wheel -->
     <div class="ps-pcard">
@@ -519,7 +563,7 @@ fbq('track', 'PageView');
         </div>
       </div>
       <div class="ps-standout" id="tv-standout"></div>
-      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">विवरण पाएँ &#8377;499 में</button></div>
+      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">अनलॉक — <s>&#8377;999</s> &#8377;499</button></div>
     </div>
 
     <!-- 6. Current phase -->
@@ -534,6 +578,9 @@ fbq('track', 'PageView');
         </div>
       </div>
     </div>
+
+    <!-- Blurred preview cards (injected by JS) -->
+    <div id="tv-preview"></div>
 
     <!-- 7. Locked questions -->
     <div class="ps-locked">
@@ -577,16 +624,8 @@ fbq('track', 'PageView');
       </div>
 
 
-      <div class="ps-also-grid">
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> शरीर और ऊर्जा</div>
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> पारिवारिक रिश्ते</div>
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> संपत्ति और घर</div>
-        <div class="ps-also-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> धन और आय</div>
-      </div>
-
       <div style="text-align:center;margin-top:22px">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">मेरा पूरा जीवन ब्लूप्रिंट अनलॉक करें &mdash; <s>&#8377;999</s> &#8377;499</button>
-        <div class="ps-subnote2">आपकी सटीक जन्म जानकारी से बनाई गई</div>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">अनलॉक — <s>&#8377;999</s> &#8377;499</button>
         <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; ऑफ़र ख़त्म होगा <b class="clk" id="otClock">30:00</b> में &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
       </div>
 
@@ -1058,19 +1097,7 @@ function renderTeaser(t){
   // Mahadasha bar
   document.getElementById('tv-md').textContent = tvDashaHi(t.current_dasha) || '—';
 
-  // About You — snapshot
-  document.getElementById('tv-lagna').textContent = TV_SIGN_HI[t.lagna_en] || t.lagna_en || '—';
-  document.getElementById('tv-moon').textContent = (TV_SIGN_HI[t.moon_sign_en] || t.moon_sign_en) + ' (' + (t.moon_sign || '') + ')';
-  document.getElementById('tv-nak').textContent = (TV_NAK_HI[t.nakshatra] || t.nakshatra) + ' — पाद ' + t.pada;
-
-  // Persona lines
-  var personaEl = document.getElementById('tv-persona');
-  if(personaEl){
-    var html = '';
-    if(t.lagna_line) html += '<div class="ps-persona-line"><b>लग्न राशि:</b> ' + t.lagna_line + '</div>';
-    if(t.moon_line) html += '<div class="ps-persona-line"><b>चंद्र राशि:</b> ' + t.moon_line + '</div>';
-    personaEl.innerHTML = html;
-  }
+  // About You — snapshot (hidden; data shown in Who You Are preview card)
 
   // Life Wheel
   var adLordHi = t.cur_ad_lord ? (TV_PLANET_HI[t.cur_ad_lord] || t.cur_ad_lord) : '';
@@ -1083,6 +1110,92 @@ function renderTeaser(t){
 
   // Current phase
   document.getElementById('tv-phase').textContent = tvDashaHi(t.current_dasha) || '—';
+
+  // Blurred preview cards
+  var prevEl = document.getElementById('tv-preview');
+  if(prevEl && t.preview_phases){
+    var areaConf = [
+      {key:'career', num:'2', title:'आपका करियर', icon:'compass'},
+      {key:'money', num:'3', title:'आपकी वित्तीय स्थिति', icon:'coins'},
+      {key:'marriage', num:'4', title:'आपके रिश्ते', icon:'people'}
+    ];
+    var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    var alertSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 9v4"/><circle cx="12" cy="16.5" r=".5" fill="currentColor"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    var clockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+    var lockSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+    var tagHi = {favorable:'अनुकूल', watch:'सतर्क', steady:'स्थिर', thriving:'उत्कृष्ट', building:'निर्माण'};
+    var blurTexts = [
+      'इस क्षेत्र में फ़ैसले आमतौर पर अच्छे और स्थिर परिणाम देते हैं।',
+      'आगे बढ़ने के लिए एक अच्छी खिड़की, इस समय विश्वास के साथ कदम बढ़ाएँ।',
+      'इस दौर में ज़रूरी फ़ैसलों पर थोड़ा और ध्यान देने की ज़रूरत है।',
+      'इस क्षेत्र के लिए एक शांत दौर, पृष्ठभूमि में स्थिर प्रगति होती रहेगी।'
+    ];
+    var userSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">आपकी 10 भागों वाली रिपोर्ट की एक झलक</div>' +
+      '<p>हर भाग आपके जीवन के एक क्षेत्र को कवर करता है, विशिष्ट तिथियों और कार्ययोजना के साथ।</p></div>';
+    // आप कौन हैं — व्यक्तित्व खंड
+    var whoTraits = [];
+    if(t.lagna_line) whoTraits.push('<div class="ps-prev-trait"><b>लग्न राशि:</b> ' + t.lagna_line + '</div>');
+    if(t.moon_line) whoTraits.push('<div class="ps-prev-trait"><b>चंद्र राशि:</b> ' + t.moon_line + '</div>');
+    if(t.nak_nature) whoTraits.push('<div class="ps-prev-trait"><b>' + (TV_NAK_HI[t.nakshatra] || t.nakshatra) + ' नक्षत्र:</b> ' + t.nak_nature + '</div>');
+    prevHtml += '<div class="ps-prev">' +
+      '<div class="ps-prev-eyebrow">खंड 1</div>' +
+      '<div class="ps-prev-title">आपकी कुंडली आपके बारे में क्या कहती है</div>' +
+      '<div style="margin-bottom:14px">' + whoTraits.join('') + '</div>' +
+      '<div class="ps-prev-dw" style="background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px;margin-bottom:16px"><h4 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px;color:var(--pgold)">'+userSvg+' व्यक्तित्व विश्लेषण</h4><div class="ps-prev-dw-lines-visible">आपका मूल स्वभाव, स्वभाव और वह दृष्टिकोण जिससे आप हर फ़ैसले पर विचार करते हैं। दूसरे आपको कैसे देखते हैं बनाम आप अंदर से वास्तव में कौन हैं।</div></div>' +
+      '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' अनलॉक — <s>₹999</s> ₹499</div>' +
+    '</div>';
+    areaConf.forEach(function(ac){
+      var phases = t.preview_phases[ac.key] || [];
+      var wheelTag = (t.wheel || {})[ac.key] || 'building';
+      var verdictLabel = tagHi[wheelTag] || wheelTag;
+      var verdictSvgStr = wheelTag === 'thriving' ? checkSvg : (wheelTag === 'watch' ? alertSvg : clockSvg);
+      var tlHtml = '';
+      phases.forEach(function(ph, pi){
+        var isBeyond = ph.beyond;
+        var kindCls = ph.kind;
+        var tagLabel = tagHi[ph.kind] || ph.kind;
+        if(isBeyond){
+          tlHtml += '<div class="ps-prev-tl-row beyond">' +
+            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">आगे का समय</span>' +
+            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
+            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
+        } else {
+          var rowLabel = pi === 0 ? 'मौजूदा दौर' : 'अगला दौर';
+          tlHtml += '<div class="ps-prev-tl-row '+kindCls+'">' +
+            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">'+rowLabel+'</span>' +
+            '<span class="ps-prev-tl-dates">'+ph.start+' – '+ph.end+'</span>' +
+            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
+            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
+        }
+      });
+      prevHtml += '<div class="ps-prev">' +
+        '<div class="ps-prev-eyebrow">खंड '+ac.num+'</div>' +
+        '<div class="ps-prev-title">'+ac.title+'</div>' +
+        '<div class="ps-prev-timeline">'+tlHtml+'</div>' +
+        '<div class="ps-prev-dowatch">' +
+          '<div class="ps-prev-dw do"><h4>'+checkSvg+' करें</h4><div class="ps-prev-dw-lines">जो कौशल आपको पहले से अच्छे परिणाम दे रहे हैं, उन्हें और मज़बूत करें। ऐसे रिश्तों में समय लगाएँ जो नए रास्ते खोलें।</div></div>' +
+          '<div class="ps-prev-dw wt"><h4>'+alertSvg+' ध्यान दें</h4><div class="ps-prev-dw-lines">इस दौर में जल्दबाज़ी में फ़ैसले लेने से बचें। बीच-बीच में अपनी दिशा जाँचते रहें।</div></div>' +
+        '</div>' +
+        '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' अनलॉक — <s>₹999</s> ₹499</div>' +
+      '</div>';
+    });
+    prevHtml += '<div class="ps-prev-also"><div class="ps-prev-also-head">आपकी रिपोर्ट में यह भी शामिल है:</div>' +
+      '<div class="ps-prev-also-grid">' +
+        '<span>'+lockSvg+' संतान और परिवार नियोजन</span>' +
+        '<span>'+lockSvg+' घर और संपत्ति</span>' +
+        '<span>'+lockSvg+' यात्रा और विदेश</span>' +
+        '<span>'+lockSvg+' स्वास्थ्य और ऊर्जा</span>' +
+        '<span>'+lockSvg+' व्यक्तिगत विकास</span>' +
+        '<span>'+lockSvg+' माता-पिता और भाई-बहन</span>' +
+        '<span>'+lockSvg+' समय और मोड़</span>' +
+      '</div></div>' +
+    '<div class="ps-prev-cta-block">' +
+      '<div class="ps-prev-cta-em">हर खंड में आपकी तिथियाँ। हर एक में कार्ययोजना।</div>' +
+      '<button class="ps-cta" type="button" onclick="startPayment()">अनलॉक — <s>₹999</s> ₹499</button>' +
+    '</div>';
+    prevEl.innerHTML = prevHtml;
+  }
 
   // Show teaser
   var el = document.getElementById('teaser');
