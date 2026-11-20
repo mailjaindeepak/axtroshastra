@@ -16,6 +16,9 @@ from datetime import date, datetime, timezone
 import numerology
 
 SEGMENTS = ("student", "exam_aspirant", "professional", "wfh", "owner", "job_seeker")
+# Segments whose paid-report copy the owner has APPROVED (docs/vastu-career-copy-<segment>.md, decision log). Only these can be
+# bought: the order route refuses the rest, and the preview shows no price for them. Add a segment here only after its copy is approved.
+READY_SEGMENTS = frozenset({"student"})
 DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 DIR_OR_UNSURE = DIRECTIONS + ("not_sure",)
 FLEXIBILITY = ("can_move", "a_little", "cannot_or_shared")
@@ -226,6 +229,7 @@ def compute_vastu_career(name, dob, segment, desk_direction, desk_flexibility, d
         "name": f["name"],
         "dob_text": f"{d.day} {d.strftime('%B %Y')}",
         "segment": f["segment"], "segment_label": m["label"], "noun": m["noun"],
+        "ready": f["segment"] in READY_SEGMENTS,
         "desk_direction": f["desk_direction"],
         "desk_label": DIR_NAME.get(f["desk_direction"], "Not sure"),
         "flexibility": f["desk_flexibility"], "flexibility_label": FLEX_LABEL[f["desk_flexibility"]],

@@ -677,7 +677,7 @@ fbq('track', 'PageView');
     var qs=t.questions.map(function(q,i){ return '<li><span class="qn">'+(i+1)+'</span> '+esc(q.q)+'</li>'; }).join('');
     var lq=t.questions.map(function(q){ return '<div class="v-lq"><div class="v-lqi">'+LOCK+'</div><div><div class="qt">'+esc(q.q)+'</div><div class="qd">'+esc(q.d)+'</div></div></div>'; }).join('');
     var also=['Rental-friendly fixes','Small room and hostel','Quick fixes for tonight',n.direction?'Number direction and colour':'Your number’s colour'].map(function(a){ return '<div>'+LOCK_S+' '+a+'</div>'; }).join('');
-    var fixes=t.verdict==='ideal'?'Keep and upkeep':'Ready, locked';
+    var fixes=t.verdict==='ideal'?'Keep and upkeep':'Ready, locked'; var ready=t.ready!==false;
     return ''+
     '<div class="v-cover"><div class="v-brand">Axtroshastra</div><div class="v-title">Vastu Career Report</div><div class="v-sub">Your Desk. Your Direction. Your Fixes.</div><div class="v-rule"></div>'+
       '<div class="v-name">'+esc(t.name)+'</div><div class="v-dob">'+esc(t.dob_text)+' &middot; '+esc(t.segment_label)+'</div>'+
@@ -695,8 +695,8 @@ fbq('track', 'PageView');
     '<div class="v-card"><div class="v-label">From your birth number &middot; numerology</div><div class="v-numrow"><div class="v-numhero"><div class="hd">Mulank</div><div class="hg">'+esc(n.mulank)+'</div><div class="pn">'+esc(n.planet)+'</div></div>'+
       '<div class="v-numtxt"><b>The working.</b> '+wk+'.<br><br>In the number tradition, '+esc(n.mulank)+' is linked with '+esc(n.planet)+(n.direction?', whose direction is the '+esc(n.direction.toLowerCase())+'.':'.')+' '+esc(n.tip)+'</div></div>'+
       '<div class="v-grid">'+grid+'</div><div class="v-cap" style="text-align:left">This part is numerology, not Vastu. Planet links follow the scheme used in Indian numerology; some writers assign 4 and 7 differently.</div></div>'+
-    '<div class="v-locked"><div class="v-lh">Your 5 answers are ready</div><div class="v-ls">Worked out from your desk direction and date of birth. Unlock to read them.</div>'+lq+'<div class="v-also">'+also+'</div>'+
-      '<div class="v-ctawrap"><button type="button" class="v-cta" data-buy>Unlock My Full Vastu Report&nbsp;&mdash;&nbsp;₹'+PRICE+'</button><div class="v-sub2">Personalised using your desk direction and date of birth</div></div></div>'+
+    '<div class="v-locked"><div class="v-lh">Your 5 answers are ready</div><div class="v-ls">'+(ready?'Worked out from your desk direction and date of birth. Unlock to read them.':'Worked out from your desk direction and date of birth. They will be in your complete report.')+'</div>'+lq+'<div class="v-also">'+also+'</div>'+
+      (ready?'<div class="v-ctawrap"><button type="button" class="v-cta" data-buy>Unlock My Full Vastu Report&nbsp;&mdash;&nbsp;₹'+PRICE+'</button><div class="v-sub2">Personalised using your desk direction and date of birth</div></div>':'<div class="v-note" style="margin-top:14px;text-align:center">The complete report for your option is being prepared and is not on sale yet. Your free preview stays on this page.</div>')+'</div>'+
     '<p class="v-fine">Vastu Shastra and numerology are belief systems, not sciences. This report offers traditional guidance for reflection, not prediction.</p>';
   }
 
@@ -704,7 +704,8 @@ fbq('track', 'PageView');
   var hero=document.querySelector('.hero'), bar=$('stickyBar');
   function syncBar(){
     var show=false, l1=$('stL1'), l2=$('stL2'), b=$('stickyBtn');
-    if(RID){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML='<b class="p">₹'+PRICE+'</b> &middot; One-time payment'; b.textContent='Unlock ₹'+PRICE; }
+    if(RID&&T&&T.ready===false){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML='Your free preview is ready'; b.textContent='View Preview'; }
+    else if(RID){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML='<b class="p">₹'+PRICE+'</b> &middot; One-time payment'; b.textContent='Unlock ₹'+PRICE; }
     else { show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Vastu Career Report'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
     bar.hidden=!show; document.body.style.paddingBottom=show?'84px':'';
   }
@@ -741,9 +742,10 @@ fbq('track', 'PageView');
     say('We could not confirm your payment yet. If money was deducted, please do not pay again. Your report will arrive on WhatsApp shortly, and this same page will recognise your payment.');
   }
   async function checkout(){
-    if(paying||!RID) return; paying=true; say(''); busy('Opening secure checkout…');
+    if(paying||!RID||(T&&T.ready===false)) return; paying=true; say(''); busy('Opening secure checkout…');
     try{
       var r=await post('/api/order',{report_id:RID,phone:PHONE,fbc:ck('_fbc'),fbp:ck('_fbp')}); var d=await r.json().catch(function(){return {};});
+      if(r.status===409){ busy(false); say('The complete report for your option is not on sale yet. Your free preview stays on this page.'); return; }
       if(d.already_paid){ location.href='/report/'+encodeURIComponent(RID); return; }
       if(d.free){ window.FREE_UNLOCK=true; awaitReport(); return; }
       if(!r.ok||!d.razorpay_order_id||!d.key_id){ busy(false); say('Checkout is not available right now. Your preview is saved on this page, so please try again a little later.'); return; }
@@ -759,7 +761,7 @@ fbq('track', 'PageView');
   }
   $('stickyBtn').addEventListener('click',function(e){
     e.preventDefault();
-    if(RID){ checkout(); return; }
+    if(RID){ if(T&&T.ready===false) scrollToResult(); else checkout(); return; }
     if($('f-name').value.trim()&&ddEl.value&&mmEl.value&&yyEl.value){ if(f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})); return; }
     f.scrollIntoView({behavior:'smooth'});
   });

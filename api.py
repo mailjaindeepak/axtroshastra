@@ -217,6 +217,9 @@ PRODUCT_SVG = {
     # annual_report: a 4-point star inside a circle (New Year, no festival art).
     "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                      '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
+    # vastu career — a compass: ring with a needle.
+    "vastu_career": _SVG_OPEN + '<circle cx="16" cy="16" r="10"/>'
+                    '<path d="M20 12 L17.5 18 L11.5 20.5 L14 14.5 Z"/></svg>',
     # numerology (Mulank) — a 3x3 grid of numbers, the classic numerology square.
     "numerology_mulank": _SVG_OPEN + '<rect x="6" y="6" width="20" height="20" rx="3"/>'
                          '<path d="M12.7 6 V26 M19.3 6 V26 M6 12.7 H26 M6 19.3 H26"/></svg>',
@@ -407,6 +410,9 @@ def _render_for(product, payload):
     if product == "iq_test":
         import iq_test_report
         return iq_test_report.render_iq_test(payload)
+    if product == "vastu_career":                # English-only for now; refuses segments whose copy is not approved
+        import vastu_career_report
+        return vastu_career_report.render_vastu_career(payload)
     if product == "career_intelligence":         # English-only premium report
         return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_intelligence_v2":
@@ -2186,6 +2192,10 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         rec = reports_v2.read_report(conn, rid)
         if not rec or _is_mulank_report(rec):
             raise HTTPException(404, "report not found")
+        if (rec.get("product") or (rec.get("payload") or {}).get("product")) == "vastu_career":
+            import vastu_career                       # only segments whose copy the owner approved can be bought
+            if ((rec.get("payload") or {}).get("meta") or {}).get("segment") not in vastu_career.READY_SEGMENTS:
+                raise HTTPException(409, "not_available")
         # Persist the popup contact FIRST — even for retries/free passes — so the
         # capture path prefers the typed WhatsApp number over Razorpay's contact.
         # attach_user creates/links the user (the LEAD is identified here — this is
