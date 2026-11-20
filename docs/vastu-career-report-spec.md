@@ -143,3 +143,15 @@ Mock approved and printed to 323x623 pt PDF with page count equal to card count 
 
 ## 11. Build order
 0 decisions (done except section 10) -> 1 this spec approved -> 2 visual mock approved -> 3 engine and tests -> 4 content -> 5 renderer -> 6 landing page and create route -> 7 payment wiring and DEMO_MODE test -> 8 tracking checks -> 9 gates and audit -> 10 launch checklist and owner go-ahead. Local commits only; push, PR and deploy only on the owner's explicit go-ahead each time.
+
+### Build status (20 Nov 2026, local only, nothing pushed or deployed)
+Built, tested and committed locally:
+- `vastu_career.py`: the free-preview engine (validation with field errors, segment matrix, rule B, Mulank direction table, five questions per segment, teaser with free data only). Reuses `numerology.compute_mulank`. Every cell is still a WORKING DEFAULT (owner approved them for the mock only).
+- `POST /api/vastu-career` in `api.py`, modelled on `/api/iq-test`: honeypot, captcha hook, phone normalisation, report id `secrets.token_urlsafe(12)`, `{report_id, teaser}`.
+- Server price `VASTU_CAREER_PRICE_PAISE = 9900` and the `vastu_career` branch in `_order_amount_paise`, added because an unknown product silently falls through to the Rs 499 default. `PRODUCT_LABEL` entry added.
+- `pages/vastu-career.html` served at `/en/vastu-career` (bare `/vastu-career` 301s), in `sitemap()` and in `ops/robot_customer/robot.spec.js`. Built from the Numerology landing page's own stylesheet, analytics block and footer; the in-page preview follows the approved mock (cover with the five questions, desk check, compass, setup, birth number, locked answers, Rs 99 button). Phone is collected in the form (as on Numerology); unlock calls the shared `/api/order` and `/api/verify`.
+- Tests: `tests/test_vastu_engine.py` (78) and `tests/test_vastu_landing.py` (22).
+
+NOT built yet (so the product is not shippable and must not be deployed): the paid 16-page report renderer and its `_render_for` / `_full_report_html` branches; per-segment report copy (owner approves each segment); `/report/{id}` for this product; WhatsApp templates and delivery check for this product; Hindi twin; on-page reviews (must be real, supplied by the owner; none are invented); privacy and terms wording for the new fields; the convergent audit (section 9). Until the renderer exists, a paid `vastu_career` order would have no report to show.
+
+Open for the owner on the landing page: the 4.8 star and "reports generated" tiles are copied from the Numerology page and need confirming for this product; the Rs 99 button label; and whether the trust line "Built by IIT-IIM alumni" stays.

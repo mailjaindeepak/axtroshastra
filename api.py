@@ -168,7 +168,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "career_intelligence_v2": "Career Intelligence Report",
                   "diwali": "Diwali Wealth & Prosperity Report",
                   "annual_report": "Annual Report",
-                  "numerology_mulank": "Numerology Report"}
+                  "numerology_mulank": "Numerology Report",
+                  "vastu_career": "Vastu Career Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -464,6 +465,7 @@ LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 IQ_TEST_PRICE_PAISE = 4900                # ₹49 — IQ Test report
 DIWALI_PRICE_PAISE = 29900                # ₹299 — Diwali Wealth & Prosperity Report (by product, never by variant)
 ANNUAL_PRICE_PAISE = 49900                # ₹499 — Annual Report (struck from ₹999 on the page only); by product, never by variant
+VASTU_CAREER_PRICE_PAISE = 9900           # ₹99 — Vastu Career Report ("for now", owner 19 Nov 2026); by product, never by variant
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
@@ -481,6 +483,8 @@ def _order_amount_paise(rec: dict) -> int:
     product = rec.get("product") or payload.get("product") or ""
     if product == "iq_test":
         return IQ_TEST_PRICE_PAISE
+    if product == "vastu_career":             # explicit: never rely on the PRICE_PAISE fall-through
+        return VASTU_CAREER_PRICE_PAISE
     if product == "diwali":
         return DIWALI_PRICE_PAISE
     if product == "annual_report":            # explicit: never rely on the PRICE_PAISE fall-through
@@ -1958,6 +1962,76 @@ def create_iq_test(inp: IqTestIn, request: Request):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
+# ── Vastu Career Report (date-only: no birth place, no chart; spec docs/vastu-career-report-spec.md) ──
+
+class VastuCareerIn(BaseModel):
+    name: str | None = None
+    dob: str | None = None                   # YYYY-MM-DD
+    segment: str | None = None
+    desk_direction: str | None = None
+    desk_flexibility: str | None = None
+    door_direction: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
+    consent_ts: str | None = None
+    consent_v: str | None = None
+    variant: str | None = None
+    website: str | None = None               # honeypot: real people never fill this
+
+
+@app.post("/api/vastu-career")
+def create_vastu_career(inp: VastuCareerIn, request: Request):
+    """Validate, compute the FREE teaser, save the lead and report, return {report_id, teaser}.
+    Modelled on /api/iq-test. The report id is secrets.token_urlsafe(12): opaque, no personal data (it is also the
+    private access link). The teaser carries free data only; the fixes and the five segment cards stay locked."""
+    import vastu_career
+    if inp.website:
+        raise HTTPException(400, "invalid")
+    if not captcha_ok(inp.captcha_token or "", ""):
+        raise HTTPException(400, "captcha_failed")
+    phone = None
+    if inp.phone:
+        digits = re.sub(r"\D", "", inp.phone)
+        if len(digits) == 12 and digits.startswith("91"):
+            digits = digits[2:]
+        if len(digits) == 11 and digits.startswith("0"):
+            digits = digits[1:]
+        if not re.fullmatch(r"[6-9]\d{9}", digits):
+            raise HTTPException(422, {"field": "phone", "message": "Please enter a valid 10-digit Indian mobile number."})
+        phone = "+91" + digits
+    try:
+        report = vastu_career.compute_vastu_career(inp.name, inp.dob, inp.segment, inp.desk_direction,
+                                                   inp.desk_flexibility, inp.door_direction)
+    except vastu_career.VastuInputError as e:
+        raise HTTPException(422, e.detail())
+    report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-11"
+    if inp.email:
+        report["meta"]["_email"] = inp.email
+
+    rid = secrets.token_urlsafe(12)
+    subject = {"role": "self", "name": report["meta"]["name"], "gender": None,
+               "dob": report["meta"]["dob"], "tob": None, "time_quality": None,
+               "birth_place": None, "birth_lat": None, "birth_lon": None, "birth_tz": None}
+    try:
+        conn = db_v2.get_conn()
+        try:
+            uid = reports_v2.save_report(conn, rid, report, [subject], product="vastu_career", phone=phone)
+            _identify_visitor(conn, request, uid)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        if not DEMO_MODE:
+            raise
+        logger.warning("[demo] MySQL unavailable — storing Vastu report %s in memory", rid)
+        _demo_save(rid, report, phone)
+    return {"report_id": rid, "teaser": report["teaser"]}
+
+
 class OrderIn(BaseModel):
     """Body of POST /api/order. `phone`/`email` come from the pre-payment
     contact popup: phone is the buyer's WhatsApp/account number (stored in
@@ -3023,7 +3097,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/annual-report", "/blog",
+            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/vastu-career", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3745,6 +3819,19 @@ def iq_test_redirect(request: Request):
     """Bare /iq-test → /en/iq-test (301 permanent). Preserves query string."""
     q = request.url.query
     return RedirectResponse("/en/iq-test" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/vastu-career", include_in_schema=False)
+def vastu_career_en():
+    """Vastu Career Report landing at /en/vastu-career (English only for now; Hindi after English is approved)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "vastu-career.html"))
+
+
+@app.get("/vastu-career", include_in_schema=False)
+def vastu_career_redirect(request: Request):
+    """Bare /vastu-career → /en/vastu-career (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse("/en/vastu-career" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)
