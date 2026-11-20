@@ -116,3 +116,15 @@ Mulank 7 (Ketu): "Traditions place {planet} in different directions, so this rep
 2. The five biggest gaps in the research for Students: the sleeping direction; the books-on-west-or-south idea; whether a shelf overhead is avoided; the home-door line; and the in-place fixes for a desk that cannot move.
 3. Say whether the cards should keep three points each, or fewer and richer.
 4. When Student is approved I write the next segment's copy (suggested order: Exam aspirant, Working professional, Work from home, Business owner, Job seeker). The Job seeker set still has no source of its own.
+
+---
+
+## H. DECISION LOG (owner, 20 Nov 2026): approved with cuts
+The owner approved the Student copy "with my cuts". Recorded decisions, which override the blocks above where they differ:
+1. CUT: the sleeping-direction line (page 11). Unverified, no source.
+2. CUT: "Nothing piled above your head" and any overhead-shelf line (page 9). The research names a beam only.
+3. CUT: the extra door-direction sentence ("Yours faces {direction}, one of the directions tradition favours for an entrance"). The general door line stays.
+4. CUT: the NEW in-place fixes (lamp and books to the east or north side of the desk; keep the side you face clear; tidy the north-east corner). The spec still requires every fix to work for a buyer who cannot move the desk, so page 10 for "Cannot move it or shared" uses only fixes the research supports, all doable in place: keep the wall behind you solid; clear desk, a lamp and a clean surface; light colours on the desk mat or curtain; no mirror facing the desk; open the window on the east or north side if there is one; do not study on the bed.
+5. KEPT as written (low risk, practical): the nightly reset, one item one place, folding board, "open a window for a few minutes".
+6. Page 10 "Not sure yet" and "Ideal" keep the wording above, minus the cut lines.
+Only the Student segment is approved. The other five segments stay unwritten and not for sale until each is approved.
