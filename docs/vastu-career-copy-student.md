@@ -22,7 +22,7 @@ Lead sentence (from the engine, already in the preview): "For a student, traditi
 | **Change advised** | "Change advised. {Direction} is not among the traditional first choices for study." For South add: "South is the direction most often avoided." (R for South; SE, SW, NW are extrapolation) | same as above | "Page 10 lists the steps that match whether you can move your desk." |
 | **Not sure yet** | "We could not place your desk, so there is no result yet." | "The way you face is what Vastu reads first." | "Stand at your desk, open a compass app and note where you face. Page 10 gives steps that work whichever way it turns out." |
 
-Closing note on every version: "This verdict comes from your desk direction. Your birth number adds a separate note on page 14." If rule B applied it never happens for a Student (West is not the number direction for any approved pairing except Mulank 8): when it does, add "Your birth number points the same way, so this report reads your desk as ideal." (S)
+Closing note on every version: "This verdict comes from your desk direction. Your birth number adds a separate note on page 14." Rule B applies to a Student only when the desk faces West and the birth number is 8 (Saturn, west). Then the result reads Ideal and the line is added: "Your birth number points the same way, so this report reads your desk as ideal." (S)
 
 NEW to confirm: the "Why it matters" sentence is my plain summary of what the sources say. I removed the line in the mock that said the east is linked with "morning light and a clear start", because the research does not state it.
 
