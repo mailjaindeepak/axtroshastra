@@ -258,15 +258,10 @@ _STICKY = """<style>
 #ax-stickybar svg{width:19px;height:19px;flex:none}
 #ax-stickybar .pdf{background:var(--ink);color:#F5EEE0;box-shadow:0 6px 16px rgba(42,35,56,.28)}
 #ax-stickybar .pdf svg{color:var(--gold2)}
-#ax-stickybar .wa{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(62,125,90,.28)}
 @media print{#ax-stickybar{display:none!important}}</style>
 <div id='ax-stickybar'><div class='inner'>
 <a class='pdf' id='ax-pdf' href='#' onclick='window.print();return false;'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M6 11l6 6 6-6'/><path d='M4 21h16'/></svg>Download PDF</a>
-<a class='wa' href='#' onclick='axShare();return false;'><svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.5-.3-2.6.7.7-2.5-.3-.5A8 8 0 0 1 12 4zm-3.1 4.3c-.2 0-.5.1-.7.3-.7.7-1 1.6-.8 2.6.3 1.2 1 2.4 2.1 3.5 1.4 1.4 3 2.3 4.6 2.5.8.1 1.6-.2 2.2-.8.2-.2.3-.5.3-.8l-.1-.7c-.1-.2-.2-.4-.5-.5l-1.7-.8a.8.8 0 0 0-.9.2l-.5.5c-.1.2-.4.2-.6.1a6.7 6.7 0 0 1-2.9-2.9c-.1-.2 0-.4.1-.6l.5-.5c.2-.2.3-.6.2-.9l-.8-1.7c-.1-.2-.3-.4-.5-.4l-.5-.1z'/></svg>Share on WhatsApp</a>
-</div></div>
-<script>
-window.axShare=function(){var url=location.href;var t='Check out my Vastu Career Report from Axtroshastra';if(navigator.share){navigator.share({title:'Axtroshastra',text:t,url:url}).catch(function(){});}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+url),'_blank');}};
-</script>"""
+</div></div>"""
 
 
 def render_vastu_career(payload: dict) -> str:
@@ -360,4 +355,4 @@ def render_vastu_career(payload: dict) -> str:
     return (f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{name} &mdash; Vastu Career Report | Axtroshastra</title><style>\n{_VYAPAR_CSS}\n</style></head><body>\n'
-            f'{_VYAPAR_DEFS}\n' + "\n\n".join(pages) + f"\n{_STICKY}\n</body></html>")
+            f'{_VYAPAR_DEFS}\n<!--ax:no-report-disclaimer-->\n' + "\n\n".join(pages) + f"\n{_STICKY}\n</body></html>")

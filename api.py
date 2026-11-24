@@ -2856,6 +2856,8 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
             '<style>.ax-report-disclaimer{margin-bottom:24px}</style>'
             '<div class="ax-report-disclaimer">' + rdisclaim + '</div>'
         )
+        if "<!--ax:no-report-disclaimer-->" in html:      # Vastu Career: the owner dropped the shared legal box (its own pages carry the belief-system note)
+            rdisclaim_wrapped = ""
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
                 .replace("__HASACCT__", "1" if has_acct else "0"))
         if lang == "hi":

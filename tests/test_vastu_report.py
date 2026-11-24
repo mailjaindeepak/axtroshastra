@@ -200,9 +200,11 @@ def test_every_number_has_a_colour_page(n):
 
 
 # ---------------------------------------------------------------- shell: delivery plumbing and PDF
-def test_report_carries_the_pdf_and_whatsapp_buttons_the_server_wires():
+def test_report_has_a_pdf_button_and_no_whatsapp_share_button():
+    # owner decision (24 Nov 2026): no "Share on WhatsApp" option on this report. WhatsApp DELIVERY of the report is unaffected.
     h = html_of()
-    assert "window.print();return false;" in h and "axShare" in h and 'id=\'ax-pdf\'' in h
+    assert "window.print();return false;" in h and "id='ax-pdf'" in h
+    assert "Share on WhatsApp" not in h and "axShare" not in h and "wa.me" not in h
     assert "@media print{#ax-stickybar{display:none!important}}" in h
 
 
@@ -232,7 +234,9 @@ def test_paid_student_report_is_served_with_wired_buttons(client):
     assert page.status_code == 200
     h = page.text
     assert len(pages_of(h)) == 16
-    assert "axPdfDl" in h and "axShare" in h and "window.print();return false;" not in h
+    assert "axPdfDl" in h and "window.print();return false;" not in h        # the server wired the PDF button
+    assert "Share on WhatsApp" not in h and "wa.me" not in h                   # owner dropped the share option
+    assert "Disclaimer" not in text_of(h) and "ax-report-disclaimer" not in h  # and the shared legal box
     assert "Paid Tester" in text_of(h) and "Vastu Career Report" in h
 
 
