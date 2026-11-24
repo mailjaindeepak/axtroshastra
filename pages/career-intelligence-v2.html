@@ -191,7 +191,7 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
-.sticky.kbd{display:none!important}
+@media(hover:none){.sticky.kbd{display:none!important}} /* phone-keyboard rule only; on desktop focus stays in the form and hid the bar for good */
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
@@ -339,7 +339,7 @@ fbq('track', 'PageView');
 
     <p class="eyebrow"><span style="font-size:1.4em;vertical-align:middle">&#128188;</span> Career Report</p>
     <h1>Your Career Has Questions. Your <em>Stars Have Answers.</em></h1>
-    <p class="sub">Growth, timing, the right move — Answers from your birth chart.</p>
+    <p class="sub">Explore your career path - Patterns from your birth chart.</p>
     <p class="sub2">55+ pages · Personalised · Private · A Vedic career reading.</p>
 
     <a class="sample-jump" id="heroSampleBtn" href="#sampleReport">
@@ -351,10 +351,6 @@ fbq('track', 'PageView');
       <div class="field">
         <label for="f-name">Name</label>
         <input id="f-name" type="text" placeholder="Your name" required>
-      </div>
-      <div class="field">
-        <label for="f-gender">You are</label>
-        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Gender</option><option value="male">Male</option><option value="female">Female</option></select>
       </div>
       <div class="field">
         <label>Date of birth</label>
@@ -398,7 +394,6 @@ fbq('track', 'PageView');
       <p class="btn-note">Free · No card needed · Takes about 2 minutes</p>
     </form>
 
-    <div class="offer-timer" id="offerTimer">🔥 Launch offer ends in <b class="clk" id="otClock">30:00</b> — <s>₹999</s> <span class="amt">₹499</span></div>
   </div>
 </header>
 
@@ -406,7 +401,7 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>NASA-grade</b> planetary data</li>
+      <li><span class="dot"></span>Calculated using <b>JPL astronomical ephemeris</b> data</li>
       <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
       <li><span class="dot"></span>Report in <b>2 minutes</b></li>
     </ul>
@@ -716,7 +711,7 @@ fbq('track', 'PageView');
       </div>
 
       <div style="text-align:center">
-        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; &#8377;499</button>
+        <button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Career Reading &mdash; <s style="opacity:.7;font-weight:600">₹999</s> &#8377;499</button>
         <div class="ps-subnote2">Personalised using your exact birth details</div>
         <div><button type="button" class="ps-sample-link" id="sampleOpen2">View the full sample report &rarr;</button></div>
         <div class="offer-timer" id="offerTimerSample" style="margin:16px auto 0">&#128293; Launch offer ends in <b class="clk" id="otClockSample">30:00</b> &mdash; <s>&#8377;999</s> <span class="amt">&#8377;499</span></div>
@@ -880,7 +875,7 @@ fbq('track', 'PageView');
       <h2>You're in good company</h2>
     </div>
     <div class="stats-row">
-      <div class="stat-tile"><div class="n" id="reportCount">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n" id="reportCount">15,058</div><div class="c">reports generated</div></div>
       <div class="stat-tile"><div class="n">4.8<span class="star">★</span></div><div class="c">average rating</div></div>
       <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
@@ -905,7 +900,7 @@ fbq('track', 'PageView');
 
     <div class="block">
       <h3>No astrologer's opinion. Just calculation.</h3>
-      <p>Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart with NASA-grade planetary data — the same calculations professional observatories use (NASA JPL ephemeris). Same chart, same answer, every time.</p>
+      <p>Traditional astrologers go by experience — every astrologer gives a different answer. We compute your chart using JPL astronomical ephemeris data — the same calculations professional observatories use. Same chart, same answer, every time.</p>
     </div>
 
     <div class="block gold">
@@ -961,7 +956,7 @@ fbq('track', 'PageView');
 
     <details>
       <summary>Is this accurate?</summary>
-      <div class="a">Planetary positions are 100% accurate — NASA-grade ephemeris data. Timing windows are probabilities, not appointments. We honestly tell you which window is strong and which is weaker — stay away from anyone offering a "guarantee".</div>
+      <div class="a">Planetary positions are calculated using JPL astronomical ephemeris data. Timing windows are probabilities, not appointments. We honestly tell you which window is strong and which is weaker — stay away from anyone offering a "guarantee".</div>
     </details>
     <details>
       <summary>I don't know my birth time. Can I still get a report?</summary>
@@ -998,6 +993,8 @@ fbq('track', 'PageView');
   <b>Axtroshastra</b> · Computational Vedic Astrology · by Cultnuts<br>
   <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> · <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br>
   <a href="/about" style="color:#B9BBD0">About Us</a> · <a href="/privacy" style="color:#B9BBD0">Privacy</a> · <a href="/terms" style="color:#B9BBD0">Terms</a> · <a href="/blog" style="color:#B9BBD0">Blog</a><br>
+  Managed by ACubeD Global<br>
+  Address: CSP 2518, DLF Capital Greens, Delhi - 110015<br>
   Reports are probability estimates from classical Jyotish principles, not guarantees.
 </footer>
 
@@ -1005,7 +1002,6 @@ fbq('track', 'PageView');
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
     <p class="l1">Career Intelligence Report</p>
-    <p class="l2"><s style="color:#9a9cb0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> left</p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Snapshot</a>
 </div>
@@ -1332,7 +1328,7 @@ function renderTeaser(t){
   el.classList.add('show');
   if(!window.__axNoScroll) el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  if(sb){ sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#sampleReport'); }
+  if(sb){ sb.innerHTML = 'Unlock · <s style="opacity:.7;font-weight:600">₹999</s> ₹499'; /* price on the bar only after the preview */ sb.setAttribute('href', '#sampleReport'); }
 }
 
 /* form submit -> /api/kundli -> render free preview (no payment yet). Same flow
@@ -1345,7 +1341,6 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
   if(!dob){ alert('Please select your full date of birth.'); return; }
   if(dob === 'invalid'){ alert('This date does not exist — please re-check.'); return; }
   if(!document.getElementById('f-name').value.trim()){ alert('Please enter your name.'); return; }
-  if(!document.getElementById('f-gender').value){ alert('Please select whether you are male or female.'); return; }
   var waPhone = axNormPhone(document.getElementById('f-whatsapp').value);
   if(!waPhone){ alert('Please enter a valid 10-digit WhatsApp number.'); document.getElementById('f-whatsapp').focus(); return; }
 
@@ -1368,7 +1363,6 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name: document.getElementById('f-name').value.trim(),
-        gender: document.getElementById('f-gender').value || null,
         dob: dob,
         tob: q.tob || null, time_quality: q.tq, time_band: q.band || null,
         place: document.getElementById('f-place').value.trim(),
@@ -1475,8 +1469,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   if(REPORT_ID){ startPayment(); return; }
   var form = document.getElementById('kundliForm');
   var dob = buildDob();
-  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); })
-    && document.getElementById('f-gender').value;
+  var textFilled = ['f-name','f-place'].every(function(id){ var el=document.getElementById(id); return el && el.value.trim(); });
   if(textFilled && dob && dob !== 'invalid'){
     if(typeof form.requestSubmit === 'function'){ form.requestSubmit(); }
     else { form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true})); }

@@ -1,0 +1,13 @@
+{
+ "name": "Anjali Deshpande",
+ "gender": "female",
+ "dob": "1996-10-19",
+ "tob": "12:30",
+ "time_quality": "T0",
+ "place": "Pune",
+ "lat": 18.52,
+ "lon": 73.86,
+ "tz": 5.5,
+ "work_type": "job",
+ "steering": null
+}

@@ -47,7 +47,7 @@ test.beforeAll(() => {
 // read /healthz {version} and run a feature's tests only when its commit is an
 // ancestor of the live SHA. That needs the deploy to stamp APP_COMMIT first.
 const PENDING_DEPLOY = new Set(
-  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth,/en/diwali')
+  (process.env.OPS_PENDING_DEPLOY || '/en/marriage-v3,/hi/marriage-v3,/en/business-growth,/hi/business-growth,/en/annual-report')
     .split(',').map((s) => s.trim()).filter(Boolean),
 );
 
@@ -91,6 +91,7 @@ const ALL_PAGES = [
   { path: '/en/career-growth',  label: 'Career Growth (EN)' },
   { path: '/hi/career-growth',  label: 'Career Growth (HI)' },
   { path: '/en/career-intelligence', label: 'Career Intelligence (EN)' },
+  { path: '/en/numerology', label: 'Numerology (EN)' },
   { path: '/en/life-blueprint', label: 'Life Blueprint (EN)' },
   { path: '/hi/life-blueprint', label: 'Life Blueprint (HI)' },
   { path: '/login',             label: 'Login' },
@@ -98,7 +99,14 @@ const ALL_PAGES = [
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
   { path: '/en/iq-test',         label: 'IQ Test (EN)' },
-  { path: '/en/diwali',          label: 'Diwali Report (EN)' },
+  { path: '/en/vastu-career',    label: 'Vastu Career Report (EN)' },
+  { path: '/en/vastu-career/student', label: 'Vastu Career: Student (EN)' },
+  { path: '/en/vastu-career/exam-aspirant', label: 'Vastu Career: Exam aspirant (EN)' },
+  { path: '/en/vastu-career/working-professional', label: 'Vastu Career: Working professional (EN)' },
+  { path: '/en/vastu-career/work-from-home', label: 'Vastu Career: Work from home (EN)' },
+  { path: '/en/vastu-career/business-owner', label: 'Vastu Career: Business owner (EN)' },
+  { path: '/en/vastu-career/job-seeker', label: 'Vastu Career: Job seeker (EN)' },
+  { path: '/en/annual-report',   label: 'Annual Report (EN)' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
   { path: '/blog/kundli-milan-36-gun',                 label: 'Blog: 36 Gun' },
@@ -334,7 +342,39 @@ async function fillDiwali(page) {
   await page.locator('#kundliForm button[type="submit"]').click();
 }
 
+// Annual Report: same #kundliForm ids as Diwali (work type, WhatsApp in-form, area left on skip).
+async function fillAnnual(page) {
+  await fillDiwali(page);
+}
+
+// Numerology Report: own form (#mkForm), approved Mulank/Bhagyank pair (29 Jul 1990).
+// The name carries "Robot Customer" so /api/admin/robot_cleanup removes the lead.
+async function fillNumerology(page) {
+  await page.fill('#f-name', 'Robot Customer Numerology');
+  await page.fill('#f-dd', '29');
+  await page.selectOption('#f-mm', '7');
+  await page.fill('#f-yy', '1990');
+  await page.fill('#f-phone', testPhone());
+  await page.check('#f-consent');
+  await page.locator('#mkForm button[type="submit"]').click();
+}
+
+async function fillVastuCareer(page) {
+  await page.fill('#f-name', 'Robot Customer Vastu');
+  await page.fill('#f-dd', '14');
+  await page.selectOption('#f-mm', '3');
+  await page.fill('#f-yy', '1999');
+  await page.selectOption('#f-segment', 'student');
+  await page.selectOption('#f-desk', 'W');
+  await page.selectOption('#f-flex', 'a_little');
+  await page.fill('#f-phone', testPhone());
+  await page.check('#f-consent');
+  await page.locator('#mkForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
+// Optional per-funnel keys: `teaser` (selector of the preview, default '#teaser')
+// and `reportId` (browser function returning the report id, default window.REPORT_ID).
 const FUNNELS = [
   {
     name: 'marriage',
@@ -393,11 +433,20 @@ const FUNNELS = [
     hasTeaser: true,    // free-preview teaser, same as marriage/compatibility
   },
   {
-    name: 'diwali',
-    paths: { en: '/en/diwali' },
+    name: 'annual-report',
+    paths: { en: '/en/annual-report' },
     form: '#kundliForm',
-    fill: fillDiwali,
-    hasTeaser: true,    // free preview (#teaser) from the /api/kundli teaser
+    fill: fillAnnual,
+    hasTeaser: true,    // free preview from the /api/kundli teaser
+  },
+  {
+    name: 'numerology',
+    paths: { en: '/en/numerology' },
+    form: '#mkForm',
+    fill: fillNumerology,
+    hasTeaser: true,    // free preview renders inline in #mkResult
+    teaser: '#mkResult',
+    reportId: () => sessionStorage.getItem('mk_rid'),   // private id lives in sessionStorage, never on window
   },
   {
     name: 'iq-test',
@@ -405,6 +454,15 @@ const FUNNELS = [
     form: '#infoForm',
     fill: fillIqTest,
     hasTeaser: false,   // teaser appears after quiz, not after form submit
+  },
+  {
+    name: 'vastu-career',
+    paths: { en: '/en/vastu-career' },
+    form: '#mkForm',
+    fill: fillVastuCareer,
+    hasTeaser: true,    // free preview renders inline in #mkResult
+    teaser: '#mkResult',
+    reportId: () => (JSON.parse(sessionStorage.getItem('vc_state') || 'null') || {}).rid || null,   // private id lives in sessionStorage
   },
 ];
 
@@ -495,7 +553,7 @@ test.describe('B2 — Funnel smoke', () => {
         // 4) For funnels with a teaser step, the free preview must render.
         if (funnel.hasTeaser) {
           await expect(
-            page.locator('#teaser'),
+            page.locator(funnel.teaser || '#teaser'),
             'teaser/preview never appeared after submit',
           ).toBeVisible({ timeout: 30_000 });
         }
@@ -503,8 +561,14 @@ test.describe('B2 — Funnel smoke', () => {
         // 5) REPORT_ID must be set — proves the backend processed the chart.
         //    Marriage-v2 has a 9s min-wait animation; milan has 7s; shaadi and
         //    career have 9s. 30s timeout covers all cases comfortably.
-        await page.waitForFunction(() => window.REPORT_ID != null, { timeout: 30_000 });
-        const rid = await page.evaluate(() => window.REPORT_ID);
+        // Other funnels keep their exact original call; only a funnel that defines `reportId` (Numerology) uses its own probe.
+        const ridFn = funnel.reportId || (() => window.REPORT_ID);
+        if (funnel.reportId) {
+          await page.waitForFunction(ridFn, null, { timeout: 30_000 });
+        } else {
+          await page.waitForFunction(() => window.REPORT_ID != null, { timeout: 30_000 });
+        }
+        const rid = await page.evaluate(ridFn);
         expect(rid, 'window.REPORT_ID was not set — backend did not persist').toBeTruthy();
 
         // 6) No horizontal overflow after the form/teaser expanded the page.

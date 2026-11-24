@@ -15,7 +15,7 @@ Pipeline: compute_report(input) -> full JSON
 """
 
 import swisseph as swe
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from dataclasses import dataclass, field
 import json
 from navamsa import navamsa_analysis
@@ -630,6 +630,107 @@ def _sade_sati(moon_sign: int, today: datetime) -> dict:
             start = t; break
     return {"active": False, "phase": None,
             "next_starts": start.strftime("%b %Y") if start else "beyond 30 years"}
+
+
+# ---------------------------------------------------------------- annual-report transits
+IST = timezone(timedelta(hours=5.5))
+_BODIES = {**PLANETS, "Ketu": None}   # Ketu = Rahu + 180
+
+
+def _utc(dt: datetime) -> datetime:
+    """Aware -> UTC. Naive = IST wall time (report convention), unlike jd() which takes UTC."""
+    return (dt if dt.tzinfo else dt.replace(tzinfo=IST)).astimezone(timezone.utc)
+
+
+def _body_sign(name: str, t_utc: datetime) -> int:
+    """Sidereal (Lahiri) sign 0-11 of Sun..Saturn/Rahu/Ketu, via the shared sidereal_lon()."""
+    lo, _ = sidereal_lon(PLANETS["Rahu" if name == "Ketu" else name], jd(t_utc))
+    return sign_of((lo + 180.0) % 360.0 if name == "Ketu" else lo)
+
+
+def sign_change_dates(planet: str, start: datetime, end: datetime, step_hours: float = 6) -> list:
+    """Every sidereal sign entry of `planet` in [start, end], incl. retrograde re-entries.
+    Coarse scan (step_hours) then bisect to the minute. Dates are IST days.
+    ponytail: two crossings inside one scan step would be missed; none exist at 6h for
+    Sun..Saturn/nodes (retro loops span weeks)."""
+    if planet not in _BODIES:
+        raise ValueError(f"unsupported planet {planet!r}")
+    t0, t_end, step = _utc(start), _utc(end), timedelta(hours=step_hours)
+    out, s0 = [], _body_sign(planet, t0)
+    while t0 < t_end:
+        t1 = min(t0 + step, t_end)
+        s1 = _body_sign(planet, t1)
+        if s1 != s0:
+            lo, hi = t0, t1
+            while hi - lo > timedelta(minutes=1):
+                mid = lo + (hi - lo) / 2
+                if _body_sign(planet, mid) == s0: lo = mid
+                else: hi = mid
+            at = hi.replace(second=0, microsecond=0).astimezone(IST)
+            out.append({"planet": planet, "at": at, "date": at.date().isoformat(),
+                        "from_sign": s0, "to_sign": s1,
+                        "from_name": SIGNS_EN[s0], "to_name": SIGNS_EN[s1]})
+        t0, s0 = t1, s1
+    return out
+
+
+def doshas(chart, as_of: datetime = None) -> dict:
+    """Kaal Sarp / Pitra / Shani Dhaiya from a compute_chart() dict (owner-approved rules).
+    Kaal Sarp STRICT: Sun..Saturn all strictly on one side of the Rahu-Ketu axis (no 'partial').
+    Pitra: Sun and Rahu in the same sign. Dhaiya: Saturn's CURRENT sign (as_of, default now)
+    is the 4th or 8th from the natal Moon sign (Moon sign = 1st)."""
+    g = chart["grahas"]
+    off = [(g[p].lon - g["Rahu"].lon) % 360.0 for p in
+           ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")]
+    fwd = sum(0 < o < 180 for o in off)    # on the Rahu -> Ketu arc
+    back = sum(o > 180 for o in off)       # on the Ketu -> Rahu arc
+    ks = fwd == 7 or back == 7
+    detail = {"side": "rahu_to_ketu" if fwd == 7 else "ketu_to_rahu" if back == 7 else None,
+              "rahu_to_ketu_count": fwd, "ketu_to_rahu_count": back}
+    now = _utc(as_of) if as_of else datetime.now(timezone.utc)
+    sat = _body_sign("Saturn", now)
+    h = houses_from(g["Moon"].sign, sat)
+    kind = {4: "4th", 8: "8th"}.get(h)
+    return {"kaal_sarp": ks, "kaal_sarp_detail": detail,
+            "pitra": g["Sun"].sign == g["Rahu"].sign,
+            "shani_dhaiya": {"active": kind is not None, "kind": kind,
+                             "saturn_sign": sat, "saturn_sign_name": SIGNS_EN[sat],
+                             "house_from_moon": h}}
+
+
+def saturn_house_timeline(moon_sign: int, start: datetime, end: datetime, step_hours: float = 6) -> dict:
+    """Saturn's house counted from the Moon sign: house at start + exact change dates."""
+    h0 = houses_from(moon_sign, _body_sign("Saturn", _utc(start)))
+    changes = [{"at": c["at"], "date": c["date"], "house": houses_from(moon_sign, c["to_sign"]),
+                "from_house": houses_from(moon_sign, c["from_sign"])}
+               for c in sign_change_dates("Saturn", start, end, step_hours)]
+    return {"start_house": h0, "changes": changes}
+
+
+_SS_STAGE = {12: "first", 1: "second", 2: "third"}   # Saturn 12th/1st/2nd from Moon sign
+
+
+def sade_sati_stages(moon_sign: int, start: datetime, end: datetime) -> dict:
+    """Sade Sati stage at `start` ('first'/'second'/'third'/'none') and each stage change in
+    [start, end] with exact dates. When none at start, `next_start` = the next entry into the
+    first stage (searched up to 30 years ahead, coarse 5-day scan then bisected)."""
+    tl = saturn_house_timeline(moon_sign, start, end)
+    stage0, cur, changes = _SS_STAGE.get(tl["start_house"], "none"), None, []
+    cur = stage0
+    for c in tl["changes"]:
+        st = _SS_STAGE.get(c["house"], "none")
+        if st != cur:
+            changes.append({"at": c["at"], "date": c["date"], "stage": st, "house": c["house"]})
+            cur = st
+    nxt = None
+    if stage0 == "none":
+        firsts = [c for c in changes if c["stage"] == "first"]
+        if not firsts:
+            far = saturn_house_timeline(moon_sign, end, _utc(end) + timedelta(days=365 * 30), 120)["changes"]
+            firsts = [c for c in far if c["house"] == 12]
+        nxt = firsts[0]["date"] if firsts else None
+    return {"stage_at_start": stage0, "active_at_start": stage0 != "none",
+            "changes": changes, "next_start": nxt}
 
 
 def _past_analysis(chart, sig, tree, ref_sign, ref_signs_tr, today, years_back=3):

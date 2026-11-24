@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,8 +22,9 @@
 <style>
 :root{
   --ink:#23253B;
-  --midnight:#151C39;
-  --midnight-2:#1D2547;
+  --midnight:#0D0A1A;
+  --midnight-2:#1A1232;
+  --midnight-3:#2D1B4E;
   --paper:#FAF6ED;
   --card:#FFFFFF;
   --sindoor:#C93B2E;
@@ -36,6 +37,10 @@
   --radius:14px;
   --display:'Bricolage Grotesque', 'Segoe UI', sans-serif;
   --body:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --text-hero:#fff;
+  --text-sub:rgba(255,255,255,.7);
+  --text-accent:#E4B04A;
+  --star-color:#fff;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -47,30 +52,107 @@ a{color:var(--sindoor)}
 .eyebrow{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--haldi)}
 .eyebrow.dark{color:var(--sindoor)}
 h1,h2,h3{font-family:var(--display);line-height:1.12}
-.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;padding:16px 20px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 0 var(--sindoor-dark);transition:transform .08s ease}
+.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--sindoor);color:#fff;font-family:var(--display);font-weight:800;font-size:17px;padding:16px 20px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 0 var(--sindoor-dark);transition:transform .08s ease;white-space:nowrap}
 .btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sindoor-dark)}
 .btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--haldi);outline-offset:2px}
 .btn-note{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
 section{padding:52px 0}
 
 /* ---------- HERO ---------- */
-.hero{background:radial-gradient(1200px 600px at 50% -10%, var(--midnight-2), var(--midnight) 60%);color:#F3EFE4;padding:36px 0 56px;position:relative;overflow:hidden}
-.hero .wrap{position:relative;z-index:2}
-.kundli-bg{position:absolute;right:-90px;top:-40px;width:380px;opacity:.5;z-index:1;pointer-events:none}
+.hero{
+  color:var(--text-hero);padding:36px 0 56px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse 1000px 500px at 30% 10%, rgba(55,15,120,.55), transparent 65%),
+    radial-gradient(ellipse 700px 550px at 80% 20%, rgba(70,15,140,.5), transparent 60%),
+    radial-gradient(ellipse 900px 700px at 50% 50%, rgba(30,5,60,.85), transparent 65%),
+    radial-gradient(ellipse 600px 450px at 10% 80%, rgba(25,8,90,.5), transparent 55%),
+    radial-gradient(ellipse 500px 350px at 88% 75%, rgba(70,5,45,.2), transparent 55%),
+    linear-gradient(170deg, #020108 0%, #060412 18%, #0E0822 40%, #080516 65%, #020108 100%);
+}
+.hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(circle 3px at 12% 15%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2.5px at 28% 8%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 3.5px at 96% 22%, #fff 1.8px, transparent 3.5px),
+    radial-gradient(circle 2.5px at 62% 3%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 78% 28%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2.5px at 88% 18%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 15% 42%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2px at 35% 55%, #fff 1px, transparent 2px),
+    radial-gradient(circle 2.5px at 55% 48%, #E4B04A 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 72% 52%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2.5px at 92% 45%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 2.5px at 8% 68%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 22% 72%, #E4B04A 1.5px, transparent 3px),
+    radial-gradient(circle 2px at 42% 78%, #fff 1px, transparent 2px),
+    radial-gradient(circle 2.5px at 65% 65%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 82% 72%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2px at 95% 82%, #fff 1px, transparent 2px),
+    radial-gradient(circle 2.5px at 18% 88%, #E4B04A 1.2px, transparent 2.5px),
+    radial-gradient(circle 2px at 50% 92%, #fff 1px, transparent 2px),
+    radial-gradient(circle 3px at 75% 85%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2.5px at 5% 30%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 2.5px at 94% 10%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 2px at 4% 35%, #fff 1px, transparent 2px),
+    radial-gradient(circle 2.5px at 68% 42%, #E4B04A 1.2px, transparent 2.5px),
+    radial-gradient(circle 3px at 85% 8%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 2px at 48% 62%, #fff 1px, transparent 2px),
+    radial-gradient(circle 2.5px at 30% 82%, #fff 1.2px, transparent 2.5px),
+    radial-gradient(circle 2px at 90% 55%, #fff 1px, transparent 2px),
+    radial-gradient(circle 7px at 4% 25%, rgba(255,255,255,.5) 2px, transparent 7px),
+    radial-gradient(circle 8px at 93% 15%, rgba(255,255,255,.45) 2.5px, transparent 8px),
+    radial-gradient(circle 6px at 85% 60%, rgba(228,176,74,.5) 2px, transparent 6px),
+    radial-gradient(circle 7px at 40% 70%, rgba(255,255,255,.45) 2px, transparent 7px),
+    radial-gradient(circle 8px at 10% 55%, rgba(255,255,255,.4) 2.5px, transparent 8px),
+    radial-gradient(circle 7px at 58% 5%, rgba(255,255,255,.45) 2px, transparent 7px),
+    radial-gradient(circle 6px at 95% 30%, rgba(255,255,255,.4) 2px, transparent 6px);
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(circle 3.5px at 6% 20%, #fff 1.8px, transparent 3.5px),
+    radial-gradient(circle 3px at 95% 35%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 4px at 80% 45%, #fff 2px, transparent 4px),
+    radial-gradient(circle 3px at 15% 75%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 3px at 96% 5%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 3.5px at 90% 70%, #fff 1.8px, transparent 3.5px),
+    radial-gradient(circle 3px at 35% 45%, #fff 1.5px, transparent 3px),
+    radial-gradient(circle 3.5px at 72% 80%, #E4B04A 1.8px, transparent 3.5px);
+  animation:twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle{0%{opacity:.3}50%{opacity:1}100%{opacity:.5}}
+.hero .wrap{position:relative;z-index:3}
+.constellation{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5}
+.mandala{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:200px;height:200px;opacity:.12;z-index:1;pointer-events:none}
+@media(min-width:720px){.mandala{width:280px;right:40px;opacity:.15}}
+.kundli-bg{position:absolute;right:-70px;top:-30px;width:230px;opacity:.18;z-index:2;pointer-events:none}
+.hero-moon{position:absolute;right:30px;top:26%;width:40px;z-index:4;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,255,255,.4))}
+.hero-saturn{position:absolute;left:55%;top:5%;width:44px;z-index:2;pointer-events:none;opacity:.9;filter:drop-shadow(0 0 6px rgba(255,255,255,.3))}
+.hero-jupiter{position:absolute;left:28%;bottom:22%;width:38px;z-index:2;pointer-events:none;opacity:.8;filter:drop-shadow(0 0 8px rgba(255,255,255,.3))}
+.hero-mars{position:absolute;right:30%;bottom:30%;width:22px;z-index:2;pointer-events:none;filter:drop-shadow(0 0 5px rgba(228,176,74,.3))}
+@media(min-width:720px){
+  .hero-moon{width:48px;right:60px;top:24%}
+  .hero-saturn{width:55px;left:50%;top:8%}
+  .hero-jupiter{width:46px;left:22%;bottom:18%}
+  .hero-mars{width:28px;right:35%;bottom:25%}
+}
 .brand{display:flex;align-items:center;gap:9px;margin-bottom:34px}
 .brand svg{width:26px;height:26px}
-.brand span{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.02em;color:#F3EFE4}
+.brand span{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.02em;color:#fff}
 .hero h1{font-size:clamp(35px,8.4vw,53px);font-weight:800;color:#fff}
 .hero h1 em{font-style:normal;color:var(--haldi)}
-.hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(16px,4.1vw,20px);color:#D9D4C3;margin-top:12px}
-.hero .sub2{margin-top:12px;font-size:15px;color:#A9ABC0;max-width:44ch}
+.hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(16px,4.1vw,20px);color:#fff;margin-top:12px}
+.hero .sub2{margin-top:12px;font-size:15px;color:#fff;max-width:44ch;opacity:.85}
 
 /* form card */
-.form-card{background:var(--card);color:var(--ink);border-radius:var(--radius);padding:22px 20px 20px;margin-top:28px;box-shadow:0 18px 50px rgba(8,10,30,.45)}
+.form-card{background:var(--card);color:var(--ink);border-radius:var(--radius);padding:22px 20px 20px;margin-top:28px;box-shadow:0 18px 50px rgba(13,10,26,.6),0 0 80px rgba(138,92,246,.1)}
 .form-card .fc-title{font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
 .field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body)}
+.field input::placeholder,.wa-wrap input::placeholder{color:#bbb}
+.field select:invalid,.field select.placeholder{color:#bbb}
 .tob-toggle{display:flex;align-items:flex-start;gap:10px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin:4px 0 16px;font-size:13.5px}
 .tob-toggle input{width:18px;height:18px;margin-top:2px;accent-color:var(--sindoor);flex:none}
 .wa-wrap{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:#fff}
@@ -80,11 +162,15 @@ section{padding:52px 0}
 .tob-toggle .spec{color:var(--sindoor);font-weight:600}
 
 /* ---------- TRUST STRIP ---------- */
-.trust{background:var(--midnight);padding:0 0 26px}
+.trust{padding:0 0 26px;
+  background:
+    radial-gradient(ellipse 500px 200px at 50% 50%, rgba(40,8,75,.7), transparent 70%),
+    linear-gradient(180deg, #020108, #080516);
+}
 .trust ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center}
-.trust li{font-size:12.5px;color:#B9BBD0;display:flex;align-items:center;gap:6px}
-.trust li b{color:#E8E4D6;font-weight:600}
-.trust .dot{width:5px;height:5px;border-radius:50%;background:var(--haldi);flex:none}
+.trust li{font-size:12.5px;color:var(--text-sub);display:flex;align-items:center;gap:6px}
+.trust li b{color:#fff;font-weight:600}
+.trust .dot{width:5px;height:5px;border-radius:50%;background:var(--text-accent);flex:none}
 
 /* ============ TEASER — computed preview shown after form submit ============ */
 .premium-sample{
@@ -206,11 +292,64 @@ section{padding:52px 0}
 .ps-phase-row .pl{font-size:11px;color:var(--pmuted);margin-bottom:2px}
 .ps-phase-row .pv{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead)}
 
+/* Blurred preview cards */
+.ps-preview-intro{text-align:center;margin:24px 0 14px}
+.ps-preview-intro .ps-plabel{margin-bottom:4px}
+.ps-preview-intro p{font-size:13.5px;color:var(--pmuted);max-width:38ch;margin:0 auto;line-height:1.45}
+.ps-prev{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:22px 20px;margin-bottom:12px;box-shadow:0 6px 18px var(--pshadow);position:relative;overflow:hidden}
+.ps-prev .ps-prev-eyebrow{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--pgold);font-weight:700;margin-bottom:8px}
+.ps-prev .ps-prev-title{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--phead);line-height:1.2;margin-bottom:14px}
+.ps-prev-verdict{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;border-radius:8px;padding:7px 14px;margin-bottom:16px}
+.ps-prev-verdict.thriving{background:rgba(62,125,90,.12);color:var(--pgreen)}
+.ps-prev-verdict.building{background:rgba(201,163,78,.14);color:#8C7430}
+.ps-prev-verdict.watch{background:rgba(180,87,43,.1);color:var(--pterra)}
+.ps-prev-verdict svg{width:14px;height:14px;flex-shrink:0}
+.ps-prev-timeline{margin-bottom:16px}
+.ps-prev-tl-row{position:relative;padding:12px 16px;border-left:3px solid var(--pline);margin-left:4px}
+.ps-prev-tl-row:first-child{border-radius:3px 0 0 0}
+.ps-prev-tl-row:last-child{border-radius:0 0 0 3px}
+.ps-prev-tl-row.favorable{border-left-color:var(--pgreen)}
+.ps-prev-tl-row.watch{border-left-color:var(--pterra)}
+.ps-prev-tl-row.steady{border-left-color:var(--pgold)}
+.ps-prev-tl-row.beyond{border-left:3px solid var(--pline);background:rgba(201,163,78,.06);border-radius:0 0 10px 0;padding:14px 16px}
+.ps-prev-tl-header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ps-prev-tl-label{font-size:12px;font-weight:600;color:var(--phead)}
+.ps-prev-tl-dates{font-size:12px;color:var(--pmuted);font-variant-numeric:tabular-nums}
+.ps-prev-tl-tag{display:inline-flex;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 8px;border-radius:4px}
+.ps-prev-tl-tag.favorable{background:rgba(62,125,90,.12);color:var(--pgreen)}
+.ps-prev-tl-tag.watch{background:rgba(180,87,43,.1);color:var(--pterra)}
+.ps-prev-tl-tag.steady{background:rgba(201,163,78,.14);color:#8C7430}
+.ps-prev-tl-desc{margin-top:6px;font-size:13px;color:var(--pmuted);line-height:1.4;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.ps-prev-dowatch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.ps-prev-dw{background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px}
+.ps-prev-dw.do{background:rgba(62,125,90,.06)}
+.ps-prev-dw.wt{background:rgba(180,87,43,.06)}
+.ps-prev-dw h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ps-prev-dw.do h4{color:var(--pgreen)}
+.ps-prev-dw.wt h4{color:var(--pterra)}
+.ps-prev-dw h4 svg{width:12px;height:12px;flex-shrink:0}
+.ps-prev-dw-lines{font-size:12.5px;color:var(--pmuted);line-height:1.5;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.ps-prev-unlock{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0 0;border-top:1px dashed var(--pline);font-size:13px;font-weight:600;color:var(--pgold);cursor:pointer}
+.ps-prev-unlock svg{width:14px;height:14px;flex-shrink:0}
+.ps-prev-trait{font-size:14px;color:var(--pmuted);line-height:1.55;margin:6px 0 0}
+.ps-prev-trait b{color:var(--phead);font-weight:600;font-family:var(--disp)}
+.ps-prev-dw-lines-visible{font-size:12.5px;color:var(--pmuted);line-height:1.5}
+.ps-prev-also{text-align:center;margin:16px 0 4px}
+.ps-prev-also-head{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead);margin-bottom:12px}
+.ps-prev-also-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ps-prev-also-grid span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--pmuted);background:var(--panel);border:1px solid var(--pline);border-radius:8px;padding:7px 14px}
+.ps-prev-also-grid span svg{flex-shrink:0;opacity:.5}
+.ps-prev-cta-block{text-align:center;margin:20px 0 6px;padding:20px;background:var(--panel);border:1.5px solid var(--pgold);border-radius:14px;box-shadow:0 6px 18px var(--pshadow)}
+.ps-prev-cta-block p{font-size:14px;color:var(--phead);line-height:1.5;margin-bottom:4px}
+.ps-prev-cta-block .ps-prev-cta-em{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--phead);margin-bottom:16px}
+
 @media(max-width:420px){
   .ps-snap .c .v{font-size:13.5px}
   .ps-lq-text .qt{font-size:13px}
   .ps-also-grid{gap:6px}
   .ps-also-box{font-size:11.5px;padding:8px 10px}
+  .ps-prev-title{font-size:17px}
+  .ps-prev-dowatch{grid-template-columns:1fr}
 }
 
 /* ---------- WHY DIFFERENT ---------- */
@@ -218,18 +357,27 @@ section{padding:52px 0}
 .why .block h3{font-size:18px;margin-bottom:8px}
 .why .block p{font-size:14.5px;color:#4A4C63}
 .why .block.gold{border-left-color:var(--haldi)}
-.cred{margin-top:16px;background:var(--midnight);color:#E8E4D6;border-radius:var(--radius);padding:20px}
+.cred{margin-top:16px;border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;
+  color:var(--text-hero);
+  background:
+    radial-gradient(ellipse 400px 300px at 80% 20%, rgba(70,25,150,.35), transparent 60%),
+    linear-gradient(150deg, #100828, #020108);
+}
 .cred h3{color:#fff;font-size:18px;margin-bottom:8px}
-.cred p{font-size:14.5px;color:#B9BBD0}
-.cred .badge{display:inline-flex;align-items:center;gap:7px;background:var(--midnight-2);border:1px solid #333B63;color:var(--haldi);font-size:12px;font-weight:700;border-radius:20px;padding:6px 12px;margin-bottom:12px;letter-spacing:.05em}
+.cred p{font-size:14.5px;color:var(--text-sub)}
+.cred .badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(228,176,74,.3);color:var(--text-accent);font-size:12px;font-weight:700;border-radius:20px;padding:6px 12px;margin-bottom:12px;letter-spacing:.05em}
 
 /* ---------- RECTIFY ---------- */
-.rectify{background:var(--midnight);color:#E8E4D6}
+.rectify{position:relative;overflow:hidden;color:var(--text-hero);
+  background:
+    radial-gradient(ellipse 600px 400px at 70% 30%, rgba(90,25,170,.4), transparent 60%),
+    radial-gradient(ellipse 400px 300px at 20% 70%, rgba(30,15,120,.3), transparent 55%),
+    linear-gradient(170deg, #060412, #100828 50%, #020108);
+}
 .rectify h2{color:#fff;font-size:clamp(22px,5.6vw,28px);margin-bottom:12px}
-.rectify h2 em{font-style:normal;color:var(--haldi)}
-.rectify p{font-size:14.5px;color:#B9BBD0;max-width:52ch}
-.rectify .stat{font-family:var(--display);font-weight:800;font-size:38px;color:var(--haldi);margin:16px 0 4px}
-.rectify .stat-cap{font-size:13px;color:#8F92AB;margin-bottom:14px}
+.rectify h2 em{font-style:normal;color:var(--text-accent)}
+.rectify p{font-size:14.5px;color:var(--text-sub);max-width:52ch}
+.rectify .stat-cap{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:14px}
 
 /* ---------- PROOF ---------- */
 .proof{text-align:center}
@@ -256,16 +404,28 @@ section{padding:52px 0}
 .sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sticky .sp .l2{font-size:11.5px;color:var(--muted)}
 .sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
-.sticky.kbd{display:none!important}
+@media(hover:none){.sticky.kbd{display:none!important}}
 
 .sec-head{max-width:560px}
 .sec-head h2{font-size:clamp(24px,6vw,30px);font-weight:800;margin-top:8px}
-footer{background:var(--midnight);color:#8F92AB;font-size:12px;text-align:center;padding:26px 20px 120px}
-footer b{color:#B9BBD0}
-@media(min-width:720px){
-  .kundli-bg{width:520px;right:-60px;opacity:.6}
-  .hero{padding:48px 0 72px}
+footer{font-size:12px;text-align:center;padding:26px 20px 120px;color:rgba(255,255,255,.55);
+  background:
+    radial-gradient(ellipse 500px 200px at 50% 20%, rgba(40,8,75,.5), transparent 60%),
+    linear-gradient(180deg, #020108, #010105);
 }
+footer b{color:var(--text-sub)}
+@media(max-width:480px){
+  .hero{padding-top:20px;padding-bottom:32px}
+  .brand{margin-top:22px;margin-bottom:14px}
+  .hero h1{font-size:clamp(26px,7vw,35px)}
+  .form-card{margin-top:16px}
+}
+@media(min-width:720px){
+  .kundli-bg{width:520px;right:-60px;opacity:.07}
+  .hero{padding:48px 0 72px}
+  .mandala{width:280px;right:40px;opacity:.15}
+}
+@media(prefers-reduced-motion:reduce){.hero::after{animation:none;opacity:.7}}
 
 /* ---------- ANALYZING OVERLAY (square kundli — consistent across forms) ---------- */
 .ax-analyzing{position:fixed;inset:0;z-index:9998;background:rgba(18,24,50,.97);color:#F3EFE4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
@@ -291,14 +451,14 @@ gtag('js', new Date());
 gtag('config', 'G-NKRQM1HJ97');
 gtag('config', 'AW-18380046629');
 </script>
-<!-- Meta Pixel: replace 1498790608627206 with your Pixel ID -->
+<!-- Meta Pixel: replace 1133766182500475 with your Pixel ID -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1498790608627206');
+fbq('init', '1133766182500475');
 fbq('track', 'PageView');
 </script>
 <!-- ============ /ANALYTICS ============ -->
@@ -309,7 +469,9 @@ fbq('track', 'PageView');
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window, document, "clarity", "script", "xkbm56cwzh");
 </script>
-<style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}</style>
+<style>.tob3{display:flex;gap:8px}.tob3 select{flex:1;min-width:0}
+#tobField .tob3 select{flex:1 1 0;min-width:0}
+#tobField .tob3 #f-mm2{flex:1 1 0;min-width:0}</style>
 <style>
 .dob-row{display:flex;gap:8px}
 .dob-row input{padding:13px 8px;text-align:center}
@@ -331,12 +493,72 @@ fbq('track', 'PageView');
 
 <!-- ============ HERO ============ -->
 <header class="hero">
+  <!-- constellation lines -->
+  <svg class="constellation" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <circle cx="60" cy="420" r="2" fill="#fff"/><circle cx="95" cy="380" r="1.5" fill="#fff"/>
+    <circle cx="130" cy="440" r="1.8" fill="#fff"/><circle cx="80" cy="480" r="1.2" fill="#fff"/>
+    <circle cx="150" cy="390" r="1" fill="#fff"/><circle cx="40" cy="460" r="1.3" fill="#fff"/>
+    <line x1="60" y1="420" x2="95" y2="380" stroke="#fff" stroke-width="0.5" opacity=".6"/>
+    <line x1="95" y1="380" x2="130" y2="440" stroke="#fff" stroke-width="0.5" opacity=".6"/>
+    <line x1="130" y1="440" x2="80" y2="480" stroke="#fff" stroke-width="0.5" opacity=".6"/>
+    <line x1="60" y1="420" x2="40" y2="460" stroke="#fff" stroke-width="0.5" opacity=".6"/>
+    <line x1="95" y1="380" x2="150" y2="390" stroke="#fff" stroke-width="0.5" opacity=".5"/>
+    <circle cx="620" cy="80" r="1.5" fill="#fff"/><circle cx="660" cy="120" r="1.8" fill="#fff"/>
+    <circle cx="700" cy="90" r="1.2" fill="#fff"/><circle cx="680" cy="160" r="1.5" fill="#fff"/>
+    <circle cx="740" cy="130" r="1" fill="#fff"/>
+    <line x1="620" y1="80" x2="660" y2="120" stroke="#fff" stroke-width="0.5" opacity=".5"/>
+    <line x1="660" y1="120" x2="700" y2="90" stroke="#fff" stroke-width="0.5" opacity=".5"/>
+    <line x1="700" y1="90" x2="740" y2="130" stroke="#fff" stroke-width="0.5" opacity=".5"/>
+    <line x1="660" y1="120" x2="680" y2="160" stroke="#fff" stroke-width="0.5" opacity=".4"/>
+    <circle cx="350" cy="200" r="1.2" fill="#fff"/><circle cx="400" cy="170" r="1.5" fill="#fff"/>
+    <circle cx="420" cy="230" r="1" fill="#fff"/><circle cx="380" cy="260" r="1.8" fill="#fff"/>
+    <line x1="350" y1="200" x2="400" y2="170" stroke="#fff" stroke-width="0.5" opacity=".4"/>
+    <line x1="400" y1="170" x2="420" y2="230" stroke="#fff" stroke-width="0.5" opacity=".4"/>
+    <line x1="420" y1="230" x2="380" y2="260" stroke="#fff" stroke-width="0.5" opacity=".4"/>
+    <line x1="380" y1="260" x2="350" y2="200" stroke="#fff" stroke-width="0.5" opacity=".3"/>
+  </svg>
+  <!-- mandala decoration -->
+  <svg class="mandala" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+    <circle cx="100" cy="100" r="90" stroke="#fff" stroke-width="0.5" opacity=".4"/>
+    <circle cx="100" cy="100" r="70" stroke="#fff" stroke-width="0.4" opacity=".3"/>
+    <circle cx="100" cy="100" r="50" stroke="#fff" stroke-width="0.3" opacity=".25"/>
+    <circle cx="100" cy="30" r="4" fill="#fff" opacity=".5"/>
+    <circle cx="100" cy="170" r="3" fill="#fff" opacity=".35"/>
+    <circle cx="30" cy="100" r="3" fill="#fff" opacity=".35"/>
+    <circle cx="170" cy="100" r="3" fill="#fff" opacity=".35"/>
+    <path d="M100 15 Q108 30 100 45 Q92 30 100 15Z" fill="#fff" opacity=".3"/>
+    <path d="M60 60 A56 56 0 0 1 140 60" stroke="#fff" stroke-width="0.4" fill="none" opacity=".25"/>
+  </svg>
   <svg class="kundli-bg" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-    <rect x="20" y="20" width="360" height="360" stroke="#E4B04A" stroke-width="1.4" opacity=".9"/>
-    <path d="M20 20 L380 380 M380 20 L20 380" stroke="#E4B04A" stroke-width="1.2" opacity=".8"/>
-    <path d="M200 20 L380 200 L200 380 L20 200 Z" stroke="#E4B04A" stroke-width="1.4" opacity=".9"/>
-    <circle cx="200" cy="110" r="3" fill="#E4B04A"/><circle cx="290" cy="200" r="3" fill="#E4B04A"/>
-    <circle cx="110" cy="200" r="3" fill="#E4B04A"/><circle cx="200" cy="290" r="3" fill="#E4B04A"/>
+    <rect x="20" y="20" width="360" height="360" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+    <path d="M20 20 L380 380 M380 20 L20 380" stroke="#fff" stroke-width="1.2" opacity=".8"/>
+    <path d="M200 20 L380 200 L200 380 L20 200 Z" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+    <circle cx="200" cy="110" r="3" fill="#fff"/><circle cx="290" cy="200" r="3" fill="#fff"/>
+    <circle cx="110" cy="200" r="3" fill="#fff"/><circle cx="200" cy="290" r="3" fill="#fff"/>
+  </svg>
+  <!-- crescent moon -->
+  <svg class="hero-moon" viewBox="0 0 60 60" aria-hidden="true">
+    <defs><mask id="cmoon"><rect width="60" height="60" fill="#fff"/><circle cx="37" cy="24" r="17" fill="#000"/></mask></defs>
+    <circle cx="30" cy="30" r="20" fill="#fff" mask="url(#cmoon)"/>
+    <circle cx="30" cy="30" r="23" stroke="#fff" stroke-width=".5" opacity=".15" fill="none"/>
+  </svg>
+  <!-- saturn -->
+  <svg class="hero-saturn" viewBox="0 0 70 50" fill="none" aria-hidden="true">
+    <circle cx="35" cy="25" r="9" fill="#fff" opacity=".9"/>
+    <ellipse cx="35" cy="25" rx="22" ry="6" stroke="#fff" stroke-width="1.5" opacity=".7" fill="none" transform="rotate(-20 35 25)"/>
+  </svg>
+  <!-- jupiter -->
+  <svg class="hero-jupiter" viewBox="0 0 50 50" fill="none" aria-hidden="true">
+    <circle cx="25" cy="25" r="11" fill="#fff" opacity=".75"/>
+    <line x1="14" y1="20" x2="36" y2="20" stroke="rgba(6,4,15,.4)" stroke-width=".8"/>
+    <line x1="15" y1="25" x2="35" y2="25" stroke="rgba(6,4,15,.3)" stroke-width="1"/>
+    <line x1="16" y1="30" x2="34" y2="30" stroke="rgba(6,4,15,.4)" stroke-width=".7"/>
+    <circle cx="30" cy="23" r="2.5" fill="rgba(6,4,15,.15)"/>
+  </svg>
+  <!-- mars -->
+  <svg class="hero-mars" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+    <circle cx="15" cy="15" r="5" fill="#E4B04A" opacity=".6"/>
+    <circle cx="15" cy="15" r="6" stroke="#E4B04A" stroke-width=".4" opacity=".3" fill="none"/>
   </svg>
   <div class="wrap">
     <div class="brand">
@@ -344,19 +566,10 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
 
-    <p class="eyebrow">Life Blueprint Report</p>
-    <h1>Your Birth Chart Tells<br><em>a Story About You</em></h1>
-    <p class="sub">Personality. Career. Strengths.<br>Life Patterns.</p>
+    <h1>Create Your Birth Chart<br><em>with AI in 2 minutes</em></h1>
+    <p class="sub">Life Blueprint Report</p>
     <form class="form-card" id="kundliForm" autocomplete="on">
-      <p class="fc-title">Enter your birth details 👇</p>
-      <div class="field">
-        <label for="f-name">Name</label>
-        <input id="f-name" type="text" placeholder="Your name" required>
-      </div>
-      <div class="field">
-        <label for="f-gender">You are</label>
-        <select id="f-gender" required aria-label="You are"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
-      </div>
+      <p class="fc-title">Enter your birth details to get started</p>
       <div class="field">
         <label>Date of birth</label>
         <div class="dob-row">
@@ -367,7 +580,7 @@ fbq('track', 'PageView');
       </div>
       <div class="field" id="tobField">
         <label for="f-tob">Time of birth</label>
-        <div class="tob3"><select id="f-hh" aria-label="Hour"></select><input id="f-mm2" type="number" inputmode="numeric" min="0" max="59" placeholder="Min" aria-label="Minute" style="width:52px;text-align:center;-moz-appearance:textfield" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)"><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
+        <div class="tob3"><select id="f-hh" aria-label="Hour"></select><input id="f-mm2" type="number" inputmode="numeric" min="0" max="59" placeholder="Min" aria-label="Minute" style="text-align:center;-moz-appearance:textfield" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)"><select id="f-ap" aria-label="AM/PM"></select></div><input id="f-tob" type="hidden">
       </div>
       <div class="field" id="tobApprox" hidden>
         <label for="f-approx">Approximate time</label>
@@ -383,19 +596,27 @@ fbq('track', 'PageView');
       </div>
       <label class="tob-toggle">
         <input type="checkbox" id="unknownTime">
-        <span><b>Don't know your exact birth time?</b> No problem — most people don't. We work with an approximate time. <span class="spec">It's our specialty.</span></span>
+        <span>Not sure of your exact Birth Time?</span>
       </label>
       <div class="field">
         <label for="f-place">Place of birth</label>
-        <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint"></div>
+        <input id="f-place" type="text" placeholder="City, State" autocomplete="off" required><div id="f-place-list" class="city-suggest"></div><div id="f-place-hint" class="field-hint" style="min-height:0"></div>
+      </div>
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input id="f-name" type="text" placeholder="Your name" required>
+      </div>
+      <div class="field">
+        <label for="f-gender">Gender</label>
+        <select id="f-gender" required aria-label="Gender"><option value="" disabled selected hidden>Select…</option><option value="male">Male</option><option value="female">Female</option></select>
       </div>
       <div class="field">
         <label for="f-whatsapp">WhatsApp number</label>
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
-        <div style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">Your report is sent here as a PDF — make sure it's your WhatsApp number.</div>
+        <div style="font-size:12px;color:#bbb;margin-top:5px;line-height:1.4">We will deliver your PDF report on this number</div>
       </div>
-      <button class="btn" type="submit">Check my chart — FREE</button>
-      <p class="btn-note">Free · No card needed · Takes 2 minutes</p>
+      <button class="btn" type="submit">Create My Birth Chart — Free</button>
+      <p class="btn-note">Chart is free · Full report ₹499 · No card needed now</p>
     </form>
   </div>
 </header>
@@ -404,10 +625,9 @@ fbq('track', 'PageView');
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li><span class="dot"></span><b>NASA-grade ephemeris</b> precision</li>
-      <li><span class="dot"></span><b>No account</b> needed</li>
-      <li><span class="dot"></span>Report in <b>2 minutes</b></li>
+      <li><span class="dot"></span>Calculated using <b>JPL Astronomical Ephemeris</b> Data</li>
       <li><span class="dot"></span>Built by <b>IIT–IIM alumni</b></li>
+      <li><span class="dot"></span>Report delivered on <b>Screen</b></li>
     </ul>
   </div>
 </div>
@@ -438,16 +658,8 @@ fbq('track', 'PageView');
       </div>
     </div>
 
-    <!-- About You -->
-    <div class="ps-pcard">
-      <div class="ps-plabel">About You</div>
-      <div class="ps-snap">
-        <div class="c"><div class="k">Rising sign</div><div class="v" id="tv-lagna">—</div></div>
-        <div class="c"><div class="k">Moon sign</div><div class="v" id="tv-moon">—</div></div>
-        <div class="c"><div class="k">Nakshatra</div><div class="v" id="tv-nak">—</div></div>
-      </div>
-      <div class="ps-persona" id="tv-persona"></div>
-    </div>
+    <!-- About You (data rendered inside Who You Are preview card) -->
+    <div id="tv-lagna" hidden></div><div id="tv-moon" hidden></div><div id="tv-nak" hidden></div>
 
     <!-- Life Wheel -->
     <div class="ps-pcard">
@@ -461,7 +673,7 @@ fbq('track', 'PageView');
         </div>
       </div>
       <div class="ps-standout" id="tv-standout"></div>
-      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">Get Details for &#8377;499</button></div>
+      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">Unlock — <s>&#8377;999</s> &#8377;499</button></div>
     </div>
 
     <!-- Current phase -->
@@ -477,6 +689,9 @@ fbq('track', 'PageView');
       </div>
     </div>
 
+    <!-- Blurred preview cards (injected by JS) -->
+    <div id="tv-preview"></div>
+
     <!-- Locked questions + CTA + social proof (injected by JS) -->
     <div id="tv-locked"></div>
 
@@ -490,7 +705,7 @@ fbq('track', 'PageView');
       <h2>You're in good company</h2>
     </div>
     <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">15,058</div><div class="c">reports generated</div></div>
       <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
     </div>
   </div>
@@ -505,7 +720,7 @@ fbq('track', 'PageView');
     </div>
     <div class="block">
       <h3>Not a generic horoscope. Your chart, decoded.</h3>
-      <p>Newspaper horoscopes are the same for millions of people. This report is built from your exact birth chart — NASA-grade ephemeris data, Lahiri ayanamsa. Your lagna, your moon nakshatra, your dasha phases — all yours, no one else's. Same chart, same answer, every time.</p>
+      <p>Newspaper horoscopes are the same for millions of people. This report is built from your exact birth chart — JPL astronomical ephemeris data, Lahiri ayanamsa. Your lagna, your moon nakshatra, your dasha phases — all yours, no one else's. Same chart, same answer, every time.</p>
     </div>
     <div class="block gold">
       <h3>We don't just tell you nice things.</h3>
@@ -523,9 +738,8 @@ fbq('track', 'PageView');
 <section class="rectify">
   <div class="wrap">
     <p class="eyebrow">Birth time problem?</p>
-    <h2>Don't know your exact birth time?<br><em>The report still works.</em></h2>
-    <p class="stat">30–40%</p>
-    <p class="stat-cap">of people don't know their exact birth time</p>
+    <h2>Don't know your exact birth time? <em>This is exactly our specialty.</em></h2>
+    <p class="stat-cap">30–40% of people don't know their exact birth time</p>
     <p>For charts like these we use the classical Chandra Lagna method — a Moon-based reading, fully traditional. You still get personality, phases and roadmap; an exact time just adds lagna-based precision on top.</p>
   </div>
 </section>
@@ -544,7 +758,7 @@ fbq('track', 'PageView');
       <div class="a">No. Every line comes from your chart's actual positions — your lagna, your planets' dignity, your dasha dates. Two different people get two different reports. The report shows your chart too, so you can verify it.</div>
     </details>
     <details><summary>Why might this differ from what another astrologer told me?</summary>
-      <div class="a">Different practitioners sometimes use different ayanamsa settings or manual shortcuts. We use NASA-grade ephemeris data and the standard Lahiri ayanamsa, and show the chart behind every reading — so you (or anyone you trust) can check it line by line.</div>
+      <div class="a">Different practitioners sometimes use different ayanamsa settings or manual shortcuts. We use JPL astronomical ephemeris data and the standard Lahiri ayanamsa, and show the chart behind every reading — so you (or anyone you trust) can check it line by line.</div>
     </details>
     <details><summary>I don't know my birth time. Can I still get a report?</summary>
       <div class="a">Yes — via the Chandra Lagna (Moon-based) method, the classical-text standard for an approximate time. The report clearly states which method was used.</div>
@@ -564,35 +778,38 @@ fbq('track', 'PageView');
 <!-- ============ FINAL CTA ============ -->
 <section class="final">
   <div class="wrap">
-    <h2>Know your next phase<br><em>before it arrives.</em></h2>
-    <a class="btn" href="#kundliForm">Check my chart — FREE</a>
+    <h2>See the chapter<br><em>you are in.</em></h2>
+    <a class="btn" href="#kundliForm">Create My Birth Chart — Free</a>
   </div>
 </section>
 
 <footer>
-  <b>Axtroshastra</b> · Computational Vedic Astrology · by Cultnuts<br>
-  <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> · <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br>
-  <a href="/about" style="color:#B9BBD0">About Us</a> · <a href="/privacy" style="color:#B9BBD0">Privacy</a> · <a href="/terms" style="color:#B9BBD0">Terms</a> · <a href="/blog" style="color:#B9BBD0">Blog</a><br>
-  Reports are probability estimates from classical Jyotish principles, not guarantees.
+  <b>Axtroshastra</b> | Computational Vedic Astrology<br><br>
+  <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> | <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br><br>
+  <a href="/about" style="color:rgba(255,255,255,.7);text-decoration:none">About Us</a> | <a href="/privacy" style="color:rgba(255,255,255,.7);text-decoration:none">Privacy Policy</a> | <a href="/terms" style="color:rgba(255,255,255,.7);text-decoration:none">Terms of use</a> | <a href="/blog" style="color:rgba(255,255,255,.7);text-decoration:none">Blog</a><br><br>
+  Managed by ACubeD Global<br><br>
+  Address: CSP 2518, DLF Capital Greens, Delhi - 110015<br><br>
+  Reports are probability estimates from classical Jyotish principles, not guarantees.<br><br>
+  <small style="opacity:.7;line-height:1.6"><b>Disclaimer:</b> Axtroshastra provides computer-generated astrology reports based on classical Vedic Jyotish principles and planetary positions. Reports are provided for informational, cultural and entertainment purposes only and do not constitute professional advice, including medical, legal, financial, investment, employment or matrimonial advice. Astrological interpretations, scores and timing windows are not guarantees or scientific predictions of future events. Users should exercise their own judgment and consult qualified professionals where appropriate. To the extent permitted by applicable law, Axtroshastra and its operators are not responsible for decisions or outcomes resulting from reliance on report content.</small>
 </footer>
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
-    <p class="l1">Life Blueprint Report</p>
+    <p class="l1">Your Personalised Birth Chart</p>
     <p class="l2" id="stickyPricing" hidden><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b></p>
   </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Check FREE</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn">Create My Birth Chart — Free</a>
 </div>
 
 
 <!-- ============ ANALYZING OVERLAY (square kundli, consistent with other forms) ============ -->
 <div class="ax-analyzing" id="axAnalyzing" role="status" aria-live="polite" aria-hidden="true">
-  <svg class="ksq" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect x="6" y="6" width="88" height="88" stroke="#E4B04A" stroke-width="2"/><path d="M6 6 L94 94 M94 6 L6 94" stroke="#E4B04A" stroke-width="1.5"/><path d="M50 6 L94 50 L50 94 L6 50 Z" stroke="#E4B04A" stroke-width="2"/></svg>
+  <svg class="ksq" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect x="6" y="6" width="88" height="88" stroke="#fff" stroke-width="2"/><path d="M6 6 L94 94 M94 6 L6 94" stroke="#fff" stroke-width="1.5"/><path d="M50 6 L94 50 L50 94 L6 50 Z" stroke="#fff" stroke-width="2"/></svg>
   <h3>Reading your chart…</h3>
   <p class="step" id="axStep"></p>
   <div class="bar"><i></i></div>
-  <p class="cap">NASA-grade ephemeris · Vimshottari dasha · Lahiri ayanamsa</p>
+  <p class="cap">JPL astronomical ephemeris · Vimshottari dasha · Lahiri ayanamsa</p>
 </div>
 
 <script>
@@ -710,14 +927,14 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     REPORT_ID = data.report_id;
     AX_CONTACT = {phone: waPhone, email: null};
     try{ sessionStorage.setItem('axtro_contact', JSON.stringify(AX_CONTACT)); }catch(e){}
-    renderTeaser(data.teaser);
+    await renderTeaser(data.teaser);
     if(window.fbq) fbq('track','Lead',{},{eventID:REPORT_ID});
     if(window.gtag) gtag('event','generate_lead',{method:'kundli_teaser'});
   }catch(err){
     alert(err.message + ' — please try again.');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'Check my chart — FREE'; btn.disabled = false;
+    btn.textContent = 'Create My Birth Chart — Free'; btn.disabled = false;
   }
 });
 
@@ -841,7 +1058,7 @@ function tvStandout(wheel){
   return parts.join(' ') || 'Your chart shows a balanced spread across all areas.';
 }
 
-function renderTeaser(t){
+async function renderTeaser(t){
   var fullName = (document.getElementById('f-name').value || '').trim();
   var firstName = fullName.split(/\s+/)[0] || 'You';
   var months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -850,39 +1067,30 @@ function renderTeaser(t){
   var place = (document.getElementById('f-place').value || '').trim();
   var today = new Date();
   var dateStr = today.getDate() + ' ' + months[today.getMonth()+1] + ' ' + today.getFullYear();
-
-  // Tag line (injected)
-  document.getElementById('tv-tag').innerHTML = '<p class="ps-tag">Free preview — a real glimpse of your paid report, computed from your own birth chart.</p>';
-
-  // Cover card (injected — not in static HTML)
   var lockSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  var credSvgs = ['<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>','<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'];
+  var mc = await fetch('/static/tv-jeevan.json').then(function(r){ return r.json(); });
+
+  // Tag line
+  document.getElementById('tv-tag').innerHTML = '<p class="ps-tag">'+mc.tag+'</p>';
+
+  // Cover card
   document.getElementById('tv-cover').innerHTML =
     '<div class="ps-cover">' +
-      '<div class="ps-cv-brand">Axtroshastra</div>' +
-      '<div class="ps-cv-title">Your Life Blueprint</div>' +
-      '<div class="ps-cv-sub">Your Chart. Your Story. Your Next Chapter.</div>' +
+      '<div class="ps-cv-brand">'+mc.cover.brand+'</div>' +
+      '<div class="ps-cv-title">'+mc.cover.title+'</div>' +
+      '<div class="ps-cv-sub">'+mc.cover.sub+'</div>' +
       '<div class="ps-cv-rule"></div>' +
       '<div class="ps-cv-name">' + (fullName || 'You') + '</div>' +
       '<div class="ps-cv-dob">' + dobDisplay.trim() + (place ? ' · ' + place : '') + '</div>' +
-      '<div class="ps-cv-qlabel">This report answers:</div>' +
-      '<ol class="ps-cv-qlist">' +
-        '<li><span class="qn">1</span> Are your best years still ahead of you?</li>' +
-        '<li><span class="qn">2</span> When is your next major turning point?</li>' +
-        '<li><span class="qn">3</span> Will you finally find the right direction in life?</li>' +
-        '<li><span class="qn">4</span> Will you find lasting happiness in your relationships?</li>' +
-        '<li><span class="qn">5</span> Will you achieve the financial security you want?</li>' +
-      '</ol>' +
-      '<div style="text-align:center;margin:18px 0 8px"><a class="ps-cta ps-cta-ghost" href="#tv-locked" onclick="document.getElementById(\'tv-locked\').scrollIntoView({behavior:\'smooth\'});return false;">Unlock Answers</a></div>' +
-      '<div class="ps-cv-date">Report prepared ' + dateStr + '</div>' +
+      '<div class="ps-cv-qlabel">'+mc.cover.qlabel+'</div>' +
+      '<ol class="ps-cv-qlist">'+mc.cover.questions.map(function(q,i){return '<li><span class="qn">'+(i+1)+'</span> '+q+'</li>';}).join('')+'</ol>' +
+      '<div class="ps-cv-date">'+mc.cover.datePrefix+' ' + dateStr + '</div>' +
     '</div>';
 
-  // Trust strip (injected)
+  // Trust strip
   document.getElementById('tv-trust').innerHTML =
-    '<div class="ps-trust">' +
-      '<div class="ps-trust-stat"><div class="tn">25,000+</div><div class="tl">Reports</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">4.8 ★</div><div class="tl">Avg Rating</div></div>' +
-      '<div class="ps-trust-stat"><div class="tn">2 min</div><div class="tl">Delivery</div></div>' +
-    '</div>';
+    '<div class="ps-trust">'+mc.trust.map(function(s){return '<div class="ps-trust-stat"><div class="tn">'+s.n+'</div><div class="tl">'+s.l+'</div></div>';}).join('')+'</div>';
 
   // Kundli SVG
   var kundliWrap = document.getElementById('tv-kundli');
@@ -897,19 +1105,7 @@ function renderTeaser(t){
   // Mahadasha bar
   document.getElementById('tv-md').textContent = t.current_dasha || '—';
 
-  // About You — snapshot
-  document.getElementById('tv-lagna').textContent = t.lagna_en || '—';
-  document.getElementById('tv-moon').textContent = t.moon_sign_en + ' (' + t.moon_sign + ')';
-  document.getElementById('tv-nak').textContent = t.nakshatra + ' — Pada ' + t.pada;
-
-  // Persona lines
-  var personaEl = document.getElementById('tv-persona');
-  if(personaEl){
-    var html = '';
-    if(t.lagna_line) html += '<div class="ps-persona-line"><b>Rising sign:</b> ' + t.lagna_line + '</div>';
-    if(t.moon_line) html += '<div class="ps-persona-line"><b>Moon sign:</b> ' + t.moon_line + '</div>';
-    personaEl.innerHTML = html;
-  }
+  // About You — snapshot (hidden; data shown in Who You Are preview card)
 
   // Life Wheel
   var adLord = t.cur_ad_lord ? ('Antardasha of ' + t.cur_ad_lord) : '';
@@ -922,38 +1118,114 @@ function renderTeaser(t){
   // Current phase
   document.getElementById('tv-phase').textContent = t.current_dasha || '—';
 
-  // Locked questions + CTA + social proof (injected)
+  // Blurred preview cards
+  var prevEl = document.getElementById('tv-preview');
+  if(prevEl && t.preview_phases){
+    var areaConf = [
+      {key:'career', num:'2', title:'Your Career', icon:'compass'},
+      {key:'money', num:'3', title:'Your Finances', icon:'coins'},
+      {key:'marriage', num:'4', title:'Your Relationships', icon:'people'}
+    ];
+    var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    var alertSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 9v4"/><circle cx="12" cy="16.5" r=".5" fill="currentColor"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    var clockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+    var blurTexts = [
+      'A stretch where decisions in this area tend to work out steadily and consistently.',
+      'A window with real momentum for growth, a good time to push forward with confidence.',
+      'A period that calls for a bit more patience and careful attention to important choices.',
+      'A quieter stretch for this area, steady background progress rather than a big shift.'
+    ];
+    var userSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">A glimpse of your 10-part report</div>' +
+      '<p>Each section covers one area of your life, with specific dates and actionable guidance.</p></div>';
+    // Who You Are card — personality section (no timeline, uses persona traits)
+    var whoTraits = [];
+    if(t.lagna_line) whoTraits.push('<div class="ps-prev-trait"><b>Rising sign:</b> ' + t.lagna_line + '</div>');
+    if(t.moon_line) whoTraits.push('<div class="ps-prev-trait"><b>Moon sign:</b> ' + t.moon_line + '</div>');
+    if(t.nak_nature) whoTraits.push('<div class="ps-prev-trait"><b>' + t.nakshatra + ' nakshatra:</b> ' + t.nak_nature + '</div>');
+    prevHtml += '<div class="ps-prev">' +
+      '<div class="ps-prev-eyebrow">Section 1</div>' +
+      '<div class="ps-prev-title">What your Chart says about you</div>' +
+      '<div style="margin-bottom:14px">' + whoTraits.join('') + '</div>' +
+      '<div class="ps-prev-dw" style="background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px;margin-bottom:16px"><h4 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px;color:var(--pgold)">'+userSvg+' Personality deep-dive</h4><div class="ps-prev-dw-lines-visible">Your core nature, temperament, and the lens through which you approach every decision. How others perceive you vs. who you really are inside.</div></div>' +
+      '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' Unlock — <s>₹999</s> ₹499</div>' +
+    '</div>';
+    areaConf.forEach(function(ac){
+      var phases = t.preview_phases[ac.key] || [];
+      var wheelTag = (t.wheel || {})[ac.key] || 'building';
+      var verdictCls = wheelTag;
+      var verdictLabel = wheelTag.charAt(0).toUpperCase() + wheelTag.slice(1);
+      var verdictSvgStr = wheelTag === 'thriving' ? checkSvg : (wheelTag === 'watch' ? alertSvg : clockSvg);
+      var tlHtml = '';
+      phases.forEach(function(ph, pi){
+        var isBeyond = ph.beyond;
+        var kindCls = ph.kind;
+        var tagLabel = ph.kind.charAt(0).toUpperCase() + ph.kind.slice(1);
+        if(isBeyond){
+          tlHtml += '<div class="ps-prev-tl-row beyond">' +
+            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">Further ahead</span>' +
+            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
+            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
+        } else {
+          var rowLabel = pi === 0 ? 'Current period' : 'Next period';
+          tlHtml += '<div class="ps-prev-tl-row '+kindCls+'">' +
+            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">'+rowLabel+'</span>' +
+            '<span class="ps-prev-tl-dates">'+ph.start+' – '+ph.end+'</span>' +
+            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
+            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
+        }
+      });
+      prevHtml += '<div class="ps-prev">' +
+        '<div class="ps-prev-eyebrow">Section '+ac.num+'</div>' +
+        '<div class="ps-prev-title">'+ac.title+'</div>' +
+        '<div class="ps-prev-timeline">'+tlHtml+'</div>' +
+        '<div class="ps-prev-dowatch">' +
+          '<div class="ps-prev-dw do"><h4>'+checkSvg+' Do</h4><div class="ps-prev-dw-lines">Keep sharpening the skills that already bring you results. Invest in relationships and networks that open doors.</div></div>' +
+          '<div class="ps-prev-dw wt"><h4>'+alertSvg+' Watch</h4><div class="ps-prev-dw-lines">Avoid rushing decisions during this period. Check your direction periodically instead of coasting.</div></div>' +
+        '</div>' +
+        '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' Unlock — <s>₹999</s> ₹499</div>' +
+      '</div>';
+    });
+    prevHtml += '<div class="ps-prev-also"><div class="ps-prev-also-head">Your report also covers:</div>' +
+      '<div class="ps-prev-also-grid">' +
+        '<span>'+lockSvg+' Children &amp; Family Planning</span>' +
+        '<span>'+lockSvg+' Home &amp; Property</span>' +
+        '<span>'+lockSvg+' Travel &amp; Foreign Connections</span>' +
+        '<span>'+lockSvg+' Health &amp; Energy</span>' +
+        '<span>'+lockSvg+' Personal Growth</span>' +
+        '<span>'+lockSvg+' Parents &amp; Siblings</span>' +
+        '<span>'+lockSvg+' Timing &amp; Turning Points</span>' +
+      '</div></div>' +
+    '<div class="ps-prev-cta-block">' +
+      '<div class="ps-prev-cta-em">Each section with your dates. Each with action items.</div>' +
+      '<button class="ps-cta" type="button" onclick="startPayment()">Unlock — <s>₹999</s> ₹499</button>' +
+    '</div>';
+    prevEl.innerHTML = prevHtml;
+  }
+
+  // Locked questions + CTA + social proof
+  var lqHtml = mc.locked.questions.map(function(item){
+    return '<div class="ps-lq"><div class="ps-lq-icon">'+lockSvg+'</div><div class="ps-lq-text"><div class="qt">'+item.q+'</div><div class="qd">'+item.d+'</div></div></div>';
+  }).join('');
+  var alsoHtml = '';
+  var reviewsHtml = mc.proof.reviews.map(function(r){
+    return '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">'+r.text+'</div><div class="ps-proof-who">'+r.who+'</div></div>';
+  }).join('');
+  var credsHtml = mc.proof.creds.map(function(c,i){
+    return '<div class="ps-cred-badge">'+credSvgs[i]+' '+c+'</div>';
+  }).join('');
   document.getElementById('tv-locked').innerHTML =
     '<div class="ps-locked">' +
-      '<div class="ps-locked-heading">Your full report also answers…</div>' +
-      '<div class="ps-locked-sub">Locked — unlock with your complete Life Blueprint</div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">When will your next big career shift happen?</div><div class="qd">Dasha windows for promotion, role change or new direction.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Is marriage or a serious relationship near?</div><div class="qd">Venus, 7th house and navamsa timing decoded.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">Will you build lasting wealth?</div><div class="qd">2nd &amp; 11th house strength, dhana yogas, peak earning years.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">What hidden strengths does your chart reveal?</div><div class="qd">Raja yogas, special combinations only your chart carries.</div></div></div>' +
-      '<div class="ps-lq"><div class="ps-lq-icon">' + lockSvg + '</div><div class="ps-lq-text"><div class="qt">What should you watch out for in the next 2 years?</div><div class="qd">Challenging transits and practical remedies to navigate them.</div></div></div>' +
-      '<div class="ps-also-grid">' +
-        '<div class="ps-also-box">' + lockSvg + ' Energy &amp; Vitality</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Family &amp; Happiness</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Home &amp; Property</div>' +
-        '<div class="ps-also-box">' + lockSvg + ' Wealth &amp; Prosperity</div>' +
-      '</div>' +
+      '<div class="ps-locked-heading">'+mc.locked.heading+'</div>' +
+      '<div class="ps-locked-sub">'+mc.locked.sub+'</div>' +
+      lqHtml +
       '<div style="text-align:center;margin-top:22px">' +
-        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock My Complete Life Blueprint — <s>₹999</s> ₹499</button>' +
-        '<div class="ps-subnote2">Personalised using your exact birth details</div>' +
+        '<button class="ps-cta" id="unlockBtn" type="button" onclick="startPayment()">Unlock — <s>₹999</s> ₹499</button>' +
       '</div>' +
       '<div class="ps-proof">' +
-        '<div class="ps-proof-h">What others are saying</div>' +
-        '<div class="ps-proof-list">' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">The timing section was eerily accurate. I was already thinking about a big move and this gave me the exact year to watch for.</div><div class="ps-proof-who">Priya, 31 · Marketing Manager</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">Showed it to my mom and she said the personality part was spot on. 499 for something this detailed is nothing tbh.</div><div class="ps-proof-who">Rahul, 27</div></div>' +
-          '<div class="ps-proof-item"><div class="ps-proof-stars">★★★★★</div><div class="ps-proof-text">I got the career and marriage reports before, so tried this one too. It connects everything into one picture. Makes way more sense now.</div><div class="ps-proof-who">Sneha, 34 · Chartered Accountant</div></div>' +
-        '</div>' +
-        '<div class="ps-cred-row">' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> NASA JPL Data</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> IIT-IIM Alumni</div>' +
-          '<div class="ps-cred-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A34E" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Payment</div>' +
-        '</div>' +
+        '<div class="ps-proof-h">'+mc.proof.heading+'</div>' +
+        '<div class="ps-proof-list">'+reviewsHtml+'</div>' +
+        '<div class="ps-cred-row">'+credsHtml+'</div>' +
       '</div>' +
     '</div>';
 
@@ -962,7 +1234,7 @@ function renderTeaser(t){
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
   var sb = document.getElementById('stickyBtn');
-  sb.textContent = 'Unlock ₹499'; sb.setAttribute('href', '#teaser');
+  sb.textContent = mc.cta.sticky; sb.setAttribute('href', '#teaser');
   var sp = document.getElementById('stickyPricing'); if(sp) sp.hidden = false;
 }
 
@@ -1109,7 +1381,7 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     return;
   }
   form.scrollIntoView({behavior:'smooth'});
-  var first = document.getElementById('f-name');
+  var first = document.getElementById('f-dd');
   if(first) setTimeout(function(){ try{ first.focus(); }catch(_){}}, 400);
 });
 </script>
@@ -1189,6 +1461,9 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
   opt(hh,"","Hour"); for(var h=1;h<=12;h++) opt(hh,h,h);
   mm.addEventListener("input",function(){var v=parseInt(mm.value,10);if(v>59)mm.value=59;if(v<0)mm.value=0;});
   opt(ap,"","AM/PM"); opt(ap,"AM","AM"); opt(ap,"PM","PM");
+  hh.classList.add('placeholder'); ap.classList.add('placeholder');
+  hh.addEventListener("change",function(){hh.classList.toggle('placeholder',!hh.value)});
+  ap.addEventListener("change",function(){ap.classList.toggle('placeholder',!ap.value)});
   function sync(){var h=hh.value,m=mm.value,a=ap.value; if(h&&m!==""&&a){var mi=parseInt(m,10);if(isNaN(mi)||mi<0||mi>59)return;var pad=(mi<10?"0":"")+mi;var H=parseInt(h,10)%12; if(a==="PM")H+=12; tob.value=(H<10?"0":"")+H+":"+pad;} else {tob.value="";}}
   hh.addEventListener("change",sync); mm.addEventListener("input",sync); mm.addEventListener("change",sync); ap.addEventListener("change",sync);
 })();
@@ -1216,8 +1491,8 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
     function stop(){ e.preventDefault(); e.stopImmediatePropagation(); }
     var clean=(nm.value||"").replace(/[^\p{L}\p{M}\s.\x27-]/gu,"").replace(/\s+/g," ").trim();
     nm.value=clean;
-    if(!clean){ nameHint.textContent="Please enter your name."; stop(); nm.focus(); return; } nameHint.textContent="";
     if(!dateValid()){ checkDate(); stop(); return; } dobHint.textContent="";
+    if(!clean){ nameHint.textContent="Please enter your name."; stop(); nm.focus(); return; } nameHint.textContent="";
     var h=[nm.value,dd.value,mm.value,yy.value,document.getElementById("f-tob").value,
            document.getElementById("f-approx").value, (document.getElementById("f-place").value||"")].join("~");
     var teaser=document.getElementById("teaser");
@@ -1227,17 +1502,6 @@ document.getElementById('stickyBtn').addEventListener('click', function(e){
 })();
 </script>
 
-<!-- Clear for the time-of-birth selects: their placeholder option is hidden, so a
-     picked hour otherwise can't be un-picked. Resets all three + the hidden value. -->
-<script>
-(function(){
-  var hh=document.getElementById('f-hh'); if(!hh||!hh.parentElement||hh.parentElement.querySelector('.tob-clear')) return;
-  var b=document.createElement('button'); b.type='button'; b.className='tob-clear'; b.textContent='Clear'; b.setAttribute('aria-label','Clear time of birth');
-  b.style.cssText='flex:0 0 auto;padding:0 11px;background:transparent;border:1px solid rgba(58,46,31,.22);border-radius:10px;color:#6B6D82;font-size:12px;font-weight:600;cursor:pointer';
-  hh.parentElement.appendChild(b);
-  b.addEventListener('click',function(){ ['f-hh','f-ap'].forEach(function(id){var s=document.getElementById(id); if(s)s.selectedIndex=0;}); var mi=document.getElementById('f-mm2'); if(mi)mi.value=''; var t=document.getElementById('f-tob'); if(t)t.value=''; hh.dispatchEvent(new Event('change',{bubbles:true})); });
-})();
-</script>
 
 </body>
 </html>

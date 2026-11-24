@@ -163,6 +163,7 @@ _IMPORT_TO_PACKAGE = {
     "xhtml2pdf": "xhtml2pdf",
     "_pytest": "pytest",
     "fitz": "pymupdf",
+    "swisseph": "pyswisseph",   # tests/test_engine_annual.py second-method cross-check
 }
 
 

@@ -1,10 +1,10 @@
-"""X (Twitter) pixel + Conversions API — pixel rf9y2
+"""X (Twitter) pixel + Conversions API — pixel rgvp6
 
 Browser side:
-  * The X pixel base code (uwt.js + twq('config','rf9y2')) is injected into every
+  * The X pixel base code (uwt.js + twq('config','rgvp6')) is injected into every
     served page via api._inject_x_pixel, chained in _inject_tracking.
-  * A funnel bridge wraps window.fbq (same pattern as the LinkedIn bridge) to
-    mirror Lead / InitiateCheckout / Purchase to the matching X event id.
+  * A funnel bridge wraps window.gtag to mirror form_start / generate_lead /
+    begin_checkout / purchase to the matching X event id, with value + INR.
   * The twclid click id is parked in a first-party cookie (ax_twclid) at landing,
     read at /api/order, and forwarded to the server-side Conversions API.
 
@@ -33,13 +33,13 @@ KUNDLI = {"name": "XBuyer", "dob": "1991-08-15", "tob": "10:30",
 def test_pixel_injected_on_bare_page():
     out = api._inject_tracking(BARE_PAGE)
     assert "ads-twitter.com/uwt.js" in out
-    assert "twq('config','rf9y2')" in out
+    assert "twq('config','rgvp6')" in out
 
 
 def test_pixel_injected_on_hardcoded_static_page():
     out = api._inject_tracking(STATIC_PAGE)
     assert "ads-twitter.com/uwt.js" in out
-    assert "twq('config','rf9y2')" in out
+    assert "twq('config','rgvp6')" in out
 
 
 def test_injection_is_idempotent():
@@ -56,20 +56,23 @@ def test_pixel_dormant_when_id_empty(monkeypatch):
 
 # -------------------------------------------------------- browser: funnel bridge
 
-def test_funnel_bridge_maps_all_three_events():
+def test_funnel_bridge_maps_all_four_events():
     out = api._inject_tracking(BARE_PAGE)
-    conv = json.loads(out.split("var CONV = ")[1].split(";\n")[0])
+    conv = json.loads(out.split("var XEV = ")[1].split(";\n")[0])
     assert conv == {
-        "Lead": "tw-rf9y2-rgqp0",
-        "InitiateCheckout": "tw-rf9y2-rgqow",
-        "Purchase": "tw-rf9y2-rgqob",
+        "form_start": "tw-rgvp6-rix15",
+        "generate_lead": "tw-rgvp6-rix0i",
+        "begin_checkout": "tw-rgvp6-rix0n",
+        "purchase": "tw-rgvp6-rix10",
     }
 
 
-def test_bridge_passes_conversion_id_for_dedup():
+def test_bridge_sends_value_currency_and_dedup_id():
     out = api._inject_tracking(BARE_PAGE)
-    assert "if(cid) p.conversion_id = String(cid)" in out
-    assert "arguments[3] && arguments[3].eventID" in out
+    assert "p.value = 1; p.currency = 'INR'" in out            # lead: flat Rs.1
+    assert "p.value = a.value; p.currency = a.currency || 'INR'" in out
+    assert "p.conversion_id = String(a.transaction_id)" in out
+    assert "__axTw" not in out                                # fbq left native
 
 
 # -------------------------------------------------------- browser: twclid cookie
@@ -100,8 +103,8 @@ def test_twclid_absent_when_no_cookie(client):
 
 def _capture_x(monkeypatch):
     monkeypatch.setattr(tracking, "X_PIXEL_TOKEN", "test-tok")
-    monkeypatch.setattr(tracking, "X_PIXEL_ID", "rf9y2")
-    monkeypatch.setattr(tracking, "X_EVENT_PURCHASE", "tw-rf9y2-rgqob")
+    monkeypatch.setattr(tracking, "X_PIXEL_ID", "rgvp6")
+    monkeypatch.setattr(tracking, "X_EVENT_PURCHASE", "tw-rgvp6-rix10")
     sent = {}
 
     def _fake(url, payload, headers=None):
@@ -118,11 +121,12 @@ def test_capi_payload_matches_x_schema(monkeypatch):
                          twclid="tw-click-999",
                          client_user_agent="Mozilla/5.0", client_ip_address="1.2.3.4")
     p = sent["payload"]
-    assert sent["url"] == "https://ads-api.x.com/12/measurement/conversions/rf9y2"
+    assert sent["url"] == "https://ads-api.x.com/12/measurement/conversions/rgvp6"
     assert sent["headers"]["X-Pixel-Token"] == "test-tok"
     c = p["conversions"][0]
-    assert c["event_id"] == "tw-rf9y2-rgqob"
+    assert c["event_id"] == "tw-rgvp6-rix10"
     assert c["conversion_id"] == "rid-x-42"
+    assert "value" not in c
     assert c["event_source_url"].endswith("/report/rid-x-42")
     ids = c["identifiers"][0]
     assert ids["twclid"] == "tw-click-999"
@@ -131,6 +135,12 @@ def test_capi_payload_matches_x_schema(monkeypatch):
     assert ids["user_agent"] == "Mozilla/5.0"
     expected_phone = hashlib.sha256("+919876543210".encode()).hexdigest()
     assert ids["hashed_phone_number"] == expected_phone
+
+
+def test_capi_sends_value_as_string(monkeypatch):
+    sent = _capture_x(monkeypatch)
+    tracking._x_purchase("rid-val", twclid="t", value=499)
+    assert sent["payload"]["conversions"][0]["value"] == "499.00"
 
 
 def test_capi_dormant_without_token(monkeypatch):

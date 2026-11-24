@@ -679,6 +679,30 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
             d["strengths_infl"] = [x for x in infl if x["kind"] == "benefic"][:3]
             d["challenges_infl"] = [x for x in infl if x["kind"] == "malefic"][:2]
         return d
+
+    def _preview_phases(area_detail):
+        """Merge + cap ad_phases for career/money/marriage into 4 rows max,
+        returning only dates + tags (no text) for the teaser's blurred preview."""
+        CAP = 4
+        out = {}
+        for area in ("career", "money", "marriage"):
+            raw = area_detail[area].get("ad_phases") or []
+            if not raw:
+                out[area] = []
+                continue
+            first = raw[0]
+            merged = [{"start": first["from"], "end": first["to"], "kind": first["kind"]}]
+            for ph in raw[1:]:
+                if len(merged) > 1 and merged[-1]["kind"] == ph["kind"]:
+                    merged[-1]["end"] = ph["to"]
+                else:
+                    merged.append({"start": ph["from"], "end": ph["to"], "kind": ph["kind"]})
+            if len(merged) > CAP:
+                head, tail = merged[:CAP - 1], merged[CAP - 1:]
+                merged = head + [{"start": tail[0]["start"], "end": tail[-1]["end"],
+                                  "kind": tail[0]["kind"], "beyond": True}]
+            out[area] = merged[:CAP]
+        return out
     area_detail = {
         "career": _area_fact(10, tenth_lord),
         "money": _area_fact(2, second_lord),
@@ -727,6 +751,8 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                                         "dignity": p.dignity,
                                         "retro": p.retro}
                                for p in g.values()},
+                   "nak_nature": nakp[1],
+                   "preview_phases": _preview_phases(area_detail),
                    },
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],

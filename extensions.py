@@ -75,3 +75,72 @@ def install(app, ctx):
             return payments.refund(payment_id, amount_paise)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=502)
+
+    @app.get("/api/events-summary")
+    def events_summary(key: str = "", start: str = "", end: str = ""):
+        """Ad-attributed event counts grouped by (date, landing_page, UTMs).
+        Used by ops/twitter_spend/tracker.py to enrich spend data remotely."""
+        if not valid_admin_key(key):
+            raise HTTPException(403, "forbidden")
+        if not start or not end:
+            raise HTTPException(422, "start and end date params required (YYYY-MM-DD)")
+        try:
+            datetime.strptime(start, "%Y-%m-%d")
+            datetime.strptime(end, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(422, "dates must be YYYY-MM-DD")
+
+        import db_v2
+        sql = """\
+            SELECT
+                DATE(e.created_at)                                      AS event_date,
+                SUBSTRING_INDEX(vs.landing_url, '?', 1)                 AS landing_page,
+                vs.utm_source,
+                vs.utm_medium,
+                COALESCE(vs.utm_campaign, '')                            AS utm_campaign,
+                CASE WHEN vs.landing_url LIKE '%%utm_content=%%'
+                    THEN SUBSTRING_INDEX(SUBSTRING_INDEX(vs.landing_url, 'utm_content=', -1), '&', 1)
+                    ELSE ''
+                END                                                      AS utm_content,
+                SUM(e.event_name = 'page_view')                         AS page_views,
+                SUM(e.event_name = 'form_start')                        AS form_starts,
+                SUM(e.event_name = 'generate_lead')                     AS leads,
+                SUM(e.event_name = 'purchase' AND e.is_free_unlock = 0) AS purchases,
+                COALESCE(SUM(CASE
+                    WHEN e.event_name = 'purchase' AND e.is_free_unlock = 0
+                    THEN COALESCE(e.value_paise, 0) ELSE 0
+                END), 0) / 100.0                                        AS revenue_inr
+            FROM events e
+            JOIN visit_sessions vs ON e.visit_id = vs.visit_id
+            WHERE vs.utm_source IS NOT NULL
+              AND e.created_at >= %s
+              AND e.created_at < %s
+            GROUP BY event_date, landing_page, vs.utm_source, vs.utm_medium,
+                     utm_campaign, utm_content
+        """
+        conn = db_v2.get_conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql, (start, end))
+                rows = cur.fetchall()
+        finally:
+            conn.close()
+
+        return {
+            "rows": [
+                {
+                    "event_date": str(r[0]),
+                    "landing_page": r[1] or "",
+                    "utm_source": r[2] or "",
+                    "utm_medium": r[3] or "",
+                    "utm_campaign": r[4] or "",
+                    "utm_content": r[5] or "",
+                    "page_views": int(r[6]),
+                    "form_starts": int(r[7]),
+                    "leads": int(r[8]),
+                    "purchases": int(r[9]),
+                    "revenue_inr": float(r[10]),
+                }
+                for r in rows
+            ],
+        }

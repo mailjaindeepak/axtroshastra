@@ -7,7 +7,7 @@ Branch `feat/diwali-report` (worktree `/Users/shreyanshjain/Desktop/axtroshastra
 
 ## Owner decisions that override older text anywhere
 - Slug **`/en/diwali`**, file `pages/diwali.html`; legacy `/diwali` → 301 `/en/diwali`. Hindi later.
-- Price **₹499** (`DIWALI_PRICE_PAISE = 49900`), chosen on the server **by product**, stored as `amount_paise`.
+- Price **₹299** (`DIWALI_PRICE_PAISE = 29900`), chosen on the server **by product**, stored as `amount_paise`.
 - **No life-stage input.** Marriage + Family & children = ONE general version that never assumes status (spec §5/§6).
   Marriage = the 5 approved questions + Manglik facts box. Family Q4 = "Which months may bring happy news in your family?"
 - **Self / Gift toggle** (default Self). Gift → optional giver's name + optional message (placeholder example;
@@ -109,7 +109,7 @@ strongest_area, move, words: [3 × {word, line_masked}], emphasis_area, question
 ## Connect contract
 - `KundliIn` gains `work_type`, `steering`, `gift_mode`, `giver_name`, `gift_message` (validated; message length limit, plain text, never sent to AI or ad tracking).
 - `/api/kundli` `product=="diwali"` → `diwali.compute_diwali(...)`, store, return `{report_id, teaser}` only.
-- `_render_for("diwali")` → `diwali_report.render_diwali`. `_order_amount_paise` → 49900 for product diwali.
+- `_render_for("diwali")` → `diwali_report.render_diwali`. `_order_amount_paise` → 29900 for product diwali.
 - Routes `/en/diwali` via `_serve_page_with_nav`, `/diwali` → 301; sitemap; robot list; homepage card + review entries.
 - Narrative: SECTION_SPECS built from `diwali_bank.NARR_KEYS`; 4 group calls in parallel; MAX_TOKENS/TIMEOUT for diwali;
   validate each value with `lint_text` + the existing number/claim guards, drop bad values (bank fills).

@@ -1,4 +1,4 @@
-"""Safety-net tests for the admin dashboard plugin (dashboard/).
+﻿"""Safety-net tests for the admin dashboard plugin (dashboard/).
 
 These prove the plugin is additive: the site keeps working, every /api/admin/*
 route is locked without the key, the endpoints return well-formed JSON with the
@@ -386,7 +386,7 @@ def test_config_has_facebook_pixel_block_without_fabricated_numbers(client):
     cfg = client.get(f"/api/admin/config?key={KEY}").json()["config"]
     fp = cfg["facebook_pixel"]
     # the real site pixel id is carried through
-    assert fp["pixel_id"] == "1498790608627206"
+    assert fp["pixel_id"] == "1133766182500475"
     assert fp["events_manager_url"].endswith(fp["pixel_id"])
     # NOT connected -> every event count is null and the series is empty
     assert fp.get("connected") is False
@@ -766,6 +766,40 @@ def test_robot_cleanup_execute(client):
     d = r.json()
     assert d["dry_run"] is False
     assert d["deleted"] >= 1
+    import db_v2
+    conn = db_v2.get_conn()
+    try:
+        assert db_v2.get_report(conn, rid) is None      # the robot's report is gone
+    finally:
+        conn.close()
+
+
+def _report_exists(rid):
+    import db_v2
+    conn = db_v2.get_conn()
+    try:
+        return db_v2.get_report(conn, rid) is not None
+    finally:
+        conn.close()
+
+
+def test_robot_cleanup_rule(client):
+    """Deleted: unpaid 'Smoke …' / 'Test …' previews (the robot's current names).
+    Kept: a paid report with a robot-style name, a real customer, and names that
+    merely start with the same letters (no space after the prefix)."""
+    smoke = _new_report(client, name="Smoke Priya")
+    test_ = _new_report(client, name="Test Meera")
+    paid = _new_report(client, name="Test Rohit")
+    _make_paid(paid, deliver_phone="9877700091", pay_phone="9877700092")
+    real = _new_report(client, name="Asha Verma")
+    lookalike = _new_report(client, name="Tester Singh")
+    r = client.post(f"/api/admin/robot_cleanup?key={KEY}")
+    assert r.status_code == 200
+    assert not _report_exists(smoke)
+    assert not _report_exists(test_)
+    assert _report_exists(paid)
+    assert _report_exists(real)
+    assert _report_exists(lookalike)
 
 
 def test_robot_cleanup_requires_key(client):

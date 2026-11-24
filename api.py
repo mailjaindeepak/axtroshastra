@@ -1,4 +1,4 @@
-"""
+﻿"""
 Axtroshastra API — production wiring.
 
 POST /api/kundli      : compute FULL report server-side, store, return TEASER only
@@ -61,6 +61,8 @@ logger = logging.getLogger("axtroshastra")
 
 app = FastAPI(title="Axtroshastra API", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)   # (#4)
+import mulank_payment, mulank_routes       # Mulank-only payment routes (own verification)
+app.include_router(mulank_routes.router)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ---- ChatGPT / OpenAI Ads (OAIQ) pixel -------------------------------------
@@ -75,7 +77,7 @@ GADS_CHECKOUT_SEND_TO = os.getenv(
     "GADS_CHECKOUT_SEND_TO", "AW-18380046629/2LE5CI7K7JkdEKWCpbxE").strip()
 
 # ---- X (Twitter) pixel -----------------------------------------------------
-X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
+X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rgvp6").strip()
 
 # ---- Meta Pixel, split by domain -------------------------------------------
 # axtroshastra.com and axtroshastra.in serve the same app off one CloudFront
@@ -85,7 +87,7 @@ X_PIXEL_ID = os.getenv("X_PIXEL_ID", "rf9y2").strip()
 # this middleware rewrites it in every HTML response. CloudFront forwards the
 # viewer Host header (Managed-AllViewer) and never caches our HTML (origin
 # sends no Cache-Control), so the swap is per-request safe.
-META_PIXEL_ID_COM = "1498790608627206"
+META_PIXEL_ID_COM = "1133766182500475"
 META_PIXEL_ID_IN = os.getenv("META_PIXEL_ID_IN", "4575834769362738")
 
 
@@ -164,7 +166,10 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "vyapar": "Business Growth Report", "career_growth": "Career Report",
                   "career_intelligence": "Career Intelligence Report",
                   "career_intelligence_v2": "Career Intelligence Report",
-                  "diwali": "Diwali Wealth & Prosperity Report"}
+                  "diwali": "Diwali Wealth & Prosperity Report",
+                  "annual_report": "Annual Report",
+                  "numerology_mulank": "Numerology Report",
+                  "vastu_career": "Vastu Career Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -209,6 +214,15 @@ PRODUCT_SVG = {
     "diwali": _SVG_OPEN + '<path d="M6 21 H26 Q16 28 6 21 Z"/>'
               '<path d="M16 20 C13 16.5 16 14 16 10.5 C16 14 19 16.5 16 20 Z"/>'
               '<path d="M16 4 V6.5 M10 6.5 L11.5 8.5 M22 6.5 L20.5 8.5"/></svg>',
+    # annual_report: a 4-point star inside a circle (New Year, no festival art).
+    "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
+                     '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
+    # vastu career — a compass: ring with a needle.
+    "vastu_career": _SVG_OPEN + '<circle cx="16" cy="16" r="10"/>'
+                    '<path d="M20 12 L17.5 18 L11.5 20.5 L14 14.5 Z"/></svg>',
+    # numerology (Mulank) — a 3x3 grid of numbers, the classic numerology square.
+    "numerology_mulank": _SVG_OPEN + '<rect x="6" y="6" width="20" height="20" rx="3"/>'
+                         '<path d="M12.7 6 V26 M19.3 6 V26 M6 12.7 H26 M6 19.3 H26"/></svg>',
 }
 
 def _display_name(payload: dict) -> str:
@@ -396,6 +410,9 @@ def _render_for(product, payload):
     if product == "iq_test":
         import iq_test_report
         return iq_test_report.render_iq_test(payload)
+    if product == "vastu_career":                # English-only for now; refuses segments whose copy is not approved
+        import vastu_career_report
+        return vastu_career_report.render_vastu_career(payload)
     if product == "career_intelligence":         # English-only premium report
         return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_intelligence_v2":
@@ -403,6 +420,9 @@ def _render_for(product, payload):
     if product == "diwali":                      # English-only (Hindi later)
         import diwali_report
         return diwali_report.render_diwali(payload)
+    if product == "annual_report":               # English-only (Hindi twin later); lazy import
+        import annual_report
+        return annual_report.render_annual(payload)
     if product == "career_growth":
         html = career_growth_report.render_career_growth(payload)
         if (payload.get("meta") or {}).get("lang") == "hi":
@@ -437,7 +457,8 @@ def email_report(to_addr, rid, payload):        # (#7) fire-and-forget; never ra
 RZP_KEY = os.getenv("RAZORPAY_KEY_ID", "")
 RZP_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 RZP_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-DEMO_MODE = os.getenv("DEMO_MODE") == "1"
+import demo_guard
+DEMO_MODE = demo_guard.enforce(os.getenv("DEMO_MODE") == "1")   # forced OFF when this looks like production (live key, public URL, Elastic Beanstalk...)
 STATS_KEY = os.getenv("STATS_KEY", "")    # gates /api/stats and /api/make_pass admin routes
 PRICE_PAISE = 49900                       # ₹499 — server-side only, never trust client
 MILAN_PRICE_PAISE = 24900                 # ₹249 — milan landing price (/milan and /match funnels)
@@ -448,9 +469,17 @@ _MILAN_VARIANTS = ("/milan", "/match", "/en/compatibility", "/hi/compatibility")
 MARRIAGE_V4_PRICE_PAISE = 19900           # ₹199 — marriage-v4 price variant
 LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 IQ_TEST_PRICE_PAISE = 4900                # ₹49 — IQ Test report
-DIWALI_PRICE_PAISE = 49900                # ₹499 — Diwali Wealth & Prosperity Report (by product, never by variant)
+DIWALI_PRICE_PAISE = 29900                # ₹299 — Diwali Wealth & Prosperity Report (by product, never by variant)
+ANNUAL_PRICE_PAISE = 49900                # ₹499 — Annual Report (struck from ₹999 on the page only); by product, never by variant
+VASTU_CAREER_PRICE_PAISE = 9900           # ₹99 — Vastu Career Report ("for now", owner 19 Nov 2026); by product, never by variant
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
+
+
+def _is_mulank_report(rec) -> bool:
+    """Mulank reports are paid ONLY through the dedicated /api/mulank/* flow (amount, currency,
+    captured-status and eligibility are verified there). Every shared path below skips them."""
+    return (rec or {}).get("product") == mulank_payment.PRODUCT
 
 
 def _order_amount_paise(rec: dict) -> int:
@@ -460,8 +489,12 @@ def _order_amount_paise(rec: dict) -> int:
     product = rec.get("product") or payload.get("product") or ""
     if product == "iq_test":
         return IQ_TEST_PRICE_PAISE
+    if product == "vastu_career":             # explicit: never rely on the PRICE_PAISE fall-through
+        return VASTU_CAREER_PRICE_PAISE
     if product == "diwali":
         return DIWALI_PRICE_PAISE
+    if product == "annual_report":            # explicit: never rely on the PRICE_PAISE fall-through
+        return ANNUAL_PRICE_PAISE
     if product == "career_intelligence_v2":
         return CAREER_INTEL_V2_PRICE_PAISE
     if product == "career_intelligence":
@@ -561,7 +594,7 @@ def _generate_narrative_task(rid):
     try:
         rec = get_report(rid)
         if rec:
-            narr = narrative.generate_narrative(rec["payload"])
+            narr = narrative.generate_narrative(rec["payload"])   # annual_report returns {} (no LLM)
             if (rec["payload"] or {}).get("product") == "diwali":
                 # Diwali's progress screen polls /api/report/{rid} until report.narrative
                 # exists. With AI off/failed the bank text IS the final text, so mark the
@@ -570,6 +603,10 @@ def _generate_narrative_task(rid):
                 failed = (narrative.last_generation or {}).get("fallback_groups")
                 if failed:   # bank text shipped for these groups — keep it visible (O-10 4)
                     narr["_fallback"] = ",".join(failed)
+            elif (rec["payload"] or {}).get("product") == "annual_report":
+                # annual: AI prose off, deterministic text is complete; add _generate_annual in narrative.py when wanted.
+                # No LLM call: just mark the text step done so the progress page (polls report.narrative) moves on.
+                narr = {"_ready": "1"}
             save_narrative(rid, narr)
             if narrative.last_generation:
                 try:
@@ -676,6 +713,8 @@ NAV_LINKS_HI = [
 
 def _nav_html(lang: str = "en") -> str:
     links = NAV_LINKS_HI if lang == "hi" else NAV_LINKS
+    if lang != "hi" and os.getenv("NAV_NUMEROLOGY", "") == "1":      # owner-approved nav entry; off unless the owner sets it
+        links = links[:2] + [("Numerology Report", "/en/numerology")] + links[2:]
     menu = "मेन्यू" if lang == "hi" else "Menu"
     items = "".join(
         f'<a href="{href}" class="axs-nav-item">{label}</a>' for label, href in links
@@ -790,7 +829,7 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1498790608627206');
+fbq('init', '1133766182500475');
 fbq('track', 'PageView');
 </script>
 <script type="text/javascript">
@@ -1089,10 +1128,13 @@ def _inject_x_pixel(html: str) -> str:
     """Add the X (Twitter) pixel + funnel bridge + twclid capture. Idempotent:
     skips any page already loading the X UWT SDK. Set X_PIXEL_ID="" to disable.
 
-    The funnel bridge wraps window.fbq (same pattern as the LinkedIn bridge) so
-    every page that already fires Lead / InitiateCheckout / Purchase through Meta
-    automatically fires the matching X conversion — zero per-page edits needed.
-    Purchase also fires server-side via tracking._x_purchase (the reliable path);
+    The funnel bridge wraps window.gtag (like the Google Ads bridge and the
+    beacon), because gtag is the call that carries value/currency on every page:
+    form_start / generate_lead / begin_checkout / purchase fire the matching X
+    event with zero per-page edits. Lead sends a flat Rs.1 (a lead is free; same
+    as the Google Ads lead conversion). It wraps once (closure flag, not a flag
+    on the function) because the beacon re-wraps gtag after it without copying
+    flags. Purchase also fires server-side via tracking._x_purchase;
     conversion_id = report id dedups the browser + server fires."""
     if not X_PIXEL_ID:
         return html
@@ -1100,9 +1142,10 @@ def _inject_x_pixel(html: str) -> str:
         if not html or "ads-twitter.com/uwt.js" in html:
             return html
         x_conv = json.dumps({
-            "Lead": "tw-%s-rgqp0" % X_PIXEL_ID,
-            "InitiateCheckout": "tw-%s-rgqow" % X_PIXEL_ID,
-            "Purchase": "tw-%s-rgqob" % X_PIXEL_ID,
+            "form_start": "tw-%s-rix15" % X_PIXEL_ID,
+            "generate_lead": "tw-%s-rix0i" % X_PIXEL_ID,
+            "begin_checkout": "tw-%s-rix0n" % X_PIXEL_ID,
+            "purchase": "tw-%s-rix10" % X_PIXEL_ID,
         })
         snippet = (
             '<!-- X conversion tracking (injected server-side) -->\n'
@@ -1112,29 +1155,25 @@ def _inject_x_pixel(html: str) -> str:
             'a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,\'script\');\n'
             'twq(\'config\',\'' + X_PIXEL_ID + '\');\n'
             '(function(){\n'
-            '  var CONV = ' + x_conv + ';\n'
-            '  function xfire(evId, cid){\n'
-            '    if(!evId || !window.twq) return;\n'
-            '    var p = {};\n'
-            '    if(cid) p.conversion_id = String(cid);\n'
-            '    try{ twq(\'event\', evId, p); }catch(e){}\n'
-            '  }\n'
+            '  var XEV = ' + x_conv + ';\n'
+            '  var done = 0;\n'
             '  function bridge(){\n'
-            '    var orig = window.fbq;\n'
-            '    if(typeof orig !== \'function\' || orig.__axTw) return;\n'
-            '    var wrapped = function(){\n'
+            '    var orig = window.gtag;\n'
+            '    if(done || typeof orig !== \'function\') return;\n'
+            '    done = 1;\n'
+            '    window.gtag = function(){\n'
             '      try{\n'
-            '        if(arguments[0] === \'track\'){\n'
-            '          var id = CONV[arguments[1]];\n'
-            '          if(id) xfire(id, arguments[3] && arguments[3].eventID);\n'
+            '        var id = arguments[0] === \'event\' && XEV[arguments[1]];\n'
+            '        if(typeof id === \'string\' && window.twq){\n'
+            '          var a = arguments[2] || {}, p = {};\n'
+            '          if(arguments[1] === \'generate_lead\'){ p.value = 1; p.currency = \'INR\'; }\n'
+            '          else if(a.value != null){ p.value = a.value; p.currency = a.currency || \'INR\'; }\n'
+            '          if(a.transaction_id) p.conversion_id = String(a.transaction_id);\n'
+            '          twq(\'event\', id, p);\n'
             '        }\n'
             '      }catch(e){}\n'
             '      return orig.apply(this, arguments);\n'
             '    };\n'
-            '    for(var k in orig){ try{ wrapped[k] = orig[k]; }catch(e){} }\n'
-            '    wrapped.__axLi = orig.__axLi;\n'
-            '    wrapped.__axTw = 1;\n'
-            '    window.fbq = wrapped;\n'
             '  }\n'
             '  bridge();\n'
             '  document.addEventListener(\'DOMContentLoaded\', bridge);\n'
@@ -1260,8 +1299,7 @@ def _inject_tracking(html: str) -> str:
 
     Order matters — the Google Ads bridge wraps gtag (must exist first); LinkedIn
     goes in after the Meta block so its funnel bridge is parsed after window.fbq
-    exists; X goes after OAIQ and before LinkedIn so the LinkedIn bridge (which
-    also wraps fbq) sees the X-wrapped fbq and preserves the __axTw flag; the
+    exists; X wraps gtag too, so it also needs gtag defined first; the
     beacon goes in LAST of the wrapping scripts so it wraps the gtag defined by
     _inject_ga_meta_clarity (or hardcoded in the page). Taboola is standalone
     (no wrapping) so it goes after the beacon."""
@@ -1524,13 +1562,16 @@ def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
         return html
 
 
-def _serve_page_with_nav(path: str, lang: str = "en"):
+def _serve_page_with_nav(path: str, lang: str = "en", transform=None):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_tracking(_inject_nav(
+            raw = f.read()
+        if transform:                                  # optional per-request edit of the page source (used by the Vastu option pages)
+            raw = transform(raw)
+        return HTMLResponse(_inject_tracking(_inject_nav(
                 _inject_consent_checkbox(
                     _inject_footer_disclaimer(
-                        _inject_footer_link(f.read(), lang), lang), lang), lang)))
+                        _inject_footer_link(raw, lang), lang), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -1711,6 +1752,44 @@ def create_kundli(inp: KundliIn, request: Request):
             raise HTTPException(422, "bad steering")
         if inp.gift_mode not in (None, "", "self", "gift"):
             raise HTTPException(422, "bad gift_mode")
+    if inp.product == "annual_report":                # own validation; Diwali's stays as above
+        if inp.gender not in ("male", "female"):
+            raise HTTPException(422, "gender must be male or female")
+        if inp.work_type not in ("job", "business", "student", "home"):
+            raise HTTPException(422, "work_type required")
+        if inp.steering and inp.steering not in ("career", "money", "marriage", "luck", "strengths"):
+            raise HTTPException(422, "bad steering")
+        # annual only: bound every free-text field it stores or computes from (F5)
+        if not inp.name.strip() or len(inp.name.strip()) > 60:
+            raise HTTPException(422, "name must be 1 to 60 characters")
+        if not inp.place.strip() or len(inp.place) > 120:
+            raise HTTPException(422, "place must be 1 to 120 characters")
+        if inp.lat is not None and not -90 <= inp.lat <= 90:
+            raise HTTPException(422, "lat out of range")
+        if inp.lon is not None and not -180 <= inp.lon <= 180:
+            raise HTTPException(422, "lon out of range")
+        if len(inp.dob) > 10 or len(inp.tob or "") > 8 or len(inp.tz or "") > 64:
+            raise HTTPException(422, "bad date, time or timezone")
+        if len(inp.phone or "") > 20 or len(inp.email or "") > 254 or len(inp.variant or "") > 64:
+            raise HTTPException(422, "phone, email or variant too long")
+        # annual only: reject what the shared parse below would turn into a 500 (R2-4)
+        if inp.time_quality not in ("T0", "T1", "T2", "T3"):
+            raise HTTPException(422, "bad time_quality")
+        if inp.time_band not in (None, "", "subah", "din", "shaam", "raat"):
+            raise HTTPException(422, "bad time_band")
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", inp.dob):
+                raise ValueError
+            datetime.strptime(inp.dob, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(422, "dob must be YYYY-MM-DD")
+        if inp.time_quality in ("T0", "T1") or inp.tob:   # T2/T3 may omit tob, but a given one must parse
+            try:
+                if not re.fullmatch(r"\d{2}:\d{2}", inp.tob or ""):
+                    raise ValueError
+                datetime.strptime(inp.tob, "%H:%M")
+            except ValueError:
+                raise HTTPException(422, "tob must be HH:MM")
     if inp.time_quality in ("T0", "T1"):
         if not inp.tob: raise HTTPException(422, "tob required")
         tob = inp.tob
@@ -1763,6 +1842,16 @@ def create_kundli(inp: KundliIn, request: Request):
             time_quality=inp.time_quality, gift_on=gift_on,
             giver_name=inp.giver_name or "", gift_message=inp.gift_message or "",
             place=inp.place or "")
+    elif inp.product == "annual_report":
+        import annual
+        try:
+            report = annual.compute_annual({
+                "name": inp.name, "dob": inp.dob, "tob": tob, "tz": tz, "lat": lat, "lon": lon,
+                "gender": inp.gender, "work_type": inp.work_type, "steering": inp.steering or None,
+                "time_quality": inp.time_quality, "place": inp.place or ""})
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+        report.setdefault("product", "annual_report")   # api checks read payload["product"]
     else:
         report = compute_report(name=inp.name, dob=inp.dob, tob=tob,
                                 tz_offset_hours=tz, lat=lat, lon_geo=lon,
@@ -1774,7 +1863,9 @@ def create_kundli(inp: KundliIn, request: Request):
         report["meta"]["consent_ts"] = inp.consent_ts
         report["meta"]["consent_v"] = inp.consent_v or "2026-09"
     # per-locale report language (Devanagari for /hi/* funnels); mirrors milan.
-    if inp.product != "diwali":                  # diwali sets its own meta.lang ("en", English-only)
+    if inp.product == "annual_report":
+        report["meta"]["lang"] = "en"            # English-only for now (Hindi twin later)
+    elif inp.product != "diwali":                # diwali sets its own meta.lang ("en", English-only)
         report["meta"]["lang"] = "hi" if (inp.variant or "").startswith("/hi/") else "english"
     if inp.product == "career_growth" and report["meta"]["lang"] == "hi":
         import career_growth_hi
@@ -1786,7 +1877,7 @@ def create_kundli(inp: KundliIn, request: Request):
     # fields the client already expects in English (moon_sign_en, lagna_en).
     report["meta"]["geo_source"] = geo_source
     try:
-        if report.get("chart") and inp.product != "diwali":   # diwali's teaser draws its own kundli
+        if report.get("chart") and inp.product not in ("diwali", "annual_report"):   # these teasers draw their own kundli
             report["teaser"]["chart_svg"] = north_chart_svg(report)
     except Exception:
         pass         # (#1) provenance
@@ -1880,6 +1971,76 @@ def create_iq_test(inp: IqTestIn, request: Request):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
+# ── Vastu Career Report (date-only: no birth place, no chart; spec docs/vastu-career-report-spec.md) ──
+
+class VastuCareerIn(BaseModel):
+    name: str | None = None
+    dob: str | None = None                   # YYYY-MM-DD
+    segment: str | None = None
+    desk_direction: str | None = None
+    desk_flexibility: str | None = None
+    door_direction: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
+    consent_ts: str | None = None
+    consent_v: str | None = None
+    variant: str | None = None
+    website: str | None = None               # honeypot: real people never fill this
+
+
+@app.post("/api/vastu-career")
+def create_vastu_career(inp: VastuCareerIn, request: Request):
+    """Validate, compute the FREE teaser, save the lead and report, return {report_id, teaser}.
+    Modelled on /api/iq-test. The report id is secrets.token_urlsafe(12): opaque, no personal data (it is also the
+    private access link). The teaser carries free data only; the fixes and the five segment cards stay locked."""
+    import vastu_career
+    if inp.website:
+        raise HTTPException(400, "invalid")
+    if not captcha_ok(inp.captcha_token or "", ""):
+        raise HTTPException(400, "captcha_failed")
+    phone = None
+    if inp.phone:
+        digits = re.sub(r"\D", "", inp.phone)
+        if len(digits) == 12 and digits.startswith("91"):
+            digits = digits[2:]
+        if len(digits) == 11 and digits.startswith("0"):
+            digits = digits[1:]
+        if not re.fullmatch(r"[6-9]\d{9}", digits):
+            raise HTTPException(422, {"field": "phone", "message": "Please enter a valid 10-digit Indian mobile number."})
+        phone = "+91" + digits
+    try:
+        report = vastu_career.compute_vastu_career(inp.name, inp.dob, inp.segment, inp.desk_direction,
+                                                   inp.desk_flexibility, inp.door_direction)
+    except vastu_career.VastuInputError as e:
+        raise HTTPException(422, e.detail())
+    report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-11"
+    if inp.email:
+        report["meta"]["_email"] = inp.email
+
+    rid = secrets.token_urlsafe(12)
+    subject = {"role": "self", "name": report["meta"]["name"], "gender": None,
+               "dob": report["meta"]["dob"], "tob": None, "time_quality": None,
+               "birth_place": None, "birth_lat": None, "birth_lon": None, "birth_tz": None}
+    try:
+        conn = db_v2.get_conn()
+        try:
+            uid = reports_v2.save_report(conn, rid, report, [subject], product="vastu_career", phone=phone)
+            _identify_visitor(conn, request, uid)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        if not DEMO_MODE:
+            raise
+        logger.warning("[demo] MySQL unavailable — storing Vastu report %s in memory", rid)
+        _demo_save(rid, report, phone)
+    return {"report_id": rid, "teaser": report["teaser"]}
+
+
 class OrderIn(BaseModel):
     """Body of POST /api/order. `phone`/`email` come from the pre-payment
     contact popup: phone is the buyer's WhatsApp/account number (stored in
@@ -1941,6 +2102,30 @@ def _deliver_diwali_task(rid: str, wa_phone: str, name: str) -> None:
         send_whatsapp_report(wa_phone, rid, name, "diwali")
 
 
+def _deliver_annual_task(rid: str, wa_phone: str, name: str) -> None:
+    """Annual Report: same order as Diwali. Instant WhatsApp text (text template, report
+    link) -> text step (deterministic, no AI) -> drop stale PDF -> build it -> report
+    WhatsApp (media template when the PDF is fetchable, else the text-only template;
+    send_whatsapp_report picks). wa_phone is the POPUP number only (§1). Each step never
+    raises; if not done within DIWALI_STILL_COMING_S a 'still on its way' text goes out."""
+    timer = None
+    if wa_phone:
+        send_whatsapp_text(wa_phone, rid, name)
+        timer = threading.Timer(DIWALI_STILL_COMING_S, send_whatsapp_text,
+                                (wa_phone, rid, name))
+        timer.daemon = True
+        timer.start()
+    try:
+        _generate_narrative_task(rid)
+        pdfgen.invalidate(rid)
+        _pregenerate_pdf_task(rid)
+    finally:
+        if timer:
+            timer.cancel()
+    if wa_phone:
+        send_whatsapp_report(wa_phone, rid, name, "annual_report")
+
+
 def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = "",
                          pay_email: str = "", background=None) -> None:
     """Shared 'the report is paid -> deliver it' path (Piece 5, 5b). Used by the
@@ -1980,6 +2165,8 @@ def _deliver_paid_report(rid: str, *, popup_phone: str = "", pay_phone: str = ""
 
     if product == "diwali":                    # text -> PDF -> WhatsApp, in that order
         _run(_deliver_diwali_task, rid, wa_phone, name)
+    elif product == "annual_report":
+        _run(_deliver_annual_task, rid, wa_phone, name)
     else:
         _run(_pregenerate_pdf_task, rid)       # PDF first so WhatsApp can attach it
         _run(_generate_narrative_task, rid)
@@ -2006,8 +2193,12 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
     conn = db_v2.get_conn()
     try:
         rec = reports_v2.read_report(conn, rid)
-        if not rec:
+        if not rec or _is_mulank_report(rec):
             raise HTTPException(404, "report not found")
+        if (rec.get("product") or (rec.get("payload") or {}).get("product")) == "vastu_career":
+            import vastu_career                       # only segments whose copy the owner approved can be bought
+            if ((rec.get("payload") or {}).get("meta") or {}).get("segment") not in vastu_career.READY_SEGMENTS:
+                raise HTTPException(409, "not_available")
         # Persist the popup contact FIRST — even for retries/free passes — so the
         # capture path prefers the typed WhatsApp number over Razorpay's contact.
         # attach_user creates/links the user (the LEAD is identified here — this is
@@ -2070,6 +2261,25 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         conn.close()
 
 
+def _vastu_payment_problem(conn, rid: str, *, status, amount, currency, order_id):
+    """Vastu Career only (as Numerology does for its own routes; the shared routes trust notes.report_id): a payment may unlock the
+    report only if Razorpay says it is captured, it is exactly the server price in INR, and it belongs to an order WE created for this
+    report. Returns None when everything matches, else a short reason (never shown to a customer)."""
+    if status in ("created", "authorized"):
+        return "not_captured"                 # still pending: verify tells the page to wait, the webhook settles it when it is captured
+    if status != "captured":
+        return "bad_status"                   # refunded, failed or unknown: never unlocks
+    if currency != "INR" or int(amount or 0) != VASTU_CAREER_PRICE_PAISE:
+        return "amount_or_currency_mismatch"
+    if not order_id:
+        return "no_order_id"
+    with conn.cursor() as cur:
+        cur.execute("SELECT 1 FROM payments WHERE razorpay_order_id=%s AND report_id=%s LIMIT 1", (order_id, rid))
+        if not cur.fetchone():
+            return "order_not_ours"
+    return None
+
+
 @app.post("/api/webhook")
 async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     body = await request.body()
@@ -2097,6 +2307,15 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         urec = db_v2.get_report(conn, rid)
         if not urec:
             return {"ok": True}
+        if _is_mulank_report(urec):          # verified by /api/mulank/webhook, never by notes.report_id
+            logger.warning("[webhook] ignored a payment event for a Mulank report")
+            return {"ok": True}
+        if urec.get("product") == "vastu_career":
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=ent.get("order_id"))
+            if bad:                          # 200 so Razorpay does not retry forever; the reason is logged for the owner
+                logger.error("[webhook] Vastu payment %s NOT applied to %s: %s", ent.get("id"), rid, bad)
+                return {"ok": True}
         # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
         # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
         popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
@@ -2154,6 +2373,9 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         if not prow:
             raise HTTPException(404, "order not found")
         rid = prow[0]
+        if _is_mulank_report(db_v2.get_report(conn, rid)):   # Mulank orders settle via /api/mulank/verify
+            raise HTTPException(404, "order not found")
+        vastu_report = (db_v2.get_report(conn, rid) or {}).get("product") == "vastu_career"
         # Delivery number = the order-popup user on the report (never Razorpay's
         # contact, §1). The report always has one here (record_order attached it).
         popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
@@ -2162,6 +2384,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         pay_phone = body.get("phone") or ""
         pay_email = ""
         amount_paise = 0
+        ent = None
         try:
             ent = rzp_client().payment.fetch(pid)
             pay_phone = ent.get("contact") or pay_phone
@@ -2169,6 +2392,16 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             amount_paise = int(ent.get("amount") or 0)
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
+        if vastu_report:                      # never guess for this product: it must be fetched, captured, Rs 99 INR and our order
+            if ent is None:
+                raise HTTPException(502, "payment check failed")
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=oid)
+            if bad == "not_captured":
+                return {"ok": False, "status": "pending"}
+            if bad:
+                logger.error("[verify] Vastu payment %s NOT applied to %s: %s", pid, rid, bad)
+                raise HTTPException(409, "payment mismatch")
         # capture_payment is the idempotency gate. event_id=None here, so the atomic
         # report claim IS the gate (matching the old verify path, which had no event
         # dedup) — deliver only if this call is the one that flips the report to paid.
@@ -2247,7 +2480,7 @@ def _reconcile_and_deliver(limit: int = 200) -> dict:
         for cand in candidates:
             rid = cand["rid"]
             urec = db_v2.get_report(conn, rid)
-            if not urec:
+            if not urec or _is_mulank_report(urec):
                 continue
             # Delivery number = the order-popup user, read BEFORE any orphan fallback,
             # so Razorpay's contact can never leak into WhatsApp delivery (§1).
@@ -2363,7 +2596,7 @@ def _refresh_current_period(payload: dict) -> dict:
     from stored birth data so it is accurate as of *now*, not frozen at the time
     the report was created. No-op if birth data is missing (e.g. milan)."""
     birth = (payload.get("meta") or {}).get("_birth")
-    if not birth or payload.get("product") == "diwali":   # diwali: fixed as_of, month-free teaser
+    if not birth or payload.get("product") in ("diwali", "annual_report"):   # fixed as_of, month-free teaser
         return payload
     try:
         from engine import compute_chart, current_period
@@ -2663,6 +2896,8 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
             '<style>.ax-report-disclaimer{margin-bottom:24px}</style>'
             '<div class="ax-report-disclaimer">' + rdisclaim + '</div>'
         )
+        if "<!--ax:no-report-disclaimer-->" in html:      # Vastu Career: the owner dropped the shared legal box (its own pages carry the belief-system note)
+            rdisclaim_wrapped = ""
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
                 .replace("__HASACCT__", "1" if has_acct else "0"))
         if lang == "hi":
@@ -2696,10 +2931,14 @@ _DIWALI_ACTIONS = (
     "else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+u),'_blank');}};</script>")
 
 
-def _add_diwali_actions(html: str) -> str:
+_ANNUAL_ACTIONS = _DIWALI_ACTIONS.replace("My Diwali report from Axtroshastra",
+                                          "My Annual Report from Axtroshastra")
+
+
+def _add_diwali_actions(html: str, bar: str = _DIWALI_ACTIONS) -> str:
     if "</body>" in html:
-        return html.replace("</body>", _DIWALI_ACTIONS + "</body>", 1)
-    return html + _DIWALI_ACTIONS
+        return html.replace("</body>", bar + "</body>", 1)
+    return html + bar
 
 
 @app.get("/report/{rid}.pdf", include_in_schema=False)
@@ -2721,6 +2960,8 @@ def report_page(rid: str, v2: int = 1):
         return HTMLResponse("<h3 style='font-family:sans-serif;padding:40px'>"
                             "Report not found ya payment pending hai. "
                             "<a href='/'>Wapas jaayein</a></h3>", status_code=404)
+    if _is_mulank_report(rec):             # the shared renderer does not know Numerology: its own page serves it (and enforces paid)
+        return RedirectResponse(f"/en/numerology/report/{rid}", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     lang = "hi" if (payload.get("meta") or {}).get("lang") == "hi" else "en"
@@ -2737,6 +2978,8 @@ def report_page(rid: str, v2: int = 1):
     html = _render_for(payload.get("product", "marriage"), payload)
     if payload.get("product") == "diwali":
         html = _add_diwali_actions(html)
+    elif payload.get("product") == "annual_report":
+        html = _add_diwali_actions(html, _ANNUAL_ACTIONS)
     return HTMLResponse(_wire_report_chrome(html, rid, lang))
 
 
@@ -2750,6 +2993,8 @@ def report_pdf(rid: str):
     rec = get_report(rid)
     if not rec or not rec["paid"]:
         raise HTTPException(404, "report not found")
+    if _is_mulank_report(rec):             # Numerology's PDF is served (and cached) by its own route
+        return RedirectResponse(f"/en/numerology/report/{rid}.pdf", status_code=302)
     payload = _refresh_current_period(rec["payload"])
     payload.setdefault("meta", {})["report_id"] = rid
     report_html = _full_report_html(payload)
@@ -2794,8 +3039,15 @@ if DEMO_MODE:                                    # never set DEMO_MODE=1 in prod
             return {"ok": True}
         conn = db_v2.get_conn()
         try:
-            if not db_v2.get_report(conn, rid):
+            rec = db_v2.get_report(conn, rid)
+            if not rec:
                 raise HTTPException(404, "report not found")
+            if _is_mulank_report(rec):                 # Numerology has its own checks: same eligibility rule, never a sale (see mulank_demo.py)
+                import mulank_demo, mulank_routes
+                out = mulank_demo.unlock(conn, rid)
+                if not out.get("already_paid"):
+                    mulank_routes.FULFIL(rid, background_tasks)    # renders and caches the PDF; sends no message and no Purchase for a demo unlock
+                return out
             db_v2.set_report_paid(conn, rid)
             conn.commit()
         finally:
@@ -2897,7 +3149,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/iq-test", "/en/diwali", "/blog",
+            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/vastu-career", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3114,8 +3366,9 @@ def _render_account(user: dict, reports: list) -> str:
             date = _html.escape((r.get("created_at") or "")[:10])
             sub = f'<div class="rp-sub">{subject}</div>' if subject else ""
             date_row = f'<span class="rp-date">{date}</span>' if date else ""
+            href = f'/en/numerology/report/{r["id"]}' if product == "numerology_mulank" else f'/report/{r["id"]}'   # Numerology has its own report page
             cards += (
-                f'<a class="rp-card" href="/report/{r["id"]}">'
+                f'<a class="rp-card" href="{href}">'
                 f'<div class="rp-band"><span class="rp-icon">{icon}</span></div>'
                 f'<div class="rp-body"><span class="rp-label">{label}</span>{sub}'
                 f'<div class="rp-meta">{date_row}'
@@ -3234,6 +3487,7 @@ async function logout(){{
   location.href='/';
 }}
 </script>
+<p style="text-align:center;font-size:12px;opacity:.65;margin:0;padding:0 0 24px">Managed by ACubeD Global</p>
 </body></html>"""
 
 
@@ -3460,8 +3714,22 @@ def business_growth_redirect(request: Request):
 
 @app.get("/en/diwali", include_in_schema=False)
 def diwali_en():
-    """Diwali Wealth & Prosperity Report landing (English; Hindi later)."""
-    return _serve_page_with_nav(os.path.join(PAGES_DIR, "diwali.html"))
+    """Diwali landing is UNLIVE for now: send visitors to the coming-soon page.
+    To re-publish: serve pages/diwali.html again, restore the home card + sitemap entry."""
+    return RedirectResponse("/en/coming-soon?topic=Diwali%20Report", status_code=302)
+
+
+@app.get("/en/annual-report", include_in_schema=False)
+def annual_report_en():
+    """Annual Report landing (English; Hindi twin later). Before /{slug}."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "annual-report.html"))
+
+
+@app.get("/annual-report", include_in_schema=False)
+def annual_report_redirect(request: Request):
+    """Legacy /annual-report → /en/annual-report (301), query string kept. Before /{slug}."""
+    q = request.url.query
+    return RedirectResponse("/en/annual-report" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/diwali", include_in_schema=False)
@@ -3603,6 +3871,52 @@ def iq_test_redirect(request: Request):
     """Bare /iq-test → /en/iq-test (301 permanent). Preserves query string."""
     q = request.url.query
     return RedirectResponse("/en/iq-test" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/vastu-career", include_in_schema=False)
+def vastu_career_en():
+    """Vastu Career Report landing at /en/vastu-career (English only for now; Hindi after English is approved)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "vastu-career.html"))
+
+
+# One English landing page per option (slug -> segment key). They are ad destinations with one common hook (owner, 24 Nov 2026): always
+# noindex and out of the sitemap, so the main /en/vastu-career page is the one for search. While an option is not on sale
+# (not in vastu_career.READY_SEGMENTS) its page also says the complete report is coming soon.
+VASTU_OPTION_PAGES = {"student": "student", "exam-aspirant": "exam_aspirant", "working-professional": "professional",
+                      "work-from-home": "wfh", "business-owner": "owner", "job-seeker": "job_seeker"}
+
+
+def _vastu_option_transform(segment: str):
+    import vastu_career
+
+    def tf(html: str) -> str:
+        html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">\n<link rel="canonical" href="https://www.axtroshastra.com/en/vastu-career">', html, flags=re.S)
+        if segment in vastu_career.READY_SEGMENTS:
+            return re.sub(r"<!--VC_NOTICE-->\n?\s*", "", html)
+        return html.replace("<!--VC_NOTICE-->", '<p class="mk-notice">Your free preview is ready now. The complete report for this option is coming soon.</p>')
+    return tf
+
+
+@app.get("/en/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_en(slug: str):
+    seg = VASTU_OPTION_PAGES.get(slug)
+    if not seg:
+        raise HTTPException(404, "page not found")
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, f"vastu-career-{slug}.html"), transform=_vastu_option_transform(seg))
+
+
+@app.get("/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_redirect(slug: str, request: Request):
+    """Bare /vastu-career/<option> → /en/vastu-career/<option> (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse(f"/en/vastu-career/{slug}" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/vastu-career", include_in_schema=False)
+def vastu_career_redirect(request: Request):
+    """Bare /vastu-career → /en/vastu-career (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse("/en/vastu-career" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)
