@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script>window.__axlang="en";</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vastu Career Report: Is Your Desk Facing the Right Way? | Axtroshastra</title>
+<title>Vastu Career Report: See How Your Desk Reads | Axtroshastra</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23151C39%27/%3E%3Cpath d=%27M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z%27 fill=%27%23E4B04A%27/%3E%3C/svg%3E">
 <!--VC_INDEX_START-->
 <link rel="canonical" href="https://www.axtroshastra.com/en/vastu-career">
@@ -13,7 +13,7 @@
 <meta property="og:url" content="https://www.axtroshastra.com/en/vastu-career">
 <!--VC_INDEX_END-->
 <meta name="description" content="See how your study or work desk reads in traditional Vastu, with fixes that work even if you cannot move it. Free preview. Vastu is a belief system, not a science.">
-<meta property="og:title" content="You spend hours at your desk. Does it face the right way? Free Vastu check">
+<meta property="og:title" content="Your career has a Vastu side. See how your desk reads. Free Vastu check">
 <meta property="og:description" content="Tell us how you work and which way you face. Get a free preview of your Vastu desk check and your birth-number note.">
 <meta property="og:image" content="https://www.axtroshastra.com/static/og.png">
 <meta property="og:type" content="website">
@@ -367,7 +367,7 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
     <div class="eyebrow ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E4B04A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Vastu for your career</div>
-    <h1>You spend hours at your desk. Does it face the <em>right way</em>?</h1>
+    <h1>Your career has a Vastu side. See how your <em>desk</em> reads.</h1>
     <div id="mkIntro">
     <p class="tag1">Free Vastu desk check in a minute | Then see exactly what to change, even if you can't move it.</p>
     <!--VC_NOTICE-->
@@ -439,17 +439,6 @@ fbq('track', 'PageView');
         </select>
         <div class="field-sub">Your fixes are chosen to match this, so nothing asks you to do what you cannot.</div>
         <div class="field-hint" id="h-desk_flexibility"></div>
-      </div>
-
-      <div class="field" id="g-door_direction">
-        <label for="f-door">Which way does your main door face? <small>(optional)</small></label>
-        <select id="f-door" name="door_direction">
-          <option value="" selected>Skip this</option>
-          <option value="N">North</option><option value="NE">North-East</option><option value="E">East</option><option value="SE">South-East</option>
-          <option value="S">South</option><option value="SW">South-West</option><option value="W">West</option><option value="NW">North-West</option>
-          <option value="not_sure">Not sure</option>
-        </select>
-        <div class="field-hint" id="h-door_direction"></div>
       </div>
 
       <div class="field" id="g-phone">
@@ -553,7 +542,7 @@ fbq('track', 'PageView');
   <div class="wrap">
     <h2>Frequently asked questions</h2>
     <details><summary>Is the preview really free?</summary><p>Yes. You do not pay anything to see your desk check and your birth-number note.</p></details>
-    <details><summary>What do I need to enter?</summary><p>Your name, your date of birth, what best describes you, which way you face at your desk, whether you can move it, and your WhatsApp number. The main door is optional.</p></details>
+    <details><summary>What do I need to enter?</summary><p>Your name, your date of birth, what best describes you, which way you face at your desk, whether you can move it, and your WhatsApp number.</p></details>
     <details><summary>Do I have to move my desk?</summary><p>No. If you cannot move it, your fixes use what you can change: what to place, what to remove and how to sit.</p></details>
     <details><summary>Why does my date of birth matter?</summary><p>Two pages of the report come from numerology, not Vastu, and use only your birth day. In one case it can lift an acceptable desk to ideal when your desk faces your number's direction. It never lowers a result, and where the two disagree, Vastu leads.</p></details>
     <details><summary>When do I get the complete report?</summary><p>Right after payment, as a PDF on screen and on WhatsApp. You can come back to the same link to download it again, without paying twice.</p></details>
@@ -621,7 +610,7 @@ fbq('track', 'PageView');
   function validate(){
     var ok=true, first=null;
     function fail(k,msg,el){ mark(k,msg); if(ok){first=el;} ok=false; }
-    ['name','dob','segment','desk_direction','desk_flexibility','door_direction','phone'].forEach(function(k){mark(k,'');});
+    ['name','dob','segment','desk_direction','desk_flexibility','phone'].forEach(function(k){mark(k,'');});
     var name=$('f-name').value.replace(/\s+/g,' ').trim();
     if(!name) fail('name','Please enter your full name.',$('f-name'));
     else if(name.length>60||!/[A-Za-zÀ-ɏऀ-ॿ]/.test(name)) fail('name','Please enter your name using letters (up to 60 characters).',$('f-name'));
@@ -641,7 +630,7 @@ fbq('track', 'PageView');
   function say(t){ var m=$('mkMsg'); m.textContent=t||''; m.classList.toggle('on',!!t); if(t) m.scrollIntoView({block:'nearest',behavior:'smooth'}); }
   function busy(t){ if(t){ $('ovBarWrap').hidden=true; $('ovSub').hidden=true; ovt.textContent=t; ov.classList.add('on'); } else ov.classList.remove('on'); }
   /* a field's error clears as soon as the customer fixes that field (no stale red text while they type) */
-  [['name','f-name'],['segment','f-segment'],['desk_direction','f-desk'],['desk_flexibility','f-flex'],['door_direction','f-door'],['phone','f-phone'],['dob','f-dd'],['dob','f-mm'],['dob','f-yy']].forEach(function(p){
+  [['name','f-name'],['segment','f-segment'],['desk_direction','f-desk'],['desk_flexibility','f-flex'],['phone','f-phone'],['dob','f-dd'],['dob','f-mm'],['dob','f-yy']].forEach(function(p){
     ['input','change'].forEach(function(ev){ $(p[1]).addEventListener(ev,function(){ mark(p[0],''); showErr(''); }); });
   });
   $('f-consent').addEventListener('change',function(){ if(this.checked){ $('g-consent').classList.remove('ax-err'); $('h-consent').style.display='none'; } });
@@ -696,7 +685,7 @@ fbq('track', 'PageView');
     '<div class="v-card"><div class="v-label">Your '+esc(t.noun)+' on the compass</div><div class="v-compass">'+compass(t.compass)+'</div><div class="v-cap">Shaded: traditional first choices (lighter: acceptable). Red arrow: the way you face now.</div></div>'+
     '<div class="v-card"><div class="v-label">About your setup</div><div class="v-traits"><div class="v-trait"><div class="k">You are a</div><div class="v">'+esc(t.segment_label)+'</div></div>'+
       '<div class="v-trait"><div class="k">Your '+esc(t.noun)+' faces</div><div class="v">'+esc(t.desk_label)+'</div></div><div class="v-trait"><div class="k">Can you move it?</div><div class="v">'+esc(t.flexibility_label)+'</div></div>'+
-      '<div class="v-trait"><div class="k">Main door</div><div class="v">'+esc(t.door_label)+'</div></div></div>'+
+      '</div>'+
       '<div class="v-pills"><div class="v-pill"><div class="sl">Result</div><div class="sv">'+esc(t.verdict_label)+'</div></div><div class="v-pill"><div class="sl">Your fixes</div><div class="sv">'+fixes+'</div></div></div></div>'+
     '<div class="v-card"><div class="v-label">From your birth number &middot; numerology</div><div class="v-numrow"><div class="v-numhero"><div class="hd">Mulank</div><div class="hg">'+esc(n.mulank)+'</div><div class="pn">'+esc(n.planet)+'</div></div>'+
       '<div class="v-numtxt"><b>The working.</b> '+wk+'.<br><br>In the number tradition, '+esc(n.mulank)+' is linked with '+esc(n.planet)+(n.direction?', whose direction is the '+esc(n.direction.toLowerCase())+'.':'.')+' '+esc(n.tip)+'</div></div>'+
@@ -781,13 +770,13 @@ fbq('track', 'PageView');
     try{
       var r=await fetch('/api/vastu-career',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
         name:v.name,dob:v.dob,segment:$('f-segment').value,desk_direction:$('f-desk').value,desk_flexibility:$('f-flex').value,
-        door_direction:$('f-door').value||null,phone:v.phone,consent_ts:new Date().toISOString(),consent_v:'2026-11',variant:'/en/vastu-career/job-seeker',
+        phone:v.phone,consent_ts:new Date().toISOString(),consent_v:'2026-11',variant:'/en/vastu-career/job-seeker',
         website:$('f-website').value})});
       var d=await r.json().catch(function(){return {};});
       if(r.ok&&d.report_id&&d.teaser){ calcStop(); go.disabled=false; PHONE='+91'+v.phone; RID=d.report_id; trackLead(); openPreview(d.report_id,d.teaser); return; }
       calcStop(); go.disabled=false;
       var det=d&&d.detail;
-      if(r.status===422&&det&&det.field){ var fld=det.field; if(fld==='dob'||fld==='name'||fld==='segment'||fld==='desk_direction'||fld==='desk_flexibility'||fld==='door_direction'||fld==='phone') mark(fld,det.message); showErr(det.message); return; }
+      if(r.status===422&&det&&det.field){ var fld=det.field; if(fld==='dob'||fld==='name'||fld==='segment'||fld==='desk_direction'||fld==='desk_flexibility'||fld==='phone') mark(fld,det.message); showErr(det.message); return; }
       if(r.status===429){ showErr('Too many attempts. Please wait a minute and try again.'); return; }
       showErr('We could not prepare your preview just now. Please try again in a moment.');
     }catch(e){ calcStop(); go.disabled=false; showErr('We could not reach the server. Please check your connection and try again.'); }
