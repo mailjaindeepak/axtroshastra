@@ -100,7 +100,7 @@ def test_reviews_are_exactly_the_owners_two_and_follow_the_review_rules(page):
     revs = re.findall(r'<div class="rev">(.*?)</div></div>', page, re.S)
     assert len(revs) == 2
     who = re.findall(r'<div class="who">(.*?)</div>', page)
-    assert who == ["Mallika, 21", "Kamal, 42"]
+    assert who == ["Mallika, 21", "Kamal, 34"]
     body = " ".join(re.findall(r'<p>"(.*?)"</p>', page, re.S))
     assert not re.search("[—–]", body + " ".join(who)), "CLAUDE.md section 5c: no em or en dashes in reviews"
     for pat in FLAGGED:
