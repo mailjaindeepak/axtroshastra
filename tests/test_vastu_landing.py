@@ -81,7 +81,7 @@ def test_form_options_match_the_engine(page):
     assert opts("f-segment") == set(vc.SEGMENTS)
     assert opts("f-desk") == set(vc.DIR_OR_UNSURE)
     assert opts("f-flex") == set(vc.FLEXIBILITY)
-    assert opts("f-door") == set(vc.DIR_OR_UNSURE)          # plus the empty "skip" option, which has value=""
+    assert "f-door" not in page and "door_direction" not in page and "Main door" not in page   # owner removed the main door question, 24 Nov 2026
 
 
 def test_no_flagged_vocabulary_in_visible_text():
@@ -185,7 +185,7 @@ def test_server_price_is_99_by_product_never_the_499_default():
 
 def test_the_owner_approved_hook_is_on_the_main_page(page):
     # owner choice, 24 Nov 2026: a relatable headline and a tagline naming both the free answer and the paid next step
-    assert "You spend hours at your desk. Does it face the <em>right way</em>?" in page
+    assert "Your career has a Vastu side. See how your <em>desk</em> reads." in page      # owner choice, 24 Nov 2026 (broader than the old facing question)
     assert "Free Vastu desk check in a minute | Then see exactly what to change, even if you can't move it." in page
     assert "Vastu for your career</div>" in page                                    # the eyebrow stays
     assert "desk face the right way for your career" not in _text(page)
