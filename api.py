@@ -3114,8 +3114,7 @@ def sitemap():
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
             "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/vastu-career", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
-            ] + [f"/en/vastu-career/{slug}" for slug, seg in VASTU_OPTION_PAGES.items()
-                 if seg in __import__("vastu_career").READY_SEGMENTS] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
+            ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
             ]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -3843,8 +3842,9 @@ def vastu_career_en():
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "vastu-career.html"))
 
 
-# One English landing page per option (slug -> segment key). A page is indexable and in the sitemap only while its segment is on sale
-# (vastu_career.READY_SEGMENTS); until then it is noindex and says the complete report is coming soon.
+# One English landing page per option (slug -> segment key). They are ad destinations with one common hook (owner, 24 Nov 2026): always
+# noindex and out of the sitemap, so the main /en/vastu-career page is the one for search. While an option is not on sale
+# (not in vastu_career.READY_SEGMENTS) its page also says the complete report is coming soon.
 VASTU_OPTION_PAGES = {"student": "student", "exam-aspirant": "exam_aspirant", "working-professional": "professional",
                       "work-from-home": "wfh", "business-owner": "owner", "job-seeker": "job_seeker"}
 
@@ -3853,9 +3853,9 @@ def _vastu_option_transform(segment: str):
     import vastu_career
 
     def tf(html: str) -> str:
-        if segment in vastu_career.READY_SEGMENTS:         # on sale: indexable with its self-canonical block; drop the helper markers
-            return re.sub(r"<!--VC_(INDEX_START|INDEX_END|NOTICE)-->\n?\s*", "", html)
         html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">', html, flags=re.S)
+        if segment in vastu_career.READY_SEGMENTS:
+            return re.sub(r"<!--VC_NOTICE-->\n?\s*", "", html)
         return html.replace("<!--VC_NOTICE-->", '<p class="mk-notice">Your free preview is ready now. The complete report for this option is coming soon.</p>')
     return tf
 

@@ -1,8 +1,8 @@
 """Vastu Career Report: the six per-option landing pages (/en/vastu-career/<option>).
 
-Each page is built from the main page (same stylesheet, analytics, form, preview, reviews, FAQ, footer) and differs in its
-headline, meta text, the preselected (hidden) option and its self-canonical block. A page is indexable and in the sitemap only
-while its option is on sale (vastu_career.READY_SEGMENTS); otherwise it is noindex and says the complete report is coming soon.
+Owner decision (24 Nov 2026): one COMMON hook on all six pages. They differ from the main page only in the option preselected in the
+form (the form still asks the question). They are ad destinations: always noindex and out of the sitemap, so the main page is the one
+for search. While an option is not on sale (vastu_career.READY_SEGMENTS) its page also says the complete report is coming soon.
 """
 import html as _html
 import re
@@ -47,35 +47,26 @@ def test_page_is_served_and_the_option_is_preselected(client, slug, seg):
 
 
 @pytest.mark.parametrize("slug,seg", list(SLUGS.items()))
-def test_indexable_only_while_the_option_is_on_sale(client, slug, seg):
+def test_every_option_page_is_noindex_with_no_canonical_and_the_notice_only_while_not_on_sale(client, slug, seg):
     h = client.get(f"/en/vastu-career/{slug}").text
-    url = f"https://www.axtroshastra.com/en/vastu-career/{slug}"
-    sitemap = client.get("/sitemap.xml").text
-    if seg in vc.READY_SEGMENTS:
-        assert f'rel="canonical" href="{url}"' in h and f'hreflang="en" href="{url}"' in h and f'property="og:url" content="{url}"' in h
-        assert 'name="robots"' not in h and "coming soon" not in _text(h).lower().split("preview is ready now")[0]
-        assert f"/en/vastu-career/{slug}<" in sitemap
-    else:
-        assert 'name="robots" content="noindex,follow"' in h and 'rel="canonical"' not in h and "hreflang" not in h
-        assert "Your free preview is ready now. The complete report for this option is coming soon." in _text(h)
-        assert f"/en/vastu-career/{slug}<" not in sitemap
+    assert 'name="robots" content="noindex,follow"' in h and 'rel="canonical"' not in h and "hreflang" not in h
+    notice = "Your free preview is ready now. The complete report for this option is coming soon."
+    assert (notice in _text(h)) == (seg not in vc.READY_SEGMENTS)
 
 
-def test_the_sitemap_lists_exactly_the_main_page_and_the_on_sale_options(client):
+def test_the_sitemap_lists_the_main_page_and_no_option_page(client):
     sm = client.get("/sitemap.xml").text
-    assert "/en/vastu-career<" in sm
-    listed = set(re.findall(r"/en/vastu-career/([a-z-]+)<", sm))
-    assert listed == {s for s, seg in SLUGS.items() if seg in vc.READY_SEGMENTS}
+    assert "/en/vastu-career<" in sm and "/en/vastu-career/" not in sm
 
 
-def test_headlines_and_meta_are_distinct_and_specific():
-    titles, h1s, descs = set(), set(), set()
+def test_all_six_pages_share_the_one_common_hook_with_the_main_page():
+    main = (PAGES / "vastu-career.html").read_text(encoding="utf-8")
     for slug in SLUGS:
         h = (PAGES / f"vastu-career-{slug}.html").read_text(encoding="utf-8")
-        titles.add(re.search(r"<title>(.*?)</title>", h).group(1)); h1s.add(_h1(h))
-        d = re.search(r'name="description" content="([^"]*)"', h).group(1); descs.add(d)
-        assert "belief system, not a science" in d and 60 < len(d) <= 175, (slug, len(d))
-    assert len(titles) == len(h1s) == len(descs) == 6
+        assert _h1(h) == _h1(main) == "Does your desk face the right way for your career?"
+        for pat in (r"<title>.*?</title>", r'name="description" content="[^"]*"', r'property="og:title" content="[^"]*"', r'<p class="tag1">.*?</p>',
+                    r'<div class="eyebrow ico">.*?</div>'):
+            assert re.search(pat, h, re.S).group(0) == re.search(pat, main, re.S).group(0), (slug, pat)
 
 
 @pytest.mark.parametrize("slug", list(SLUGS))
@@ -108,4 +99,4 @@ def test_internal_links_resolve(client):
 
 def test_main_page_is_unchanged_by_the_option_pages(client):
     h = client.get("/en/vastu-career").text
-    assert 'id="g-segment" hidden' not in h and "Choose one" in h and 'rel="canonical" href="https://www.axtroshastra.com/en/vastu-career"' in h
+    assert "Choose one" in h and 'rel="canonical" href="https://www.axtroshastra.com/en/vastu-career"' in h and 'name="robots"' not in h
