@@ -168,7 +168,8 @@ PRODUCT_LABEL = {"marriage": "Marriage Timing", "milan": "Compatibility Report",
                   "career_intelligence_v2": "Career Intelligence Report",
                   "diwali": "Diwali Wealth & Prosperity Report",
                   "annual_report": "Annual Report",
-                  "numerology_mulank": "Numerology Report"}
+                  "numerology_mulank": "Numerology Report",
+                  "vastu_career": "Vastu Career Report"}
 
 # Visual identity per product for the account dashboard cards. Minimal gold
 # line-art SVGs (one consistent set, stroke #E4B04A, weight ~1.5), sitting on a
@@ -216,6 +217,9 @@ PRODUCT_SVG = {
     # annual_report: a 4-point star inside a circle (New Year, no festival art).
     "annual_report": _SVG_OPEN + '<circle cx="16" cy="16" r="11"/>'
                      '<path d="M16 8 Q17 15 24 16 Q17 17 16 24 Q15 17 8 16 Q15 15 16 8 Z"/></svg>',
+    # vastu career — a compass: ring with a needle.
+    "vastu_career": _SVG_OPEN + '<circle cx="16" cy="16" r="10"/>'
+                    '<path d="M20 12 L17.5 18 L11.5 20.5 L14 14.5 Z"/></svg>',
     # numerology (Mulank) — a 3x3 grid of numbers, the classic numerology square.
     "numerology_mulank": _SVG_OPEN + '<rect x="6" y="6" width="20" height="20" rx="3"/>'
                          '<path d="M12.7 6 V26 M19.3 6 V26 M6 12.7 H26 M6 19.3 H26"/></svg>',
@@ -406,6 +410,9 @@ def _render_for(product, payload):
     if product == "iq_test":
         import iq_test_report
         return iq_test_report.render_iq_test(payload)
+    if product == "vastu_career":                # English-only for now; refuses segments whose copy is not approved
+        import vastu_career_report
+        return vastu_career_report.render_vastu_career(payload)
     if product == "career_intelligence":         # English-only premium report
         return career_intelligence_report.render_career_intelligence(payload)
     if product == "career_intelligence_v2":
@@ -464,6 +471,7 @@ LIFE_BLUEPRINT_PRICE_PAISE = 49900        # ₹499 — Life Blueprint only
 IQ_TEST_PRICE_PAISE = 4900                # ₹49 — IQ Test report
 DIWALI_PRICE_PAISE = 29900                # ₹299 — Diwali Wealth & Prosperity Report (by product, never by variant)
 ANNUAL_PRICE_PAISE = 49900                # ₹499 — Annual Report (struck from ₹999 on the page only); by product, never by variant
+VASTU_CAREER_PRICE_PAISE = 9900           # ₹99 — Vastu Career Report ("for now", owner 19 Nov 2026); by product, never by variant
 _LIFE_BLUEPRINT_VARIANTS = ("/en/life-blueprint", "/hi/life-blueprint",
                              "/jeevan", "/en/jeevan", "/hi/jeevan")
 
@@ -481,6 +489,8 @@ def _order_amount_paise(rec: dict) -> int:
     product = rec.get("product") or payload.get("product") or ""
     if product == "iq_test":
         return IQ_TEST_PRICE_PAISE
+    if product == "vastu_career":             # explicit: never rely on the PRICE_PAISE fall-through
+        return VASTU_CAREER_PRICE_PAISE
     if product == "diwali":
         return DIWALI_PRICE_PAISE
     if product == "annual_report":            # explicit: never rely on the PRICE_PAISE fall-through
@@ -1552,13 +1562,16 @@ def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
         return html
 
 
-def _serve_page_with_nav(path: str, lang: str = "en"):
+def _serve_page_with_nav(path: str, lang: str = "en", transform=None):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_tracking(_inject_nav(
+            raw = f.read()
+        if transform:                                  # optional per-request edit of the page source (used by the Vastu option pages)
+            raw = transform(raw)
+        return HTMLResponse(_inject_tracking(_inject_nav(
                 _inject_consent_checkbox(
                     _inject_footer_disclaimer(
-                        _inject_footer_link(f.read(), lang), lang), lang), lang)))
+                        _inject_footer_link(raw, lang), lang), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -1958,6 +1971,76 @@ def create_iq_test(inp: IqTestIn, request: Request):
     return {"report_id": rid, "teaser": report["teaser"]}
 
 
+# ── Vastu Career Report (date-only: no birth place, no chart; spec docs/vastu-career-report-spec.md) ──
+
+class VastuCareerIn(BaseModel):
+    name: str | None = None
+    dob: str | None = None                   # YYYY-MM-DD
+    segment: str | None = None
+    desk_direction: str | None = None
+    desk_flexibility: str | None = None
+    door_direction: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    captcha_token: str | None = None
+    consent_ts: str | None = None
+    consent_v: str | None = None
+    variant: str | None = None
+    website: str | None = None               # honeypot: real people never fill this
+
+
+@app.post("/api/vastu-career")
+def create_vastu_career(inp: VastuCareerIn, request: Request):
+    """Validate, compute the FREE teaser, save the lead and report, return {report_id, teaser}.
+    Modelled on /api/iq-test. The report id is secrets.token_urlsafe(12): opaque, no personal data (it is also the
+    private access link). The teaser carries free data only; the fixes and the five segment cards stay locked."""
+    import vastu_career
+    if inp.website:
+        raise HTTPException(400, "invalid")
+    if not captcha_ok(inp.captcha_token or "", ""):
+        raise HTTPException(400, "captcha_failed")
+    phone = None
+    if inp.phone:
+        digits = re.sub(r"\D", "", inp.phone)
+        if len(digits) == 12 and digits.startswith("91"):
+            digits = digits[2:]
+        if len(digits) == 11 and digits.startswith("0"):
+            digits = digits[1:]
+        if not re.fullmatch(r"[6-9]\d{9}", digits):
+            raise HTTPException(422, {"field": "phone", "message": "Please enter a valid 10-digit Indian mobile number."})
+        phone = "+91" + digits
+    try:
+        report = vastu_career.compute_vastu_career(inp.name, inp.dob, inp.segment, inp.desk_direction,
+                                                   inp.desk_flexibility, inp.door_direction)
+    except vastu_career.VastuInputError as e:
+        raise HTTPException(422, e.detail())
+    report["meta"]["variant"] = (inp.variant or "direct")[:64]
+    if inp.consent_ts:
+        report["meta"]["consent_ts"] = inp.consent_ts
+        report["meta"]["consent_v"] = inp.consent_v or "2026-11"
+    if inp.email:
+        report["meta"]["_email"] = inp.email
+
+    rid = secrets.token_urlsafe(12)
+    subject = {"role": "self", "name": report["meta"]["name"], "gender": None,
+               "dob": report["meta"]["dob"], "tob": None, "time_quality": None,
+               "birth_place": None, "birth_lat": None, "birth_lon": None, "birth_tz": None}
+    try:
+        conn = db_v2.get_conn()
+        try:
+            uid = reports_v2.save_report(conn, rid, report, [subject], product="vastu_career", phone=phone)
+            _identify_visitor(conn, request, uid)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        if not DEMO_MODE:
+            raise
+        logger.warning("[demo] MySQL unavailable — storing Vastu report %s in memory", rid)
+        _demo_save(rid, report, phone)
+    return {"report_id": rid, "teaser": report["teaser"]}
+
+
 class OrderIn(BaseModel):
     """Body of POST /api/order. `phone`/`email` come from the pre-payment
     contact popup: phone is the buyer's WhatsApp/account number (stored in
@@ -2112,6 +2195,10 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         rec = reports_v2.read_report(conn, rid)
         if not rec or _is_mulank_report(rec):
             raise HTTPException(404, "report not found")
+        if (rec.get("product") or (rec.get("payload") or {}).get("product")) == "vastu_career":
+            import vastu_career                       # only segments whose copy the owner approved can be bought
+            if ((rec.get("payload") or {}).get("meta") or {}).get("segment") not in vastu_career.READY_SEGMENTS:
+                raise HTTPException(409, "not_available")
         # Persist the popup contact FIRST — even for retries/free passes — so the
         # capture path prefers the typed WhatsApp number over Razorpay's contact.
         # attach_user creates/links the user (the LEAD is identified here — this is
@@ -2174,6 +2261,25 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         conn.close()
 
 
+def _vastu_payment_problem(conn, rid: str, *, status, amount, currency, order_id):
+    """Vastu Career only (as Numerology does for its own routes; the shared routes trust notes.report_id): a payment may unlock the
+    report only if Razorpay says it is captured, it is exactly the server price in INR, and it belongs to an order WE created for this
+    report. Returns None when everything matches, else a short reason (never shown to a customer)."""
+    if status in ("created", "authorized"):
+        return "not_captured"                 # still pending: verify tells the page to wait, the webhook settles it when it is captured
+    if status != "captured":
+        return "bad_status"                   # refunded, failed or unknown: never unlocks
+    if currency != "INR" or int(amount or 0) != VASTU_CAREER_PRICE_PAISE:
+        return "amount_or_currency_mismatch"
+    if not order_id:
+        return "no_order_id"
+    with conn.cursor() as cur:
+        cur.execute("SELECT 1 FROM payments WHERE razorpay_order_id=%s AND report_id=%s LIMIT 1", (order_id, rid))
+        if not cur.fetchone():
+            return "order_not_ours"
+    return None
+
+
 @app.post("/api/webhook")
 async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     body = await request.body()
@@ -2204,6 +2310,12 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         if _is_mulank_report(urec):          # verified by /api/mulank/webhook, never by notes.report_id
             logger.warning("[webhook] ignored a payment event for a Mulank report")
             return {"ok": True}
+        if urec.get("product") == "vastu_career":
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=ent.get("order_id"))
+            if bad:                          # 200 so Razorpay does not retry forever; the reason is logged for the owner
+                logger.error("[webhook] Vastu payment %s NOT applied to %s: %s", ent.get("id"), rid, bad)
+                return {"ok": True}
         # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
         # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
         popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
@@ -2263,6 +2375,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         rid = prow[0]
         if _is_mulank_report(db_v2.get_report(conn, rid)):   # Mulank orders settle via /api/mulank/verify
             raise HTTPException(404, "order not found")
+        vastu_report = (db_v2.get_report(conn, rid) or {}).get("product") == "vastu_career"
         # Delivery number = the order-popup user on the report (never Razorpay's
         # contact, §1). The report always has one here (record_order attached it).
         popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
@@ -2271,6 +2384,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         pay_phone = body.get("phone") or ""
         pay_email = ""
         amount_paise = 0
+        ent = None
         try:
             ent = rzp_client().payment.fetch(pid)
             pay_phone = ent.get("contact") or pay_phone
@@ -2278,6 +2392,16 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             amount_paise = int(ent.get("amount") or 0)
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
+        if vastu_report:                      # never guess for this product: it must be fetched, captured, Rs 99 INR and our order
+            if ent is None:
+                raise HTTPException(502, "payment check failed")
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=oid)
+            if bad == "not_captured":
+                return {"ok": False, "status": "pending"}
+            if bad:
+                logger.error("[verify] Vastu payment %s NOT applied to %s: %s", pid, rid, bad)
+                raise HTTPException(409, "payment mismatch")
         # capture_payment is the idempotency gate. event_id=None here, so the atomic
         # report claim IS the gate (matching the old verify path, which had no event
         # dedup) — deliver only if this call is the one that flips the report to paid.
@@ -2772,6 +2896,8 @@ def _wire_report_chrome(html: str, rid: str, lang: str = "en") -> str:
             '<style>.ax-report-disclaimer{margin-bottom:24px}</style>'
             '<div class="ax-report-disclaimer">' + rdisclaim + '</div>'
         )
+        if "<!--ax:no-report-disclaimer-->" in html:      # Vastu Career: the owner dropped the shared legal box (its own pages carry the belief-system note)
+            rdisclaim_wrapped = ""
         snip = (_REPORT_NAV_SNIPPET.replace("__RID__", rid)
                 .replace("__HASACCT__", "1" if has_acct else "0"))
         if lang == "hi":
@@ -3023,7 +3149,7 @@ def sitemap():
     base_url = PUBLIC_BASE_URL or "https://www.axtroshastra.com"
     urls = ["/", "/en/marriage", "/hi/marriage", "/en/compatibility", "/hi/compatibility", "/en/life-blueprint", "/hi/life-blueprint", "/career",
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
-            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/annual-report", "/blog",
+            "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/vastu-career", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
             ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
@@ -3745,6 +3871,52 @@ def iq_test_redirect(request: Request):
     """Bare /iq-test → /en/iq-test (301 permanent). Preserves query string."""
     q = request.url.query
     return RedirectResponse("/en/iq-test" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/en/vastu-career", include_in_schema=False)
+def vastu_career_en():
+    """Vastu Career Report landing at /en/vastu-career (English only for now; Hindi after English is approved)."""
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, "vastu-career.html"))
+
+
+# One English landing page per option (slug -> segment key). They are ad destinations with one common hook (owner, 24 Nov 2026): always
+# noindex and out of the sitemap, so the main /en/vastu-career page is the one for search. While an option is not on sale
+# (not in vastu_career.READY_SEGMENTS) its page also says the complete report is coming soon.
+VASTU_OPTION_PAGES = {"student": "student", "exam-aspirant": "exam_aspirant", "working-professional": "professional",
+                      "work-from-home": "wfh", "business-owner": "owner", "job-seeker": "job_seeker"}
+
+
+def _vastu_option_transform(segment: str):
+    import vastu_career
+
+    def tf(html: str) -> str:
+        html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">', html, flags=re.S)
+        if segment in vastu_career.READY_SEGMENTS:
+            return re.sub(r"<!--VC_NOTICE-->\n?\s*", "", html)
+        return html.replace("<!--VC_NOTICE-->", '<p class="mk-notice">Your free preview is ready now. The complete report for this option is coming soon.</p>')
+    return tf
+
+
+@app.get("/en/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_en(slug: str):
+    seg = VASTU_OPTION_PAGES.get(slug)
+    if not seg:
+        raise HTTPException(404, "page not found")
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, f"vastu-career-{slug}.html"), transform=_vastu_option_transform(seg))
+
+
+@app.get("/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_redirect(slug: str, request: Request):
+    """Bare /vastu-career/<option> → /en/vastu-career/<option> (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse(f"/en/vastu-career/{slug}" + (f"?{q}" if q else ""), status_code=301)
+
+
+@app.get("/vastu-career", include_in_schema=False)
+def vastu_career_redirect(request: Request):
+    """Bare /vastu-career → /en/vastu-career (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse("/en/vastu-career" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/shaadi", include_in_schema=False)

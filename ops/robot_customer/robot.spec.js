@@ -99,6 +99,13 @@ const ALL_PAGES = [
   { path: '/privacy',           label: 'Privacy' },
   { path: '/terms',             label: 'Terms' },
   { path: '/en/iq-test',         label: 'IQ Test (EN)' },
+  { path: '/en/vastu-career',    label: 'Vastu Career Report (EN)' },
+  { path: '/en/vastu-career/student', label: 'Vastu Career: Student (EN)' },
+  { path: '/en/vastu-career/exam-aspirant', label: 'Vastu Career: Exam aspirant (EN)' },
+  { path: '/en/vastu-career/working-professional', label: 'Vastu Career: Working professional (EN)' },
+  { path: '/en/vastu-career/work-from-home', label: 'Vastu Career: Work from home (EN)' },
+  { path: '/en/vastu-career/business-owner', label: 'Vastu Career: Business owner (EN)' },
+  { path: '/en/vastu-career/job-seeker', label: 'Vastu Career: Job seeker (EN)' },
   { path: '/en/annual-report',   label: 'Annual Report (EN)' },
   { path: '/blog',              label: 'Blog Index' },
   { path: '/blog/birth-time-nahi-pata-chandra-lagna',  label: 'Blog: Birth Time' },
@@ -352,6 +359,19 @@ async function fillNumerology(page) {
   await page.locator('#mkForm button[type="submit"]').click();
 }
 
+async function fillVastuCareer(page) {
+  await page.fill('#f-name', 'Robot Customer Vastu');
+  await page.fill('#f-dd', '14');
+  await page.selectOption('#f-mm', '3');
+  await page.fill('#f-yy', '1999');
+  await page.selectOption('#f-segment', 'student');
+  await page.selectOption('#f-desk', 'W');
+  await page.selectOption('#f-flex', 'a_little');
+  await page.fill('#f-phone', testPhone());
+  await page.check('#f-consent');
+  await page.locator('#mkForm button[type="submit"]').click();
+}
+
 // ---- Funnel definitions --------------------------------------------------
 // Optional per-funnel keys: `teaser` (selector of the preview, default '#teaser')
 // and `reportId` (browser function returning the report id, default window.REPORT_ID).
@@ -434,6 +454,15 @@ const FUNNELS = [
     form: '#infoForm',
     fill: fillIqTest,
     hasTeaser: false,   // teaser appears after quiz, not after form submit
+  },
+  {
+    name: 'vastu-career',
+    paths: { en: '/en/vastu-career' },
+    form: '#mkForm',
+    fill: fillVastuCareer,
+    hasTeaser: true,    // free preview renders inline in #mkResult
+    teaser: '#mkResult',
+    reportId: () => (JSON.parse(sessionStorage.getItem('vc_state') || 'null') || {}).rid || null,   // private id lives in sessionStorage
   },
 ];
 
