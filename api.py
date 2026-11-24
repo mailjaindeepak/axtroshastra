@@ -2261,6 +2261,25 @@ def create_order(body: OrderIn, request: Request, background_tasks: BackgroundTa
         conn.close()
 
 
+def _vastu_payment_problem(conn, rid: str, *, status, amount, currency, order_id):
+    """Vastu Career only (as Numerology does for its own routes; the shared routes trust notes.report_id): a payment may unlock the
+    report only if Razorpay says it is captured, it is exactly the server price in INR, and it belongs to an order WE created for this
+    report. Returns None when everything matches, else a short reason (never shown to a customer)."""
+    if status in ("created", "authorized"):
+        return "not_captured"                 # still pending: verify tells the page to wait, the webhook settles it when it is captured
+    if status != "captured":
+        return "bad_status"                   # refunded, failed or unknown: never unlocks
+    if currency != "INR" or int(amount or 0) != VASTU_CAREER_PRICE_PAISE:
+        return "amount_or_currency_mismatch"
+    if not order_id:
+        return "no_order_id"
+    with conn.cursor() as cur:
+        cur.execute("SELECT 1 FROM payments WHERE razorpay_order_id=%s AND report_id=%s LIMIT 1", (order_id, rid))
+        if not cur.fetchone():
+            return "order_not_ours"
+    return None
+
+
 @app.post("/api/webhook")
 async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     body = await request.body()
@@ -2291,6 +2310,12 @@ async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
         if _is_mulank_report(urec):          # verified by /api/mulank/webhook, never by notes.report_id
             logger.warning("[webhook] ignored a payment event for a Mulank report")
             return {"ok": True}
+        if urec.get("product") == "vastu_career":
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=ent.get("order_id"))
+            if bad:                          # 200 so Razorpay does not retry forever; the reason is logged for the owner
+                logger.error("[webhook] Vastu payment %s NOT applied to %s: %s", ent.get("id"), rid, bad)
+                return {"ok": True}
         # Delivery number = the popup user attached at ORDER. Read it BEFORE any orphan
         # fallback, so a Razorpay-sourced user can NEVER leak into WhatsApp delivery (§1).
         popup_phone = reports_v2.user_phone(conn, urec.get("user_id"))
@@ -2350,6 +2375,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         rid = prow[0]
         if _is_mulank_report(db_v2.get_report(conn, rid)):   # Mulank orders settle via /api/mulank/verify
             raise HTTPException(404, "order not found")
+        vastu_report = (db_v2.get_report(conn, rid) or {}).get("product") == "vastu_career"
         # Delivery number = the order-popup user on the report (never Razorpay's
         # contact, §1). The report always has one here (record_order attached it).
         popup_phone = reports_v2.user_phone(conn, (db_v2.get_report(conn, rid) or {}).get("user_id"))
@@ -2358,6 +2384,7 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
         pay_phone = body.get("phone") or ""
         pay_email = ""
         amount_paise = 0
+        ent = None
         try:
             ent = rzp_client().payment.fetch(pid)
             pay_phone = ent.get("contact") or pay_phone
@@ -2365,6 +2392,16 @@ def verify_payment(body: dict, background_tasks: BackgroundTasks):
             amount_paise = int(ent.get("amount") or 0)
         except Exception as e:
             logger.error("[verify] payment fetch failed for %s: %s", pid, e)
+        if vastu_report:                      # never guess for this product: it must be fetched, captured, Rs 99 INR and our order
+            if ent is None:
+                raise HTTPException(502, "payment check failed")
+            bad = _vastu_payment_problem(conn, rid, status=ent.get("status"), amount=ent.get("amount"),
+                                         currency=ent.get("currency"), order_id=oid)
+            if bad == "not_captured":
+                return {"ok": False, "status": "pending"}
+            if bad:
+                logger.error("[verify] Vastu payment %s NOT applied to %s: %s", pid, rid, bad)
+                raise HTTPException(409, "payment mismatch")
         # capture_payment is the idempotency gate. event_id=None here, so the atomic
         # report claim IS the gate (matching the old verify path, which had no event
         # dedup) — deliver only if this call is the one that flips the report to paid.
