@@ -353,3 +353,49 @@ def test_paid_aspirant_report_is_served(client):
     assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
     h = client.get(f"/report/{rid}").text
     assert len(pages_of(h)) == 16 and "Exam aspirant" in text_of(h) and "axPdfDl" in h and "Share on WhatsApp" not in h
+
+
+# ---------------------------------------------------------------- free-pass test tokens (shared /api/make_pass and /api/order)
+def _passes(client, n=2):
+    r = client.get("/api/make_pass", params={"key": "test-stats-key", "n": n})
+    assert r.status_code == 200, r.text
+    return r.json()["passes"]
+
+
+def test_a_pass_token_unlocks_one_report_for_free(client):
+    tok = _passes(client, 1)[0]
+    rid = _create(client)["report_id"]
+    assert client.get(f"/report/{rid}").status_code == 404                              # not paid yet
+    r = client.post("/api/order", json={"report_id": rid, "phone": "+919876592080", "pass": tok})
+    assert r.status_code == 200 and r.json() == {"free": True}
+    page = client.get(f"/report/{rid}")
+    assert page.status_code == 200 and len(pages_of(page.text)) == 16 and "Share on WhatsApp" not in page.text
+
+
+def test_a_pass_is_one_use_only(client):
+    tok = _passes(client, 1)[0]
+    a = _create(client)["report_id"]
+    b = _create(client)["report_id"]
+    assert client.post("/api/order", json={"report_id": a, "phone": "+919876592081", "pass": tok}).json() == {"free": True}
+    again = client.post("/api/order", json={"report_id": b, "phone": "+919876592082", "pass": tok})
+    assert again.json() == {"error": "invalid_pass"} and client.get(f"/report/{b}").status_code == 404
+
+
+def test_a_made_up_pass_does_not_unlock(client):
+    rid = _create(client)["report_id"]
+    r = client.post("/api/order", json={"report_id": rid, "phone": "+919876592083", "pass": "not-a-real-token"})
+    assert r.json() == {"error": "invalid_pass"} and client.get(f"/report/{rid}").status_code == 404
+
+
+def test_a_pass_cannot_unlock_an_unapproved_segment_and_is_not_used_up(client):
+    tok = _passes(client, 1)[0]
+    bad = _create(client, segment="owner", desk_direction="NE")["report_id"]
+    r = client.post("/api/order", json={"report_id": bad, "phone": "+919876592084", "pass": tok})
+    assert r.status_code == 409 and r.json()["detail"] == "not_available"
+    good = _create(client)["report_id"]                                                    # the same token still works on a sellable option
+    assert client.post("/api/order", json={"report_id": good, "phone": "+919876592085", "pass": tok}).json() == {"free": True}
+
+
+def test_make_pass_needs_the_admin_key(client):
+    assert client.get("/api/make_pass", params={"key": "wrong", "n": 1}).status_code == 403
+    assert client.get("/api/make_pass").status_code == 403

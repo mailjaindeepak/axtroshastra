@@ -189,3 +189,10 @@ def test_the_owner_approved_hook_is_on_the_main_page(page):
     assert "Free Vastu desk check in a minute | Then see exactly what to change, even if you can't move it." in page
     assert "Vastu for your career</div>" in page                                    # the eyebrow stays
     assert "desk face the right way for your career" not in _text(page)
+
+
+def test_the_page_reads_a_pass_link_keeps_it_out_of_the_address_bar_and_sends_it_with_the_order(page):
+    assert "pass=([^&#]*)" in page and "history.replaceState" in page
+    assert "pass:PASS||undefined" in page and "invalid_pass" in page
+    assert "free with your pass" in page and "Pass applied" in page
+    assert "FREE_UNLOCK=true" in page                       # a pass is not a sale: no Purchase event (awaitReport skips it)

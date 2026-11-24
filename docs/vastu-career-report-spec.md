@@ -16,7 +16,7 @@ Build playbook the owner pointed to: https://claude.ai/artifact/LUqoswuKwZD5UT4t
 - Price: Rs 99 ("for now"), server constant `VASTU_CAREER_PRICE_PAISE = 9900`, by product, never by variant. The real charged amount is stored at payment time (§13).
 - English only at launch. Hindi twin is built after English is approved (owner, 19 Nov 2026); hreflang is added when it exists.
 - No homepage card for now (owner). The product page still gets 5 to 8 on-page reviews in house style (§5, no em-dashes per §5c).
-- No free passes in v1 (default, owner may change).
+- Free test passes (owner asked for test tokens, 24 Nov 2026): the shared one-use tokens work. Mint with `GET /api/make_pass?key=<STATS_KEY>&n=5` on the target server (the admin key stays secret); a buyer opens `/en/vastu-career?pass=<token>` (or any option page) and the unlock button says 'free with your pass'. A pass unlocks exactly one report, is not a sale (no checkout or Purchase event; a 0 rupee `free_pass` payment is recorded), cannot unlock a segment whose copy is not approved, and is not used up by that refusal. Tokens minted locally are valid only on the local database.
 - A belief-system product: every claim reads "according to Vastu Shastra" or "traditionally". No promise of marks, jobs or income. The report says plainly it is traditional guidance for reflection, not a prediction.
 - No Swiss Ephemeris and no chart: no "planetary data" or "NASA-grade" claim anywhere. The date-of-birth cards use number arithmetic (Mulank and/or Bhagyank) only.
 

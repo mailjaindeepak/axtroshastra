@@ -597,6 +597,8 @@ fbq('track', 'PageView');
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   var ddEl=$('f-dd'), mmEl=$('f-mm'), yyEl=$('f-yy'), phoneEl=$('f-phone');
   var RID=null, T=null, PHONE=null, SK='vc_state', paying=false;
+  /* a free-pass link (?pass=...): kept in memory only and removed from the address bar, so it is not left in history or shared */
+  var PASS=''; try{ var pm=location.search.match(/[?&]pass=([^&#]*)/); if(pm){ PASS=decodeURIComponent(pm[1]).slice(0,40); if(history.replaceState) history.replaceState(null,'',location.pathname+location.hash); } }catch(e){}
 
   /* ---------- form: explicit inline errors, never a silent default ---------- */
   var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -700,7 +702,7 @@ fbq('track', 'PageView');
       '<div class="v-numtxt"><b>The working.</b> '+wk+'.<br><br>In the number tradition, '+esc(n.mulank)+' is linked with '+esc(n.planet)+(n.direction?', whose direction is the '+esc(n.direction.toLowerCase())+'.':'.')+' '+esc(n.tip)+'</div></div>'+
       '<div class="v-grid">'+grid+'</div><div class="v-cap" style="text-align:left">This part is numerology, not Vastu. Planet links follow the scheme used in Indian numerology; some writers assign 4 and 7 differently.</div></div>'+
     '<div class="v-locked"><div class="v-lh">Your 5 answers are ready</div><div class="v-ls">'+(ready?'Worked out from your desk direction and date of birth. Unlock to read them.':'Worked out from your desk direction and date of birth. They will be in your complete report.')+'</div>'+lq+'<div class="v-also">'+also+'</div>'+
-      (ready?'<div class="v-ctawrap"><button type="button" class="v-cta" data-buy>Unlock My Full Vastu Report&nbsp;&mdash;&nbsp;₹'+PRICE+'</button><div class="v-sub2">Personalised using your desk direction and date of birth</div></div>':'<div class="v-note" style="margin-top:14px;text-align:center">The complete report for your option is being prepared and is not on sale yet. Your free preview stays on this page.</div>')+'</div>'+
+      (ready?'<div class="v-ctawrap"><button type="button" class="v-cta" data-buy>Unlock My Full Vastu Report&nbsp;&mdash;&nbsp;'+(PASS?'free with your pass':'₹'+PRICE)+'</button><div class="v-sub2">Personalised using your desk direction and date of birth</div></div>':'<div class="v-note" style="margin-top:14px;text-align:center">The complete report for your option is being prepared and is not on sale yet. Your free preview stays on this page.</div>')+'</div>'+
     '<p class="v-fine">Vastu Shastra and numerology are belief systems, not sciences. This report offers traditional guidance for reflection, not prediction.</p>';
   }
 
@@ -709,7 +711,7 @@ fbq('track', 'PageView');
   function syncBar(){
     var show=false, l1=$('stL1'), l2=$('stL2'), b=$('stickyBtn');
     if(RID&&T&&T.ready===false){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML='Your free preview is ready'; b.textContent='View Preview'; }
-    else if(RID){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML='<b class="p">₹'+PRICE+'</b> &middot; One-time payment'; b.textContent='Unlock ₹'+PRICE; }
+    else if(RID){ show=true; l1.textContent='Vastu Career Report'; l2.innerHTML=PASS?'Pass applied &middot; free unlock':'<b class="p">₹'+PRICE+'</b> &middot; One-time payment'; b.textContent=PASS?'Unlock':'Unlock ₹'+PRICE; }
     else { show=window.scrollY>=hero.offsetHeight-120; l1.textContent='Vastu Career Report'; l2.innerHTML='Free &middot; takes under a minute'; b.textContent='Get Free Preview'; }
     bar.hidden=!show; document.body.style.paddingBottom=show?'84px':'';
   }
@@ -748,10 +750,11 @@ fbq('track', 'PageView');
   async function checkout(){
     if(paying||!RID||(T&&T.ready===false)) return; paying=true; say(''); busy('Opening secure checkout…');
     try{
-      var r=await post('/api/order',{report_id:RID,phone:PHONE,fbc:ck('_fbc'),fbp:ck('_fbp')}); var d=await r.json().catch(function(){return {};});
+      var r=await post('/api/order',{report_id:RID,phone:PHONE,fbc:ck('_fbc'),fbp:ck('_fbp'),pass:PASS||undefined}); var d=await r.json().catch(function(){return {};});
       if(r.status===409){ busy(false); say('The complete report for your option is not on sale yet. Your free preview stays on this page.'); return; }
       if(d.already_paid){ location.href='/report/'+encodeURIComponent(RID); return; }
-      if(d.free){ window.FREE_UNLOCK=true; awaitReport(); return; }
+      if(d.error==='invalid_pass'){ PASS=''; busy(false); say('That pass link is not valid, or it has already been used.'); return; }
+      if(d.free){ PASS=''; window.FREE_UNLOCK=true; awaitReport(); return; }                    /* a free pass is not a sale: no checkout or Purchase events */
       if(!r.ok||!d.razorpay_order_id||!d.key_id){ busy(false); say('Checkout is not available right now. Your preview is saved on this page, so please try again a little later.'); return; }
       trackCheckout(); await loadRzp();
       var rz=new Razorpay({key:d.key_id,amount:d.amount,currency:d.currency,order_id:d.razorpay_order_id,name:'Axtroshastra',
