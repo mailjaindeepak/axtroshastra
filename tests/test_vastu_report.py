@@ -261,3 +261,20 @@ def test_pdf_is_16_pages_at_323_by_623_when_chrome_is_available():
     doc = fitz.open(stream=data, filetype="pdf")
     assert len(doc) == 16
     assert {(round(p.rect.width), round(p.rect.height)) for p in doc} == {(323, 623)}
+
+
+# ---------------------------------------------------------------- every Student question is answered in the paid pages (owner-approved set)
+def test_student_questions_match_what_the_paid_pages_deliver():
+    for flex, q1, p10 in (("can_move", "Where exactly should your desk go?", "Turn the desk to face"),
+                          ("a_little", "How far, and which way, should you turn your desk?", "a quarter turn to the right"),
+                          ("cannot_or_shared", "What can you fix without moving anything?", "works where it is")):
+        rep = report(desk="W", flex=flex)
+        assert rep["teaser"]["questions"][0]["q"] == q1
+        assert p10 in page_text(vr.render_vastu_career(rep), 10)
+    h = html_of(desk="W", flex="a_little")
+    assert "hostel" in page_text(h, 11) and "Ten-minute fixes" in page_text(h, 12)           # question 3
+    assert "wall behind you" in page_text(h, 5).lower() and "beam" in page_text(h, 5)       # question 2
+    assert "Light green" in page_text(h, 6) and "birth number" in page_text(h, 15)          # question 4
+    assert "bed" in page_text(h, 7) and "mirror" in page_text(h, 7)                         # question 5
+    e = html_of(desk="E", flex="can_move")
+    assert "look after it" in page_text(e, 10)                                              # the "good desk" variant

@@ -51,13 +51,23 @@ SEGMENT_META = {
 }
 
 # the five questions each report answers (also the five locked answers in the preview); DRAFT copy, owner approves per segment
+# Student question 1 adapts to the buyer's own answers (owner approved this set, 24 Nov 2026). Each question must be answered ONLY in the
+# paid pages, never by the free preview (the verdict, the first choices and the number's direction are free, so none of them is a question).
+STUDENT_Q1 = {
+    "can_move": ("Where exactly should your desk go?", "The best spot and direction for your desk, in order of effort."),
+    "a_little": ("How far, and which way, should you turn your desk?", "The exact turn, or a better corner of the same room."),
+    "cannot_or_shared": ("What can you fix without moving anything?", "Steps that work with your desk exactly where it is."),
+    "ideal": ("What small habits keep a good desk working?", "A few simple habits to look after a desk that already faces the right way."),
+    "unknown": ("What should you do about your desk?", "Steps that work whichever way you face, starting with a compass check."),
+}
+
 QUESTIONS = {
     "student": [
-        ("Which way should you face while studying?", "Which direction suits you, and what to do if your desk cannot face it."),
-        ("Is your desk placed well in the room?", "How the wall, the door and the space around your seat read in Vastu."),
-        ("Which colours suit your study corner?", "Light, plain colours for the walls, curtains and desk mat."),
-        ("What should stay on your desk, and what should go?", "A short keep and drop list, and a nightly reset."),
-        ("How do light and fresh air help long hours?", "Where the light comes from, and a lamp for the evenings."),
+        STUDENT_Q1["a_little"],                                                                                  # page 10 (adapts: see questions_for)
+        ("Is anything around your seat going against Vastu?", "The wall behind you, the door and any beam overhead."),   # page 5
+        ("What can you change tonight, even in a hostel or shared room?", "Ten-minute fixes, and ideas that work without a room of your own."),  # pages 11, 12
+        ("Which colours are linked with your study corner and your birth number?", "Colours for your desk corner, and the ones numerology links with your number."),  # pages 6, 15
+        ("Are any of your study habits on tradition's avoid list?", "What tradition says to drop from your study desk, and a nightly reset."),   # pages 7, 9
     ],
     "exam_aspirant": [
         ("Which direction suits long study hours?", "The direction and seat for long hours, and what to do if the desk stays put."),
@@ -109,6 +119,15 @@ _NUMBER_TIP = {
 }
 _NO_DIRECTION_TIP = ("Traditions place the planet linked with {n} in different directions, so this report gives you a "
                      "colour instead of a direction.")
+
+
+def questions_for(segment: str, verdict: str, flexibility: str) -> list:
+    """The five questions this report answers. Student question 1 follows the verdict and the flexibility."""
+    qs = [tuple(q) for q in QUESTIONS[segment]]
+    if segment == "student":
+        key = "ideal" if verdict == "ideal" else "unknown" if verdict == "unknown" else flexibility
+        qs[0] = STUDENT_Q1[key]
+    return qs
 
 
 class VastuInputError(ValueError):
@@ -243,7 +262,7 @@ def compute_vastu_career(name, dob, segment, desk_direction, desk_flexibility, d
         "number": {"mulank": mulank, "planet": planet, "working": E["mulank"]["working"],
                    "direction": DIR_NAME[ndir] if ndir else None, "tip": tip,
                    "planets": numerology.PLANETS},
-        "questions": [{"q": q, "d": dsc} for q, dsc in QUESTIONS[f["segment"]]],
+        "questions": [{"q": q, "d": dsc} for q, dsc in questions_for(f["segment"], verdict, f["desk_flexibility"])],
         "generated": today.isoformat(),
     }
     return {

@@ -161,6 +161,8 @@ def test_no_flagged_vocabulary_anywhere_in_visible_teaser_text_or_questions():
     for seg in vc.SEGMENTS:
         for q in vc.QUESTIONS[seg]:
             texts += list(q)
+    for q in vc.STUDENT_Q1.values():
+        texts += list(q)
     for tx in set(texts):
         for pat in FLAGGED:
             assert not re.search(pat, tx, re.I), (pat, tx)
@@ -171,3 +173,39 @@ def test_report_shape_for_save_report():
     assert r["product"] == "vastu_career" and r["meta"]["segment"] == "job_seeker"
     assert r["meta"]["desk_direction"] == "SE" and r["meta"]["door_direction"] == "E"
     assert set(r) == {"product", "meta", "teaser"}
+
+
+# ---------------------------------------------------------------- the approved Student question set (owner, 24 Nov 2026)
+def _q(seg="student", desk="W", flex="a_little", dob="2000-03-14"):
+    return [q["q"] for q in run(seg, desk, flex, dob=dob)["teaser"]["questions"]]
+
+
+def test_student_question_one_follows_the_flexibility_and_the_verdict():
+    assert _q(desk="W", flex="can_move")[0] == "Where exactly should your desk go?"
+    assert _q(desk="W", flex="a_little")[0] == "How far, and which way, should you turn your desk?"
+    assert _q(desk="W", flex="cannot_or_shared")[0] == "What can you fix without moving anything?"
+    assert _q(desk="S", flex="cannot_or_shared")[0] == "What can you fix without moving anything?"        # change verdict, same flexibility
+    assert _q(desk="E", flex="can_move")[0] == "What small habits keep a good desk working?"               # ideal overrides flexibility
+    assert _q(desk="not_sure", flex="a_little")[0] == "What should you do about your desk?"
+
+
+def test_student_questions_two_to_five_are_the_approved_ones():
+    assert _q()[1:] == ["Is anything around your seat going against Vastu?",
+                        "What can you change tonight, even in a hostel or shared room?",
+                        "Which colours are linked with your study corner and your birth number?",
+                        "Are any of your study habits on tradition's avoid list?"]
+
+
+def test_no_locked_question_repeats_what_the_free_preview_already_answers():
+    # the free preview shows the verdict, the first choices and the number's direction, so no locked question may ask for them
+    for desk, flex in itertools.product(vc.DIR_OR_UNSURE, vc.FLEXIBILITY):
+        for q in _q(desk=desk, flex=flex):
+            low = q.lower()
+            assert "facing the right way" not in low and "which way should you face" not in low, q
+            assert "birth number point" not in low and "direction does your birth number" not in low, q
+
+
+def test_other_segments_questions_are_unchanged_drafts():
+    for seg in vc.SEGMENTS:
+        if seg != "student":
+            assert _q(seg, desk="N") == [q for q, _ in vc.QUESTIONS[seg]]

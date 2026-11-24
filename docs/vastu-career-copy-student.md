@@ -128,3 +128,7 @@ The owner approved the Student copy "with my cuts". Recorded decisions, which ov
 5. KEPT as written (low risk, practical): the nightly reset, one item one place, folding board, "open a window for a few minutes".
 6. Page 10 "Not sure yet" and "Ideal" keep the wording above, minus the cut lines.
 Only the Student segment is approved. The other five segments stay unwritten and not for sale until each is approved.
+
+## I. DECISION LOG (owner, 24 Nov 2026): the five cover and locked-list questions for Student
+Approved set (replaces the earlier draft): 1) adaptive: "Where exactly should your desk go?" (can move) / "How far, and which way, should you turn your desk?" (can turn a little) / "What can you fix without moving anything?" (cannot move) / "What small habits keep a good desk working?" (desk already ideal) / "What should you do about your desk?" (direction not known); 2) "Is anything around your seat going against Vastu?"; 3) "What can you change tonight, even in a hostel or shared room?"; 4) "Which colours are linked with your study corner and your birth number?"; 5) "Are any of your study habits on tradition's avoid list?"
+Rule: a locked question must be answered only in the paid pages, never by the free preview (verdict, first choices and the number's direction are free). Other segments' questions stay unapproved drafts.
