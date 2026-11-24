@@ -1562,13 +1562,16 @@ def _inject_footer_disclaimer(html: str, lang: str = "en") -> str:
         return html
 
 
-def _serve_page_with_nav(path: str, lang: str = "en"):
+def _serve_page_with_nav(path: str, lang: str = "en", transform=None):
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return HTMLResponse(_inject_tracking(_inject_nav(
+            raw = f.read()
+        if transform:                                  # optional per-request edit of the page source (used by the Vastu option pages)
+            raw = transform(raw)
+        return HTMLResponse(_inject_tracking(_inject_nav(
                 _inject_consent_checkbox(
                     _inject_footer_disclaimer(
-                        _inject_footer_link(f.read(), lang), lang), lang), lang)))
+                        _inject_footer_link(raw, lang), lang), lang), lang)))
     except Exception as e:
         logger.error("[nav] failed to serve %s: %s", path, e)
         return FileResponse(path)
@@ -3111,7 +3114,8 @@ def sitemap():
             "/en/business-growth", "/hi/business-growth", "/en/career-growth", "/hi/career-growth",
             "/en/career-intelligence", "/en/numerology", "/en/iq-test", "/en/vastu-career", "/en/annual-report", "/blog",
             "/about", "/login", "/privacy", "/terms", "/en/celebrity-horoscope"
-            ] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
+            ] + [f"/en/vastu-career/{slug}" for slug, seg in VASTU_OPTION_PAGES.items()
+                 if seg in __import__("vastu_career").READY_SEGMENTS] + [f"/blog/{s}" for s in BLOG_SLUGS] + [
                 f"/en/celebrity-horoscope/{s}-kundli" for s in CELEBRITY_SLUGS
             ]
     body = "".join(f"<url><loc>{base_url}{u}</loc></url>" for u in urls)
@@ -3837,6 +3841,38 @@ def iq_test_redirect(request: Request):
 def vastu_career_en():
     """Vastu Career Report landing at /en/vastu-career (English only for now; Hindi after English is approved)."""
     return _serve_page_with_nav(os.path.join(PAGES_DIR, "vastu-career.html"))
+
+
+# One English landing page per option (slug -> segment key). A page is indexable and in the sitemap only while its segment is on sale
+# (vastu_career.READY_SEGMENTS); until then it is noindex and says the complete report is coming soon.
+VASTU_OPTION_PAGES = {"student": "student", "exam-aspirant": "exam_aspirant", "working-professional": "professional",
+                      "work-from-home": "wfh", "business-owner": "owner", "job-seeker": "job_seeker"}
+
+
+def _vastu_option_transform(segment: str):
+    import vastu_career
+
+    def tf(html: str) -> str:
+        if segment in vastu_career.READY_SEGMENTS:         # on sale: indexable with its self-canonical block; drop the helper markers
+            return re.sub(r"<!--VC_(INDEX_START|INDEX_END|NOTICE)-->\n?\s*", "", html)
+        html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">', html, flags=re.S)
+        return html.replace("<!--VC_NOTICE-->", '<p class="mk-notice">Your free preview is ready now. The complete report for this option is coming soon.</p>')
+    return tf
+
+
+@app.get("/en/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_en(slug: str):
+    seg = VASTU_OPTION_PAGES.get(slug)
+    if not seg:
+        raise HTTPException(404, "page not found")
+    return _serve_page_with_nav(os.path.join(PAGES_DIR, f"vastu-career-{slug}.html"), transform=_vastu_option_transform(seg))
+
+
+@app.get("/vastu-career/{slug}", include_in_schema=False)
+def vastu_career_option_redirect(slug: str, request: Request):
+    """Bare /vastu-career/<option> → /en/vastu-career/<option> (301 permanent). Preserves query string."""
+    q = request.url.query
+    return RedirectResponse(f"/en/vastu-career/{slug}" + (f"?{q}" if q else ""), status_code=301)
 
 
 @app.get("/vastu-career", include_in_schema=False)
