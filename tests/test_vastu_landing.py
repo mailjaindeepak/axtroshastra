@@ -181,3 +181,11 @@ def test_server_price_is_99_by_product_never_the_499_default():
     assert api._order_amount_paise({"product": "vastu_career"}) == 9900
     assert api._order_amount_paise({"product": "vastu_career", "payload": {"meta": {"variant": "/en/marriage-v4"}}}) == 9900
     assert api.PRODUCT_LABEL["vastu_career"] == "Vastu Career Report"
+
+
+def test_the_owner_approved_hook_is_on_the_main_page(page):
+    # owner choice, 24 Nov 2026: a relatable headline and a tagline naming both the free answer and the paid next step
+    assert "You spend hours at your desk. Does it face the <em>right way</em>?" in page
+    assert "Free Vastu desk check in a minute | Then see exactly what to change, even if you can't move it." in page
+    assert "Vastu for your career</div>" in page                                    # the eyebrow stays
+    assert "desk face the right way for your career" not in _text(page)

@@ -63,7 +63,7 @@ def test_all_six_pages_share_the_one_common_hook_with_the_main_page():
     main = (PAGES / "vastu-career.html").read_text(encoding="utf-8")
     for slug in SLUGS:
         h = (PAGES / f"vastu-career-{slug}.html").read_text(encoding="utf-8")
-        assert _h1(h) == _h1(main) == "Does your desk face the right way for your career?"
+        assert _h1(h) == _h1(main) == "You spend hours at your desk. Does it face the right way?"
         for pat in (r"<title>.*?</title>", r'name="description" content="[^"]*"', r'property="og:title" content="[^"]*"', r'<p class="tag1">.*?</p>',
                     r'<div class="eyebrow ico">.*?</div>'):
             assert re.search(pat, h, re.S).group(0) == re.search(pat, main, re.S).group(0), (slug, pat)
