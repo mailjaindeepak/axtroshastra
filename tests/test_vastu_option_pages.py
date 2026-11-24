@@ -47,9 +47,11 @@ def test_page_is_served_and_the_option_is_preselected(client, slug, seg):
 
 
 @pytest.mark.parametrize("slug,seg", list(SLUGS.items()))
-def test_every_option_page_is_noindex_with_no_canonical_and_the_notice_only_while_not_on_sale(client, slug, seg):
+def test_every_option_page_is_noindex_with_a_canonical_to_the_main_page_and_the_notice_only_while_not_on_sale(client, slug, seg):
     h = client.get(f"/en/vastu-career/{slug}").text
-    assert 'name="robots" content="noindex,follow"' in h and 'rel="canonical"' not in h and "hreflang" not in h
+    # the robot's SEO check needs a canonical on every page; it points at the main page, and hreflang stays off
+    assert 'name="robots" content="noindex,follow"' in h and "hreflang" not in h
+    assert h.count('rel="canonical"') == 1 and 'rel="canonical" href="https://www.axtroshastra.com/en/vastu-career"' in h
     notice = "Your free preview is ready now. The complete report for this option is coming soon."
     assert (notice in _text(h)) == (seg not in vc.READY_SEGMENTS)
 

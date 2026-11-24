@@ -3890,7 +3890,7 @@ def _vastu_option_transform(segment: str):
     import vastu_career
 
     def tf(html: str) -> str:
-        html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">', html, flags=re.S)
+        html = re.sub(r"<!--VC_INDEX_START-->.*?<!--VC_INDEX_END-->", '<meta name="robots" content="noindex,follow">\n<link rel="canonical" href="https://www.axtroshastra.com/en/vastu-career">', html, flags=re.S)
         if segment in vastu_career.READY_SEGMENTS:
             return re.sub(r"<!--VC_NOTICE-->\n?\s*", "", html)
         return html.replace("<!--VC_NOTICE-->", '<p class="mk-notice">Your free preview is ready now. The complete report for this option is coming soon.</p>')
