@@ -85,9 +85,53 @@ STUDENT = {
         ("i-shield", "A solid wall behind you", "Even at a shared table, choose the seat with a wall at your back."),
         ("i-book", "Use a folding board or a tray", "Set up a study spot you can open and clear in a minute.")]),
     "dont": "Study on the bed. Leave a mirror facing the desk. Leave clutter or broken items on the desk.",
+    "do_extra": "",
+    "colour_ref": " (page 6)",
 }
 
-CONTENT = {"student": STUDENT}          # a segment appears here only after the owner approves its copy
+# ---------------------------------------------------------------- approved copy, Exam aspirant (docs/vastu-career-copy-exam-aspirant.md, decision log G: approved as written)
+EXAM_ASPIRANT = {
+    "label": "Exam aspirant",
+    "tagline": "Your desk for long study hours, read through traditional Vastu, with fixes you can do this week.",
+    "comfort": "Long hours need a clear desk and a fixed spot. Vastu gives you a place to start.",
+    "purpose": "long study",
+    "why_matters": "Sources most often name the east and the north for focus. The north is tied to competitive tests, and a north-east room is often preferred.",
+    "cards": [
+        ("Direction and seat for long hours", "Tradition favours <b>east</b> or <b>north-east</b> for long stretches of study.", [
+            ("i-compass", "East or north-east", "The usual pick for long stretches of study."),
+            ("i-compass", "North", "One source ties the north to focus for competitive tests."),
+            ("i-shield", "A solid wall behind and a firm chair", "Avoid a door or open space at your back. A chair with back support keeps you steady through long hours.")]),
+        ("Your revision corner", "One fixed spot makes revision easier to start.", [
+            ("i-check", "One fixed spot", "A corner you can set up the same way every day.", "good"),
+            ("i-book", "Charts on the east or north wall", "Put the sheets you revise most where your eyes land first."),
+            ("i-clock", "Your timetable in view", "One sheet you can see from your seat.")]),
+        ("Light and air for night study", "Late hours need soft light and fresh air.", [
+            ("i-moon", "A lamp that does not glare", "Warm light at the side, not into your eyes or onto a shiny page."),
+            ("i-check", "A window open for a few minutes", "Fresh air through the evening."),
+            ("i-book", "Light and a quiet room", "One source says these matter more than the exact direction.")]),
+        ("Your nightly reset", "A clean start the next morning begins tonight.", [
+            ("i-check", "Clear the desk every night", "Put papers away and leave tomorrow's first topic on top.", "good"),
+            ("i-alert", "Phone away from the desk", "Keep it out of reach while you study.", "warn"),
+            ("i-book", "Books back in place", "A tidy shelf makes the next morning's start easier.")]),
+        ("Common aspirant mistakes", "Small habits that tradition says to leave behind.", [
+            ("i-alert", "Studying in bed", "The bed is for sleep.", "warn"),
+            ("i-alert", "Your back to the door", "Face away from the door and it is harder to settle.", "warn"),
+            ("i-alert", "A dim, cluttered corner", "Add a lamp and clear the top.", "warn")]),
+    ],
+    "org": ("Books, notes and the revision stack", "Order is the easiest fix, and it works in any room.", [
+        ("i-book", "One notebook for each subject", "Label the spine so you can find it in a few seconds."),
+        ("i-check", "One item, one place", "Pens, charger and notebook each get a spot. Return them after use."),
+        ("i-check", "A clear surface", "A lamp, today's books and a clean writing surface are enough.", "good")]),
+    "small": ("Hostel, PG or shared room", "Many aspirants study in a shared room. These still work.", [
+        ("i-people", "Claim the east or north side of the room", "Even a small table there is better than a larger one elsewhere."),
+        ("i-shield", "A solid wall behind you", "Even at a shared table, choose the seat with a wall at your back."),
+        ("i-book", "A folding board for the hours you cannot get a desk", "Open it, study, clear it away.")]),
+    "dont": "Study on the bed. Leave your phone on the desk. Leave clutter or broken items on the desk.",
+    "do_extra": " Put tomorrow's first topic on top.",
+    "colour_ref": "",                       # this segment has no colours card, so no page reference
+}
+
+CONTENT = {"student": STUDENT, "exam_aspirant": EXAM_ASPIRANT}          # a segment appears here only after the owner approves its copy
 
 
 def _content(segment):
@@ -209,7 +253,7 @@ def _fix_page(t, flex):
 
 
 # ---------------------------------------------------------------- pages 14 and 15 (numerology, shared by every segment)
-def _number_pages(t):
+def _number_pages(t, C):
     n = t["number"]
     num, planet, ndir = n["mulank"], n["planet"], n["direction"]
     dn = t["desk_label"]
@@ -240,7 +284,7 @@ def _number_pages(t):
                  f'<div style="font-size:12px;margin-top:6px;color:var(--muted)">{escape(nm)}</div></div>' for nm, c in swatches)
     bold = num in (1, 9)
     tail = (_pt("i-alert", "Strong colours stay small", "Reds and oranges are bold. Keep them to a pen pot or a cushion, and the walls light.", "warn") if bold
-            else _pt("i-book", "Keep the walls light", "Vastu advice for a study corner prefers light colours on the walls (page 6)."))
+            else _pt("i-book", "Keep the walls light", f"Vastu advice for a study corner prefers light colours on the walls{C['colour_ref']}."))
     p15 = (f'<!-- 15 -->\n<section class="page"><div class="col"><div class="eyebrow">From your birth number</div>'
            f'<h2 class="head">Your number\'s colour</h2><div class="rule"></div>'
            f'<div class="lead">Numerology links birth number {num} with <b>{escape(phrase)}</b>. Use them as accents, not as wall colours.</div>'
@@ -319,7 +363,7 @@ def render_vastu_career(payload: dict) -> str:
   <div class="eyebrow">Tonight</div><h2 class="head">Ten-minute fixes</h2><div class="rule"></div>
   <div class="lead">Do these before you sleep. No tools needed.</div>
   <div class="dwcard">
-    <div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg><div class="tx"><b>Do</b>Clear the desk.{turn_clause} Open a window for five minutes. Keep one lamp at the side.</div></div>
+    <div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg><div class="tx"><b>Do</b>Clear the desk.{escape(C["do_extra"])}{turn_clause} Open a window for five minutes. Keep one lamp at the side.</div></div>
     <div class="dwrow watch"><svg class="ic pi"><use href="#i-alert"/></svg><div class="tx"><b>Don't</b>{escape(C["dont"])}</div></div>
   </div>
   {door}
@@ -339,7 +383,7 @@ def render_vastu_career(payload: dict) -> str:
   <div class="klegend" style="margin-top:12px;font-size:12.5px;color:var(--muted)">{cap}</div>
 </div><div class="pno">13</div></section>''')
 
-    p14, p15 = _number_pages(t)
+    p14, p15 = _number_pages(t, C)
     pages += [p14, p15]
 
     pages.append(f'''<!-- 16 THANK YOU -->

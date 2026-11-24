@@ -71,3 +71,8 @@ Cover tagline: "Your desk for long study hours, read through traditional Vastu, 
 2. Whether "phone away from the desk" belongs. It is practical advice, not Vastu, and the Student report does not carry it.
 3. Whether you want the questions in section A as written.
 4. Once approved I add the segment to the paid report and to the on-sale list, with tests, as I did for Student. The next segment would be Working professional.
+
+---
+
+## G. DECISION LOG (owner, 24 Nov 2026): approved as written
+The owner chose "Approve everything as written": every NEW line is kept, including the phone-away lines (pages 7 and 12) and the back-to-the-door wording on page 8 ("Face away from the door and it is harder to settle."). The five questions in section A are approved. The shared pages stay as approved in the Student document. The segment is added to `READY_SEGMENTS`.

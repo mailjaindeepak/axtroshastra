@@ -88,7 +88,7 @@ def test_other_segments_refuse_to_render():
 
 
 def test_ready_segments_are_exactly_the_ones_with_approved_content():
-    assert vc.READY_SEGMENTS == {"student"} and set(vr.CONTENT) == set(vc.READY_SEGMENTS)
+    assert vc.READY_SEGMENTS == {"student", "exam_aspirant"} and set(vr.CONTENT) == set(vc.READY_SEGMENTS)
 
 
 # ---------------------------------------------------------------- copy decisions (decision log H) and honesty
@@ -219,6 +219,7 @@ def _create(client, **kw):
 
 def test_preview_says_ready_only_for_approved_segments(client):
     assert _create(client)["teaser"]["ready"] is True
+    assert _create(client, segment="exam_aspirant", desk_direction="S")["teaser"]["ready"] is True
     assert _create(client, segment="owner", desk_direction="W")["teaser"]["ready"] is False
 
 
@@ -241,7 +242,7 @@ def test_paid_student_report_is_served_with_wired_buttons(client):
 
 
 def test_an_unapproved_segment_cannot_be_ordered(client):
-    rid = _create(client, segment="exam_aspirant", desk_direction="S")["report_id"]
+    rid = _create(client, segment="professional", desk_direction="NE")["report_id"]
     r = client.post("/api/order", json={"report_id": rid, "phone": "+919876592099"})
     assert r.status_code == 409 and r.json()["detail"] == "not_available"
 
@@ -278,3 +279,77 @@ def test_student_questions_match_what_the_paid_pages_deliver():
     assert "bed" in page_text(h, 7) and "mirror" in page_text(h, 7)                         # question 5
     e = html_of(desk="E", flex="can_move")
     assert "look after it" in page_text(e, 10)                                              # the "good desk" variant
+
+
+# ---------------------------------------------------------------- Exam aspirant (copy approved as written, 24 Nov 2026)
+ASP = "exam_aspirant"
+
+
+@pytest.mark.parametrize("desk,flex", list(itertools.product(vc.DIR_OR_UNSURE, vc.FLEXIBILITY)))
+def test_every_aspirant_combination_renders_exactly_16_cards(desk, flex):
+    h = html_of(segment=ASP, desk=desk, flex=flex)
+    assert len(pages_of(h)) == 16
+    assert re.findall(r'<div class="pno">(\d+)</div>', h) == [f"{i:02d}" for i in range(1, 17)]
+
+
+def test_aspirant_has_its_own_five_cards_and_none_of_the_students():
+    h = html_of(segment=ASP)
+    heads = [re.search(r'<h2 class="head">(.*?)</h2>', pages_of(h)[i], re.S).group(1) for i in range(3, 8)]
+    assert heads == [c[0] for c in vr.EXAM_ASPIRANT["cards"]]
+    for c in vr.STUDENT["cards"]:
+        assert c[0] not in text_of(h), c[0]
+    st = text_of(html_of())
+    for c in vr.EXAM_ASPIRANT["cards"]:
+        assert c[0] not in st, c[0]
+
+
+def test_aspirant_copy_is_the_approved_text_and_uses_the_segment_words():
+    h = html_of(segment=ASP, desk="W", flex="a_little", door="N")
+    assert "Exam aspirant" in page_text(h, 1) and "long study hours" in page_text(h, 1)
+    assert "long study" in page_text(h, 3) and "tied to competitive tests" in page_text(h, 3)
+    assert "Put tomorrow's first topic on top" in page_text(h, 12) and "Leave your phone on the desk" in page_text(h, 12)
+    assert "Phone away from the desk" in page_text(h, 7) and "Your back to the door" in page_text(h, 8)
+    assert "Hostel, PG or shared room" in page_text(h, 11)
+    assert "One notebook for each subject" in page_text(h, 9)
+
+
+def test_aspirant_page_15_has_no_dangling_page_reference():
+    # the aspirant cards have no colours page, so the Student's "(page 6)" pointer must not appear
+    t = page_text(html_of(segment=ASP, dob=DOB_FOR[4]), 15)
+    assert "light colours on the walls." in t and "(page 6)" not in t
+    assert "(page 6)" in page_text(html_of(dob=DOB_FOR[4]), 15)
+
+
+def test_aspirant_cut_lines_and_vocabulary():
+    for desk, flex, door in itertools.product(("W", "S", "E", "not_sure"), vc.FLEXIBILITY, (None, "N")):
+        t = text_of(html_of(segment=ASP, desk=desk, flex=flex, door=door))
+        for line in CUT_LINES:
+            assert line.lower() not in t.lower(), (line, desk, flex)
+        for pat in FLAGGED:
+            assert not re.search(pat, t, re.I), (pat, desk, flex)
+        assert not re.search(r"\{[a-z_ ]+\}", t)
+        for p in PERSONAS:
+            assert p not in t
+
+
+def test_aspirant_who_cannot_move_the_desk_is_never_told_to_move_it():
+    for desk in ("W", "S", "SE", "SW", "NW"):
+        t = page_text(html_of(segment=ASP, desk=desk, flex="cannot_or_shared"), 10)
+        assert not re.search(r"Turn the|free corner|another corner", t), (desk, t)
+        assert "works where it is" in t
+    assert "a quarter turn to the left" in page_text(html_of(segment=ASP, desk="S", flex="a_little"), 10)
+
+
+def test_aspirant_is_orderable_and_the_rest_still_are_not(client):
+    rid = _create(client, segment=ASP, desk_direction="S")["report_id"]
+    assert client.post("/api/order", json={"report_id": rid, "phone": "+919876592097"}).status_code != 409
+    for seg in ("professional", "wfh", "owner", "job_seeker"):
+        rid = _create(client, segment=seg, desk_direction="NE")["report_id"]
+        assert client.post("/api/order", json={"report_id": rid, "phone": "+919876592096"}).status_code == 409, seg
+
+
+def test_paid_aspirant_report_is_served(client):
+    rid = _create(client, segment=ASP, desk_direction="S", desk_flexibility="cannot_or_shared")["report_id"]
+    assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+    h = client.get(f"/report/{rid}").text
+    assert len(pages_of(h)) == 16 and "Exam aspirant" in text_of(h) and "axPdfDl" in h and "Share on WhatsApp" not in h

@@ -18,7 +18,7 @@ import numerology
 SEGMENTS = ("student", "exam_aspirant", "professional", "wfh", "owner", "job_seeker")
 # Segments whose paid-report copy the owner has APPROVED (docs/vastu-career-copy-<segment>.md, decision log). Only these can be
 # bought: the order route refuses the rest, and the preview shows no price for them. Add a segment here only after its copy is approved.
-READY_SEGMENTS = frozenset({"student"})
+READY_SEGMENTS = frozenset({"student", "exam_aspirant"})
 DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 DIR_OR_UNSURE = DIRECTIONS + ("not_sure",)
 FLEXIBILITY = ("can_move", "a_little", "cannot_or_shared")
@@ -70,11 +70,11 @@ QUESTIONS = {
         ("Are any of your study habits on tradition's avoid list?", "What tradition says to drop from your study desk, and a nightly reset."),   # pages 7, 9
     ],
     "exam_aspirant": [
-        ("Which direction suits long study hours?", "The direction and seat for long hours, and what to do if the desk stays put."),
-        ("Where should your revision corner be?", "Where charts and the timetable go so they catch your eye."),
-        ("How should light and air work for night study?", "A lamp that does not glare, and fresh air through the evening."),
-        ("What is a good nightly reset?", "A clear desk and a clear start for the next morning."),
-        ("Which mistakes do aspirants tend to make?", "The habits tradition says to leave behind."),
+        STUDENT_Q1["a_little"],                                                                                  # page 10 (adapts: see questions_for)
+        ("Is anything about your seat going against Vastu?", "The wall behind you, your chair and the door."),                 # page 4
+        ("Where should your revision corner go, and what belongs on its wall?", "A fixed spot, and what to put in front of your eyes."),   # page 5
+        ("What can you change tonight, even in a hostel or PG?", "Ten-minute fixes, and ideas that work without a room of your own."),   # pages 11, 12
+        ("Are any of your study habits on tradition's avoid list?", "The habits tradition says to leave behind."),               # page 8
     ],
     "professional": [
         ("Which way should your desk face?", "Your desk direction against the traditional first choices for office work."),
@@ -124,7 +124,7 @@ _NO_DIRECTION_TIP = ("Traditions place the planet linked with {n} in different d
 def questions_for(segment: str, verdict: str, flexibility: str) -> list:
     """The five questions this report answers. Student question 1 follows the verdict and the flexibility."""
     qs = [tuple(q) for q in QUESTIONS[segment]]
-    if segment == "student":
+    if segment in ("student", "exam_aspirant"):             # the two study segments share the adaptive question 1
         key = "ideal" if verdict == "ideal" else "unknown" if verdict == "unknown" else flexibility
         qs[0] = STUDENT_Q1[key]
     return qs

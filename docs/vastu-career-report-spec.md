@@ -160,6 +160,8 @@ Added after the Student copy was approved (20 Nov 2026, decision log in `docs/va
 
 Owner decision 24 Nov 2026: the Vastu report page has no "Share on WhatsApp" button and no shared legal Disclaimer box (the report's own pages 2 and 16 carry the belief-system note). WhatsApp delivery of the report to the buyer is unchanged. The disclaimer is dropped through a marker comment the shared `_wire_report_chrome` respects, so every other report keeps it.
 
+Exam aspirant added (24 Nov 2026): copy approved as written in `docs/vastu-career-copy-exam-aspirant.md` (decision log G). `READY_SEGMENTS` is now `{student, exam_aspirant}`; its five cover and locked-list questions are approved, and question 1 adapts to the verdict and the flexibility for both study segments. The other four segments (working professional, work from home, business owner, job seeker) are still unapproved: they refuse to render, cannot be ordered, and show a free preview without a price.
+
 NOT built yet (so the product is not shippable and must not be deployed): copy for the other five segments (each needs the owner's approval, then add the segment to `CONTENT` and `READY_SEGMENTS`); a real Razorpay test-mode payment (this machine has no keys, so only the DEMO_MODE path is tested); the WhatsApp templates and delivery check for this product; Hindi twin; on-page reviews (real ones only, none invented); privacy and terms wording for the new fields; the independent convergent audit (section 9) and the full browser test run.
 
 Open for the owner on the landing page: the 4.8 star and "reports generated" tiles are copied from the Numerology page and need confirming for this product; the Rs 99 button label; and whether the trust line "Built by IIT-IIM alumni" stays.

@@ -108,8 +108,11 @@ def test_teaser_has_five_own_segment_questions_and_none_from_another():
         qs = [q["q"] for q in run(seg)["teaser"]["questions"]]
         assert len(qs) == 5 and len(set(qs)) == 5
         seen[seg] = set(qs)
+    # The two study segments deliberately share the owner-approved adaptive question 1 and the avoid-list question; no other pair shares any.
+    shared_study = {q for q, _ in vc.STUDENT_Q1.values()} | {"Are any of your study habits on tradition's avoid list?"}
     for a, b in itertools.combinations(vc.SEGMENTS, 2):
-        assert not (seen[a] & seen[b]), (a, b)
+        allowed = shared_study if {a, b} == {"student", "exam_aspirant"} else set()
+        assert (seen[a] & seen[b]) <= allowed, (a, b, seen[a] & seen[b])
 
 
 def test_teaser_has_no_fixes_cards_or_colours():
@@ -207,5 +210,16 @@ def test_no_locked_question_repeats_what_the_free_preview_already_answers():
 
 def test_other_segments_questions_are_unchanged_drafts():
     for seg in vc.SEGMENTS:
-        if seg != "student":
+        if seg not in ("student", "exam_aspirant"):             # these two are approved; the rest are unapproved drafts
             assert _q(seg, desk="N") == [q for q, _ in vc.QUESTIONS[seg]]
+
+
+def test_exam_aspirant_questions_are_the_approved_set_and_question_one_adapts():
+    assert _q("exam_aspirant")[1:] == ["Is anything about your seat going against Vastu?",
+                                        "Where should your revision corner go, and what belongs on its wall?",
+                                        "What can you change tonight, even in a hostel or PG?",
+                                        "Are any of your study habits on tradition's avoid list?"]
+    assert _q("exam_aspirant", desk="S", flex="can_move")[0] == "Where exactly should your desk go?"
+    assert _q("exam_aspirant", desk="S", flex="cannot_or_shared")[0] == "What can you fix without moving anything?"
+    assert _q("exam_aspirant", desk="N", flex="can_move")[0] == "What small habits keep a good desk working?"
+    assert run("exam_aspirant", "S")["teaser"]["ready"] is True and run("professional", "N")["teaser"]["ready"] is False
