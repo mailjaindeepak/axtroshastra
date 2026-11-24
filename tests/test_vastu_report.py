@@ -88,7 +88,7 @@ def test_other_segments_refuse_to_render():
 
 
 def test_ready_segments_are_exactly_the_ones_with_approved_content():
-    assert vc.READY_SEGMENTS == {"student", "exam_aspirant"} and set(vr.CONTENT) == set(vc.READY_SEGMENTS)
+    assert vc.READY_SEGMENTS == {"student", "exam_aspirant", "professional", "wfh"} and set(vr.CONTENT) == set(vc.READY_SEGMENTS)
 
 
 # ---------------------------------------------------------------- copy decisions (decision log H) and honesty
@@ -242,7 +242,7 @@ def test_paid_student_report_is_served_with_wired_buttons(client):
 
 
 def test_an_unapproved_segment_cannot_be_ordered(client):
-    rid = _create(client, segment="professional", desk_direction="NE")["report_id"]
+    rid = _create(client, segment="owner", desk_direction="NE")["report_id"]
     r = client.post("/api/order", json={"report_id": rid, "phone": "+919876592099"})
     assert r.status_code == 409 and r.json()["detail"] == "not_available"
 
@@ -343,7 +343,7 @@ def test_aspirant_who_cannot_move_the_desk_is_never_told_to_move_it():
 def test_aspirant_is_orderable_and_the_rest_still_are_not(client):
     rid = _create(client, segment=ASP, desk_direction="S")["report_id"]
     assert client.post("/api/order", json={"report_id": rid, "phone": "+919876592097"}).status_code != 409
-    for seg in ("professional", "wfh", "owner", "job_seeker"):
+    for seg in ("owner", "job_seeker"):
         rid = _create(client, segment=seg, desk_direction="NE")["report_id"]
         assert client.post("/api/order", json={"report_id": rid, "phone": "+919876592096"}).status_code == 409, seg
 
@@ -399,3 +399,93 @@ def test_a_pass_cannot_unlock_an_unapproved_segment_and_is_not_used_up(client):
 def test_make_pass_needs_the_admin_key(client):
     assert client.get("/api/make_pass", params={"key": "wrong", "n": 1}).status_code == 403
     assert client.get("/api/make_pass").status_code == 403
+
+
+# ---------------------------------------------------------------- Working professional and Work from home (copy approved as written, 24 Nov 2026)
+WORK = {"professional": ("Working professional", vr.PROFESSIONAL), "wfh": ("Work from home", vr.WFH)}
+
+
+@pytest.mark.parametrize("seg", list(WORK))
+@pytest.mark.parametrize("desk,flex", list(itertools.product(vc.DIR_OR_UNSURE, vc.FLEXIBILITY)))
+def test_every_work_segment_combination_renders_exactly_16_cards(seg, desk, flex):
+    h = html_of(segment=seg, desk=desk, flex=flex)
+    assert len(pages_of(h)) == 16
+    assert re.findall(r'<div class="pno">(\d+)</div>', h) == [f"{i:02d}" for i in range(1, 17)]
+
+
+@pytest.mark.parametrize("seg", list(WORK))
+def test_each_work_segment_has_its_own_five_cards_and_no_other_segments(seg):
+    label, C = WORK[seg]
+    h = html_of(segment=seg)
+    heads = [re.search(r'<h2 class="head">(.*?)</h2>', pages_of(h)[i], re.S).group(1) for i in range(3, 8)]
+    assert heads == [c[0] for c in C["cards"]] and len(heads) == 5
+    for other, OC in ((k, v) for k, v in vr.CONTENT.items() if k != seg):
+        for c in OC["cards"]:
+            if c[0] not in [x[0] for x in C["cards"]]:                       # a heading two segments genuinely share is fine
+                assert c[0] not in heads, (seg, other, c[0])                  # no other segment's card appears as one of this report's five card pages
+    assert label in page_text(h, 1)
+
+
+@pytest.mark.parametrize("seg", list(WORK))
+def test_work_segments_cut_lines_vocabulary_placeholders_and_personas(seg):
+    for desk, flex, door in itertools.product(("NE", "W", "S", "E", "not_sure"), vc.FLEXIBILITY, (None, "N")):
+        t = text_of(html_of(segment=seg, desk=desk, flex=flex, door=door))
+        for line in CUT_LINES:
+            assert line.lower() not in t.lower(), (seg, line, desk, flex)
+        for pat in FLAGGED:
+            assert not re.search(pat, t, re.I), (seg, pat, desk, flex)
+        assert not re.search(r"\{[a-z_ ]+\}", t) and "None" not in t
+        for p in PERSONAS:
+            assert p not in t
+
+
+@pytest.mark.parametrize("seg", list(WORK))
+def test_work_segments_buyer_who_cannot_move_the_desk_is_never_told_to_move_it(seg):
+    for desk in ("NE", "W", "S", "SE", "SW", "NW"):
+        t = page_text(html_of(segment=seg, desk=desk, flex="cannot_or_shared"), 10)
+        assert not re.search(r"Turn the|free corner|another corner|Or set it up", t), (seg, desk, t)
+        assert "works where it is" in t
+        assert "light desk mat" not in t                                      # the Student's colours fix is not part of the work copy
+
+
+def test_work_segments_use_the_work_turn_table_not_the_study_one():
+    assert "an eighth of a turn to the left" in page_text(html_of(segment="professional", desk="NE", flex="a_little", dob=DOB_FOR[5]), 10)
+    assert "Turn the chair or the desk toward north" in page_text(html_of(segment="wfh", desk="NE", flex="a_little", dob=DOB_FOR[5]), 10)
+    assert "a long turn to the right" in page_text(html_of(segment="professional", desk="SW", flex="a_little"), 10)
+    assert "a long turn to the left" in page_text(html_of(desk="SW", flex="a_little"), 10)        # Student keeps its own table
+    assert "Turn the chair toward north if you can" in page_text(html_of(segment="wfh", desk="W", flex="a_little"), 12)
+
+
+def test_professional_page_text_matches_the_approved_copy():
+    h = html_of(segment="professional", desk="NE", flex="cannot_or_shared", door="N", dob=DOB_FOR[5])
+    assert "named as acceptable for an office desk" in page_text(h, 3) and "sales, marketing and business owners" in page_text(h, 3)
+    assert "Your growth corner" in page_text(h, 6) and "Tradition links the north with career" in page_text(h, 6)
+    assert "Shared office, cubicle or hot desk" in page_text(h, 11) and "A high-backed chair" in page_text(h, 11)
+    assert "high-backed chair gives a feeling of support" in page_text(h, 10)
+    assert "Wipe the screen" in page_text(h, 12) and "Sit with your back to a door or glass partition" in page_text(h, 12)
+    assert "keep the walls light" in page_text(html_of(segment="professional", dob=DOB_FOR[4]), 15)
+
+
+def test_wfh_page_text_matches_the_approved_copy_and_states_its_limits():
+    h = html_of(segment="wfh", desk="NE", flex="cannot_or_shared", door="N", dob=DOB_FOR[5])
+    assert "though sources differ on it" in page_text(h, 3)
+    assert "not something this check can see" in page_text(h, 3) and "cannot see where your desk is" in page_text(h, 4)
+    assert "Bedroom as office" in page_text(h, 5) and "Screen the bed during work" in page_text(h, 5)
+    assert "A screen or a curtain keeps work and rest apart" in page_text(h, 10)
+    assert "A small flat or a bedroom corner" in page_text(h, 11) and "fold-down table" in page_text(h, 11)
+    assert "Close the laptop and switch off the lamp" in page_text(h, 12) and "Work from the sofa or the bed" in page_text(h, 12)
+
+
+def test_work_segments_rule_b_still_applies():
+    h = html_of(segment="professional", desk="NE", dob=DOB_FOR[3])          # Jupiter, north-east: acceptable becomes ideal
+    assert "Your result: Ideal" in page_text(h, 3) and "points the same way" in page_text(h, 3)
+
+
+def test_work_segments_are_orderable_and_paid_reports_open(client):
+    for seg in WORK:
+        rid = _create(client, segment=seg, desk_direction="NE", desk_flexibility="cannot_or_shared")["report_id"]
+        assert client.post("/api/order", json={"report_id": rid, "phone": "+919876592060"}).status_code != 409, seg
+        rid = _create(client, segment=seg, desk_direction="W")["report_id"]
+        assert client.post(f"/api/_demo_pay/{rid}").status_code == 200
+        h = client.get(f"/report/{rid}").text
+        assert len(pages_of(h)) == 16 and WORK[seg][0] in text_of(h) and "Share on WhatsApp" not in h and "Disclaimer" not in h

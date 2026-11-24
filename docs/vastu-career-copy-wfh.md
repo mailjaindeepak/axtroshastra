@@ -79,3 +79,8 @@ Cover tagline: "Your home workspace, read through traditional Vastu, with fixes 
 2. The biggest gaps: all of page 6 (light), all of page 7 (clear room) and the screen-for-the-bed fix rest on my wording, not the research; and the north-east "acceptable" cell is where the sources disagree.
 3. Confirm the spec's "creative corner" idea stays out.
 4. Once approved I add Work from home to the paid report and open it for sale, with tests. Note Working professional is still waiting for your decision from the last round.
+
+---
+
+## DECISION LOG (owner, 24 Nov 2026): approved as written
+The owner approved this document with every NEW and UNVERIFIED line kept as written, and the five questions in section 2. The segment is added to `READY_SEGMENTS`, so it can now be bought. One small adaptation made while building, for the owner to veto: the shared page 15 closing line for this segment reads "Use your number's colours as small accents on the desk, and keep the walls light." instead of the Student wording about a study corner, which would not fit here.

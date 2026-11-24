@@ -109,9 +109,10 @@ def test_teaser_has_five_own_segment_questions_and_none_from_another():
         assert len(qs) == 5 and len(set(qs)) == 5
         seen[seg] = set(qs)
     # The two study segments deliberately share the owner-approved adaptive question 1 and the avoid-list question; no other pair shares any.
-    shared_study = {q for q, _ in vc.STUDENT_Q1.values()} | {"Are any of your study habits on tradition's avoid list?"}
+    shared_q1 = {q for q, _ in vc.STUDENT_Q1.values()}
+    shared_study = shared_q1 | {"Are any of your study habits on tradition's avoid list?"}
     for a, b in itertools.combinations(vc.SEGMENTS, 2):
-        allowed = shared_study if {a, b} == {"student", "exam_aspirant"} else set()
+        allowed = shared_study if {a, b} == {"student", "exam_aspirant"} else shared_q1 if {a, b} <= vc.READY_SEGMENTS else set()
         assert (seen[a] & seen[b]) <= allowed, (a, b, seen[a] & seen[b])
 
 
@@ -210,7 +211,7 @@ def test_no_locked_question_repeats_what_the_free_preview_already_answers():
 
 def test_other_segments_questions_are_unchanged_drafts():
     for seg in vc.SEGMENTS:
-        if seg not in ("student", "exam_aspirant"):             # these two are approved; the rest are unapproved drafts
+        if seg not in vc.READY_SEGMENTS:                        # approved segments have their own tests; the rest are unapproved drafts
             assert _q(seg, desk="N") == [q for q, _ in vc.QUESTIONS[seg]]
 
 
@@ -222,4 +223,29 @@ def test_exam_aspirant_questions_are_the_approved_set_and_question_one_adapts():
     assert _q("exam_aspirant", desk="S", flex="can_move")[0] == "Where exactly should your desk go?"
     assert _q("exam_aspirant", desk="S", flex="cannot_or_shared")[0] == "What can you fix without moving anything?"
     assert _q("exam_aspirant", desk="N", flex="can_move")[0] == "What small habits keep a good desk working?"
-    assert run("exam_aspirant", "S")["teaser"]["ready"] is True and run("professional", "N")["teaser"]["ready"] is False
+    assert run("exam_aspirant", "S")["teaser"]["ready"] is True and run("owner", "N")["teaser"]["ready"] is False
+
+
+def test_professional_and_wfh_questions_are_the_approved_sets_and_question_one_adapts():
+    assert _q("professional")[1:] == ["Is anything behind or above your seat going against Vastu?",
+                                       "What can you change at your desk, even in a shared office?",
+                                       "Is your growth corner open, and what is in its way?",
+                                       "Are any of your desk habits on tradition's avoid list?"]
+    assert _q("wfh")[1:] == ["Which corner of your home suits your work best?",
+                              "Can your bedroom double as an office?",
+                              "What can you change today, even in a small flat?",
+                              "Are any of your home-office habits on tradition's avoid list?"]
+    for seg in ("professional", "wfh"):
+        assert _q(seg, desk="W", flex="can_move")[0] == "Where exactly should your desk go?"
+        assert _q(seg, desk="W", flex="a_little")[0] == "How far, and which way, should you turn your desk?"
+        assert _q(seg, desk="W", flex="cannot_or_shared")[0] == "What can you fix without moving anything?"
+        assert _q(seg, desk="N", flex="can_move")[0] == "What small habits keep a good desk working?"
+        assert run(seg, "S")["teaser"]["ready"] is True
+
+
+def test_the_work_questions_never_repeat_what_the_free_preview_answers():
+    for seg in ("professional", "wfh"):
+        for desk, flex in itertools.product(vc.DIR_OR_UNSURE, vc.FLEXIBILITY):
+            for q in _q(seg, desk=desk, flex=flex):
+                low = q.lower()
+                assert "facing the right way" not in low and "which way should you face" not in low and "birth number point" not in low, q

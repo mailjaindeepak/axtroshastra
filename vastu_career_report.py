@@ -26,12 +26,21 @@ class NotReady(Exception):
 
 # nearest traditional first choice to turn toward, and how to turn (geometry, not a Vastu claim).
 # Student first choices are E, N, NE. West (acceptable) and the change cells below are covered; a desk already facing a first choice needs none.
-TURN = {
+TURN_STUDY = {
     "W": ("North", "a quarter turn to the right"),
     "S": ("East", "a quarter turn to the left"),
     "SE": ("East", "an eighth of a turn to the left"),
     "NW": ("North", "an eighth of a turn to the right"),
     "SW": ("East", "a long turn to the left"),
+}
+# Work segments (professional, work from home): ideal North and East, acceptable North-East, everything else change
+TURN_WORK = {
+    "NE": ("North", "an eighth of a turn to the left"),
+    "W": ("North", "a quarter turn to the right"),
+    "S": ("East", "a quarter turn to the left"),
+    "SE": ("East", "an eighth of a turn to the left"),
+    "NW": ("North", "an eighth of a turn to the right"),
+    "SW": ("North", "a long turn to the right"),
 }
 
 # numerology colours (research doc section 2: mostly one numerologist, low consensus) with display swatches
@@ -85,8 +94,17 @@ STUDENT = {
         ("i-shield", "A solid wall behind you", "Even at a shared table, choose the seat with a wall at your back."),
         ("i-book", "Use a folding board or a tray", "Set up a study spot you can open and clear in a minute.")]),
     "dont": "Study on the bed. Leave a mirror facing the desk. Leave clutter or broken items on the desk.",
-    "do_extra": "",
-    "colour_ref": " (page 6)",
+    "turn": TURN_STUDY,
+    "acc_line": "{dn} is named as a secondary option for {purpose}: not the first choice, easy to improve.",
+    "do": "Clear the desk.{turn} Open a window for five minutes. Keep one lamp at the side.",
+    "corner_move": "A free corner on the east or north side of the room suits study hours.",
+    "corner_turn": "A corner on the east or north side suits study hours.",
+    "inplace": [
+        ("i-shield", "Keep the wall behind you solid", "Choose the seat with a wall at your back, away from a door or window behind you."),
+        ("i-check", "A clear desk and a lamp", "Keep a lamp, today's books and a clean writing surface. Clear the rest.", "good"),
+        ("i-book", "Light colours", "A light desk mat or curtain in green, yellow, white or light blue."),
+        ("i-alert", "No mirror, no bed", "Keep a mirror from facing the desk, and do not study on the bed.", "warn")],
+    "walls": "Vastu advice for a study corner prefers light colours on the walls (page 6).",
 }
 
 # ---------------------------------------------------------------- approved copy, Exam aspirant (docs/vastu-career-copy-exam-aspirant.md, decision log G: approved as written)
@@ -127,11 +145,121 @@ EXAM_ASPIRANT = {
         ("i-shield", "A solid wall behind you", "Even at a shared table, choose the seat with a wall at your back."),
         ("i-book", "A folding board for the hours you cannot get a desk", "Open it, study, clear it away.")]),
     "dont": "Study on the bed. Leave your phone on the desk. Leave clutter or broken items on the desk.",
-    "do_extra": " Put tomorrow's first topic on top.",
-    "colour_ref": "",                       # this segment has no colours card, so no page reference
+    "turn": TURN_STUDY,
+    "acc_line": "{dn} is named as a secondary option for {purpose}: not the first choice, easy to improve.",
+    "do": "Clear the desk. Put tomorrow's first topic on top.{turn} Open a window for five minutes. Keep one lamp at the side.",
+    "corner_move": "A free corner on the east or north side of the room suits study hours.",
+    "corner_turn": "A corner on the east or north side suits study hours.",
+    "inplace": [
+        ("i-shield", "Keep the wall behind you solid", "Choose the seat with a wall at your back, away from a door or window behind you."),
+        ("i-check", "A clear desk and a lamp", "Keep a lamp, today's books and a clean writing surface. Clear the rest.", "good"),
+        ("i-book", "Light colours", "A light desk mat or curtain in green, yellow, white or light blue."),
+        ("i-alert", "No mirror, no bed", "Keep a mirror from facing the desk, and do not study on the bed.", "warn")],
+    "walls": "Vastu advice for a study corner prefers light colours on the walls.",     # this segment has no colours card, so no page reference
 }
 
-CONTENT = {"student": STUDENT, "exam_aspirant": EXAM_ASPIRANT}          # a segment appears here only after the owner approves its copy
+# ---------------------------------------------------------------- approved copy, Working professional (docs/vastu-career-copy-professional.md, approved as written)
+PROFESSIONAL = {
+    "label": "Working professional",
+    "tagline": "Your work desk, read through traditional Vastu, with fixes that fit a shared office.",
+    "comfort": "A tidy desk is easy to keep. Vastu gives you a few things to look after.",
+    "purpose": "an office desk",
+    "why_matters": "Sources most often name the north and the east for an office desk, and the north-east for sales, marketing and business owners.",
+    "cards": [
+        ("Which way to face at your desk", "Tradition favours <b>north</b> or <b>east</b> for work.", [
+            ("i-compass", "North or east", "The usual first choice for steady work."),
+            ("i-compass", "North-east", "Named for sales, marketing and business owners. Acceptable for everyone else."),
+            ("i-alert", "South and west", "South is usually avoided. If your seat cannot turn, the fixes on page 10 still help.", "warn")]),
+        ("Your seat and what is behind it", "The seat matters as much as the direction.", [
+            ("i-shield", "A solid wall behind you", "Gives a feeling of support through a long day."),
+            ("i-alert", "Not a door, window or glass behind you", "Avoid sitting with your back to a glass partition or an open doorway.", "warn"),
+            ("i-alert", "Not under a beam", "A heavy beam directly above the seat is traditionally avoided.", "warn")]),
+        ("Your growth corner", "Tradition links the north with career.", [
+            ("i-target", "Keep the north open", "The north side of your desk and room, clear and well lit."),
+            ("i-check", "An uncluttered desk", "Only what you use today stays on top.", "good"),
+            ("i-book", "Tidy drawers", "A drawer you can open without searching.")]),
+        ("Where the desk sits in the room", "Where the desk sits matters as much as the way it faces.", [
+            ("i-alert", "Not against a toilet or kitchen wall", "Avoid putting your back to either.", "warn"),
+            ("i-check", "The entrance in view", "You can see who comes in without sitting in line with the door."),
+            ("i-check", "Space in front of you", "Keep the area in front of the desk open.")]),
+        ("Common desk mistakes", "Most of these take a minute to fix.", [
+            ("i-alert", "Clutter on the desk", "Piles of paper and spare cups.", "warn"),
+            ("i-alert", "Facing a blank wall", "Traditionally avoided. If you cannot turn the desk, see page 10.", "warn"),
+            ("i-alert", "Piled-up electronics", "Move chargers and cables to one tidy spot.", "warn")]),
+    ],
+    "org": ("Desk, drawers and files", "Order is the easiest fix, and it works in any office.", [
+        ("i-check", "One item, one place", "Pens, charger and notebook each get a spot. Return them after use."),
+        ("i-book", "Files within reach", "Keep what you use daily on the desk and the rest in a drawer."),
+        ("i-check", "A clear surface", "A lamp and what you use today are enough.", "good")]),
+    "small": ("Shared office, cubicle or hot desk", "Many desks are not yours alone. These still work.", [
+        ("i-people", "Choose the east or north side when you can pick", "Face north or east when you sit down, even at a shared table."),
+        ("i-shield", "A high-backed chair when there is no wall behind you", "It gives a feeling of support."),
+        ("i-book", "A small kit you carry", "A lamp clip or a notebook you set out each day.")]),
+    "dont": "Sit with your back to a door or glass partition. Leave cups and wrappers on the desk. Leave clutter or broken items in view.",
+    "turn": TURN_WORK,
+    "acc_line": "{dn} is named as acceptable for {purpose}: not the first choice, easy to improve.",
+    "do": "Clear the desk. Wipe the screen. Close drawers that are open.{turn} Keep one lamp at the side.",
+    "corner_move": "A free corner on the east or north side of the room suits desk work.",
+    "corner_turn": "A corner on the east or north side suits desk work.",
+    "inplace": [
+        ("i-shield", "A solid wall behind you where there is one", "Where there is not, a high-backed chair gives a feeling of support."),
+        ("i-check", "A clear desk and a lamp", "Keep a lamp and what you use today. Clear the rest.", "good"),
+        ("i-alert", "No mirror facing the desk", "Keep a mirror from facing your seat.", "warn")],
+    "walls": "Use your number's colours as small accents on the desk, and keep the walls light.",
+}
+
+# ---------------------------------------------------------------- approved copy, Work from home (docs/vastu-career-copy-wfh.md, approved as written)
+WFH = {
+    "label": "Work from home",
+    "tagline": "Your home workspace, read through traditional Vastu, with fixes that fit a small flat.",
+    "comfort": "A clear edge between work and rest is easy to keep. Vastu helps you draw it.",
+    "purpose": "a home desk",
+    "why_matters": "Sources most often name the north and the east for a home desk. Where the desk sits in the room is not something this check can see.",
+    "cards": [
+        ("Choosing your corner", "Tradition favours the <b>north</b>, <b>east</b> or <b>north-east</b> of the home.", [
+            ("i-compass", "North, east or north-east of the home", "Sources most often prefer these sides for a workspace. This report cannot see where your desk is, so treat this as a guide."),
+            ("i-shield", "A solid wall behind you", "It gives a feeling of support when you work alone."),
+            ("i-alert", "Not against a toilet or kitchen wall", "Avoid putting your back to either.", "warn")]),
+        ("Bedroom as office", "If the bedroom has to double as a workspace, keep them apart.", [
+            ("i-check", "Work and rest are traditionally kept apart", "If the bedroom has to double as an office, keep the work area as far from the bed as you can.", "good"),
+            ("i-book", "Screen the bed during work", "A screen, a shelf or even a curtain does the job."),
+            ("i-alert", "Keep the laptop off the bed", "Working in bed blurs work and rest.", "warn")]),
+        ("Light and desk setup", "Light from the side makes a screen easier to read.", [
+            ("i-moon", "Light from the side", "A window on your left or right, not straight behind the screen."),
+            ("i-check", "A lamp for the evening", "Warm light at the side so you can work late without glare."),
+            ("i-alert", "Screen away from a mirror", "A mirror facing the desk is traditionally avoided.", "warn")]),
+        ("A clear desk and a clear room", "A plain layout leaves room to think.", [
+            ("i-check", "A clear space in the middle of the room", "Keep the centre open so the room does not feel crowded.", "good"),
+            ("i-clock", "Few distractions in view", "Move the television, games and snacks away from the desk."),
+            ("i-book", "Tidy cables", "Tie them up and keep chargers in one place.")]),
+        ("Common home-office mistakes", "Small habits that tradition says to leave behind.", [
+            ("i-alert", "Working from the sofa or the bed", "A fixed desk is traditionally preferred to a soft seat.", "warn"),
+            ("i-alert", "A mirror behind or facing the screen", "Move it to another wall.", "warn"),
+            ("i-clock", "No end to the workday", "Close the laptop, clear the top and switch off the lamp.")]),
+    ],
+    "org": ("Desk, cables and files", "Order is the easiest fix, and it works in any flat.", [
+        ("i-check", "One item, one place", "Pens, charger and notebook each get a spot. Return them after use."),
+        ("i-book", "Cables tied and chargers in one tray", "One tray, one strip."),
+        ("i-check", "A clear surface", "A lamp and what you use today are enough.", "good")]),
+    "small": ("A small flat or a bedroom corner", "Not every home has a spare room. These still work.", [
+        ("i-people", "A fold-down table or a tray desk", "Open it for work and put it away at the end."),
+        ("i-book", "A shelf or a screen to mark the work corner", "It shows where work starts and stops."),
+        ("i-alert", "Keep the laptop off the bed", "Working in bed blurs work and rest.", "warn")]),
+    "dont": "Work from the sofa or the bed. Leave a mirror facing the screen. Leave cables loose.",
+    "turn": TURN_WORK,
+    "acc_line": "{dn} is named as acceptable for {purpose}: not the first choice, though sources differ on it.",
+    "do": "Clear the desk. Tie up loose cables.{turn} Open a window for five minutes. Close the laptop and switch off the lamp when you finish.",
+    "corner_move": "A corner on the east or north side of the home suits a workspace.",
+    "corner_turn": "A corner on the east or north side of the room suits a workspace.",
+    "inplace": [
+        ("i-shield", "A solid wall behind you", "Choose the seat with a wall at your back, away from a door or window behind you."),
+        ("i-check", "A clear desk and a lamp", "Keep a lamp and what you use today. Clear the rest.", "good"),
+        ("i-alert", "No mirror, no sofa or bed", "Keep a mirror from facing the screen, and do not work from the bed.", "warn"),
+        ("i-book", "In a bedroom, a screen between desk and bed", "A screen or a curtain keeps work and rest apart.")],
+    "walls": "Use your number's colours as small accents on the desk, and keep the walls light.",
+}
+
+CONTENT = {"student": STUDENT, "exam_aspirant": EXAM_ASPIRANT, "professional": PROFESSIONAL, "wfh": WFH}          # a segment appears here only after the owner approves its copy
 
 
 def _content(segment):
@@ -208,7 +336,7 @@ def _verdict_points(C, t):
         return [("i-compass", "Your result: Ideal", first), ("i-check", "Why it matters", C["why_matters"]),
                 ("i-target", "What you can do", "Keep it as it is. Page 10 lists a few habits that keep it that way.")]
     if v == "acceptable":
-        return [("i-compass", "Your result: Acceptable", f"{escape(dn)} is named as a secondary option for {C['purpose']}: not the first choice, easy to improve."),
+        return [("i-compass", "Your result: Acceptable", escape(C["acc_line"].format(dn=dn, purpose=C["purpose"]))),
                 ("i-check", "Why it matters", C["why_matters"]),
                 ("i-target", "What you can do", "Page 10 lists the steps that match whether you can move your desk.")]
     if v == "change":
@@ -224,7 +352,7 @@ def _verdict_points(C, t):
 _RENTAL = ("i-check", "Rental-friendly", "Everything on this page works without any change to walls, doors or windows.", "good")
 
 
-def _fix_page(t, flex):
+def _fix_page(t, flex, C):
     v, dk = t["verdict"], t["desk_direction"]
     if v == "ideal":
         return ("Keep it, and look after it", "Your desk reads <b>ideal</b>, so there is nothing to move. These habits keep it that way.", [
@@ -235,21 +363,18 @@ def _fix_page(t, flex):
         return ("Check first, then fix", "We could not place your desk, so these steps work whichever way you face.", [
             ("i-compass", "Check the direction first", "Stand where you sit, open a compass app and note the way you face. Then open your preview again to see your result."),
             ("i-check", "Whichever way you face", "Keep the desk clear, a lamp at the side and a solid wall behind you."), _RENTAL])
-    target, turn = TURN[dk]
+    target, turn = C["turn"][dk]
     if flex == "can_move":
         return ("What you can do, since you can move your desk", "You told us you <b>can move your desk</b>. Here are the fixes in order of effort.", [
             ("i-compass", f"Turn the desk to face {target.lower()}", f"From {escape(t['desk_label']).lower()} that is {turn}, toward one of the traditional first choices."),
-            ("i-target", "Or set it up in a free corner", "A free corner on the east or north side of the room suits study hours."),
+            ("i-target", "Or set it up in a free corner", C["corner_move"]),
             ("i-shield", "Keep the wall behind you solid", "Avoid a door, window or open space at your back."), _RENTAL])
     if flex == "a_little":
         return ("What you can do, since you can turn a little", "You told us you can <b>turn it a little</b>. Here are the fixes in order of effort.", [
             ("i-compass", f"Turn the chair or the desk toward {target.lower()}", f"From {escape(t['desk_label']).lower()} that is {turn}. No heavy lifting."),
-            ("i-target", "Or use another corner of the same room", "A corner on the east or north side suits study hours."), _RENTAL])
+            ("i-target", "Or use another corner of the same room", C["corner_turn"]), _RENTAL])
     return ("What you can do, since the desk stays", "You told us your desk <b>cannot move or is shared</b>. Every step here works where it is.", [
-        ("i-shield", "Keep the wall behind you solid", "Choose the seat with a wall at your back, away from a door or window behind you."),
-        ("i-check", "A clear desk and a lamp", "Keep a lamp, today's books and a clean writing surface. Clear the rest.", "good"),
-        ("i-book", "Light colours", "A light desk mat or curtain in green, yellow, white or light blue."),
-        ("i-alert", "No mirror, no bed", "Keep a mirror from facing the desk, and do not study on the bed.", "warn"), _RENTAL])
+        *C["inplace"], _RENTAL])
 
 
 # ---------------------------------------------------------------- pages 14 and 15 (numerology, shared by every segment)
@@ -284,7 +409,7 @@ def _number_pages(t, C):
                  f'<div style="font-size:12px;margin-top:6px;color:var(--muted)">{escape(nm)}</div></div>' for nm, c in swatches)
     bold = num in (1, 9)
     tail = (_pt("i-alert", "Strong colours stay small", "Reds and oranges are bold. Keep them to a pen pot or a cushion, and the walls light.", "warn") if bold
-            else _pt("i-book", "Keep the walls light", f"Vastu advice for a study corner prefers light colours on the walls{C['colour_ref']}."))
+            else _pt("i-book", "Keep the walls light", escape(C["walls"])))
     p15 = (f'<!-- 15 -->\n<section class="page"><div class="col"><div class="eyebrow">From your birth number</div>'
            f'<h2 class="head">Your number\'s colour</h2><div class="rule"></div>'
            f'<div class="lead">Numerology links birth number {num} with <b>{escape(phrase)}</b>. Use them as accents, not as wall colours.</div>'
@@ -347,11 +472,11 @@ def render_vastu_career(payload: dict) -> str:
     for i, (head, lead, rows) in enumerate(C["cards"]):
         pages.append(_card(4 + i, "", head, lead, rows))
     pages.append(_card(9, "Organise", C["org"][0], C["org"][1], C["org"][2]))
-    fh, fl, fr = _fix_page(t, flex)
+    fh, fl, fr = _fix_page(t, flex, C)
     pages.append(_card(10, "Your fixes", fh, fl, fr))
     pages.append(_card(11, "Small and shared spaces", C["small"][0], C["small"][1], C["small"][2]))
 
-    target = TURN.get(t["desk_direction"], ("", ""))[0]
+    target = C["turn"].get(t["desk_direction"], ("", ""))[0]
     turn_clause = (f" Turn the chair toward {target.lower()} if you can." if target and flex in ("can_move", "a_little")
                    and t["verdict"] in ("acceptable", "change") else "")
     door = ""
@@ -363,7 +488,7 @@ def render_vastu_career(payload: dict) -> str:
   <div class="eyebrow">Tonight</div><h2 class="head">Ten-minute fixes</h2><div class="rule"></div>
   <div class="lead">Do these before you sleep. No tools needed.</div>
   <div class="dwcard">
-    <div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg><div class="tx"><b>Do</b>Clear the desk.{escape(C["do_extra"])}{turn_clause} Open a window for five minutes. Keep one lamp at the side.</div></div>
+    <div class="dwrow do"><svg class="ic pi"><use href="#i-check"/></svg><div class="tx"><b>Do</b>{escape(C["do"].format(turn=turn_clause))}</div></div>
     <div class="dwrow watch"><svg class="ic pi"><use href="#i-alert"/></svg><div class="tx"><b>Don't</b>{escape(C["dont"])}</div></div>
   </div>
   {door}

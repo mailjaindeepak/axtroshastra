@@ -18,7 +18,7 @@ import numerology
 SEGMENTS = ("student", "exam_aspirant", "professional", "wfh", "owner", "job_seeker")
 # Segments whose paid-report copy the owner has APPROVED (docs/vastu-career-copy-<segment>.md, decision log). Only these can be
 # bought: the order route refuses the rest, and the preview shows no price for them. Add a segment here only after its copy is approved.
-READY_SEGMENTS = frozenset({"student", "exam_aspirant"})
+READY_SEGMENTS = frozenset({"student", "exam_aspirant", "professional", "wfh"})
 DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 DIR_OR_UNSURE = DIRECTIONS + ("not_sure",)
 FLEXIBILITY = ("can_move", "a_little", "cannot_or_shared")
@@ -77,18 +77,18 @@ QUESTIONS = {
         ("Are any of your study habits on tradition's avoid list?", "The habits tradition says to leave behind."),               # page 8
     ],
     "professional": [
-        ("Which way should your desk face?", "Your desk direction against the traditional first choices for office work."),
-        ("Is your seat well supported?", "The wall behind you, the view of the door, and what sits overhead."),
-        ("How do you keep your growth zone open?", "Keeping the north of your desk and room clear and tidy."),
-        ("What decor helps, and what hurts?", "Plants, pictures and clocks, and what to remove."),
-        ("Which desk mistakes should you fix first?", "The common ones, and how to fix them in a shared office."),
+        STUDENT_Q1["a_little"],                                                                                  # page 10 (adapts: see questions_for)
+        ("Is anything behind or above your seat going against Vastu?", "The wall, door or glass behind you, and any beam overhead."),   # page 5
+        ("What can you change at your desk, even in a shared office?", "Steps that need no permission and no tools."),                   # pages 10, 11
+        ("Is your growth corner open, and what is in its way?", "The north of your desk and room, and how to keep it clear."),           # page 6
+        ("Are any of your desk habits on tradition's avoid list?", "The habits tradition says to leave behind."),                         # page 8
     ],
     "wfh": [
-        ("Which corner of your home suits your work?", "Choosing the corner, and which walls to avoid behind you."),
-        ("Can the bedroom double as an office?", "How to keep work and rest apart in one room."),
-        ("How should light and your screen sit?", "Side light, an evening lamp, and reflections."),
-        ("What layout leaves room to think?", "A clear centre, a creative corner and fewer distractions."),
-        ("How do you end the workday at home?", "A closing routine, and the mistakes to drop."),
+        STUDENT_Q1["a_little"],                                                                                  # page 10 (adapts: see questions_for)
+        ("Which corner of your home suits your work best?", "The sides of the home tradition prefers, and the walls to avoid behind you."),   # page 4
+        ("Can your bedroom double as an office?", "How to keep work and rest apart in one room."),                                          # page 5
+        ("What can you change today, even in a small flat?", "Steps that need no renovation and no new furniture."),                        # pages 10, 11
+        ("Are any of your home-office habits on tradition's avoid list?", "The habits tradition says to leave behind."),                    # page 8
     ],
     "owner": [
         ("Which way should the owner's seat face?", "Your seat and cabin against the traditional first choices."),
@@ -121,10 +121,13 @@ _NO_DIRECTION_TIP = ("Traditions place the planet linked with {n} in different d
                      "colour instead of a direction.")
 
 
+ADAPTIVE_Q1_SEGMENTS = ("student", "exam_aspirant", "professional", "wfh")
+
+
 def questions_for(segment: str, verdict: str, flexibility: str) -> list:
     """The five questions this report answers. Student question 1 follows the verdict and the flexibility."""
     qs = [tuple(q) for q in QUESTIONS[segment]]
-    if segment in ("student", "exam_aspirant"):             # the two study segments share the adaptive question 1
+    if segment in ADAPTIVE_Q1_SEGMENTS:                 # the approved segments share the adaptive question 1
         key = "ideal" if verdict == "ideal" else "unknown" if verdict == "unknown" else flexibility
         qs[0] = STUDENT_Q1[key]
     return qs

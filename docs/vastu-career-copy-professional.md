@@ -79,3 +79,8 @@ Cover tagline: "Your work desk, read through traditional Vastu, with fixes that 
 2. The biggest gaps: the whole growth-corner card (page 6) rests on the spec, not the research; the West "change" cell; the chair line; and the entrance-in-view line.
 3. Confirm the decor card stays dropped.
 4. Once approved I add Working professional to the paid report and open it for sale, with tests. Next would be Work from home.
+
+---
+
+## DECISION LOG (owner, 24 Nov 2026): approved as written
+The owner approved this document with every NEW and UNVERIFIED line kept as written, and the five questions in section 2. The segment is added to `READY_SEGMENTS`, so it can now be bought. One small adaptation made while building, for the owner to veto: the shared page 15 closing line for this segment reads "Use your number's colours as small accents on the desk, and keep the walls light." instead of the Student wording about a study corner, which would not fit here.
