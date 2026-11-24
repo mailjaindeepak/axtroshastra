@@ -95,8 +95,22 @@ def test_no_flagged_vocabulary_in_visible_text():
         assert not re.search(pat, t, re.I), pat
 
 
-def test_no_invented_reviews_no_persona_no_other_products(page):
-    assert 'class="rev"' not in page.replace("'", '"') and '<div class="rev ' not in page
+def test_reviews_are_exactly_the_owners_two_and_follow_the_review_rules(page):
+    # The owner supplied these two reviews (24 Nov 2026). Nothing is invented: any further review must be added the same way.
+    revs = re.findall(r'<div class="rev">(.*?)</div></div>', page, re.S)
+    assert len(revs) == 2
+    who = re.findall(r'<div class="who">(.*?)</div>', page)
+    assert who == ["Mallika, 21", "Kamal, 42"]
+    body = " ".join(re.findall(r'<p>"(.*?)"</p>', page, re.S))
+    assert not re.search("[—–]", body + " ".join(who)), "CLAUDE.md section 5c: no em or en dashes in reviews"
+    for pat in FLAGGED:
+        assert not re.search(pat, body, re.I), pat
+    for stock in ("seamless", "game-changer", "highly recommend", "elevate", "unlock", "robust", "testament"):
+        assert stock not in body.lower(), stock
+    assert page.count("Vastu Career Report</div><div class=\"stars\"") == 2          # tagged with this product, as on the other pages
+
+
+def test_no_persona_and_no_other_products_in_the_page(page):
     t = _text(page)
     for p in PERSONAS:
         assert p not in t, p
