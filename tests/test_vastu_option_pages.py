@@ -33,16 +33,16 @@ def _h1(h):
 
 
 @pytest.mark.parametrize("slug,seg", list(SLUGS.items()))
-def test_page_is_served_and_the_option_is_preselected_and_hidden(client, slug, seg):
+def test_page_is_served_and_the_option_is_preselected(client, slug, seg):
     r = client.get(f"/en/vastu-career/{slug}")
     assert r.status_code == 200
     h = r.text
     blk = re.search(r'<select id="f-segment".*?</select>', h, re.S).group(0)
     assert f'<option value="{seg}" selected>' in blk and blk.count("selected") == 1
-    assert '<div class="field" id="g-segment" hidden>' in h
+    assert 'id="g-segment" hidden' not in h and "What best describes you?" in h        # the form still asks, with the right option already chosen
     assert set(re.findall(r'<option value="([^"]+)"', blk)) == set(vc.SEGMENTS)
     assert f"variant:'/en/vastu-career/{slug}'" in h
-    assert 'href="/en/vastu-career"' in h                      # "See all options" goes back to the main page
+    assert "See all options" not in h and "Not a " not in _text(h)      # no redirect line: the form asks the question itself
     assert "<!--VC_" not in h                                  # helper markers never ship
 
 
