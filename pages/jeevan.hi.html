@@ -171,8 +171,18 @@ section{padding:52px 0}
 /* Kundli / preview card */
 .ps-pcard{background:var(--panel);border:1px solid var(--pline);border-radius:14px;padding:22px 20px;margin-bottom:12px;position:relative;z-index:1;box-shadow:0 6px 18px var(--pshadow)}
 .ps-plabel{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pgold);margin-bottom:10px}
+.ps-plabel-lg{font-size:18px;letter-spacing:.04em;text-transform:none;font-family:var(--disp);font-weight:800;color:var(--phead);margin-bottom:14px;text-align:center}
 .ps-kundli-wrap{max-width:320px;margin:12px auto 16px}
 .ps-kundli-wrap svg{width:100%;height:auto;display:block}
+.ps-chart-explain{font-size:12.5px;color:var(--pmuted);line-height:1.5;margin:0 0 14px;padding:0 2px}
+.ps-col-explain{font-size:11px;color:var(--pmuted);line-height:1.5;margin:8px 0 0;padding:0 2px;opacity:.8}
+.ps-col-explain b{color:var(--phead);font-weight:600}
+.ps-planet-governs{display:block;font-size:10.5px;color:var(--pmuted);font-weight:400;font-family:var(--body);margin-top:1px}
+.ps-prev-curiosity{font-size:13px;color:var(--pmuted);line-height:1.55;margin:0 0 14px;padding:10px 14px;background:rgba(201,163,78,.06);border-radius:8px;border-left:3px solid var(--pgold)}
+.ps-fav-callout{text-align:center;margin:0 0 18px;padding:14px 18px;background:linear-gradient(135deg,rgba(201,163,78,.08),rgba(201,163,78,.03));border:1px solid rgba(201,163,78,.18);border-radius:12px}
+.ps-fav-callout .ps-fav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--pgold);margin-bottom:6px}
+.ps-fav-callout .ps-fav-areas{font-size:14px;font-weight:600;color:var(--phead);margin-bottom:6px}
+.ps-fav-callout .ps-fav-hook{font-size:12px;color:var(--pmuted);line-height:1.4}
 .ps-planet-tbl{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:12.5px}
 .ps-planet-tbl th{text-align:right;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmuted);font-weight:600;padding:0 0 6px;border-bottom:1px solid var(--pline)}
 .ps-planet-tbl td{padding:5px 0;border-bottom:1px dashed rgba(201,163,78,.18);color:var(--pink)}
@@ -181,10 +191,12 @@ section{padding:52px 0}
 .ps-dig{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
 .ps-dig.own{color:var(--pgold);background:rgba(201,163,78,.12)}
 .ps-dig.exalted{color:var(--pgreen);background:rgba(62,125,90,.1)}
+.ps-dig.debil{color:var(--pterra);background:rgba(180,87,43,.1)}
 .ps-dig.retro{color:#7A6B8A;background:rgba(122,107,138,.1)}
 .ps-md-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--pline);display:flex;justify-content:space-between;align-items:center}
 .ps-md-bar .lb{font-size:12px;color:var(--pmuted)}
 .ps-md-bar .vl{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--phead)}
+.ps-md-sub{font-size:11.5px;color:var(--pmuted);text-align:right;margin-top:4px;line-height:1.4}
 
 /* About You — persona card */
 .ps-persona{text-align:right;margin-top:8px}
@@ -251,6 +263,17 @@ section{padding:52px 0}
 .ps-prev-tl-dates{font-size:12px;color:var(--pmuted);font-variant-numeric:tabular-nums}
 .ps-prev-tl-tag{display:inline-flex;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 8px;border-radius:4px;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
 .ps-prev-tl-tag.favorable,.ps-prev-tl-tag.watch,.ps-prev-tl-tag.steady{background:rgba(201,163,78,.14);color:#8C7430}
+/* Astro basis block inside preview cards */
+.ps-astro-basis{margin-bottom:16px;padding:14px 16px;background:rgba(201,163,78,.05);border:1px solid rgba(201,163,78,.15);border-radius:10px}
+.ps-astro-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;font-size:12.5px;line-height:1.5;color:var(--pink)}
+.ps-astro-row:last-child{margin-bottom:0}
+.ps-astro-label{font-weight:600;color:var(--pgold);white-space:nowrap;min-width:0;flex-shrink:0;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.ps-astro-val{color:var(--phead);font-weight:600}
+.ps-astro-explain{font-size:12px;color:var(--pmuted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(201,163,78,.18)}
+.ps-astro-planets{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.ps-astro-pill{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:3px}
+.ps-astro-pill.benefic{background:rgba(62,125,90,.1);color:var(--pgreen)}
+.ps-astro-pill.malefic{background:rgba(180,87,43,.08);color:var(--pterra)}
 .ps-prev-tl-desc{margin-top:6px;font-size:13px;color:var(--pmuted);line-height:1.4;filter:blur(5px);-webkit-filter:blur(5px);user-select:none;-webkit-user-select:none;pointer-events:none}
 .ps-prev-dowatch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .ps-prev-dw{background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px}
@@ -507,7 +530,7 @@ fbq('track', 'PageView');
     <!-- 1. Cover card -->
     <div class="ps-cover" id="tv-cover">
       <div class="ps-cv-brand">Axtroshastra</div>
-      <div class="ps-cv-title">आपका जीवन ब्लूप्रिंट</div>
+      <div class="ps-cv-title">आपकी जीवन रिपोर्ट</div>
       <div class="ps-cv-sub">आपकी कुंडली। आपकी कहानी। आपका अगला अध्याय।</div>
       <div class="ps-cv-rule"></div>
       <div class="ps-cv-name" id="tv-cv-name">—</div>
@@ -532,35 +555,27 @@ fbq('track', 'PageView');
 
     <!-- 3. Kundli chart card -->
     <div class="ps-pcard">
-      <div class="ps-plabel">आपकी उत्तर भारतीय कुंडली</div>
+      <div class="ps-plabel ps-plabel-lg">आपकी जन्म कुंडली</div>
       <div class="ps-kundli-wrap" id="tv-kundli"></div>
+      <p class="ps-chart-explain">यह कुंडली आपके जन्म के ठीक समय पर हर ग्रह की सटीक स्थिति दर्शाती है। हर ग्रह आपके जीवन के एक विशेष क्षेत्र को नियंत्रित करता है, और उसकी स्थिति तय करती है कि वह क्षेत्र आपके लिए कैसा रहेगा।</p>
       <table class="ps-planet-tbl" id="tv-planets">
-        <thead><tr><th>ग्रह</th><th>राशि</th><th>स्थिति</th></tr></thead>
+        <thead><tr><th>ग्रह</th><th>राशि</th><th>बल</th></tr></thead>
         <tbody></tbody>
       </table>
+      <p class="ps-col-explain"><b>ग्रह</b> — जीवन के किस क्षेत्र पर असर। <b>राशि</b> — जन्म के समय कहाँ था। <b>बल</b> — कितना प्रभावशाली है: <em>बहुत मज़बूत</em> (सर्वश्रेष्ठ), <em>मज़बूत</em> (अपनी राशि), <em>सामान्य</em>, <em>कमज़ोर</em> (उपाय ज़रूरी)।</p>
       <div class="ps-md-bar">
-        <div class="lb">मौजूदा महादशा</div>
+        <div class="lb">मौजूदा दशा काल</div>
         <div class="vl" id="tv-md">—</div>
       </div>
+      <div class="ps-md-sub" id="tv-md-till"></div>
     </div>
 
     <!-- About You (data rendered inside Who You Are preview card) -->
     <div id="tv-lagna" hidden></div><div id="tv-moon" hidden></div><div id="tv-nak" hidden></div>
 
-    <!-- 5. Life Wheel -->
-    <div class="ps-pcard">
-      <div class="ps-plabel">आपका जीवन चक्र</div>
-      <div class="ps-wheel-wrap">
-        <div id="tv-wheel"></div>
-        <div class="ps-wheel-legend">
-          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgreen)"></span>उन्नति पर</span>
-          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pgold)"></span>बन रहा है</span>
-          <span class="ps-wheel-legend-item"><span class="ps-wheel-legend-dot" style="background:var(--pterra)"></span>सतर्कता</span>
-        </div>
-      </div>
-      <div class="ps-standout" id="tv-standout"></div>
-      <div style="text-align:center;margin-top:16px"><button class="ps-cta" type="button" onclick="startPayment()">अनलॉक — <s>&#8377;999</s> &#8377;499</button></div>
-    </div>
+    <!-- Life Wheel (removed from teaser — shown in full report only) -->
+    <div id="tv-wheel" hidden></div>
+    <div id="tv-standout" hidden></div>
 
     <!-- 6. Current phase -->
     <div class="ps-pcard" style="padding:16px 20px">
@@ -750,14 +765,6 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-<!-- ============ FINAL CTA ============ -->
-<section class="final">
-  <div class="wrap">
-    <h2>अपना अगला चरण जानें<br><em>उसके आने से पहले।</em></h2>
-    <a class="btn" href="#kundliForm">मेरी कुंडली देखें — मुफ़्त</a>
-  </div>
-</section>
-
 <footer>
   <b>Axtroshastra</b> · गणना पर आधारित वैदिक ज्योतिष · Cultnuts की तरफ़ से<br>
   <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> · <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br>
@@ -769,8 +776,7 @@ fbq('track', 'PageView');
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
   <div class="sp">
-    <p class="l1">जीवन ब्लूप्रिंट रिपोर्ट</p>
-    <p class="l2" id="stickyPricing" hidden><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b> · <b class="clk" id="otClockSticky">30:00</b> बचे हैं</p>
+    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b></p>
   </div>
   <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
 </div>
@@ -978,6 +984,8 @@ function tvWheelSvg(wheel, name, sub){
 
 var TV_PLANET_ORDER = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
 var TV_DIG_HI = {exalted:'उच्च', own:'स्वगृही', neutral:'सामान्य', debilitated:'नीच', enemy:'शत्रु'};
+var DIGNITY_LABEL_HI = {exalted:'बहुत मज़बूत', own:'मज़बूत', neutral:'सामान्य', debilitated:'कमज़ोर'};
+var DIGNITY_TIP_HI = {exalted:'सबसे शक्तिशाली राशि में — उत्कृष्ट परिणाम', own:'अपनी राशि में — प्रभावी', neutral:'सामान्य स्थिति — स्थिर परिणाम', debilitated:'चुनौतीपूर्ण स्थिति — उपाय ज़रूरी'};
 var _SIGNS_SHORT=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'];
 var _SIGNS_FULL=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 var _PL_ABBR={Sun:'Su',Moon:'Mo',Mars:'Ma',Mercury:'Me',Jupiter:'Ju',Venus:'Ve',Saturn:'Sa',Rahu:'Ra',Ketu:'Ke'};
@@ -1038,16 +1046,29 @@ function tvBuildKundli(lagna, planets, name, dob, place){
   return svg;
 }
 
+var PLANET_GOVERNS_HI = {
+  'Sun':'पहचान, आत्मविश्वास और अधिकार',
+  'Moon':'मन, भावनाएँ और शांति',
+  'Mars':'ऊर्जा, साहस और जोश',
+  'Mercury':'बुद्धि, संवाद और कौशल',
+  'Jupiter':'ज्ञान, विकास और भाग्य',
+  'Venus':'प्रेम, सुख-सुविधा और रचनात्मकता',
+  'Saturn':'अनुशासन, करियर और जीवन के सबक',
+  'Rahu':'महत्वाकांक्षा, इच्छाएँ और सफलता',
+  'Ketu':'अध्यात्म, वैराग्य और पूर्व कर्म'
+};
 function tvRenderPlanets(planets){
   var tbody = document.querySelector('#tv-planets tbody');
   if(!tbody || !planets) return;
   tbody.innerHTML = TV_PLANET_ORDER.map(function(p){
     var d = planets[p]; if(!d) return '';
     var dig = d.dignity || 'neutral';
-    var digCls = (dig === 'exalted' || dig === 'own') ? ' ps-dig ' + dig : '';
-    var label = TV_DIG_HI[dig] || dig;
-    if(d.retro) label += ' (व)';
-    return '<tr><td class="pn">' + (TV_PLANET_HI[p] || p) + '</td><td>' + (TV_SIGN_HI[d.sign] || d.sign || '') + '</td><td><span class="' + digCls.trim() + '">' + label + '</span></td></tr>';
+    var digCls = (dig === 'exalted' || dig === 'own') ? ' ps-dig ' + dig : (dig === 'debilitated' ? ' ps-dig debil' : '');
+    var label = DIGNITY_LABEL_HI[dig] || 'सामान्य';
+    if(d.retro) label += ' ↺';
+    var tip = DIGNITY_TIP_HI[dig] || '';
+    var gov = PLANET_GOVERNS_HI[p] || '';
+    return '<tr><td class="pn">' + (TV_PLANET_HI[p] || p) + (gov ? '<span class="ps-planet-governs">' + gov + '</span>' : '') + '</td><td>' + (TV_SIGN_HI[d.sign] || d.sign || '') + '</td><td><span class="' + digCls.trim() + '" title="' + tip + '">' + label + '</span></td></tr>';
   }).join('');
 }
 
@@ -1090,8 +1111,12 @@ function renderTeaser(t){
   // Planet table
   tvRenderPlanets(t.planets);
 
-  // Mahadasha bar
+  // Dasha bar — show both Mahadasha & Antardasha
   document.getElementById('tv-md').textContent = tvDashaHi(t.current_dasha) || '—';
+  var mdTillEl = document.getElementById('tv-md-till');
+  if(mdTillEl && t.dasha_till && t.dasha_till !== '—'){
+    mdTillEl.textContent = 'मौजूदा अंतर्दशा ' + t.dasha_till + ' तक';
+  }
 
   // About You — snapshot (hidden; data shown in Who You Are preview card)
 
@@ -1141,39 +1166,80 @@ function renderTeaser(t){
       '<div class="ps-prev-dw" style="background:rgba(201,163,78,.06);border-radius:10px;padding:12px 14px;margin-bottom:16px"><h4 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px;color:var(--pgold)">'+userSvg+' व्यक्तित्व विश्लेषण</h4><div class="ps-prev-dw-lines-visible">आपका मूल स्वभाव, स्वभाव और वह दृष्टिकोण जिससे आप हर फ़ैसले पर विचार करते हैं। दूसरे आपको कैसे देखते हैं बनाम आप अंदर से वास्तव में कौन हैं।</div></div>' +
       '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' अनलॉक — <s>₹999</s> ₹499</div>' +
     '</div>';
+    // Favorable areas callout (Hindi)
+    var favAreas = [];
+    var AREA_LABEL_HI = {career:'करियर', money:'वित्त', marriage:'रिश्ते'};
     areaConf.forEach(function(ac){
-      var phases = t.preview_phases[ac.key] || [];
-      var wheelTag = (t.wheel || {})[ac.key] || 'building';
-      var verdictLabel = tagHi[wheelTag] || wheelTag;
-      var verdictSvgStr = wheelTag === 'thriving' ? checkSvg : (wheelTag === 'watch' ? alertSvg : clockSvg);
-      var tlHtml = '';
-      phases.forEach(function(ph, pi){
-        var isBeyond = ph.beyond;
-        var kindCls = ph.kind;
-        var tagLabel = tagHi[ph.kind] || ph.kind;
-        if(isBeyond){
-          tlHtml += '<div class="ps-prev-tl-row beyond">' +
-            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">आगे का समय</span>' +
-            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
-            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
-        } else {
-          var rowLabel = pi === 0 ? 'मौजूदा दौर' : 'अगला दौर';
-          tlHtml += '<div class="ps-prev-tl-row '+kindCls+'">' +
-            '<div class="ps-prev-tl-header"><span class="ps-prev-tl-label">'+rowLabel+'</span>' +
-            '<span class="ps-prev-tl-dates">'+ph.start+' – '+ph.end+'</span>' +
-            '<span class="ps-prev-tl-tag '+kindCls+'">'+tagLabel+'</span></div>' +
-            '<div class="ps-prev-tl-desc">'+blurTexts[pi % blurTexts.length]+'</div></div>';
-        }
-      });
+      var dig = ((t.area_astro || {})[ac.key] || {}).dignity || 'neutral';
+      if(dig === 'exalted' || dig === 'own') favAreas.push(AREA_LABEL_HI[ac.key] || ac.title);
+    });
+    if(favAreas.length){
+      prevHtml += '<div class="ps-fav-callout">' +
+        '<div class="ps-fav-label">आपकी कुंडली में अनुकूल समय दिखता है</div>' +
+        '<div class="ps-fav-areas">' + favAreas.join(' और ') + '</div>' +
+        '<div class="ps-fav-hook">जानें कब शुरू होगा, क्या करें और किससे बचें।</div>' +
+      '</div>';
+    }
+    // Curiosity text per area (Hindi), driven by house lord dignity
+    var CURIOSITY_HI = {
+      career: {
+        strong: 'आपकी कुंडली में करियर के लिए मज़बूत अनुकूल संकेत दिखते हैं। पेशेवर जीवन को नियंत्रित करने वाले ग्रह आगे आने वाले अवसरों की ओर इशारा करते हैं।',
+        weak: 'आपके करियर क्षेत्र में आने वाले समय में सावधानी ज़रूरी है। कुंडली में कुछ ख़ास दौर हैं जहाँ फ़ैसले ज़्यादा असर डालेंगे।',
+        steady: 'आपका करियर एक बदलाव की ओर बढ़ रहा है। कुंडली में वह मोड़ दिखता है जहाँ दिशा बदलती है।'
+      },
+      money: {
+        strong: 'आपकी कुंडली में धन और आय के घर मज़बूत संकेत दे रहे हैं। कुछ ख़ास समय हैं जहाँ आर्थिक विकास ज़्यादा आसानी से आता है।',
+        weak: 'आपके वित्तीय क्षेत्र में आगे ध्यान देना ज़रूरी है। कुंडली उन तारीखों को चिह्नित करती है जहाँ पैसों के फ़ैसलों में सतर्कता ज़रूरी है।',
+        steady: 'आपकी वित्तीय स्थिति एक बदलाव की ओर बढ़ रही है। कुंडली में दिखता है कि गति कब और किस दिशा में बदलती है।'
+      },
+      marriage: {
+        strong: 'आपका सप्तम भाव एक अच्छी कहानी बताता है। समय के पैटर्न उन ख़ास दौरों की ओर इशारा करते हैं जो आपके क़रीबी रिश्तों को मज़बूत करेंगे।',
+        weak: 'आपके रिश्तों के क्षेत्र में आने वाले समय में अतिरिक्त ध्यान चाहिए। कुंडली में वे दौर दिखते हैं जहाँ धैर्य और संवाद सबसे ज़्यादा मायने रखते हैं।',
+        steady: 'आपके रिश्ते एक मोड़ की ओर बढ़ रहे हैं। कुंडली दिखाती है कि बदलाव कब आता है और कैसा दिखता है।'
+      }
+    };
+    var HOUSE_DESC_HI = {10:'दसवाँ भाव (कर्म भाव)', 2:'दूसरा भाव (धन भाव)', 7:'सातवाँ भाव (कलत्र भाव)'};
+    var AREA_HOUSE_HI = {career:10, money:2, marriage:7};
+    var AREA_VERB_HI = {career:'पेशेवर सफलता', money:'आर्थिक विकास', marriage:'रिश्ते और विवाह'};
+    areaConf.forEach(function(ac){
+      var astro = (t.area_astro || {})[ac.key] || {};
+      var lordDig = astro.dignity || 'neutral';
+      var curiosityKey = (lordDig === 'exalted' || lordDig === 'own') ? 'strong' : (lordDig === 'debilitated' ? 'weak' : 'steady');
+      var curiosityText = (CURIOSITY_HI[ac.key] || {})[curiosityKey] || '';
+      var houseNum = astro.house || AREA_HOUSE_HI[ac.key];
+      var houseLabel = HOUSE_DESC_HI[houseNum] || ('भाव ' + houseNum);
+      var lordName = astro.lord ? (TV_PLANET_HI[astro.lord] || astro.lord) : '—';
+      var lordSign = astro.lord_sign ? (TV_SIGN_HI[astro.lord_sign] || astro.lord_sign) : '';
+      var lordDigLabel = DIGNITY_LABEL_HI[lordDig] || 'सामान्य';
+      var basisHtml = '<div class="ps-astro-basis">';
+      basisHtml += '<div class="ps-astro-row"><span class="ps-astro-label">नियंत्रक भाव</span> <span class="ps-astro-val">' + houseLabel + '</span></div>';
+      basisHtml += '<div class="ps-astro-row"><span class="ps-astro-label">भाव स्वामी</span> <span class="ps-astro-val">' + lordName + ' — ' + lordSign + ' में</span> <span class="ps-dig' + ((lordDig === 'exalted' || lordDig === 'own') ? ' ' + lordDig : (lordDig === 'debilitated' ? ' debil' : '')) + '" style="font-size:10px;margin-left:4px">' + lordDigLabel + '</span></div>';
+      var pillsHtml = '';
+      if(astro.benefics && astro.benefics.length){
+        astro.benefics.forEach(function(bp){pillsHtml += '<span class="ps-astro-pill benefic">☽ ' + (TV_PLANET_HI[bp] || bp) + '</span>';});
+      }
+      if(astro.malefics && astro.malefics.length){
+        astro.malefics.forEach(function(mp){pillsHtml += '<span class="ps-astro-pill malefic">♄ ' + (TV_PLANET_HI[mp] || mp) + '</span>';});
+      }
+      if(pillsHtml){
+        basisHtml += '<div class="ps-astro-row" style="flex-wrap:wrap"><span class="ps-astro-label">प्रभावी ग्रह</span> <div class="ps-astro-planets">' + pillsHtml + '</div></div>';
+      }
+      var explainSentence = '';
+      if(lordDig === 'exalted' || lordDig === 'own'){
+        explainSentence = lordName + ' ' + lordSign + ' में ' + lordDigLabel.toLowerCase() + ' है, जो ' + AREA_VERB_HI[ac.key] + ' के लिए मज़बूत आधार देता है। रिपोर्ट में सटीक समय बताया गया है जब यह शक्ति चरम पर होगी।';
+      } else if(lordDig === 'debilitated'){
+        explainSentence = lordName + ' ' + lordSign + ' में चुनौतीपूर्ण स्थिति में है। पूरी रिपोर्ट में ' + AREA_VERB_HI[ac.key] + ' को मज़बूत करने के उपाय और सही समय बताए गए हैं।';
+      } else {
+        explainSentence = lordName + ' ' + lordSign + ' में ' + AREA_VERB_HI[ac.key] + ' के लिए स्थिर परिणाम देता है। रिपोर्ट में वे सटीक तारीखें हैं जब दशा काल से गति बदलती है।';
+      }
+      basisHtml += '<div class="ps-astro-explain">' + explainSentence + '</div>';
+      basisHtml += '</div>';
       prevHtml += '<div class="ps-prev">' +
         '<div class="ps-prev-eyebrow">खंड '+ac.num+'</div>' +
         '<div class="ps-prev-title">'+ac.title+'</div>' +
-        '<div class="ps-prev-timeline">'+tlHtml+'</div>' +
-        '<div class="ps-prev-dowatch">' +
-          '<div class="ps-prev-dw do"><h4>'+checkSvg+' करें</h4><div class="ps-prev-dw-lines">जो कौशल आपको पहले से अच्छे परिणाम दे रहे हैं, उन्हें और मज़बूत करें। ऐसे रिश्तों में समय लगाएँ जो नए रास्ते खोलें।</div></div>' +
-          '<div class="ps-prev-dw wt"><h4>'+alertSvg+' ध्यान दें</h4><div class="ps-prev-dw-lines">इस दौर में जल्दबाज़ी में फ़ैसले लेने से बचें। बीच-बीच में अपनी दिशा जाँचते रहें।</div></div>' +
-        '</div>' +
-        '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' अनलॉक — <s>₹999</s> ₹499</div>' +
+        (curiosityText ? '<div class="ps-prev-curiosity">'+curiosityText+'</div>' : '') +
+        basisHtml +
+        '<div class="ps-prev-unlock" onclick="startPayment()">'+lockSvg+' सटीक तारीखें, क्या करें-क्या न करें और उपाय — <s>₹999</s> ₹499</div>' +
       '</div>';
     });
     prevHtml += '<div class="ps-prev-also"><div class="ps-prev-also-head">आपकी रिपोर्ट में यह भी शामिल है:</div>' +
@@ -1197,7 +1263,6 @@ function renderTeaser(t){
   var el = document.getElementById('teaser');
   el.classList.add('show');
   el.scrollIntoView({behavior:'smooth'});
-  var sp = document.getElementById('stickyPricing'); if(sp) sp.hidden = false;
   var sb = document.getElementById('stickyBtn');
   sb.textContent = 'अनलॉक ₹499'; sb.setAttribute('href', '#teaser');
 }

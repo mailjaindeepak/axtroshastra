@@ -715,6 +715,23 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
         "family": _area_fact(9, ninth_lord),
         "timing": _area_fact(None, active_md["lord"]) if active_md else None,
     }
+    # Make wheel time-aware: combine natal strength with current dasha phase
+    for _wk in ("career", "money", "marriage", "children", "home",
+                "foreign", "health", "growth", "family"):
+        _ad = area_detail.get(_wk)
+        if not _ad:
+            continue
+        _phases = _ad.get("ad_phases") or []
+        if not _phases:
+            continue
+        _cur = _phases[0]["kind"]          # favorable / watch / steady
+        _natal = wheel[_wk]               # thriving / building / watch
+        if _cur == "favorable":
+            wheel[_wk] = "thriving" if _natal != "watch" else "building"
+        elif _cur == "watch":
+            wheel[_wk] = "watch" if _natal != "thriving" else "building"
+        # steady: keep natal tag as-is
+
     houses_1_12 = [{"house": i + 1, "sign": SIGNS[(ref + i) % 12],
                      "lord": SIGN_LORD[(ref + i) % 12]} for i in range(12)]
     dasha_current_ads = [{"lord": a["lord"], "from": a["start"].strftime("%b %Y"),
@@ -753,6 +770,16 @@ def compute_blueprint(name, dob, tob, tz, lat, lon, time_quality="T0") -> dict:
                                for p in g.values()},
                    "nak_nature": nakp[1],
                    "preview_phases": _preview_phases(area_detail),
+                   "area_astro": {
+                       area: {"house": ad["house"],
+                              "lord": ad["lord"],
+                              "lord_sign": ad["lord_sign"],
+                              "dignity": ad["dignity"],
+                              "benefics": [x["planet"] for x in ad.get("strengths_infl", [])],
+                              "malefics": [x["planet"] for x in ad.get("challenges_infl", [])]}
+                       for area in ("career", "money", "marriage")
+                       if (ad := area_detail.get(area)) is not None
+                   },
                    },
         "chart": {"lagna": SIGNS[ch["lagna_sign"]],
                   "planets": {p.name: {"sign": SIGNS[p.sign], "nakshatra": NAKSHATRAS[p.nak],
