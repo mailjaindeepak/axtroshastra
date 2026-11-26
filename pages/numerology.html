@@ -670,7 +670,7 @@ fbq('track', 'PageView');
       try{
         var r=await post('/api/mulank/verify',{razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
         var d=await r.json().catch(function(){return {};});
-        if(r.ok&&d.ok){ track('purchase'); showPaid(); return; }
+        if(r.ok&&d.ok){ track('purchase'); try{sessionStorage.setItem('mk_p_'+RID,'1');}catch(e){} showPaid(); return; }
         if(r.ok&&d.status==='pending'){ await sleep(3000); continue; }
         if(r.status===502){ await sleep(3000); continue; }
         break;
@@ -680,7 +680,7 @@ fbq('track', 'PageView');
     for(var j=0;j<6;j++){
       try{
         var sr=await fetch('/api/mulank/state/'+encodeURIComponent(RID),{credentials:'same-origin'}); var s=sr.ok?await sr.json():null;
-        if(s&&s.paid){ if(s.real) track('purchase'); showPaid(); return; }     /* a purchase event only for a real sale, never for a pass or a demo unlock */
+        if(s&&s.paid){ if(s.real&&!sessionStorage.getItem('mk_p_'+RID)){track('purchase');try{sessionStorage.setItem('mk_p_'+RID,'1');}catch(e){}} showPaid(); return; }     /* a purchase event only for a real sale, never for a pass or a demo unlock */
       }catch(e){}
       await sleep(2000);
     }
@@ -761,7 +761,7 @@ fbq('track', 'PageView');
     fetch('/api/mulank/state/'+encodeURIComponent(saved),{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(s){
       if(!s){ store(null); return; }
       RID=saved;
-      if(s.paid) showPaid(true); else openPreview(saved,s.eligible?s.offer:null,true);
+      if(s.paid){ if(s.real&&!sessionStorage.getItem('mk_p_'+saved)){track('purchase');try{sessionStorage.setItem('mk_p_'+saved,'1');}catch(e){}} showPaid(true); } else openPreview(saved,s.eligible?s.offer:null,true);
     }).catch(function(){});
   }
 })();
