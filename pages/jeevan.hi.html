@@ -75,7 +75,8 @@ section{padding:52px 0}
 .form-card .fc-title{font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
-.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body)}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body);-webkit-appearance:none;appearance:none;opacity:1}
+.field select{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center/12px 8px}
 .tob-toggle{display:flex;align-items:flex-start;gap:10px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin:4px 0 16px;font-size:13.5px}
 .tob-toggle input{width:18px;height:18px;margin-top:2px;accent-color:var(--sindoor);flex:none}
 .tob-toggle b{font-weight:700}
@@ -289,6 +290,7 @@ section{padding:52px 0}
 .ps-prev-trait{font-size:14px;color:var(--pmuted);line-height:1.55;margin:6px 0 0}
 .ps-prev-trait b{color:var(--phead);font-weight:600;font-family:var(--disp)}
 .ps-prev-dw-lines-visible{font-size:12.5px;color:var(--pmuted);line-height:1.5}
+.ps-deity-img{display:block;width:100%;max-height:220px;object-fit:cover;object-position:center top;border-radius:10px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .ps-prev-also{text-align:center;margin:16px 0 4px}
 .ps-prev-also-head{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead);margin-bottom:12px}
 .ps-prev-also-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
@@ -352,11 +354,8 @@ section{padding:52px 0}
 .final .btn{max-width:360px;margin:0 auto}
 
 /* ---------- STICKY BAR ---------- */
-.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
-.sticky .sp{flex:1;min-width:0}
-.sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sticky .sp .l2{font-size:11.5px;color:var(--muted)}
-.sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));text-align:center;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
+.sticky .btn{display:inline-block;width:auto;font-size:15px;padding:12px 28px;box-shadow:0 4px 0 var(--sindoor-dark)}
 .sticky.kbd{display:none!important}
 .sticky .sp .l2 .clk{font-variant-numeric:tabular-nums;font-weight:800;color:var(--sindoor)}
 .offer-timer{margin:14px auto 0;max-width:360px;background:var(--card);border:1.5px solid var(--haldi);border-radius:var(--radius);padding:11px 16px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.4;box-shadow:0 3px 12px rgba(228,176,74,.14)}
@@ -433,7 +432,7 @@ fbq('track', 'PageView');
 </style>
 </head>
 <body>
-<div id="axlang" data-axlang="hi"><a href="/en/life-blueprint" hreflang="en">EN</a><a class="on" href="/hi/life-blueprint" aria-current="page">हिंदी</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
+<div id="axlang" data-axlang="hi"><a href="/en/life-blueprint" hreflang="en">EN</a><a class="on" href="/hi/life-blueprint" aria-current="page">Hindi</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
 
 <!-- ============ HERO ============ -->
 <header class="hero">
@@ -502,7 +501,7 @@ fbq('track', 'PageView');
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
         <div style="font-size:12px;color:#8a8d9c;margin-top:5px;line-height:1.4">रिपोर्ट PDF इसी नंबर पर भेजी जाएगी — सही WhatsApp नंबर डालें।</div>
       </div>
-      <button class="btn" type="submit">मेरी कुंडली देखें — मुफ़्त</button>
+      <button class="btn" type="submit">मुफ़्त जन्म कुंडली देखें</button>
       <p class="btn-note">मुफ़्त · कार्ड नहीं चाहिए · 2 मिनट लगेंगे</p>
     </form>
   </div>
@@ -549,12 +548,13 @@ fbq('track', 'PageView');
     <!-- 2. Trust strip -->
     <div class="ps-trust">
       <div class="ps-trust-stat"><div class="tn">25,000+</div><div class="tl">रिपोर्ट</div></div>
-      <div class="ps-trust-stat"><div class="tn">4.8 &#9733;</div><div class="tl">औसत रेटिंग</div></div>
+      <div class="ps-trust-stat"><div class="tn">4.7 &#9733;</div><div class="tl">औसत रेटिंग</div></div>
       <div class="ps-trust-stat"><div class="tn">2 मिनट</div><div class="tl">में नतीजा</div></div>
     </div>
 
     <!-- 3. Kundli chart card -->
     <div class="ps-pcard">
+      <img class="ps-deity-img" src="/static/deity-ganesha.jpg" alt="श्री गणेश" loading="lazy">
       <div class="ps-plabel ps-plabel-lg">आपकी जन्म कुंडली</div>
       <div class="ps-kundli-wrap" id="tv-kundli"></div>
       <p class="ps-chart-explain">यह कुंडली आपके जन्म के ठीक समय पर हर ग्रह की सटीक स्थिति दर्शाती है। हर ग्रह आपके जीवन के एक विशेष क्षेत्र को नियंत्रित करता है, और उसकी स्थिति तय करती है कि वह क्षेत्र आपके लिए कैसा रहेगा।</p>
@@ -563,11 +563,6 @@ fbq('track', 'PageView');
         <tbody></tbody>
       </table>
       <p class="ps-col-explain"><b>ग्रह</b> — जीवन के किस क्षेत्र पर असर। <b>राशि</b> — जन्म के समय कहाँ था। <b>बल</b> — कितना प्रभावशाली है: <em>बहुत मज़बूत</em> (सर्वश्रेष्ठ), <em>मज़बूत</em> (अपनी राशि), <em>सामान्य</em>, <em>कमज़ोर</em> (उपाय ज़रूरी)।</p>
-      <div class="ps-md-bar">
-        <div class="lb">मौजूदा दशा काल</div>
-        <div class="vl" id="tv-md">—</div>
-      </div>
-      <div class="ps-md-sub" id="tv-md-till"></div>
     </div>
 
     <!-- About You (data rendered inside Who You Are preview card) -->
@@ -586,6 +581,7 @@ fbq('track', 'PageView');
         <div>
           <div class="pl">आपका मौजूदा जीवन अध्याय</div>
           <div class="pv" id="tv-phase">—</div>
+          <div class="ps-md-sub" id="tv-phase-sub" style="text-align:left;margin-top:2px"></div>
         </div>
       </div>
     </div>
@@ -675,11 +671,11 @@ fbq('track', 'PageView');
   <div class="wrap">
         <div class="sec-head" style="max-width:none;text-align:center">
       <p class="eyebrow dark">पूरे भारत में पसंद की गई</p>
-      <h2>आप अच्छी संगत में हैं</h2>
+      <h2>पूरे भारत में खुश ग्राहक</h2>
     </div>
     <div class="stats-row">
-      <div class="stat-tile"><div class="n">25,000+</div><div class="c">रिपोर्ट बन चुकी हैं</div></div>
-      <div class="stat-tile"><div class="n">2 मिनट</div><div class="c">में नतीजा</div></div>
+      <div class="stat-tile"><div class="n">15,000+</div><div class="c">रिपोर्ट बन चुकी हैं</div></div>
+      <div class="stat-tile"><div class="n">4.7 ★</div><div class="c">1,000+ रिव्यू में रेटिंग</div></div>
     </div>
   </div>
 </section>
@@ -775,10 +771,7 @@ fbq('track', 'PageView');
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
-  <div class="sp">
-    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b></p>
-  </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त देखें</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn">मुफ़्त जन्म कुंडली देखें</a>
 </div>
 
 
@@ -913,7 +906,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     alert(err.message + ' — कृपया दोबारा कोशिश करें।');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'मेरी कुंडली देखें — मुफ़्त'; btn.disabled = false;
+    btn.textContent = 'मुफ़्त जन्म कुंडली देखें'; btn.disabled = false;
   }
 });
 
@@ -1111,12 +1104,7 @@ function renderTeaser(t){
   // Planet table
   tvRenderPlanets(t.planets);
 
-  // Dasha bar — show both Mahadasha & Antardasha
-  document.getElementById('tv-md').textContent = tvDashaHi(t.current_dasha) || '—';
-  var mdTillEl = document.getElementById('tv-md-till');
-  if(mdTillEl && t.dasha_till && t.dasha_till !== '—'){
-    mdTillEl.textContent = 'मौजूदा अंतर्दशा ' + t.dasha_till + ' तक';
-  }
+  // dasha bar removed from HTML; rendering removed
 
   // About You — snapshot (hidden; data shown in Who You Are preview card)
 
@@ -1129,8 +1117,14 @@ function renderTeaser(t){
   var standoutEl = document.getElementById('tv-standout');
   if(standoutEl) standoutEl.innerHTML = tvStandout(t.wheel || {});
 
-  // Current phase
-  document.getElementById('tv-phase').textContent = tvDashaHi(t.current_dasha) || '—';
+  // Current phase — Mahadasha · Antardasha + sub-period till date
+  var phaseText = tvDashaHi(t.current_dasha) || '—';
+  if(t.cur_ad_lord) phaseText += ' · ' + (TV_PLANET_HI[t.cur_ad_lord] || t.cur_ad_lord) + ' अंतर्दशा';
+  document.getElementById('tv-phase').textContent = phaseText;
+  var phaseSub = document.getElementById('tv-phase-sub');
+  if(phaseSub && t.dasha_till && t.dasha_till !== '—'){
+    phaseSub.textContent = 'अंतर्दशा ' + t.dasha_till + ' तक';
+  }
 
   // Blurred preview cards
   var prevEl = document.getElementById('tv-preview');
@@ -1151,8 +1145,8 @@ function renderTeaser(t){
       'इस दौर में ज़रूरी फ़ैसलों पर थोड़ा और ध्यान देने की ज़रूरत है।',
       'इस क्षेत्र के लिए एक शांत दौर, पृष्ठभूमि में स्थिर प्रगति होती रहेगी।'
     ];
-    var userSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
-    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">आपकी 10 भागों वाली रिपोर्ट की एक झलक</div>' +
+    var userSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">आपकी 10 विस्तृत खंडों वाली रिपोर्ट का सारांश</div>' +
       '<p>हर भाग आपके जीवन के एक क्षेत्र को कवर करता है, विशिष्ट तिथियों और कार्ययोजना के साथ।</p></div>';
     // आप कौन हैं — व्यक्तित्व खंड
     var whoTraits = [];
@@ -1160,6 +1154,7 @@ function renderTeaser(t){
     if(t.moon_line) whoTraits.push('<div class="ps-prev-trait"><b>चंद्र राशि:</b> ' + t.moon_line + '</div>');
     if(t.nak_nature) whoTraits.push('<div class="ps-prev-trait"><b>' + (TV_NAK_HI[t.nakshatra] || t.nakshatra) + ' नक्षत्र:</b> ' + t.nak_nature + '</div>');
     prevHtml += '<div class="ps-prev">' +
+      '<img class="ps-deity-img" src="/static/deity-surya.jpg" alt="सूर्य देव" loading="lazy">' +
       '<div class="ps-prev-eyebrow">खंड 1</div>' +
       '<div class="ps-prev-title">आपकी कुंडली आपके बारे में क्या कहती है</div>' +
       '<div style="margin-bottom:14px">' + whoTraits.join('') + '</div>' +
@@ -1201,6 +1196,8 @@ function renderTeaser(t){
     var HOUSE_DESC_HI = {10:'दसवाँ भाव (कर्म भाव)', 2:'दूसरा भाव (धन भाव)', 7:'सातवाँ भाव (कलत्र भाव)'};
     var AREA_HOUSE_HI = {career:10, money:2, marriage:7};
     var AREA_VERB_HI = {career:'पेशेवर सफलता', money:'आर्थिक विकास', marriage:'रिश्ते और विवाह'};
+    var DEITY_IMG = {career:'/static/deity-vishnu.jpg', money:'/static/deity-lakshmi.jpg', marriage:'/static/deity-radhakrishna.jpg'};
+    var DEITY_ALT_HI = {career:'श्री विष्णु', money:'माँ लक्ष्मी', marriage:'श्री राम सीता'};
     areaConf.forEach(function(ac){
       var astro = (t.area_astro || {})[ac.key] || {};
       var lordDig = astro.dignity || 'neutral';
@@ -1234,7 +1231,9 @@ function renderTeaser(t){
       }
       basisHtml += '<div class="ps-astro-explain">' + explainSentence + '</div>';
       basisHtml += '</div>';
+      var deityImgHtml = DEITY_IMG[ac.key] ? '<img class="ps-deity-img" src="'+DEITY_IMG[ac.key]+'" alt="'+(DEITY_ALT_HI[ac.key]||'')+'" loading="lazy">' : '';
       prevHtml += '<div class="ps-prev">' +
+        deityImgHtml +
         '<div class="ps-prev-eyebrow">खंड '+ac.num+'</div>' +
         '<div class="ps-prev-title">'+ac.title+'</div>' +
         (curiosityText ? '<div class="ps-prev-curiosity">'+curiosityText+'</div>' : '') +

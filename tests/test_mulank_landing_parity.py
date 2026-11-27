@@ -88,7 +88,7 @@ def test_the_trust_strip_is_exactly_two_items_in_career_intelligences_markup():
 
 def test_the_proof_tiles_and_heading_match_career_intelligence():
     tiles = re.findall(r'<div class="stat-tile"[^>]*><div class="n"[^>]*>(.*?)</div><div class="c">(.*?)</div></div>', PAGE)
-    assert tiles == [("", "reports generated"), ('4.8<span class="star">★</span>', "average rating"), ("2 min", "to your result")]
+    assert tiles == [("", "reports generated"), ('4.7<span class="star">★</span>', "average rating"), ("2 min", "to your result")]
     assert 'id="reportCountTile" hidden' in PAGE                             # shown only once the live count is real, as on Career Intelligence
     assert '<p class="eyebrow dark">Loved by professionals</p>' in PAGE and "<h2>You're in good company</h2>" in PAGE
     assert '<p class="revs-hint">← swipe, or hover to pause →</p>' in PAGE

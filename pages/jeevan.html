@@ -150,7 +150,8 @@ section{padding:52px 0}
 .form-card .fc-title{font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
-.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body)}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;font-size:16px;background:#fff;color:var(--ink);font-family:var(--body);-webkit-appearance:none;appearance:none;opacity:1}
+.field select{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center/12px 8px}
 .field input::placeholder,.wa-wrap input::placeholder{color:#bbb}
 .field select:invalid,.field select.placeholder{color:#bbb}
 .tob-toggle{display:flex;align-items:flex-start;gap:10px;background:var(--haldi-soft);border-radius:10px;padding:12px;margin:4px 0 16px;font-size:13.5px}
@@ -353,6 +354,7 @@ section{padding:52px 0}
 .ps-prev-trait{font-size:14px;color:var(--pmuted);line-height:1.55;margin:6px 0 0}
 .ps-prev-trait b{color:var(--phead);font-weight:600;font-family:var(--disp)}
 .ps-prev-dw-lines-visible{font-size:12.5px;color:var(--pmuted);line-height:1.5}
+.ps-deity-img{display:block;width:100%;max-height:220px;object-fit:cover;object-position:center top;border-radius:10px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .ps-prev-also{text-align:center;margin:16px 0 4px}
 .ps-prev-also-head{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--phead);margin-bottom:12px}
 .ps-prev-also-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
@@ -418,11 +420,8 @@ section{padding:52px 0}
 .final .btn{max-width:360px;margin:0 auto}
 
 /* ---------- STICKY BAR ---------- */
-.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
-.sticky .sp{flex:1;min-width:0}
-.sticky .sp .l1{font-family:var(--display);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sticky .sp .l2{font-size:11.5px;color:var(--muted)}
-.sticky .btn{width:auto;flex:none;font-size:15px;padding:12px 18px;box-shadow:0 4px 0 var(--sindoor-dark)}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));text-align:center;z-index:50;box-shadow:0 -8px 30px rgba(35,37,59,.12)}
+.sticky .btn{display:inline-block;width:auto;font-size:15px;padding:12px 28px;box-shadow:0 4px 0 var(--sindoor-dark)}
 @media(hover:none){.sticky.kbd{display:none!important}}
 
 .sec-head{max-width:560px}
@@ -508,7 +507,7 @@ fbq('track', 'PageView');
 </style>
 </head>
 <body>
-<div id="axlang" data-axlang="en"><a class="on" href="/en/life-blueprint" aria-current="page">EN</a><a href="/hi/life-blueprint" hreflang="hi">हिंदी</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
+<div id="axlang" data-axlang="en"><a class="on" href="/en/life-blueprint" aria-current="page">EN</a><a href="/hi/life-blueprint" hreflang="hi">Hindi</a></div><style>#axlang{position:fixed;top:10px;left:10px;z-index:9999;display:flex;background:rgba(21,28,57,.9);border:1px solid #E4B04A;border-radius:20px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}#axlang a{background:transparent;color:#C9CBDB;border:0;padding:7px 13px;cursor:pointer;letter-spacing:.02em;text-decoration:none}#axlang a.on{background:#E4B04A;color:#151C39}@media print{#axlang{display:none}}</style>
 
 <!-- ============ HERO ============ -->
 <header class="hero">
@@ -585,8 +584,8 @@ fbq('track', 'PageView');
       <span>Axtroshastra</span>
     </div>
 
-    <h1>Create Your Birth Chart<br><em>with AI in 2 minutes</em></h1>
-    <p class="sub">Life Blueprint Report</p>
+    <h1>Create your Life Birth Chart<br><em>with AI in 2 minutes</em></h1>
+    <p class="sub">Free Detailed Kundli reading and interpretation</p>
     <form class="form-card" id="kundliForm" autocomplete="on">
       <p class="fc-title">Enter your birth details to get started</p>
       <div class="field">
@@ -634,7 +633,7 @@ fbq('track', 'PageView');
         <div class="wa-wrap"><span>+91</span><input id="f-whatsapp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" placeholder="98765 43210" required></div>
         <div style="font-size:12px;color:#bbb;margin-top:5px;line-height:1.4">We will deliver your PDF report on this number</div>
       </div>
-      <button class="btn" type="submit">Create My Birth Chart — Free</button>
+      <button class="btn" type="submit">Get Free Birth Chart</button>
       <p class="btn-note">Chart is free · Full report ₹499 · No card needed now</p>
     </form>
   </div>
@@ -665,6 +664,7 @@ fbq('track', 'PageView');
 
     <!-- Kundli chart card -->
     <div class="ps-pcard">
+      <img class="ps-deity-img" src="/static/deity-ganesha.jpg" alt="Lord Ganesha" loading="lazy">
       <div class="ps-plabel ps-plabel-lg">Your Birth Chart</div>
       <div class="ps-kundli-wrap" id="tv-kundli"></div>
       <p class="ps-chart-explain">This chart maps the exact position of each planet at the moment you were born. Each planet governs a specific area of your life, and its placement determines how that area unfolds for you.</p>
@@ -673,11 +673,6 @@ fbq('track', 'PageView');
         <tbody></tbody>
       </table>
       <p class="ps-col-explain"><b>Planet</b> — the force that governs an area of your life. <b>Zodiac Sign</b> — where it was placed at birth. <b>Strength</b> — how powerfully it can deliver results: <em>Very Strong</em> (best placement), <em>Strong</em> (in its own sign), <em>Average</em> (normal), <em>Weak</em> (needs remedies).</p>
-      <div class="ps-md-bar">
-        <div class="lb">Current Dasha Period</div>
-        <div class="vl" id="tv-md">—</div>
-      </div>
-      <div class="ps-md-sub" id="tv-md-till"></div>
     </div>
 
     <!-- About You (data rendered inside Who You Are preview card) -->
@@ -696,6 +691,7 @@ fbq('track', 'PageView');
         <div>
           <div class="pl">Your current life chapter</div>
           <div class="pv" id="tv-phase">—</div>
+          <div class="ps-md-sub" id="tv-phase-sub" style="text-align:left;margin-top:2px"></div>
         </div>
       </div>
     </div>
@@ -713,11 +709,11 @@ fbq('track', 'PageView');
   <div class="wrap">
         <div class="sec-head" style="max-width:none;text-align:center">
       <p class="eyebrow dark">Loved across India</p>
-      <h2>You're in good company</h2>
+      <h2>Happy Customers across India</h2>
     </div>
     <div class="stats-row">
-      <div class="stat-tile"><div class="n">15,058</div><div class="c">reports generated</div></div>
-      <div class="stat-tile"><div class="n">2 min</div><div class="c">to your result</div></div>
+      <div class="stat-tile"><div class="n">15,000+</div><div class="c">reports generated</div></div>
+      <div class="stat-tile"><div class="n">4.7 ★</div><div class="c">across 1,000+ reviews</div></div>
     </div>
   </div>
 </section>
@@ -791,16 +787,12 @@ fbq('track', 'PageView');
   <a href="https://wa.me/919599827297" style="color:#E4B04A;text-decoration:none">WhatsApp: +91 95998 27297</a> | <a href="mailto:support@axtroshastra.com" style="color:#E4B04A;text-decoration:none">support@axtroshastra.com</a><br><br>
   <a href="/about" style="color:rgba(255,255,255,.7);text-decoration:none">About Us</a> | <a href="/privacy" style="color:rgba(255,255,255,.7);text-decoration:none">Privacy Policy</a> | <a href="/terms" style="color:rgba(255,255,255,.7);text-decoration:none">Terms of use</a> | <a href="/blog" style="color:rgba(255,255,255,.7);text-decoration:none">Blog</a><br><br>
   Managed by ACubeD Global<br><br>
-  Address: CSP 2518, DLF Capital Greens, Delhi - 110015<br><br>
-  <small style="opacity:.7;line-height:1.6"><b>Disclaimer:</b> Axtroshastra provides computer-generated astrology reports based on classical Vedic Jyotish principles and planetary positions. Reports are provided for informational, cultural and entertainment purposes only and do not constitute professional advice, including medical, legal, financial, investment, employment or matrimonial advice. Astrological interpretations, scores and timing windows are not guarantees or scientific predictions of future events. Users should exercise their own judgment and consult qualified professionals where appropriate. To the extent permitted by applicable law, Axtroshastra and its operators are not responsible for decisions or outcomes resulting from reliance on report content.</small>
+  Address: CSP 2518, DLF Capital Greens, Delhi - 110015
 </footer>
 
 <!-- ============ STICKY CTA ============ -->
 <div class="sticky" id="stickyBar" hidden>
-  <div class="sp">
-    <p class="l2"><s style="color:#B0B2C0">₹999</s> <b style="color:var(--sindoor)">₹499</b></p>
-  </div>
-  <a class="btn" href="#kundliForm" id="stickyBtn">Create My Birth Chart — Free</a>
+  <a class="btn" href="#kundliForm" id="stickyBtn">Get Free Birth Chart</a>
 </div>
 
 
@@ -935,7 +927,7 @@ document.getElementById('kundliForm').addEventListener('submit', async function(
     alert(err.message + ' — please try again.');
   }finally{
     hideAnalyzing();
-    btn.textContent = 'Create My Birth Chart — Free'; btn.disabled = false;
+    btn.textContent = 'Get Free Birth Chart'; btn.disabled = false;
   }
 });
 
@@ -1118,12 +1110,6 @@ async function renderTeaser(t){
   // Planet table
   tvRenderPlanets(t.planets);
 
-  // Dasha bar — show both Mahadasha & Antardasha
-  document.getElementById('tv-md').textContent = t.current_dasha || '—';
-  var mdTillEl = document.getElementById('tv-md-till');
-  if(mdTillEl && t.dasha_till && t.dasha_till !== '—'){
-    mdTillEl.textContent = 'Current sub-period runs till ' + t.dasha_till;
-  }
 
   // About You — snapshot (hidden; data shown in Who You Are preview card)
 
@@ -1135,8 +1121,14 @@ async function renderTeaser(t){
   var standoutEl = document.getElementById('tv-standout');
   if(standoutEl) standoutEl.innerHTML = tvStandout(t.wheel || {});
 
-  // Current phase
-  document.getElementById('tv-phase').textContent = t.current_dasha || '—';
+  // Current phase — Mahadasha · Antardasha + sub-period till date
+  var phaseText = t.current_dasha || '—';
+  if(t.cur_ad_lord) phaseText += ' · ' + t.cur_ad_lord + ' Antardasha';
+  document.getElementById('tv-phase').textContent = phaseText;
+  var phaseSub = document.getElementById('tv-phase-sub');
+  if(phaseSub && t.dasha_till && t.dasha_till !== '—'){
+    phaseSub.textContent = 'Sub-period runs till ' + t.dasha_till;
+  }
 
   // Blurred preview cards
   var prevEl = document.getElementById('tv-preview');
@@ -1155,15 +1147,17 @@ async function renderTeaser(t){
       'A period that calls for a bit more patience and careful attention to important choices.',
       'A quieter stretch for this area, steady background progress rather than a big shift.'
     ];
-    var userSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
-    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">A glimpse of your 10-part report</div>' +
+    var userSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+    var prevHtml = '<div class="ps-preview-intro"><div class="ps-plabel">A Summary of your 10 Detailed Section Report</div>' +
       '<p>Each section covers one area of your life, with specific dates and actionable guidance.</p></div>';
     // Who You Are card — personality section (no timeline, uses persona traits)
     var whoTraits = [];
-    if(t.lagna_line) whoTraits.push('<div class="ps-prev-trait"><b>Rising sign:</b> ' + t.lagna_line + '</div>');
-    if(t.moon_line) whoTraits.push('<div class="ps-prev-trait"><b>Moon sign:</b> ' + t.moon_line + '</div>');
-    if(t.nak_nature) whoTraits.push('<div class="ps-prev-trait"><b>' + t.nakshatra + ' nakshatra:</b> ' + t.nak_nature + '</div>');
+    var _cap = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; };
+    if(t.lagna_line) whoTraits.push('<div class="ps-prev-trait"><b>Rising Sign' + (t.lagna_en ? ' (' + _cap(t.lagna_en) + ')' : '') + ':</b> ' + _cap(t.lagna_line) + '</div>');
+    if(t.moon_line) whoTraits.push('<div class="ps-prev-trait"><b>Moon Sign' + (t.moon_sign ? ' (' + _cap(t.moon_sign) + ')' : '') + ':</b> ' + _cap(t.moon_line) + '</div>');
+    if(t.nak_nature) whoTraits.push('<div class="ps-prev-trait"><b>' + _cap(t.nakshatra) + ' Nakshatra:</b> ' + _cap(t.nak_nature) + '</div>');
     prevHtml += '<div class="ps-prev">' +
+      '<img class="ps-deity-img" src="/static/deity-surya.jpg" alt="Surya Dev" loading="lazy">' +
       '<div class="ps-prev-eyebrow">Section 1</div>' +
       '<div class="ps-prev-title">What your Chart says about you</div>' +
       '<div style="margin-bottom:14px">' + whoTraits.join('') + '</div>' +
@@ -1205,6 +1199,8 @@ async function renderTeaser(t){
     var HOUSE_DESC = {10:'10th house (Karma Bhava)', 2:'2nd house (Dhana Bhava)', 7:'7th house (Kalatra Bhava)'};
     var AREA_HOUSE = {career:10, money:2, marriage:7};
     var AREA_VERB = {career:'professional success', money:'financial growth', marriage:'relationships & marriage'};
+    var DEITY_IMG = {career:'/static/deity-vishnu.jpg', money:'/static/deity-lakshmi.jpg', marriage:'/static/deity-radhakrishna.jpg'};
+    var DEITY_ALT = {career:'Lord Vishnu', money:'Goddess Lakshmi', marriage:'Ram Sita'};
     areaConf.forEach(function(ac){
       var astro = (t.area_astro || {})[ac.key] || {};
       var lordDig = astro.dignity || 'neutral';
@@ -1238,7 +1234,9 @@ async function renderTeaser(t){
       }
       basisHtml += '<div class="ps-astro-explain">' + explainSentence + '</div>';
       basisHtml += '</div>';
+      var deityImgHtml = DEITY_IMG[ac.key] ? '<img class="ps-deity-img" src="'+DEITY_IMG[ac.key]+'" alt="'+(DEITY_ALT[ac.key]||'')+'" loading="lazy">' : '';
       prevHtml += '<div class="ps-prev">' +
+        deityImgHtml +
         '<div class="ps-prev-eyebrow">Section '+ac.num+'</div>' +
         '<div class="ps-prev-title">'+ac.title+'</div>' +
         (curiosityText ? '<div class="ps-prev-curiosity">'+curiosityText+'</div>' : '') +
